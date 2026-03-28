@@ -1,4 +1,3 @@
-import Cadastro from "@/pages/Cadastro";
 import { Switch, Route, Redirect } from "wouter";
 import { trpc } from "@/lib/trpc";
 import Navbar from "@/Navbar";
@@ -62,7 +61,6 @@ export default function App() {
   if (!session) return (
     <Switch>
       <Route path="/login"><Login /></Route>
-      <Route path="/cadastro"><Cadastro /></Route>
       <Route><Login /></Route>
     </Switch>
   );
