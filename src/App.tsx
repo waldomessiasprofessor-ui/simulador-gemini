@@ -16,7 +16,6 @@ import DesafioPage from "@/DesafioPage";
 import Login from "@/Login";
 import { Loader2, AlertTriangle } from "lucide-react";
 
-// Aviso de assinatura expirada ou sem assinatura
 function SubscriptionBanner({ session }: { session: any }) {
   if (session.role === "admin") return null;
 
@@ -50,15 +49,20 @@ function SubscriptionBanner({ session }: { session: any }) {
 }
 
 export default function App() {
-  const { data: session, isLoading } = trpc.auth.me.useQuery();
+  // isError captura falhas de rede ou erro do servidor (ex: banco offline)
+  const { data: session, isLoading, isError } = trpc.auth.me.useQuery(undefined, {
+    retry: false, // não fica tentando em loop se o servidor falhar
+  });
 
+  // Só mostra o spinner durante o carregamento inicial
   if (isLoading) return (
     <div className="flex h-screen items-center justify-center" style={{ background: "#01738d" }}>
       <Loader2 className="h-8 w-8 animate-spin text-white" />
     </div>
   );
 
-  if (!session) return (
+  // Se houve erro (banco offline, etc.) ou não há sessão → mostra login
+  if (isError || !session) return (
     <Switch>
       <Route path="/login"><Login /></Route>
       <Route><Login /></Route>
