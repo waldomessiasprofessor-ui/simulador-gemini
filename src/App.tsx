@@ -61,6 +61,7 @@ export default function App() {
   if (!session) return (
     <Switch>
       <Route path="/login"><Login /></Route>
+      <Route path="/cadastro"><Cadastro /></Route>
       <Route><Login /></Route>
     </Switch>
   );
