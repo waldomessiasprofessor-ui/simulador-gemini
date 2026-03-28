@@ -1,0 +1,121 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+import { Loader2, UserPlus, Mail, Lock, User } from "lucide-react";
+
+const registerSchema = z.object({
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("E-mail inválido"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+});
+
+type RegisterForm = z.infer<typeof registerSchema>;
+
+export default function Cadastro() {
+  const [, navigate] = useLocation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  // Conecta exatamente com a rota que já existe no seu backend
+  const registerMutation = trpc.auth.register.useMutation({
+    onSuccess: () => {
+      // Como o seu backend já faz o login automático (cria o cookie), mandamos direto para o app!
+      toast.success("Conta criada com sucesso! Bem-vindo.");
+      navigate("/"); 
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      setIsSubmitting(false);
+    },
+  });
+
+  const onSubmit = (data: RegisterForm) => {
+    setIsSubmitting(true);
+    registerMutation.mutate(data);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-alt)] p-4">
+      <div className="w-full max-w-md card">
+        <div className="text-center mb-8">
+          <div className="mx-auto h-12 w-12 bg-[var(--teal-soft)] rounded-full flex items-center justify-center mb-4">
+            <UserPlus className="h-6 w-6" style={{ color: "var(--teal)" }} />
+          </div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>Criar Conta</h1>
+          <p className="text-sm mt-2" style={{ color: "var(--muted-foreground)" }}>
+            Junte-se à plataforma do GPS da Matemática
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-1" style={{ color: "var(--text-label)" }}>Nome Completo</label>
+            <div className="relative">
+              <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <input
+                {...register("name")}
+                type="text"
+                placeholder="Ex: João da Silva"
+                className="w-full pl-10 pr-4 py-2 rounded-xl border focus:outline-none focus:ring-2"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
+              />
+            </div>
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-1" style={{ color: "var(--text-label)" }}>E-mail</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <input
+                {...register("email")}
+                type="email"
+                placeholder="joao@exemplo.com"
+                className="w-full pl-10 pr-4 py-2 rounded-xl border focus:outline-none focus:ring-2"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
+              />
+            </div>
+            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-1" style={{ color: "var(--text-label)" }}>Senha</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <input
+                {...register("password")}
+                type="password"
+                placeholder="••••••••"
+                className="w-full pl-10 pr-4 py-2 rounded-xl border focus:outline-none focus:ring-2"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
+              />
+            </div>
+            {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full btn-primary justify-center mt-6"
+          >
+            {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Cadastrar"}
+          </button>
+        </form>
+
+        <p className="text-center text-sm mt-6" style={{ color: "var(--muted-foreground)" }}>
+          Já tem uma conta?{" "}
+          <button onClick={() => navigate("/login")} className="font-bold underline" style={{ color: "var(--teal)" }}>
+            Fazer login
+          </button>
+        </p>
+      </div>
+    </div>
+  );
+}
