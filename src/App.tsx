@@ -1,3 +1,4 @@
+import Cadastro from "@/pages/Cadastro";
 import { Switch, Route, Redirect } from "wouter";
 import { trpc } from "@/lib/trpc";
 import Navbar from "@/Navbar";
