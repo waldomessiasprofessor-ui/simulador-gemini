@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Target, Timer, BarChart2, Brain, BookOpen, Award, Flame } from "lucide-react";
+import { Loader2, Target, Timer, BarChart2, Brain, BookOpen, Award, Zap } from "lucide-react";
 
 // ─── Schemas de validação ────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ type RegisterForm = z.infer<typeof registerSchema>;
 const FEATURES = [
   { icon: Target,    title: "Correção pela TRI",       desc: "Nota calculada pela Teoria de Resposta ao Item — metodologia real do INEP." },
   { icon: Timer,     title: "Temporizador inteligente", desc: "Cronômetro por questão com alerta visual quando o tempo ideal é excedido." },
-  { icon: Flame,     title: "Desafio diário",           desc: "3 questões todo dia para manter o ritmo e acompanhar seu progresso." },
+  { icon: Zap,     title: "Desafio diário",           desc: "3 questões todo dia para manter o ritmo e acompanhar seu progresso." },
   { icon: Brain,     title: "Treino livre",             desc: "Pratique por tópico com gabarito e resolução imediatos." },
   { icon: BookOpen,  title: "Fórmulas completas",       desc: "Álgebra, Geometria, Trigonometria e mais — organizadas e explicadas." },
   { icon: BarChart2, title: "Histórico de evolução",    desc: "Veja sua evolução e identifique onde precisa melhorar." },
