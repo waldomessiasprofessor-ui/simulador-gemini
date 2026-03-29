@@ -108,8 +108,8 @@ function ReviseCard() {
     return (
       <div className="rounded-2xl p-5 opacity-60" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E9D5FF" }}>
-            <BookOpen className="h-5 w-5" style={{ color: "#7B3FA0" }} />
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--accent)" }}>
+            <BookOpen className="h-5 w-5" style={{ color: "var(--purple)" }} />
           </div>
           <div>
             <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Revise</p>
@@ -123,13 +123,13 @@ function ReviseCard() {
   if (review?.completed) {
     const correct = review.correctCount ?? 0;
     return (
-      <div className="rounded-2xl p-5" style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+      <div className="rounded-2xl p-5" style={{ background: "var(--accent)", border: "1.5px solid var(--purple-soft)" }}>
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#7B3FA0" }}>
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--purple)" }}>
             <CheckCircle2 className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#7B3FA0" }}>Revise — concluído!</p>
+            <p className="font-bold text-sm" style={{ color: "var(--accent-foreground)" }}>Revise — concluído!</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               {correct}/3 acertos · {content.topico ?? content.titulo}
             </p>
@@ -141,20 +141,20 @@ function ReviseCard() {
 
   return (
     <button onClick={() => navigate("/revise")} className="w-full text-left rounded-2xl p-5 transition-all hover:opacity-90"
-      style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+      style={{ background: "var(--accent)", border: "1.5px solid var(--border)" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#7B3FA0" }}>
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--purple)" }}>
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#7B3FA0" }}>Revise</p>
+            <p className="font-bold text-sm" style={{ color: "var(--accent-foreground)" }}>Revise</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               {content.topico ?? content.titulo} · Leitura + 3 questões
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "var(--purple)" }} />
       </div>
     </button>
   );
@@ -170,8 +170,8 @@ function TreinoCard() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "#E0F0FF" }}>
-            <Dumbbell className="h-5 w-5" style={{ color: "#1565C0" }} />
+            style={{ background: "var(--muted)" }}>
+            <Dumbbell className="h-5 w-5" style={{ color: "var(--primary)" }} />
           </div>
           <div>
             <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino livre</p>
