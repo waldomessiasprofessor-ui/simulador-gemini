@@ -18,9 +18,23 @@ function cookieOptions() {
 
 export const authRouter = createTRPCRouter({
 
-  // Retorna sessão actual — null se não logado
-  me: publicProcedure.query(({ ctx }) => {
-    return ctx.user ?? null;
+  // Retorna sessão actual com dados frescos do banco
+  me: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.user) return null;
+    const [user] = await ctx.db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        subscriptionExpiresAt: users.subscriptionExpiresAt,
+        active: users.active,
+      })
+      .from(users)
+      .where(eq(users.id, Number(ctx.user.id)))
+      .limit(1);
+    if (!user || !user.active) return null;
+    return user;
   }),
 
   // Cadastro

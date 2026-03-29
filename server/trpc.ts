@@ -20,10 +20,11 @@ export interface TRPCContext {
   req: Request;
   res: Response;
   user: {
-    id: string;
+    id: number;
     email: string;
     name: string;
-    role: "student" | "admin";
+    role: string;
+    subscriptionExpiresAt?: string | null;
   } | null;
 }
 
