@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight,
-  User, Mail, Shield, Flame
+  User, Mail, Shield, Zap
 } from "lucide-react";
 
 interface NavLinkItem {
@@ -18,7 +18,7 @@ const NAV_LINKS: NavLinkItem[] = [
   { href: "/", label: "Início", icon: Home },
   { href: "/simulado", label: "Simulado ENEM", icon: ClipboardList },
   { href: "/treino", label: "Treino livre", icon: Dumbbell },
-  { href: "/desafio", label: "Desafio do dia", icon: Flame },
+  { href: "/desafio", label: "Desafio do dia", icon: Zap },
   { href: "/formulas", label: "Fórmulas", icon: FlaskConical },
   { href: "/historico", label: "Histórico", icon: History },
   { href: "/ranking", label: "Ranking", icon: Trophy },
@@ -28,7 +28,9 @@ const NAV_LINKS: NavLinkItem[] = [
 ];
 
 function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void }) {
-  const logout = trpc.auth.logout.useMutation({ onSuccess: () => { window.location.href = "/"; } });
+  const logout = trpc.auth.logout.useMutation({
+    onSuccess: () => { window.location.href = "/login"; },
+  });
   const { data: stats } = trpc.simulations.getStats.useQuery();
 
   const expiry = session.subscriptionExpiresAt ? new Date(session.subscriptionExpiresAt) : null;
