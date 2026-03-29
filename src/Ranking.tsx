@@ -22,14 +22,14 @@ export default function Ranking() {
           <Trophy className="h-5 w-5" />
           <span className="text-sm font-semibold opacity-80">Hall da Fama</span>
         </div>
-        <h1 className="text-2xl font-bold mb-1">Ranking — Etapa 3</h1>
+        <h1 className="text-2xl font-bold mb-1">Ranking — Ranking — Simulação Enem</h1>
         <p className="text-sm opacity-80">Melhores notas TRI de todos os tempos.</p>
       </div>
 
       {!ranking || ranking.length === 0 ? (
         <div className="text-center py-16" style={{ color: "#94A3B8" }}>
           <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Nenhum aluno completou a Etapa 3 ainda.</p>
+          <p className="text-sm">Nenhum aluno completou a Simulação Enem ainda.</p>
           <p className="text-xs mt-1">Seja o primeiro!</p>
         </div>
       ) : (
