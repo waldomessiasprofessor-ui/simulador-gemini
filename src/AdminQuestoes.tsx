@@ -2,9 +2,373 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info } from "lucide-react";
 
-const NIVEIS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const;
+// ─── Importador LaTeX ─────────────────────────────────────────────────────────
+
+function parseLatexQuestion(raw: string): Partial<typeof emptyForm> | null {
+  try {
+    const get = (label: string) => {
+      const regex = new RegExp(`${label}[:\\s]+([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ_]{2,}[:\\s]|$)`, "i");
+      return raw.match(regex)?.[1]?.trim() ?? "";
+    };
+
+    const enunciado = get("ENUNCIADO");
+    const resolucao = get("RESOLU[ÇC][ÃA]O");
+    const gabaritoRaw = get("GABARITO").toUpperCase().replace(/[^A-E]/g, "").charAt(0);
+    const gabarito = ["A","B","C","D","E"].includes(gabaritoRaw) ? gabaritoRaw : "A";
+    const conteudo = get("CONTE[ÚU]DO") || get("TOPICO") || get("T[ÓO]PICO");
+    const anoRaw = get("ANO");
+    const ano = anoRaw ? parseInt(anoRaw) || new Date().getFullYear() : new Date().getFullYear();
+    const dificuldadeRaw = get("DIFICULDADE").trim();
+    const nivel_dificuldade = (["Muito Baixa","Baixa","Média","Alta","Muito Alta"].find(
+      n => n.toLowerCase() === dificuldadeRaw.toLowerCase()
+    ) ?? "Média") as typeof NIVEIS[number];
+    const tagsRaw = get("TAGS");
+    const tags = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
+
+    // Parse alternativas — aceita "A)" ou "A." ou "(A)"
+    const altRegex = /^\s*[\[(]?([A-E])[\].)]\s*(.+)/gm;
+    const alternativas: Record<string, string> = { A: "", B: "", C: "", D: "", E: "" };
+    let match;
+    while ((match = altRegex.exec(raw)) !== null) {
+      alternativas[match[1]] = match[2].trim();
+    }
+
+    if (!enunciado && !alternativas.A) return null;
+
+    return {
+      enunciado,
+      alternativas,
+      gabarito,
+      comentario_resolucao: resolucao,
+      conteudo_principal: conteudo,
+      ano,
+      nivel_dificuldade,
+      tags,
+    };
+  } catch {
+    return null;
+  }
+}
+
+const FORMATO_EXEMPLO = `ENUNCIADO:
+Um capital de R$\\, 1.000,00 é aplicado a juros compostos de 10\\% ao mês. Após 2 meses, o montante será:
+
+A) R$\\, 1.100,00
+B) R$\\, 1.200,00
+C) R$\\, 1.210,00
+D) R$\\, 1.220,00
+E) R$\\, 1.250,00
+
+GABARITO: C
+
+RESOLUÇÃO:
+$M = C \\cdot (1+i)^t = 1000 \\cdot (1{,}1)^2 = 1000 \\cdot 1{,}21 = 1210$
+
+CONTEUDO: Matemática Financeira
+DIFICULDADE: Média
+ANO: 2023
+TAGS: Matemática Financeira, Funções de 1º e 2º Grau`;
+
+function LatexImportModal({ onImport, onClose }: {
+  onImport: (data: Partial<typeof emptyForm>) => void;
+  onClose: () => void;
+}) {
+  const [text, setText] = useState("");
+  const [preview, setPreview] = useState<Partial<typeof emptyForm> | null>(null);
+  const [showExample, setShowExample] = useState(false);
+
+  function handleParse() {
+    const result = parseLatexQuestion(text);
+    if (!result) {
+      toast.error("Não foi possível interpretar o formato. Verifique se seguiu o modelo.");
+      return;
+    }
+    setPreview(result);
+  }
+
+  function handleConfirm() {
+    if (!preview) return;
+    onImport(preview);
+    onClose();
+    toast.success("Questão importada! Revise e clique em Criar.");
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+          style={{ background: "#fff" }}>
+
+          {/* Header */}
+          <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #521F80, #01738d)", color: "#fff" }}>
+            <div className="flex items-center gap-2">
+              <FileCode2 className="h-5 w-5" />
+              <span className="font-bold">Importar questão via LaTeX</span>
+            </div>
+            <button onClick={onClose}><X className="h-5 w-5 opacity-80 hover:opacity-100" /></button>
+          </div>
+
+          <div className="overflow-y-auto flex-1 p-6 space-y-4">
+
+            {/* Botão exemplo */}
+            <button onClick={() => setShowExample(!showExample)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+              style={{ background: "#E0F7F4", color: "#01738d" }}>
+              <ClipboardPaste className="h-3.5 w-3.5" />
+              {showExample ? "Ocultar" : "Ver"} formato esperado
+            </button>
+
+            {showExample && (
+              <div className="rounded-xl p-4 text-xs font-mono overflow-x-auto"
+                style={{ background: "#1A1A2E", color: "#A5F3FC", whiteSpace: "pre-wrap" }}>
+                {FORMATO_EXEMPLO}
+              </div>
+            )}
+
+            {/* Textarea de entrada */}
+            <div>
+              <label className="text-sm font-bold block mb-2" style={{ color: "#1A1A2E" }}>
+                Cole aqui a questão gerada pela IA:
+              </label>
+              <textarea
+                rows={12}
+                value={text}
+                onChange={(e) => { setText(e.target.value); setPreview(null); }}
+                placeholder={`Cole o texto da questão aqui...\n\nO formato mínimo necessário é:\nENUNCIADO: ...\nA) ...\nB) ...\nC) ...\nD) ...\nE) ...\nGABARITO: X`}
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
+                style={{ border: "1.5px solid #E2D9EE", resize: "vertical", color: "#1A1A2E" }}
+              />
+            </div>
+
+            {/* Preview */}
+            {preview && (
+              <div className="rounded-xl p-4 space-y-3"
+                style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
+                <div className="flex items-center gap-2 text-sm font-bold" style={{ color: "#166534" }}>
+                  <CheckCircle2 className="h-4 w-4" /> Prévia detectada — confirme antes de importar
+                </div>
+                <div className="space-y-1 text-xs" style={{ color: "#1A1A2E" }}>
+                  {preview.conteudo_principal && <p><b>Conteúdo:</b> {preview.conteudo_principal}</p>}
+                  {preview.ano && <p><b>Ano:</b> {preview.ano}</p>}
+                  {preview.nivel_dificuldade && <p><b>Dificuldade:</b> {preview.nivel_dificuldade}</p>}
+                  {preview.gabarito && <p><b>Gabarito:</b> {preview.gabarito}</p>}
+                  {preview.tags && preview.tags.length > 0 && <p><b>Tags:</b> {preview.tags.join(", ")}</p>}
+                  <p className="mt-2"><b>Enunciado:</b></p>
+                  <p className="pl-2 italic line-clamp-3" style={{ color: "#374151" }}>{preview.enunciado?.slice(0, 200)}{(preview.enunciado?.length ?? 0) > 200 ? "..." : ""}</p>
+                  <p className="mt-1"><b>Alternativas detectadas:</b> {Object.entries(preview.alternativas ?? {}).filter(([,v]) => v).map(([k]) => k).join(", ")}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 flex gap-3 flex-shrink-0" style={{ borderTop: "1px solid #E2D9EE" }}>
+            {!preview ? (
+              <button onClick={handleParse} disabled={!text.trim()}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white disabled:opacity-40"
+                style={{ background: "#01738d" }}>
+                <FileCode2 className="h-4 w-4" /> Interpretar questão
+              </button>
+            ) : (
+              <button onClick={handleConfirm}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"
+                style={{ background: "#166534" }}>
+                <CheckCircle2 className="h-4 w-4" /> Confirmar e preencher formulário
+              </button>
+            )}
+            <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-sm"
+              style={{ background: "#F1F5F9", color: "#64748B" }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Modal de Auditoria Gemini ────────────────────────────────────────────────
+
+function AuditModal({ questionId, onClose }: { questionId: number; onClose: () => void }) {
+  const auditMutation = trpc.questions.auditQuestion.useMutation();
+
+  const audit = auditMutation.data?.audit;
+
+  function nota_cor(n: number) {
+    if (n >= 8) return "#166534";
+    if (n >= 6) return "#92400E";
+    return "#991B1B";
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div className="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+        style={{ background: "#fff" }}>
+
+        {/* Header */}
+        <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)", color: "#fff" }}>
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-yellow-300" />
+            <span className="font-bold">Auditoria Gemini — Questão #{questionId}</span>
+          </div>
+          <button onClick={onClose}><X className="h-5 w-5 opacity-80 hover:opacity-100" /></button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-6 space-y-5">
+
+          {/* Estado inicial */}
+          {!auditMutation.isPending && !audit && !auditMutation.error && (
+            <div className="text-center py-6 space-y-4">
+              <div className="h-16 w-16 rounded-2xl mx-auto flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)" }}>
+                <Sparkles className="h-8 w-8 text-yellow-300" />
+              </div>
+              <div>
+                <p className="font-bold text-lg" style={{ color: "#1A1A2E" }}>Auditar com Gemini</p>
+                <p className="text-sm mt-1" style={{ color: "#64748B" }}>
+                  O Gemini vai analisar o enunciado, alternativas, gabarito e resolução desta questão e emitir um parecer técnico.
+                </p>
+              </div>
+              <button
+                onClick={() => auditMutation.mutate({ id: questionId })}
+                className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #521F80, #01738d)" }}>
+                <Sparkles className="h-4 w-4" /> Iniciar auditoria
+              </button>
+            </div>
+          )}
+
+          {/* Carregando */}
+          {auditMutation.isPending && (
+            <div className="text-center py-10 space-y-3">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#521F80" }} />
+              <p className="text-sm font-semibold" style={{ color: "#64748B" }}>Gemini analisando a questão...</p>
+              <p className="text-xs" style={{ color: "#94A3B8" }}>Isso pode levar alguns segundos</p>
+            </div>
+          )}
+
+          {/* Erro */}
+          {auditMutation.error && (
+            <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
+              <div className="flex items-center gap-2 font-bold text-sm" style={{ color: "#991B1B" }}>
+                <AlertTriangle className="h-4 w-4" /> Erro na auditoria
+              </div>
+              <p className="text-sm" style={{ color: "#991B1B" }}>{auditMutation.error.message}</p>
+              <button onClick={() => auditMutation.mutate({ id: questionId })}
+                className="text-xs font-bold px-3 py-1.5 rounded-lg mt-1"
+                style={{ background: "#FECACA", color: "#991B1B" }}>
+                Tentar novamente
+              </button>
+            </div>
+          )}
+
+          {/* Resultado */}
+          {audit && (
+            <div className="space-y-4">
+
+              {/* Nota + Parecer */}
+              <div className="rounded-xl p-4 flex items-start gap-4"
+                style={{ background: "#F8FAFC", border: "1.5px solid #E2E8F0" }}>
+                <div className="h-14 w-14 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl font-black"
+                  style={{ background: nota_cor(audit.nota_qualidade), color: "#fff" }}>
+                  {audit.nota_qualidade}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase" style={{ color: "#94A3B8" }}>Nota de qualidade</p>
+                  <p className="text-sm mt-1" style={{ color: "#1A1A2E" }}>{audit.parecer}</p>
+                </div>
+              </div>
+
+              {/* Gabarito */}
+              <div className="rounded-xl p-4 flex items-center gap-3"
+                style={{
+                  background: audit.gabarito_correto ? "#F0FDF4" : "#FEF2F2",
+                  border: `1.5px solid ${audit.gabarito_correto ? "#86EFAC" : "#FECACA"}`
+                }}>
+                {audit.gabarito_correto
+                  ? <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "#166534" }} />
+                  : <ThumbsDown className="h-5 w-5 flex-shrink-0" style={{ color: "#991B1B" }} />}
+                <div>
+                  <p className="text-sm font-bold" style={{ color: audit.gabarito_correto ? "#166534" : "#991B1B" }}>
+                    {audit.gabarito_correto ? "Gabarito correto ✓" : `Gabarito possivelmente incorreto!`}
+                  </p>
+                  {!audit.gabarito_correto && audit.gabarito_sugerido && (
+                    <p className="text-xs mt-0.5" style={{ color: "#991B1B" }}>
+                      Gabarito sugerido pelo Gemini: <b>{audit.gabarito_sugerido}</b>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Dificuldade */}
+              <div className="rounded-xl p-4 flex items-center gap-3"
+                style={{
+                  background: audit.dificuldade_compativel ? "#F0FDF4" : "#FFFBEB",
+                  border: `1.5px solid ${audit.dificuldade_compativel ? "#86EFAC" : "#FCD34D"}`
+                }}>
+                <Info className="h-5 w-5 flex-shrink-0" style={{ color: audit.dificuldade_compativel ? "#166534" : "#92400E" }} />
+                <div>
+                  <p className="text-sm font-bold" style={{ color: audit.dificuldade_compativel ? "#166534" : "#92400E" }}>
+                    Dificuldade real: <span>{audit.dificuldade_real}</span>
+                    {!audit.dificuldade_compativel && " ⚠️ diferente da declarada"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Problemas */}
+              {audit.problemas?.length > 0 && (
+                <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
+                  <p className="text-xs font-bold uppercase" style={{ color: "#991B1B" }}>Problemas encontrados</p>
+                  <ul className="space-y-1">
+                    {audit.problemas.map((p: string, i: number) => (
+                      <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#7F1D1D" }}>
+                        <span className="mt-0.5 flex-shrink-0">•</span> {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Sugestões */}
+              {audit.sugestoes?.length > 0 && (
+                <div className="rounded-xl p-4 space-y-2" style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
+                  <p className="text-xs font-bold uppercase" style={{ color: "#166534" }}>Sugestões de melhoria</p>
+                  <ul className="space-y-1">
+                    {audit.sugestoes.map((s: string, i: number) => (
+                      <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#14532D" }}>
+                        <span className="mt-0.5 flex-shrink-0">✓</span> {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Auditar novamente */}
+              <button onClick={() => auditMutation.mutate({ id: questionId })}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
+                style={{ background: "#F1F5F9", color: "#64748B" }}>
+                <Sparkles className="h-4 w-4" /> Auditar novamente
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="px-6 py-4 flex-shrink-0" style={{ borderTop: "1px solid #E2D9EE" }}>
+          <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold"
+            style={{ background: "#F1F5F9", color: "#64748B" }}>
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── AdminQuestoes ────────────────────────────────────────────────────────────
 
 const TAGS_CONTEUDO = [
   "Razão, Proporção e Regra de Três",
@@ -50,6 +414,8 @@ export default function AdminQuestoes() {
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("Todas");
   const [showForm, setShowForm] = useState(false);
+  const [showLatexImport, setShowLatexImport] = useState(false);
+  const [auditQuestionId, setAuditQuestionId] = useState<number | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<Form>(emptyForm);
   const [openId, setOpenId] = useState<number | null>(null);
@@ -83,6 +449,13 @@ export default function AdminQuestoes() {
     onSuccess: () => utils.questions.list.invalidate(),
     onError: (e) => toast.error(e.message),
   });
+
+  function handleLatexImport(data: Partial<typeof emptyForm>) {
+    setForm({ ...emptyForm, ...data });
+    setEditId(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function resetForm() {
     setForm(emptyForm);
@@ -167,11 +540,18 @@ export default function AdminQuestoes() {
             {data?.pagination.total ?? 0} questões no banco
           </p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm"
-          style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)" }}>
-          <Plus className="h-4 w-4" /> Nova questão
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowLatexImport(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm"
+            style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)" }}>
+            <FileCode2 className="h-4 w-4" /> Importar LaTeX
+          </button>
+          <button onClick={() => { resetForm(); setShowForm(true); }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm"
+            style={{ background: "rgba(255,255,255,0.2)", color: "#fff", border: "1px solid rgba(255,255,255,0.3)" }}>
+            <Plus className="h-4 w-4" /> Nova questão
+          </button>
+        </div>
       </div>
 
       {/* Zona de perigo */}
@@ -477,6 +857,9 @@ export default function AdminQuestoes() {
 
                   {/* Acções */}
                   <div className="flex items-center gap-1 flex-shrink-0">
+                    <button onClick={() => setAuditQuestionId(q.id)} className="p-1.5 rounded-lg hover:bg-purple-50" title="Auditar com Gemini">
+                      <Sparkles className="h-3.5 w-3.5" style={{ color: "#521F80" }} />
+                    </button>
                     <button onClick={() => startEdit(q)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
                       <Pencil className="h-3.5 w-3.5" style={{ color: "#01738d" }} />
                     </button>
@@ -542,6 +925,22 @@ export default function AdminQuestoes() {
             className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
             style={{ background: "#F1F5F9", color: "#1A1A2E" }}>Próxima</button>
         </div>
+      )}
+
+      {/* Modal auditoria Gemini */}
+      {auditQuestionId && (
+        <AuditModal
+          questionId={auditQuestionId}
+          onClose={() => setAuditQuestionId(null)}
+        />
+      )}
+
+      {/* Modal importador LaTeX */}
+      {showLatexImport && (
+        <LatexImportModal
+          onImport={handleLatexImport}
+          onClose={() => setShowLatexImport(false)}
+        />
       )}
     </div>
   );

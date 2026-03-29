@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   Flame, Trophy, CheckCircle2, XCircle, ChevronRight,
   Loader2, Zap, Target, Medal, BookOpen, Dumbbell,
-  Clock, Swords, Star, PartyPopper
+  Clock, Swords, Star, PartyPopper, Brain
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useState } from "react";
@@ -276,12 +276,15 @@ export default function Dashboard() {
       {/* Saudação + streak */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xl font-black" style={{ color: "var(--foreground)" }}>
-            {greeting}, {firstName}! 👋
+          <p className="text-lg font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            {greeting}, {firstName}!
           </p>
-          <p className="text-sm mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Pronto para treinar hoje?
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <Brain className="h-6 w-6 flex-shrink-0" style={{ color: "#01738d" }} />
+            <p className="text-2xl font-black leading-tight" style={{ color: "var(--foreground)" }}>
+              Pronto para treinar hoje?
+            </p>
+          </div>
         </div>
         {stats && (
           <button onClick={() => navigate("/ranking")}

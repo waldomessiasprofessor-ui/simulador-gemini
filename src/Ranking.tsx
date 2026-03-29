@@ -22,7 +22,7 @@ export default function Ranking() {
           <Trophy className="h-5 w-5" />
           <span className="text-sm font-semibold opacity-80">Hall da Fama</span>
         </div>
-        <h1 className="text-2xl font-bold mb-1">Ranking — Ranking — Simulação Enem</h1>
+        <h1 className="text-2xl font-bold mb-1">Ranking — Simulação Enem</h1>
         <p className="text-sm opacity-80">Melhores notas TRI de todos os tempos.</p>
       </div>
 
