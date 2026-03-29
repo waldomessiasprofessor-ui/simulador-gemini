@@ -116,4 +116,70 @@ export const questionsRouter = createTRPCRouter({
       await ctx.db.delete(questions);
       return { success: true };
     }),
+
+  // Auditoria com Gemini
+  auditQuestion: adminProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "GEMINI_API_KEY não configurada no servidor. Adicione a variável no Railway." });
+
+      const [q] = await ctx.db.select().from(questions).where(eq(questions.id, input.id)).limit(1);
+      if (!q) throw new TRPCError({ code: "NOT_FOUND", message: "Questão não encontrada." });
+
+      const alts = Object.entries(q.alternativas as Record<string, any>)
+        .sort()
+        .map(([k, v]) => `${k}) ${typeof v === "object" ? v.text ?? "" : v}`)
+        .join("\n");
+
+      const prompt = `Você é um especialista em elaboração de questões para o ENEM. Analise a questão abaixo com rigor técnico e pedagógico.
+
+QUESTÃO #${q.id}
+Conteúdo: ${q.conteudo_principal}
+Dificuldade declarada: ${q.nivel_dificuldade}
+Ano: ${q.ano ?? "Não informado"}
+
+ENUNCIADO:
+${q.enunciado}
+
+ALTERNATIVAS:
+${alts}
+
+GABARITO DECLARADO: ${q.gabarito}
+RESOLUÇÃO: ${q.comentario_resolucao ?? "Não informada"}
+
+Responda em JSON puro (sem markdown) com exatamente esta estrutura:
+{
+  "gabarito_correto": true | false,
+  "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
+  "dificuldade_real": "Muito Baixa" | "Baixa" | "Média" | "Alta" | "Muito Alta",
+  "dificuldade_compativel": true | false,
+  "nota_qualidade": 1 a 10,
+  "problemas": ["lista de problemas encontrados, ou array vazio se nenhum"],
+  "sugestoes": ["lista de sugestões de melhoria"],
+  "parecer": "Texto curto de 2-3 frases com avaliação geral"
+}`;
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro na API Gemini: ${err}` });
+      }
+
+      const data = await res.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      const clean = rawText.replace(/```json|```/g, "").trim();
+
+      try {
+        const audit = JSON.parse(clean);
+        return { success: true, audit, questionId: q.id };
+      } catch {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "O Gemini retornou uma resposta em formato inválido. Tente novamente." });
+      }
+    }),
 });
