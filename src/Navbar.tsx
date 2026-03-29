@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight,
-  User, Mail, Shield
+  User, Mail, Shield, Flame
 } from "lucide-react";
 
 interface NavLinkItem {
