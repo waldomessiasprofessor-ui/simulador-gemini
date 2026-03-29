@@ -9,21 +9,18 @@ import Historico from "@/Historico";
 import Questoes from "@/Questoes";
 import AdminQuestoes from "@/AdminQuestoes";
 import AdminUsuarios from "@/AdminUsuarios";
+import AdminFormulas from "@/AdminFormulas";
 import Treino from "@/Treino";
 import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
 import DesafioPage from "@/DesafioPage";
-import Revise from "@/Revise";
-import AdminRevise from "@/AdminRevise";
 import Login from "@/Login";
 import { Loader2, AlertTriangle } from "lucide-react";
 
 function SubscriptionBanner({ session }: { session: any }) {
   if (session.role === "admin") return null;
-
   const now = new Date();
   const expiry = session.subscriptionExpiresAt ? new Date(session.subscriptionExpiresAt) : null;
-
   if (expiry && expiry < now) {
     return (
       <div className="w-full px-4 py-3 text-center text-sm font-semibold flex items-center justify-center gap-2"
@@ -33,7 +30,6 @@ function SubscriptionBanner({ session }: { session: any }) {
       </div>
     );
   }
-
   if (expiry) {
     const days = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     if (days <= 30) {
@@ -46,24 +42,18 @@ function SubscriptionBanner({ session }: { session: any }) {
       );
     }
   }
-
   return null;
 }
 
 export default function App() {
-  // isError captura falhas de rede ou erro do servidor (ex: banco offline)
-  const { data: session, isLoading, isError } = trpc.auth.me.useQuery(undefined, {
-    retry: false, // não fica tentando em loop se o servidor falhar
-  });
+  const { data: session, isLoading, isError } = trpc.auth.me.useQuery(undefined, { retry: false });
 
-  // Só mostra o spinner durante o carregamento inicial
   if (isLoading) return (
     <div className="flex h-screen items-center justify-center" style={{ background: "#01738d" }}>
       <Loader2 className="h-8 w-8 animate-spin text-white" />
     </div>
   );
 
-  // Se houve erro (banco offline, etc.) ou não há sessão → mostra login
   if (isError || !session) return (
     <Switch>
       <Route path="/login"><Login /></Route>
@@ -74,10 +64,10 @@ export default function App() {
   const isAdmin = session.role === "admin";
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#f4f4f4" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
       <Navbar />
       <SubscriptionBanner session={session} />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+      <main className="flex-1 container mx-auto px-4 py-6 max-w-4xl">
         <Switch>
           <Route path="/"><Dashboard /></Route>
           <Route path="/simulado"><Simulador /></Route>
@@ -90,15 +80,14 @@ export default function App() {
           <Route path="/ranking"><Ranking /></Route>
           <Route path="/formulas"><Formulas /></Route>
           <Route path="/desafio"><DesafioPage /></Route>
-          <Route path="/revise"><Revise /></Route>
-          <Route path="/admin/revise">
-            {isAdmin ? <AdminRevise /> : <Redirect to="/" />}
-          </Route>
           <Route path="/admin/questoes">
             {isAdmin ? <AdminQuestoes /> : <Redirect to="/" />}
           </Route>
           <Route path="/admin/usuarios">
             {isAdmin ? <AdminUsuarios /> : <Redirect to="/" />}
+          </Route>
+          <Route path="/admin/formulas">
+            {isAdmin ? <AdminFormulas /> : <Redirect to="/" />}
           </Route>
           <Route><Redirect to="/" /></Route>
         </Switch>
