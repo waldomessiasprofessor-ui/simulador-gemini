@@ -158,6 +158,64 @@ export const dailyChallengesRelations = relations(dailyChallenges, ({ one }) => 
 export type DailyChallenge = typeof dailyChallenges.$inferSelect;
 export type NewDailyChallenge = typeof dailyChallenges.$inferInsert;
 
+
+// =============================================================================
+// Tabela: review_contents — textos do "Revise" (gerenciados pelo admin)
+// =============================================================================
+
+export const reviewContents = mysqlTable(
+  "review_contents",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    titulo: varchar("titulo", { length: 200 }).notNull(),
+    conteudo: text("conteudo").notNull(),          // suporta LaTeX
+    topico: varchar("topico", { length: 100 }),
+    questoes: json("questoes").$type<Array<{
+      enunciado: string;
+      opcoes: string[];   // sempre 4 opções [A, B, C, D]
+      correta: number;    // índice 0-3
+    }>>().notNull().default([]),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => ({
+    idxActive: index("idx_review_active").on(t.active),
+  })
+);
+
+// =============================================================================
+// Tabela: daily_reviews — progresso do aluno no Revise diário
+// =============================================================================
+
+export const dailyReviews = mysqlTable(
+  "daily_reviews",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    userId: int("user_id").notNull().references(() => users.id),
+    reviewDate: varchar("review_date", { length: 10 }).notNull(), // YYYY-MM-DD
+    contentId: int("content_id").notNull().references(() => reviewContents.id),
+    answers: json("answers").$type<Record<string, number>>().notNull().default({}),
+    completed: boolean("completed").notNull().default(false),
+    correctCount: int("correct_count"),
+    completedAt: timestamp("completed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    idxUserDate: index("idx_review_user_date").on(t.userId, t.reviewDate),
+  })
+);
+
+export const dailyReviewsRelations = relations(dailyReviews, ({ one }) => ({
+  user: one(users, { fields: [dailyReviews.userId], references: [users.id] }),
+  content: one(reviewContents, { fields: [dailyReviews.contentId], references: [reviewContents.id] }),
+}));
+
+export type ReviewContent = typeof reviewContents.$inferSelect;
+export type NewReviewContent = typeof reviewContents.$inferInsert;
+export type DailyReview = typeof dailyReviews.$inferSelect;
+export type NewDailyReview = typeof dailyReviews.$inferInsert;
+
 // =============================================================================
 // Tipos
 // =============================================================================
