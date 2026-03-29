@@ -14,10 +14,10 @@ const queryClient = new QueryClient({
 });
 
 const trpcClient = trpc.createClient({
+  transformer: superjson,
   links: [
     httpBatchLink({
       url: "/api/trpc",
-      transformer: superjson,
       fetch: (url, options) =>
         fetch(url, { ...options, credentials: "include" }),
     }),
