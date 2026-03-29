@@ -20,13 +20,13 @@ type LoginForm = z.infer<typeof loginSchema>;
 type RegisterForm = z.infer<typeof registerSchema>;
 
 const FEATURES = [
-  { icon: Target,    title: "Correção pela TRI",        desc: "Nota calculada pela Teoria de Resposta ao Item — metodologia real do INEP." },
+  { icon: Target,    title: "Correção pela TRI",        desc: "Nota calculada pela Teoria de Resposta ao Item — a metodologia real do INEP." },
+  { icon: Zap,       title: "Desafio diário",            desc: "3 questões todo dia para manter o ritmo. Missão diária com histórico de progresso." },
+  { icon: BookOpen,  title: "Revise",                    desc: "Texto de revisão diário com LaTeX e 3 questões de validação de leitura." },
+  { icon: Brain,     title: "Treino cronometrado",       desc: "Escolha tópico e quantidade. Tempo registrado para acompanhar sua velocidade." },
   { icon: Timer,     title: "Temporizador inteligente",  desc: "Cronômetro por questão com alerta visual quando o tempo ideal é excedido." },
-  { icon: Zap,       title: "Desafio diário",            desc: "3 questões todo dia para manter o ritmo e acompanhar seu progresso." },
-  { icon: Brain,     title: "Treino livre",              desc: "Pratique por tópico com gabarito e resolução imediatos." },
-  { icon: BookOpen,  title: "Fórmulas completas",        desc: "Álgebra, Geometria, Trigonometria e mais — organizadas e explicadas." },
-  { icon: BarChart2, title: "Histórico de evolução",     desc: "Veja sua evolução e identifique onde precisa melhorar." },
-  { icon: Award,     title: "Ranking",                   desc: "Compare sua nota TRI com outros alunos e acompanhe seu crescimento." },
+  { icon: BarChart2, title: "Histórico de evolução",     desc: "Mapa de calor semanal e estatísticas detalhadas de desempenho." },
+  { icon: Award,     title: "Ranking & Fórmulas",        desc: "Compare sua nota TRI com outros alunos e consulte todas as fórmulas." },
 ];
 
 const inputStyle: React.CSSProperties = {

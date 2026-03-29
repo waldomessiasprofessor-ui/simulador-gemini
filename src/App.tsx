@@ -13,6 +13,8 @@ import Treino from "@/Treino";
 import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
 import DesafioPage from "@/DesafioPage";
+import Revise from "@/Revise";
+import AdminRevise from "@/AdminRevise";
 import Login from "@/Login";
 import { Loader2, AlertTriangle } from "lucide-react";
 
@@ -88,6 +90,10 @@ export default function App() {
           <Route path="/ranking"><Ranking /></Route>
           <Route path="/formulas"><Formulas /></Route>
           <Route path="/desafio"><DesafioPage /></Route>
+          <Route path="/revise"><Revise /></Route>
+          <Route path="/admin/revise">
+            {isAdmin ? <AdminRevise /> : <Redirect to="/" />}
+          </Route>
           <Route path="/admin/questoes">
             {isAdmin ? <AdminQuestoes /> : <Redirect to="/" />}
           </Route>

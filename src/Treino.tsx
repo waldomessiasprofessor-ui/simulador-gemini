@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard } from "@/LatexRenderer";
-import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare } from "lucide-react";
+import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type TrainingQuestion = {
@@ -23,6 +23,20 @@ export default function Treino() {
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (questions.length > 0 && !finished) {
+      timerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [questions.length, finished]);
+
+  function fmtTime(s: number) {
+    const m = Math.floor(s / 60);
+    return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
+  }
 
   const { data: topics, isLoading: loadingTopics } = trpc.simulations.getTopics.useQuery();
   const startTraining = trpc.simulations.startFreeTraining.useMutation({
@@ -152,6 +166,12 @@ export default function Treino() {
           <p className="text-sm font-medium" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>
             {correct} de {questions.length} acertos
           </p>
+          <div className="flex items-center justify-center gap-1.5 mt-2">
+            <Clock className="h-3.5 w-3.5" style={{ color: pct >= 70 ? "#00695C" : "#C62828", opacity: 0.7 }} />
+            <p className="text-xs opacity-70" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>
+              Tempo total: {fmtTime(elapsedSeconds)}
+            </p>
+          </div>
           <p className="text-xs mt-1 opacity-70" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>
             {pct >= 70 ? "Ótimo desempenho!" : pct >= 50 ? "Continue praticando!" : "Revise o conteúdo e tente novamente."}
           </p>
