@@ -134,7 +134,7 @@ export const questionsRouter = createTRPCRouter({
       const prompt = `Você é um especialista em elaboração de questões para o ENEM. Analise a questão abaixo com rigor técnico e pedagógico.
 
 QUESTÃO #${q.id}
-Conteúdo: ${q.conteudo_principal}
+Conteúdo declarado: ${q.conteudo_principal}
 Dificuldade declarada: ${q.nivel_dificuldade}
 Ano: ${q.ano ?? "Não informado"}
 
@@ -149,6 +149,8 @@ RESOLUÇÃO: ${q.comentario_resolucao ?? "Não informada"}
 
 Responda em JSON puro (sem markdown) com exatamente esta estrutura:
 {
+  "disciplina": "Matemática" | "Física" | "Química" | "Outra",
+  "disciplina_justificativa": "Breve explicação de por que classificou como esta disciplina",
   "gabarito_correto": true | false,
   "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
   "dificuldade_real": "Muito Baixa" | "Baixa" | "Média" | "Alta" | "Muito Alta",
@@ -189,7 +191,6 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
   applyAuditFixes: adminProcedure
     .input(z.object({
       id: z.number().int().positive(),
-      // Cada campo é opcional — admin escolhe o que aplicar
       gabarito: z.string().length(1).optional(),
       nivel_dificuldade: NivelDificuldadeEnum.optional(),
       enunciado: z.string().min(5).optional(),
@@ -201,19 +202,15 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
       const [q] = await ctx.db.select({ id: questions.id }).from(questions).where(eq(questions.id, id)).limit(1);
       if (!q) throw new TRPCError({ code: "NOT_FOUND", message: "Questão não encontrada." });
 
-      // Filtra apenas campos fornecidos
       const updateData: Record<string, any> = {};
-      if (fields.gabarito)              updateData.gabarito = fields.gabarito.toUpperCase();
-      if (fields.nivel_dificuldade)     updateData.nivel_dificuldade = fields.nivel_dificuldade;
-      if (fields.enunciado)             updateData.enunciado = fields.enunciado;
-      if (fields.comentario_resolucao !== undefined) updateData.comentario_resolucao = fields.comentario_resolucao;
+      if (fields.gabarito)                              updateData.gabarito = fields.gabarito.toUpperCase();
+      if (fields.nivel_dificuldade)                     updateData.nivel_dificuldade = fields.nivel_dificuldade;
+      if (fields.enunciado)                             updateData.enunciado = fields.enunciado;
+      if (fields.comentario_resolucao !== undefined)    updateData.comentario_resolucao = fields.comentario_resolucao;
 
-      if (Object.keys(updateData).length === 0) {
-        return { success: true, applied: [] };
-      }
+      if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
 
       await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
-
       return { success: true, applied: Object.keys(updateData) };
     }),
 });
