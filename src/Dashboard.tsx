@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 
 function DailyCard() {
   const [, navigate] = useLocation();
-  const { data: daily, isLoading } = trpc.simulations.getDailyChallenge.useQuery();
+  const { data: daily, isLoading } = trpc.simulations.getDailyChallenge.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
 
   if (isLoading) return (
     <div className="flex justify-center py-6">
@@ -88,7 +88,7 @@ function DailyCard() {
 
 function ReviseCard() {
   const [, navigate] = useLocation();
-  const { data: revise, isLoading } = trpc.revise?.getTodayRevise?.useQuery?.() ?? { data: null, isLoading: false };
+  const { data: revise, isLoading: reviseLoading } = trpc.review?.getDaily?.useQuery?.(undefined, { staleTime: 0, refetchOnWindowFocus: true }) ?? { data: null, isLoading: false };
 
   if (isLoading) return null;
 
@@ -117,9 +117,13 @@ function ReviseCard() {
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
-  const { data: session } = trpc.auth.me.useQuery();
-  const { data: active } = trpc.simulations.getActive.useQuery();
-  const { data: stats } = trpc.simulations.getStats.useQuery();
+  const { data: session } = trpc.auth.me.useQuery(undefined, { staleTime: 30_000 });
+  const { data: active } = trpc.simulations.getActive.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
+  const { data: stats } = trpc.simulations.getStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
+  const { data: qData } = trpc.questions.list.useQuery({ page: 1, pageSize: 1, activeOnly: true, orderBy: "id", orderDir: "desc" });
+  const totalQuestions = qData?.pagination.total ?? 0;
+  const { data: qData } = trpc.questions.list.useQuery({ page: 1, pageSize: 1, activeOnly: true, orderBy: "id", orderDir: "desc" });
+  const totalQuestions = qData?.pagination.total ?? 0;
 
   const startMutation = trpc.simulations.start.useMutation({
     onSuccess: () => navigate("/simulado"),
@@ -241,14 +245,19 @@ export default function Dashboard() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "var(--muted)" }}>
-                <Dumbbell className="h-5 w-5" style={{ color: "var(--foreground)" }} />
+                style={{ background: "#E0F0FF" }}>
+                <Dumbbell className="h-5 w-5" style={{ color: "#1565C0" }} />
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino livre</p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                  Escolha o tópico, quantidade e treine com tempo registrado
+                  Escolha o tópico e quantidade · com tempo registrado
                 </p>
+                {totalQuestions > 0 && (
+                  <p className="text-xs mt-1 font-semibold" style={{ color: "#1565C0" }}>
+                    {totalQuestions} questões disponíveis
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1.5">

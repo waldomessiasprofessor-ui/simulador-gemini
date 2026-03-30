@@ -17,10 +17,11 @@ type DailyQ = {
 
 export default function DesafioPage() {
   const [, navigate] = useLocation();
-  const { data: daily, isLoading, refetch } = trpc.simulations.getDailyChallenge.useQuery();
+  const utils = trpc.useUtils();
+  const { data: daily, isLoading, refetch } = trpc.simulations.getDailyChallenge.useQuery(undefined, { staleTime: 0 });
   const saveDailyAnswer = trpc.simulations.saveDailyAnswer.useMutation();
   const finishDaily = trpc.simulations.finishDailyChallenge.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: () => { refetch(); utils.simulations.getStats.invalidate(); },
   });
 
   const [localAnswers, setLocalAnswers] = useState<Record<number, string>>({});

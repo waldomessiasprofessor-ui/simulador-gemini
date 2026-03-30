@@ -11,10 +11,11 @@ const LETTERS = ["A", "B", "C", "D"];
 
 export default function Revise() {
   const [, navigate] = useLocation();
-  const { data, isLoading, refetch } = trpc.review.getDaily.useQuery();
+  const utils = trpc.useUtils();
+  const { data, isLoading, refetch } = trpc.review.getDaily.useQuery(undefined, { staleTime: 0 });
   const saveAnswer = trpc.review.saveAnswer.useMutation({
     onSuccess: (res) => {
-      if (res.allDone) refetch();
+      if (res.allDone) { refetch(); utils.simulations.getStats.invalidate(); }
     },
   });
 

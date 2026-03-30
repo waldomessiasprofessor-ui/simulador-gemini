@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Clock, ChevronLeft, ChevronRight, CheckSquare, Loader2, PlayCircle } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, CheckSquare, Loader2, PlayCircle, Pause, RotateCcw, XCircle } from "lucide-react";
 
 function fmt(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -11,10 +11,24 @@ function fmt(s: number) {
 
 export default function Simulador() {
   const [, navigate] = useLocation();
-  const { data: active, isLoading } = trpc.simulations.getActive.useQuery();
+  const utils = trpc.useUtils();
+  const { data: active, isLoading } = trpc.simulations.getActive.useQuery(undefined, { staleTime: 0 });
   const saveAnswer = trpc.simulations.saveAnswer.useMutation();
   const finish = trpc.simulations.finish.useMutation({
-    onSuccess: (d) => navigate(`/resultado/${d.simulationId}`),
+    onSuccess: (d) => {
+      utils.simulations.getStats.invalidate();
+      utils.simulations.getActive.invalidate();
+      utils.simulations.getHistory.invalidate();
+      navigate(`/resultado/${d.simulationId}`);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const abandon = trpc.simulations.abandon.useMutation({
+    onSuccess: () => {
+      utils.simulations.getActive.invalidate();
+      utils.simulations.getStats.invalidate();
+      navigate("/");
+    },
     onError: (e) => toast.error(e.message),
   });
   const start = trpc.simulations.start.useMutation({
@@ -27,6 +41,7 @@ export default function Simulador() {
   const [qTime, setQTime] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [showGrid, setShowGrid] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
   const qTimeRef = useRef(0);
   const totalRef = useRef(0);
 
@@ -112,10 +127,60 @@ export default function Simulador() {
 
   return (
     <div className="space-y-5 py-2">
+      {/* Options overlay */}
+      {showOptions && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)" }}>
+          <div className="rounded-2xl p-6 w-80 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+            <p className="font-black text-base text-center" style={{ color: "var(--foreground)" }}>O que deseja fazer?</p>
+            <p className="text-xs text-center" style={{ color: "var(--muted-foreground)" }}>
+              Seu progresso atual: {answered}/{active.totalQuestions} respondidas
+            </p>
+            <button
+              onClick={() => setShowOptions(false)}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
+              style={{ background: "var(--teal-soft)", color: "#01738d", border: "1.5px solid #01738d44" }}>
+              <Pause className="h-4 w-4" />
+              Pausar — continuar depois
+              <span className="ml-auto text-xs opacity-70">salva progresso</span>
+            </button>
+            <button
+              onClick={async () => {
+                if (!confirm("Reiniciar descarta TODAS as respostas e começa do zero. Confirmar?")) return;
+                setShowOptions(false);
+                await abandon.mutateAsync({ simulationId: active.simulationId });
+                start.mutate({ stage: 3 });
+              }}
+              disabled={abandon.isPending || start.isPending}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
+              style={{ background: "#FFF8E1", color: "#E65100", border: "1.5px solid #F9A82544" }}>
+              <RotateCcw className="h-4 w-4" />
+              Reiniciar simulado
+              <span className="ml-auto text-xs opacity-70">descarta respostas</span>
+            </button>
+            <button
+              onClick={async () => {
+                if (!confirm("Encerrar remove este simulado do histórico. Confirmar?")) return;
+                setShowOptions(false);
+                await abandon.mutateAsync({ simulationId: active.simulationId });
+              }}
+              disabled={abandon.isPending}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
+              style={{ background: "#FFEBEE", color: "#C62828", border: "1.5px solid #E5393544" }}>
+              <XCircle className="h-4 w-4" />
+              Encerrar sem salvar
+              <span className="ml-auto text-xs opacity-70">não vai ao histórico</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap"
         style={{ background: "var(--teal-soft)", border: "1.5px solid #01738d44" }}>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-bold" style={{ color: "#01738d" }}>Simulado</span>
+          <button onClick={() => setShowOptions(true)} className="flex items-center gap-1.5 text-sm font-bold hover:opacity-70 transition-opacity" style={{ color: "#01738d" }}>
+            <Pause className="h-3.5 w-3.5" />
+            Simulado
+          </button>
           <div className="progress-bar w-28 hidden sm:block">
             <div className="progress-bar-fill" style={{ width: `${(answered / active.totalQuestions) * 100}%` }} />
           </div>

@@ -35,6 +35,7 @@ type Form = typeof emptyForm;
 
 export default function AdminFormulas() {
   const [showForm, setShowForm] = useState(false);
+  const formRef = typeof window !== 'undefined' ? { current: null as HTMLDivElement | null } : { current: null };
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<Form>(emptyForm);
   const [openId, setOpenId] = useState<number | null>(null);
@@ -83,7 +84,9 @@ export default function AdminFormulas() {
     });
     setEditId(f.id);
     setShowForm(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      document.getElementById('formula-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   }
 
   function handleSubmit() {
@@ -141,8 +144,8 @@ export default function AdminFormulas() {
 
       {/* Formulário */}
       {showForm && (
-        <div className="rounded-2xl p-6 space-y-4"
-          style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+        <div id="formula-form" className="rounded-2xl p-6 space-y-4"
+          style={{ background: "var(--card)", border: `1.5px solid ${editId ? "#E65100" : "var(--border)"}` }}>
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-lg" style={{ color: "var(--foreground)" }}>
               {editId ? `Editar fórmula #${editId}` : "Nova fórmula"}
