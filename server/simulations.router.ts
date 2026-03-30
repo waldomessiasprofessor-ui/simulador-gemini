@@ -798,7 +798,7 @@ export const simulationsRouter = createTRPCRouter({
       .limit(1);
 
     if (existing) {
-      // Carrega as questões do desafio
+      // Carrega as questões do desafio mantendo a ordem original do sorteio
       const qs = await ctx.db
         .select({
           id: questions.id,
@@ -813,13 +813,18 @@ export const simulationsRouter = createTRPCRouter({
         .from(questions)
         .where(inArray(questions.id, existing.questionIds));
 
+      // Reordena na mesma sequência do sorteio original
+      const ordered = existing.questionIds
+        .map((id: number) => qs.find((q) => q.id === id))
+        .filter(Boolean);
+
       return {
         challengeId: existing.id,
         date: today,
         completed: existing.completed,
         correctCount: existing.correctCount,
         answers: existing.answers as Record<string, string>,
-        questions: qs,
+        questions: ordered,
       };
     }
 
@@ -961,6 +966,64 @@ export const simulationsRouter = createTRPCRouter({
       .limit(30);
     return rows;
   }),
+
+
+  // ---------------------------------------------------------------------------
+  // QUESTÕES ERRADAS — histórico de erros do aluno para revisão
+  // ---------------------------------------------------------------------------
+  getWrongAnswers: protectedProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(100).default(50),
+      offset: z.number().int().min(0).default(0),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      const rows = await ctx.db
+        .select({
+          answerId: simulationAnswers.id,
+          simulationId: simulationAnswers.simulationId,
+          questionId: simulationAnswers.questionId,
+          selectedAnswer: simulationAnswers.selectedAnswer,
+          answeredAt: simulationAnswers.answeredAt,
+          // Dados da questão
+          enunciado: questions.enunciado,
+          url_imagem: questions.url_imagem,
+          alternativas: questions.alternativas,
+          gabarito: questions.gabarito,
+          comentario_resolucao: questions.comentario_resolucao,
+          conteudo_principal: questions.conteudo_principal,
+          nivel_dificuldade: questions.nivel_dificuldade,
+        })
+        .from(simulationAnswers)
+        .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
+        .innerJoin(questions, eq(simulationAnswers.questionId, questions.id))
+        .where(
+          and(
+            eq(simulations.userId, userId),
+            eq(simulations.status, "completed"),
+            eq(simulationAnswers.isCorrect, false),
+          )
+        )
+        .orderBy(desc(simulationAnswers.answeredAt))
+        .limit(input.limit)
+        .offset(input.offset);
+
+      // Conta total
+      const [{ total }] = await ctx.db
+        .select({ total: sql<number>`COUNT(*)` })
+        .from(simulationAnswers)
+        .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
+        .where(
+          and(
+            eq(simulations.userId, userId),
+            eq(simulations.status, "completed"),
+            eq(simulationAnswers.isCorrect, false),
+          )
+        );
+
+      return { rows, total: Number(total) };
+    }),
 
   // ---------------------------------------------------------------------------
   // ABANDONA simulado em andamento
