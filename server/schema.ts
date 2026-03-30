@@ -228,3 +228,22 @@ export type Simulation = typeof simulations.$inferSelect;
 export type NewSimulation = typeof simulations.$inferInsert;
 export type SimulationAnswer = typeof simulationAnswers.$inferSelect;
 export type NewSimulationAnswer = typeof simulationAnswers.$inferInsert;
+
+// =============================================================================
+// Tabela: formulas
+// =============================================================================
+
+export const formulas = mysqlTable("formulas", {
+  id:       int("id").primaryKey().autoincrement(),
+  secao:    varchar("secao", { length: 100 }).notNull(),
+  cor:      varchar("cor", { length: 20 }).notNull().default("#01738d"),
+  titulo:   varchar("titulo", { length: 200 }).notNull(),
+  formula:  text("formula").notNull(),
+  descricao: text("descricao").notNull(),
+  ordem:    int("ordem").notNull().default(0),
+  active:   boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Formula = typeof formulas.$inferSelect;
+export type NewFormula = typeof formulas.$inferInsert;
