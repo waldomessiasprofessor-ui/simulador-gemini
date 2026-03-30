@@ -194,6 +194,8 @@ function LatexImportModal({ onImport, onClose }: {
 // ─── Modal de Auditoria Gemini (Interativo) ────────────────────────────────────
 
 type AuditResult = {
+  disciplina: "Matemática" | "Física" | "Química" | "Outra";
+  disciplina_justificativa: string;
   gabarito_correto: boolean;
   gabarito_sugerido: string | null;
   dificuldade_real: string;
@@ -213,55 +215,60 @@ type ApplyState = {
   resolucao: boolean;
 };
 
+const DISCIPLINA_COLORS: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+  "Matemática": { bg: "#E0F7F4", border: "#00BFA5", text: "#004D40", badge: "#00897B" },
+  "Física":     { bg: "#E3F2FD", border: "#42A5F5", text: "#0D47A1", badge: "#1565C0" },
+  "Química":    { bg: "#FFF8E1", border: "#FFD54F", text: "#E65100", badge: "#F57F17" },
+  "Outra":      { bg: "#F3E5F5", border: "#CE93D8", text: "#4A148C", badge: "#7B1FA2" },
+};
+
 function AuditModal({ questionId, onClose }: { questionId: number; onClose: () => void }) {
+  const utils = trpc.useUtils();
   const auditMutation = trpc.questions.auditQuestion.useMutation();
   const applyMutation = trpc.questions.applyAuditFixes.useMutation({
     onSuccess: (data) => {
-      const count = data.applied.length;
-      toast.success(`✅ ${count} correção(ões) aplicada(s) com sucesso!`);
+      toast.success(`✅ ${data.applied.length} correção(ões) aplicada(s) com sucesso!`);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteMutation = trpc.questions.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Questão excluída.");
+      utils.questions.list.invalidate();
+      onClose();
     },
     onError: (e) => toast.error(e.message),
   });
 
   const audit = auditMutation.data?.audit as AuditResult | undefined;
 
-  // Quais correções o admin quer aplicar
   const [apply, setApply] = useState<ApplyState>({
-    gabarito: true,
-    dificuldade: true,
-    enunciado: true,
-    resolucao: true,
+    gabarito: false, dificuldade: false, enunciado: false, resolucao: false,
   });
+  const [enunciadoPreview, setEnunciadoPreview] = useState("");
+  const [resolucaoPreview, setResolucaoPreview] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Preview editável do enunciado reescrito
-  const [enunciadoPreview, setEnunciadoPreview] = useState<string>("");
-  const [resolucaoPreview, setResolucaoPreview] = useState<string>("");
-
-  // Quando o resultado chega, preenche os previews
   function onAuditSuccess(result: AuditResult) {
     setEnunciadoPreview(result.enunciado_reescrito ?? "");
     setResolucaoPreview(result.comentario_resolucao_reescrito ?? "");
-    // Só marca para aplicar se o Gemini sugeriu mudança
     setApply({
       gabarito: !result.gabarito_correto && !!result.gabarito_sugerido,
       dificuldade: !result.dificuldade_compativel,
       enunciado: !!result.enunciado_reescrito,
       resolucao: !!result.comentario_resolucao_reescrito,
     });
+    setConfirmDelete(false);
   }
 
   function handleApply() {
     if (!audit) return;
     const payload: any = { id: questionId };
-    if (apply.gabarito && audit.gabarito_sugerido)    payload.gabarito = audit.gabarito_sugerido;
-    if (apply.dificuldade)                             payload.nivel_dificuldade = audit.dificuldade_real;
-    if (apply.enunciado && enunciadoPreview.trim())   payload.enunciado = enunciadoPreview.trim();
-    if (apply.resolucao && resolucaoPreview.trim())   payload.comentario_resolucao = resolucaoPreview.trim();
-
-    if (Object.keys(payload).length <= 1) {
-      toast.error("Nenhuma correção selecionada.");
-      return;
-    }
+    if (apply.gabarito && audit.gabarito_sugerido)  payload.gabarito = audit.gabarito_sugerido;
+    if (apply.dificuldade)                          payload.nivel_dificuldade = audit.dificuldade_real;
+    if (apply.enunciado && enunciadoPreview.trim()) payload.enunciado = enunciadoPreview.trim();
+    if (apply.resolucao && resolucaoPreview.trim()) payload.comentario_resolucao = resolucaoPreview.trim();
+    if (Object.keys(payload).length <= 1) { toast.error("Nenhuma correção selecionada."); return; }
     applyMutation.mutate(payload);
   }
 
@@ -270,6 +277,9 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
     if (n >= 6) return "#92400E";
     return "#991B1B";
   }
+
+  const isMath = audit?.disciplina === "Matemática";
+  const disciplinaMeta = audit ? (DISCIPLINA_COLORS[audit.disciplina] ?? DISCIPLINA_COLORS["Outra"]) : null;
 
   const hasCorrections = audit && (
     !audit.gabarito_correto ||
@@ -305,7 +315,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
               <div>
                 <p className="font-bold text-lg" style={{ color: "#1A1A2E" }}>Auditar com Gemini</p>
                 <p className="text-sm mt-1" style={{ color: "#64748B" }}>
-                  O Gemini vai analisar esta questão e sugerir correções que você poderá revisar e aplicar com um clique.
+                  O Gemini vai analisar esta questão, identificar a disciplina e sugerir correções que você poderá revisar e aplicar com um clique.
                 </p>
               </div>
               <button
@@ -342,8 +352,83 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
           )}
 
           {/* Resultado */}
-          {audit && (
+          {audit && disciplinaMeta && (
             <div className="space-y-4">
+
+              {/* ── Badge de disciplina ── */}
+              <div className="rounded-xl p-4 flex items-start gap-4"
+                style={{ background: disciplinaMeta.bg, border: `2px solid ${disciplinaMeta.border}` }}>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-bold uppercase" style={{ color: disciplinaMeta.text }}>
+                      Disciplina identificada
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs font-black text-white"
+                      style={{ background: disciplinaMeta.badge }}>
+                      {audit.disciplina}
+                    </span>
+                    {!isMath && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-bold"
+                        style={{ background: "#FEF2F2", color: "#991B1B", border: "1px solid #FECACA" }}>
+                        ⚠️ Fora do escopo
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm mt-1.5" style={{ color: disciplinaMeta.text }}>
+                    {audit.disciplina_justificativa}
+                  </p>
+                </div>
+              </div>
+
+              {/* ── Alerta + botão de excluir se não for Matemática ── */}
+              {!isMath && (
+                <div className="rounded-xl p-4 space-y-3"
+                  style={{ background: "#FFF5F5", border: "2px solid #FFCDD2" }}>
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "#C62828" }} />
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: "#C62828" }}>
+                        Esta questão não é de Matemática
+                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: "#E57373" }}>
+                        O Gemini identificou que esta é uma questão de <b>{audit.disciplina}</b>. Ela pode ter sido importada por engano e não se encaixa no simulador de Matemática ENEM.
+                      </p>
+                    </div>
+                  </div>
+                  {!confirmDelete ? (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
+                      style={{ background: "#FFCDD2", color: "#C62828", border: "1.5px solid #EF9A9A" }}>
+                      <Trash2 className="h-4 w-4" /> Excluir esta questão
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold text-center" style={{ color: "#C62828" }}>
+                        Tem certeza? Esta ação é irreversível.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => deleteMutation.mutate({ id: questionId })}
+                          disabled={deleteMutation.isPending}
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white"
+                          style={{ background: "#C62828" }}>
+                          {deleteMutation.isPending
+                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                            : <Trash2 className="h-4 w-4" />}
+                          Sim, excluir
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(false)}
+                          className="flex-1 py-2.5 rounded-xl text-sm font-bold"
+                          style={{ background: "#F1F5F9", color: "#64748B" }}>
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Nota + Parecer */}
               <div className="rounded-xl p-4 flex items-start gap-4"
@@ -358,12 +443,46 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
                 </div>
               </div>
 
+              {/* Gabarito */}
+              <div className="rounded-xl p-4 flex items-center gap-3"
+                style={{
+                  background: audit.gabarito_correto ? "#F0FDF4" : "#FEF2F2",
+                  border: `1.5px solid ${audit.gabarito_correto ? "#86EFAC" : "#FECACA"}`
+                }}>
+                {audit.gabarito_correto
+                  ? <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "#166534" }} />
+                  : <ThumbsDown className="h-5 w-5 flex-shrink-0" style={{ color: "#991B1B" }} />}
+                <div>
+                  <p className="text-sm font-bold" style={{ color: audit.gabarito_correto ? "#166534" : "#991B1B" }}>
+                    {audit.gabarito_correto ? "Gabarito correto ✓" : "Gabarito possivelmente incorreto!"}
+                  </p>
+                  {!audit.gabarito_correto && audit.gabarito_sugerido && (
+                    <p className="text-xs mt-0.5" style={{ color: "#991B1B" }}>
+                      Gabarito sugerido pelo Gemini: <b>{audit.gabarito_sugerido}</b>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Dificuldade */}
+              <div className="rounded-xl p-4 flex items-center gap-3"
+                style={{
+                  background: audit.dificuldade_compativel ? "#F0FDF4" : "#FFFBEB",
+                  border: `1.5px solid ${audit.dificuldade_compativel ? "#86EFAC" : "#FCD34D"}`
+                }}>
+                <Info className="h-5 w-5 flex-shrink-0" style={{ color: audit.dificuldade_compativel ? "#166534" : "#92400E" }} />
+                <p className="text-sm font-bold" style={{ color: audit.dificuldade_compativel ? "#166534" : "#92400E" }}>
+                  Dificuldade real: {audit.dificuldade_real}
+                  {!audit.dificuldade_compativel && " ⚠️ diferente da declarada"}
+                </p>
+              </div>
+
               {/* Problemas */}
               {audit.problemas?.length > 0 && (
                 <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
                   <p className="text-xs font-bold uppercase" style={{ color: "#991B1B" }}>Problemas encontrados</p>
                   <ul className="space-y-1">
-                    {audit.problemas.map((p: string, i: number) => (
+                    {audit.problemas.map((p, i) => (
                       <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#7F1D1D" }}>
                         <span className="mt-0.5 flex-shrink-0">•</span> {p}
                       </li>
@@ -377,7 +496,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
                 <div className="rounded-xl p-4 space-y-2" style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
                   <p className="text-xs font-bold uppercase" style={{ color: "#166534" }}>Sugestões de melhoria</p>
                   <ul className="space-y-1">
-                    {audit.sugestoes.map((s: string, i: number) => (
+                    {audit.sugestoes.map((s, i) => (
                       <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#14532D" }}>
                         <span className="mt-0.5 flex-shrink-0">✓</span> {s}
                       </li>
@@ -386,8 +505,8 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
                 </div>
               )}
 
-              {/* ── Correções Interativas ── */}
-              {hasCorrections ? (
+              {/* ── Correções interativas (só aparece se há sugestões E é matemática) ── */}
+              {hasCorrections && (
                 <div className="rounded-xl overflow-hidden" style={{ border: "2px solid #521F8040" }}>
                   <div className="px-4 py-3 flex items-center gap-2"
                     style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)" }}>
@@ -395,109 +514,94 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
                     <p className="text-sm font-bold text-white">Correções sugeridas — selecione o que aplicar</p>
                   </div>
 
-                  <div className="divide-y" style={{ divideColor: "#E2D9EE" }}>
-
-                    {/* Gabarito */}
+                  <div style={{ borderTop: "1px solid #E2D9EE" }}>
                     {!audit.gabarito_correto && audit.gabarito_sugerido && (
-                      <div className="px-4 py-4 space-y-2">
+                      <div className="px-4 py-4" style={{ borderBottom: "1px solid #E2D9EE" }}>
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.gabarito}
                             onChange={(e) => setApply((a) => ({ ...a, gabarito: e.target.checked }))}
                             className="h-4 w-4 accent-purple-700" />
-                          <div className="flex-1">
+                          <div>
                             <div className="flex items-center gap-2">
-                              <ThumbsDown className="h-4 w-4 flex-shrink-0" style={{ color: "#991B1B" }} />
+                              <ThumbsDown className="h-4 w-4" style={{ color: "#991B1B" }} />
                               <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Corrigir gabarito</p>
                             </div>
                             <p className="text-xs mt-1" style={{ color: "#64748B" }}>
-                              Gabarito atual: <b className="text-red-600">{auditMutation.data?.questionId && "?"}</b>
-                              {" → "} Sugerido: <b className="text-green-700">{audit.gabarito_sugerido}</b>
+                              Sugerido: <b className="text-green-700">{audit.gabarito_sugerido}</b>
                             </p>
                           </div>
                         </label>
                       </div>
                     )}
 
-                    {/* Dificuldade */}
                     {!audit.dificuldade_compativel && (
-                      <div className="px-4 py-4">
+                      <div className="px-4 py-4" style={{ borderBottom: "1px solid #E2D9EE" }}>
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.dificuldade}
                             onChange={(e) => setApply((a) => ({ ...a, dificuldade: e.target.checked }))}
                             className="h-4 w-4 accent-purple-700" />
-                          <div className="flex-1">
+                          <div>
                             <div className="flex items-center gap-2">
-                              <Info className="h-4 w-4 flex-shrink-0" style={{ color: "#92400E" }} />
+                              <Info className="h-4 w-4" style={{ color: "#92400E" }} />
                               <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Ajustar dificuldade</p>
                             </div>
                             <p className="text-xs mt-1" style={{ color: "#64748B" }}>
-                              Dificuldade real segundo o Gemini: <b style={{ color: "#92400E" }}>{audit.dificuldade_real}</b>
+                              Dificuldade real: <b style={{ color: "#92400E" }}>{audit.dificuldade_real}</b>
                             </p>
                           </div>
                         </label>
                       </div>
                     )}
 
-                    {/* Enunciado reescrito */}
                     {audit.enunciado_reescrito && (
-                      <div className="px-4 py-4 space-y-3">
+                      <div className="px-4 py-4 space-y-3" style={{ borderBottom: "1px solid #E2D9EE" }}>
                         <label className="flex items-start gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.enunciado}
                             onChange={(e) => setApply((a) => ({ ...a, enunciado: e.target.checked }))}
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
-                          <div className="flex-1">
+                          <div>
                             <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#166534" }} />
+                              <CheckCircle2 className="h-4 w-4" style={{ color: "#166534" }} />
                               <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Aplicar enunciado melhorado</p>
                             </div>
                             <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>Edite abaixo antes de aplicar se desejar</p>
                           </div>
                         </label>
                         {apply.enunciado && (
-                          <textarea
-                            rows={5}
-                            value={enunciadoPreview}
+                          <textarea rows={5} value={enunciadoPreview}
                             onChange={(e) => setEnunciadoPreview(e.target.value)}
                             className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-vertical"
-                            style={{ border: "1.5px solid #521F8060", background: "#FAFAFA", color: "#1A1A2E" }}
-                          />
+                            style={{ border: "1.5px solid #521F8060", background: "#FAFAFA", color: "#1A1A2E" }} />
                         )}
                       </div>
                     )}
 
-                    {/* Resolução reescrita */}
                     {audit.comentario_resolucao_reescrito && (
                       <div className="px-4 py-4 space-y-3">
                         <label className="flex items-start gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.resolucao}
                             onChange={(e) => setApply((a) => ({ ...a, resolucao: e.target.checked }))}
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
-                          <div className="flex-1">
+                          <div>
                             <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#166534" }} />
+                              <CheckCircle2 className="h-4 w-4" style={{ color: "#166534" }} />
                               <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Aplicar resolução melhorada</p>
                             </div>
                             <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>Edite abaixo antes de aplicar se desejar</p>
                           </div>
                         </label>
                         {apply.resolucao && (
-                          <textarea
-                            rows={4}
-                            value={resolucaoPreview}
+                          <textarea rows={4} value={resolucaoPreview}
                             onChange={(e) => setResolucaoPreview(e.target.value)}
                             className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-vertical"
-                            style={{ border: "1.5px solid #521F8060", background: "#FAFAFA", color: "#1A1A2E" }}
-                          />
+                            style={{ border: "1.5px solid #521F8060", background: "#FAFAFA", color: "#1A1A2E" }} />
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* Botão aplicar */}
                   <div className="px-4 py-4" style={{ background: "#F8F4FF", borderTop: "1px solid #E2D9EE" }}>
-                    <button
-                      onClick={handleApply}
-                      disabled={applyMutation.isPending}
+                    <button onClick={handleApply} disabled={applyMutation.isPending}
                       className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white"
                       style={{ background: applyMutation.isPending ? "#9CA3AF" : "linear-gradient(135deg, #521F80, #01738d)", cursor: applyMutation.isPending ? "not-allowed" : "pointer" }}>
                       {applyMutation.isPending
@@ -511,7 +615,9 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
                     )}
                   </div>
                 </div>
-              ) : audit && (
+              )}
+
+              {!hasCorrections && isMath && (
                 <div className="rounded-xl p-4 flex items-center gap-3"
                   style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
                   <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "#166534" }} />
@@ -522,10 +628,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
               )}
 
               {/* Auditar novamente */}
-              <button onClick={() => {
-                auditMutation.reset();
-                applyMutation.reset();
-              }}
+              <button onClick={() => { auditMutation.reset(); applyMutation.reset(); setConfirmDelete(false); }}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
                 style={{ background: "#F1F5F9", color: "#64748B" }}>
                 <Sparkles className="h-4 w-4" /> Auditar novamente
