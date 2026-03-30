@@ -88,9 +88,9 @@ function DailyCard() {
 
 function ReviseCard() {
   const [, navigate] = useLocation();
-  const { data: revise, isLoading: reviseLoading } = trpc.review?.getDaily?.useQuery?.(undefined, { staleTime: 0, refetchOnWindowFocus: true }) ?? { data: null, isLoading: false };
+  const { data: revise, isLoading: reviseLoading } = trpc.review?.getDaily?.useQuery?.(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 }) ?? { data: null, isLoading: false };
 
-  if (isLoading) return null;
+  if (reviseLoading) return null;
 
   return (
     <button onClick={() => navigate("/revise")}
@@ -118,9 +118,9 @@ function ReviseCard() {
 export default function Dashboard() {
   const [, navigate] = useLocation();
   const { data: session } = trpc.auth.me.useQuery(undefined, { staleTime: 30_000 });
-  const { data: active } = trpc.simulations.getActive.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
-  const { data: stats } = trpc.simulations.getStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
-  const { data: qData } = trpc.questions.list.useQuery({ page: 1, pageSize: 1, activeOnly: true, orderBy: "id", orderDir: "desc" });
+  const { data: active } = trpc.simulations.getActive.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 15_000 });
+  const { data: stats } = trpc.simulations.getStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
+  const { data: qData } = trpc.questions.list.useQuery({ page: 1, pageSize: 1, activeOnly: true, orderBy: "id", orderDir: "desc" }, { staleTime: 60_000 });
   const totalQuestions = qData?.pagination.total ?? 0;
 
   const startMutation = trpc.simulations.start.useMutation({
@@ -144,6 +144,11 @@ export default function Dashboard() {
             <Brain className="h-5 w-5 flex-shrink-0" style={{ color: "#01738d" }} />
             Faça seu treinamento diário
           </h1>
+          {totalQuestions > 0 && (
+            <p className="text-xs mt-1 font-semibold" style={{ color: "#01738d" }}>
+              {totalQuestions} questões disponíveis no banco
+            </p>
+          )}
         </div>
         {stats && (
           <div className="flex-shrink-0 rounded-xl px-3 py-2 text-center"
@@ -251,11 +256,6 @@ export default function Dashboard() {
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                   Escolha o tópico e quantidade · com tempo registrado
                 </p>
-                {totalQuestions > 0 && (
-                  <p className="text-xs mt-1 font-semibold" style={{ color: "#1565C0" }}>
-                    {totalQuestions} questões disponíveis
-                  </p>
-                )}
               </div>
             </div>
             <div className="flex items-center gap-1.5">

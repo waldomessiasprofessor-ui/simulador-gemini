@@ -84,9 +84,12 @@ export default function AdminFormulas() {
     });
     setEditId(f.id);
     setShowForm(true);
+    setOpenId(null);
+    // Rola para o topo onde fica o formulário
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => {
-      document.getElementById('formula-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
+      document.getElementById("formula-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   }
 
   function handleSubmit() {
@@ -145,14 +148,37 @@ export default function AdminFormulas() {
       {/* Formulário */}
       {showForm && (
         <div id="formula-form" className="rounded-2xl p-6 space-y-4"
-          style={{ background: "var(--card)", border: `1.5px solid ${editId ? "#E65100" : "var(--border)"}` }}>
+          style={{ background: "var(--card)", border: `2px solid ${editId ? "#E65100" : "var(--border)"}` }}>
+
+          {/* Banner de edição */}
+          {editId && (
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3"
+              style={{ background: "#FFF3E0", border: "1.5px solid #E65100" }}>
+              <Pencil className="h-4 w-4 flex-shrink-0" style={{ color: "#E65100" }} />
+              <div className="flex-1">
+                <p className="text-sm font-bold" style={{ color: "#E65100" }}>
+                  Modo edição — fórmula #{editId}
+                </p>
+                <p className="text-xs" style={{ color: "#BF360C" }}>
+                  Altere os campos abaixo e clique em "Salvar alterações"
+                </p>
+              </div>
+              <button onClick={resetForm} className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                style={{ background: "#E65100", color: "#fff" }}>
+                Cancelar
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-lg" style={{ color: "var(--foreground)" }}>
               {editId ? `Editar fórmula #${editId}` : "Nova fórmula"}
             </h2>
-            <button onClick={resetForm}>
-              <X className="h-5 w-5" style={{ color: "var(--muted-foreground)" }} />
-            </button>
+            {!editId && (
+              <button onClick={resetForm}>
+                <X className="h-5 w-5" style={{ color: "var(--muted-foreground)" }} />
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
