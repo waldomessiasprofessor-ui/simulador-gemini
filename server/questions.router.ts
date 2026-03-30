@@ -100,7 +100,6 @@ export const questionsRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // Elimina UMA questão — apaga respostas primeiro para contornar FK restrict
   delete: adminProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
@@ -109,7 +108,6 @@ export const questionsRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // Elimina TODAS as questões — apaga respostas primeiro
   deleteAll: adminProcedure
     .mutation(async ({ ctx }) => {
       await ctx.db.delete(simulationAnswers);
@@ -117,7 +115,8 @@ export const questionsRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // Auditoria com Gemini
+  // ─── Auditoria com Gemini ──────────────────────────────────────────────────
+
   auditQuestion: adminProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
@@ -157,7 +156,9 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
   "nota_qualidade": 1 a 10,
   "problemas": ["lista de problemas encontrados, ou array vazio se nenhum"],
   "sugestoes": ["lista de sugestões de melhoria"],
-  "parecer": "Texto curto de 2-3 frases com avaliação geral"
+  "parecer": "Texto curto de 2-3 frases com avaliação geral",
+  "enunciado_reescrito": "Enunciado melhorado com base nas sugestões, ou null se não precisar de mudanças",
+  "comentario_resolucao_reescrito": "Resolução melhorada ou complementada, ou null se não precisar de mudanças"
 }`;
 
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -181,5 +182,38 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "O Gemini retornou uma resposta em formato inválido. Tente novamente." });
       }
+    }),
+
+  // ─── Aplica correções sugeridas pela auditoria ─────────────────────────────
+
+  applyAuditFixes: adminProcedure
+    .input(z.object({
+      id: z.number().int().positive(),
+      // Cada campo é opcional — admin escolhe o que aplicar
+      gabarito: z.string().length(1).optional(),
+      nivel_dificuldade: NivelDificuldadeEnum.optional(),
+      enunciado: z.string().min(5).optional(),
+      comentario_resolucao: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...fields } = input;
+
+      const [q] = await ctx.db.select({ id: questions.id }).from(questions).where(eq(questions.id, id)).limit(1);
+      if (!q) throw new TRPCError({ code: "NOT_FOUND", message: "Questão não encontrada." });
+
+      // Filtra apenas campos fornecidos
+      const updateData: Record<string, any> = {};
+      if (fields.gabarito)              updateData.gabarito = fields.gabarito.toUpperCase();
+      if (fields.nivel_dificuldade)     updateData.nivel_dificuldade = fields.nivel_dificuldade;
+      if (fields.enunciado)             updateData.enunciado = fields.enunciado;
+      if (fields.comentario_resolucao !== undefined) updateData.comentario_resolucao = fields.comentario_resolucao;
+
+      if (Object.keys(updateData).length === 0) {
+        return { success: true, applied: [] };
+      }
+
+      await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
+
+      return { success: true, applied: Object.keys(updateData) };
     }),
 });
