@@ -545,8 +545,6 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
   );
 }
 
-}
-
 // ─── AdminQuestoes ────────────────────────────────────────────────────────────
 
 const TAGS_CONTEUDO = [
