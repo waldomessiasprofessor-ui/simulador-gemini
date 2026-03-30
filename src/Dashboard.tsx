@@ -122,8 +122,6 @@ export default function Dashboard() {
   const { data: stats } = trpc.simulations.getStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
   const { data: qData } = trpc.questions.list.useQuery({ page: 1, pageSize: 1, activeOnly: true, orderBy: "id", orderDir: "desc" });
   const totalQuestions = qData?.pagination.total ?? 0;
-  const { data: qData } = trpc.questions.list.useQuery({ page: 1, pageSize: 1, activeOnly: true, orderBy: "id", orderDir: "desc" });
-  const totalQuestions = qData?.pagination.total ?? 0;
 
   const startMutation = trpc.simulations.start.useMutation({
     onSuccess: () => navigate("/simulado"),
