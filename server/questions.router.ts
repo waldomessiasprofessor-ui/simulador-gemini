@@ -131,10 +131,23 @@ export const questionsRouter = createTRPCRouter({
         .map(([k, v]) => `${k}) ${typeof v === "object" ? v.text ?? "" : v}`)
         .join("\n");
 
+      const TAGS_VALIDAS = [
+        "Razão, Proporção e Regra de Três", "Porcentagem", "Escala", "Operações Básicas",
+        "Conversão de Unidades", "Geometria Espacial", "Geometria Plana",
+        "Visualização Espacial/Projeção Ortogonal", "Trigonometria", "Leitura de Gráficos e Tabelas",
+        "Medidas de Tendência Central", "Probabilidade", "Funções de 1º e 2º Grau",
+        "Equações e Inequações", "Sequências", "Matemática Financeira", "Análise Combinatória", "Logaritmos",
+      ];
+
+      const tagsAtuais = Array.isArray(q.tags) && q.tags.length > 0
+        ? (q.tags as string[]).join(", ")
+        : "Nenhuma tag definida";
+
       const prompt = `Você é um especialista em elaboração de questões para o ENEM. Analise a questão abaixo com rigor técnico e pedagógico.
 
 QUESTÃO #${q.id}
 Conteúdo declarado: ${q.conteudo_principal}
+Tags atuais: ${tagsAtuais}
 Dificuldade declarada: ${q.nivel_dificuldade}
 Ano: ${q.ano ?? "Não informado"}
 
@@ -147,6 +160,9 @@ ${alts}
 GABARITO DECLARADO: ${q.gabarito}
 RESOLUÇÃO: ${q.comentario_resolucao ?? "Não informada"}
 
+TAGS DISPONÍVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
+${TAGS_VALIDAS.join(", ")}
+
 Responda em JSON puro (sem markdown) com exatamente esta estrutura:
 {
   "disciplina": "Matemática" | "Física" | "Química" | "Outra",
@@ -155,6 +171,8 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
   "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
   "dificuldade_real": "Muito Baixa" | "Baixa" | "Média" | "Alta" | "Muito Alta",
   "dificuldade_compativel": true | false,
+  "tags_sugeridas": ["array com as tags da lista acima que se aplicam a esta questão"],
+  "tags_atuais_corretas": true | false,
   "nota_qualidade": 1 a 10,
   "problemas": ["lista de problemas encontrados, ou array vazio se nenhum"],
   "sugestoes": ["lista de sugestões de melhoria"],
@@ -195,6 +213,7 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
       nivel_dificuldade: NivelDificuldadeEnum.optional(),
       enunciado: z.string().min(5).optional(),
       comentario_resolucao: z.string().optional(),
+      tags: z.array(z.string()).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...fields } = input;
@@ -207,6 +226,7 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
       if (fields.nivel_dificuldade)                     updateData.nivel_dificuldade = fields.nivel_dificuldade;
       if (fields.enunciado)                             updateData.enunciado = fields.enunciado;
       if (fields.comentario_resolucao !== undefined)    updateData.comentario_resolucao = fields.comentario_resolucao;
+      if (fields.tags !== undefined)                    updateData.tags = fields.tags;
 
       if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
 
