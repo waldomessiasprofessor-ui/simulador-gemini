@@ -15,7 +15,7 @@ const ReviewBaseSchema = z.object({
   titulo: z.string().min(3).max(200),
   conteudo: z.string().min(10),
   topico: z.string().optional(),
-  questoes: z.array(QuestaoSchema).length(3),
+  questoes: z.array(QuestaoSchema).default([]),
   active: z.boolean().default(true),
 });
 
