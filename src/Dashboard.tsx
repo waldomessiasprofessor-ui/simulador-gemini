@@ -91,7 +91,7 @@ function DailyCard() {
 
 function ReviseCard() {
   const [, navigate] = useLocation();
-  const { data: revise, isLoading: reviseLoading } = trpc.review?.getDaily?.useQuery?.(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 }) ?? { data: null, isLoading: false };
+  const { data: revise, isLoading: reviseLoading } = trpc.review.getDaily.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
 
   if (reviseLoading) return null;
 
