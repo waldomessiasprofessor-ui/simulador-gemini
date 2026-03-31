@@ -600,60 +600,117 @@ export const simulationsRouter = createTRPCRouter({
   // ---------------------------------------------------------------------------
   // STATS — streak, metas semanais, gráfico diário (dashboard)
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // STATS — conta TODA atividade: simulados + desafio diário + treino salvo
+  // ---------------------------------------------------------------------------
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
+    const now = new Date();
 
-    // Todos os simulados concluídos, do mais recente ao mais antigo
-    const completed = await ctx.db
+    // ── 1. Questões respondidas via simulationAnswers (simulado + saves de treino) ──
+    const answered = await ctx.db
       .select({
-        id: simulations.id,
-        stage: simulations.stage,
-        correctCount: simulations.correctCount,
-        totalQuestions: simulations.totalQuestions,
-        score: simulations.score,
+        answeredAt: simulationAnswers.answeredAt,
+        isCorrect: simulationAnswers.isCorrect,
+      })
+      .from(simulationAnswers)
+      .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
+      .where(
+        and(
+          eq(simulations.userId, userId),
+          sql`${simulationAnswers.answeredAt} IS NOT NULL`,
+        )
+      );
+
+    // ── 2. Questões respondidas no desafio diário ──────────────────────────
+    const challenges = await ctx.db
+      .select({
+        answers: dailyChallenges.answers,
+        questionIds: dailyChallenges.questionIds,
+        challengeDate: dailyChallenges.challengeDate,
+        completedAt: dailyChallenges.completedAt,
+        completed: dailyChallenges.completed,
+        correctCount: dailyChallenges.correctCount,
+      })
+      .from(dailyChallenges)
+      .where(eq(dailyChallenges.userId, userId));
+
+    // ── 3. Simulados completos (para score e streak base) ──────────────────
+    const completedSims = await ctx.db
+      .select({
         completedAt: simulations.completedAt,
+        totalQuestions: simulations.totalQuestions,
+        correctCount: simulations.correctCount,
       })
       .from(simulations)
       .where(and(eq(simulations.userId, userId), eq(simulations.status, "completed")))
       .orderBy(desc(simulations.completedAt));
 
-    const now = new Date();
+    // ── Semana atual (seg a dom) ───────────────────────────────────────────
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const dayOfWeek = startOfWeek.getDay();
+    startOfWeek.setDate(startOfWeek.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
 
-    // --- Streak: dias consecutivos com pelo menos 1 simulado ---
+    // ── Helper: data de uma string ou Date → chave "YYYY-M-D" ─────────────
+    function dayKey(d: Date | string | null): string {
+      if (!d) return "";
+      const dt = typeof d === "string" ? new Date(d + "T12:00:00") : new Date(d);
+      return `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
+    }
+
+    function sameDay(d: Date | string | null, ref: Date): boolean {
+      if (!d) return false;
+      const dt = typeof d === "string" ? new Date(d + "T12:00:00") : new Date(d);
+      return dt.getFullYear() === ref.getFullYear() &&
+             dt.getMonth() === ref.getMonth() &&
+             dt.getDate() === ref.getDate();
+    }
+
+    // ── Constrói mapa dia → { questoes, acertos } combinando todas as fontes ──
+    const dayMap = new Map<string, { questoes: number; acertos: number }>();
+
+    function addToDay(key: string, q: number, c: number) {
+      if (!key) return;
+      const existing = dayMap.get(key) ?? { questoes: 0, acertos: 0 };
+      dayMap.set(key, { questoes: existing.questoes + q, acertos: existing.acertos + c });
+    }
+
+    // Fonte 1: simulationAnswers
+    for (const a of answered) {
+      const key = dayKey(a.answeredAt);
+      addToDay(key, 1, a.isCorrect ? 1 : 0);
+    }
+
+    // Fonte 2: desafio diário — conta respostas dadas (não só quando completo)
+    for (const ch of challenges) {
+      const ans = ch.answers as Record<string, string>;
+      const ids = ch.questionIds as number[];
+      const countAnswered = Object.keys(ans).length;
+      if (countAnswered === 0) continue;
+      // data do desafio como chave
+      const key = ch.challengeDate; // YYYY-MM-DD — precisa normalizar
+      const dt = new Date(ch.challengeDate + "T12:00:00");
+      const nKey = dayKey(dt);
+      // correctCount só disponível após completar; senão estimamos 0
+      const correct = ch.completed ? (ch.correctCount ?? 0) : 0;
+      addToDay(nKey, countAnswered, correct);
+    }
+
+    // ── Streak: dias consecutivos com qualquer atividade ──────────────────
     let streak = 0;
-    const daySet = new Set(
-      completed
-        .filter((s) => s.completedAt)
-        .map((s) => {
-          const d = new Date(s.completedAt!);
-          return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-        })
-    );
     for (let i = 0; i < 365; i++) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-      if (daySet.has(key)) streak++;
-      else if (i > 0) break; // para no primeiro dia sem atividade
+      const key = dayKey(d);
+      if (dayMap.has(key) && (dayMap.get(key)!.questoes > 0)) {
+        streak++;
+      } else if (i > 0) {
+        break;
+      }
     }
 
-    // --- Semana atual (seg a dom) ---
-    const startOfWeek = new Date(now);
-    startOfWeek.setHours(0, 0, 0, 0);
-    const dayOfWeek = startOfWeek.getDay(); // 0=dom
-    startOfWeek.setDate(startOfWeek.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-
-    const thisWeek = completed.filter(
-      (s) => s.completedAt && new Date(s.completedAt) >= startOfWeek
-    );
-
-    const weeklyQuestions = thisWeek.reduce((s, sim) => s + (sim.totalQuestions ?? 0), 0);
-    const weeklyCorrect = thisWeek.reduce((s, sim) => s + (sim.correctCount ?? 0), 0);
-    const weeklyAccuracy = weeklyQuestions > 0
-      ? Math.round((weeklyCorrect / weeklyQuestions) * 100)
-      : 0;
-
-    // --- Gráfico: últimos 7 dias ---
+    // ── Semana: agrega os 7 dias ──────────────────────────────────────────
     const days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(startOfWeek);
       d.setDate(d.getDate() + i);
@@ -662,35 +719,29 @@ export const simulationsRouter = createTRPCRouter({
 
     const dailyData = days.map((day) => {
       const label = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"][day.getDay() === 0 ? 6 : day.getDay() - 1];
-      const daySims = completed.filter((s) => {
-        if (!s.completedAt) return false;
-        const sd = new Date(s.completedAt);
-        return (
-          sd.getFullYear() === day.getFullYear() &&
-          sd.getMonth() === day.getMonth() &&
-          sd.getDate() === day.getDate()
-        );
-      });
-      const q = daySims.reduce((s, sim) => s + (sim.totalQuestions ?? 0), 0);
-      const c = daySims.reduce((s, sim) => s + (sim.correctCount ?? 0), 0);
-      return {
-        label,
-        questoes: q,
-        acertos: c,
-        pct: q > 0 ? Math.round((c / q) * 100) : 0,
-      };
+      const key = dayKey(day);
+      const { questoes, acertos } = dayMap.get(key) ?? { questoes: 0, acertos: 0 };
+      return { label, questoes, acertos, pct: questoes > 0 ? Math.round((acertos / questoes) * 100) : 0 };
     });
+
+    const weeklyData = dailyData.reduce((acc, d) => ({
+      questoes: acc.questoes + d.questoes,
+      acertos: acc.acertos + d.acertos,
+    }), { questoes: 0, acertos: 0 });
+
+    const weeklyAccuracy = weeklyData.questoes > 0
+      ? Math.round((weeklyData.acertos / weeklyData.questoes) * 100)
+      : 0;
 
     return {
       streak,
-      weeklyQuestions,
+      weeklyQuestions: weeklyData.questoes,
       weeklyAccuracy,
-      totalSimulations: completed.length,
+      totalSimulations: completedSims.length,
       dailyData,
     };
   }),
 
-  // ---------------------------------------------------------------------------
   // RANKING — top 20 alunos por melhor nota TRI na Etapa 3
   // ---------------------------------------------------------------------------
   getRanking: protectedProcedure.query(async ({ ctx }) => {
