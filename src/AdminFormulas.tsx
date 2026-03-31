@@ -345,7 +345,9 @@ export default function AdminFormulas() {
                             style={{ background: "var(--muted)" }}>
                             <LatexRenderer>{f.formula}</LatexRenderer>
                           </div>
-                          <p className="text-sm" style={{ color: "var(--foreground)" }}>{f.descricao}</p>
+                          <p className="text-sm" style={{ color: "var(--foreground)" }}>
+                            <LatexRenderer fontSize="sm">{f.descricao}</LatexRenderer>
+                          </p>
                         </div>
                       )}
                     </div>
