@@ -4,6 +4,9 @@ import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info } from "lucide-react";
 
+const NIVEIS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const;
+
+
 // ─── Importador LaTeX ─────────────────────────────────────────────────────────
 
 function parseLatexQuestion(raw: string): Partial<typeof emptyForm> | null {
