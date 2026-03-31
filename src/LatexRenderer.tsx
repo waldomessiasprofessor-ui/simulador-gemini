@@ -84,28 +84,120 @@ function renderTextSegment(text: string): React.ReactNode[] {
 }
 
 function renderKatex(latex: string, displayMode: boolean, key: string): React.ReactNode {
+  // Pre-processamento: normaliza comandos comuns do LaTeX brasileiro / ENEM
+  const normalized = latex
+    .replace(/\\sen\b/g, "\\sin")
+    .replace(/\\tg\b/g, "\\tan")
+    .replace(/\\cotg\b/g, "\\cot")
+    .replace(/\\cossec\b/g, "\\csc")
+    .replace(/\\arctg\b/g, "\\arctan")
+    .replace(/\\arcsen\b/g, "\\arcsin")
+    .replace(/\\arccossec\b/g, "\\text{arccsc}")
+    .replace(/\\nao\b/g, "\\neg")
+    .replace(/\\ou\b/g, "\\lor")
+    .replace(/\\e\b/g, "\\land")
+    .replace(/\\mediana\b/g, "\\text{Md}")
+    .replace(/\\moda\b/g, "\\text{Mo}")
+    .replace(/\\media\b/g, "\\bar{x}")
+    .replace(/\\real/g, "\\mathbb{R}")
+    .replace(/\\natural/g, "\\mathbb{N}")
+    .replace(/\\inteiro/g, "\\mathbb{Z}")
+    .replace(/\\racional/g, "\\mathbb{Q}");
+
   try {
-    const html = katex.renderToString(latex, {
+    const html = katex.renderToString(normalized, {
       displayMode,
       throwOnError: false,
       strict: false,
-      trust: false,
+      trust: true,
+      output: "html",
       macros: {
+        // Português / ENEM
         "\\sen": "\\sin",
         "\\tg": "\\tan",
         "\\cotg": "\\cot",
         "\\cossec": "\\csc",
-        "\\arc": "\\text{arc}",
-        "\\mod": "\\text{mod}\\,",
-        "\\log": "\\log",
+        "\\arctg": "\\arctan",
+        "\\arcsen": "\\arcsin",
+        // Conjuntos
+        "\\R": "\\mathbb{R}",
+        "\\N": "\\mathbb{N}",
+        "\\Z": "\\mathbb{Z}",
+        "\\Q": "\\mathbb{Q}",
+        "\\C": "\\mathbb{C}",
+        // Operadores
+        "\\sen": "\\operatorname{sen}",
+        "\\tg": "\\operatorname{tg}",
+        "\\cotg": "\\operatorname{cotg}",
+        "\\cossec": "\\operatorname{cossec}",
+        "\\mdc": "\\operatorname{mdc}",
+        "\\mmc": "\\operatorname{mmc}",
+        "\\mod": "\\operatorname{mod}",
+        "\\irr": "\\mathbb{I}",
+        // Atalhos comuns
+        "\\floor": "\\lfloor #1 \\rfloor",
+        "\\ceil": "\\lceil #1 \\rceil",
+        "\\abs": "\\left| #1 \\right|",
+        "\\norm": "\\left\\| #1 \\right\\|",
+        "\\diff": "\\,\\mathrm{d}",
+        // Geometria
+        "\\grau": "^\\circ",
+        "\\paralelo": "\\parallel",
+        "\\perp": "\\perp",
+        "\\angulo": "\\angle",
+        "\\tri": "\\triangle",
+        // Probabilidade / Estatística
+        "\\P": "P",
+        "\\E": "E",
+        "\\Var": "\\operatorname{Var}",
+        // Análise Combinatória
+        "\\comb": "C_{#1}^{#2}",
+        "\\perm": "P_{#1}^{#2}",
+        "\\arr": "A_{#1}^{#2}",
       },
     });
+
     if (displayMode) {
-      return <span key={key} className="block my-3 overflow-x-auto text-center" dangerouslySetInnerHTML={{ __html: html }} />;
+      return (
+        <span
+          key={key}
+          className="block my-3 overflow-x-auto text-center"
+          style={{ lineHeight: 2 }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
     }
-    return <span key={key} className="inline-block align-middle" dangerouslySetInnerHTML={{ __html: html }} />;
-  } catch {
-    return <code key={key} className="text-rose-600 bg-rose-50 px-1 rounded text-sm font-mono">{displayMode ? `$$${latex}$$` : `$${latex}$`}</code>;
+    return (
+      <span
+        key={key}
+        className="inline-block align-middle"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  } catch (err) {
+    // Fallback: tenta renderizar sem os macros personalizados
+    try {
+      const fallbackHtml = katex.renderToString(normalized, {
+        displayMode,
+        throwOnError: false,
+        strict: "ignore",
+        trust: true,
+      });
+      if (displayMode) {
+        return <span key={key} className="block my-3 overflow-x-auto text-center" dangerouslySetInnerHTML={{ __html: fallbackHtml }} />;
+      }
+      return <span key={key} className="inline-block align-middle" dangerouslySetInnerHTML={{ __html: fallbackHtml }} />;
+    } catch {
+      // Último recurso: mostra o LaTeX cru com estilo
+      return (
+        <code key={key}
+          className="px-1.5 py-0.5 rounded font-mono text-sm"
+          style={{ background: "var(--muted)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+          title="Fórmula não pôde ser renderizada">
+          {displayMode ? `$$${latex}$$` : `$${latex}$`}
+        </code>
+      );
+    }
   }
 }
 
