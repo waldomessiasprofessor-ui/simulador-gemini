@@ -70,6 +70,9 @@ function DailyCard() {
           <div>
             <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>3 Questões do dia</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              Resolva 3 questões selecionadas todo dia e mantenha sua sequência de estudos ativa.
+            </p>
+            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#01738d" }}>
               {answered}/{questions.length} respondidas · Toque para começar
             </p>
           </div>
@@ -105,8 +108,13 @@ function ReviseCard() {
           <div>
             <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Revise</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              {revise ? revise.titulo : "Nenhum conteúdo disponível ainda"}
+              Leia um conteúdo teórico e responda 3 questões sobre o tema. Ideal para fixar o que o ENEM cobra.
             </p>
+            {revise && (
+              <p className="text-xs mt-0.5 font-semibold" style={{ color: "var(--foreground)" }}>
+                Tema de hoje: {revise.titulo}
+              </p>
+            )}
           </div>
         </div>
         {revise && <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />}
@@ -226,7 +234,8 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="font-semibold text-sm" style={{ color: "#795548" }}>Simulado em andamento</p>
-              <p className="text-xs" style={{ color: "#A1887F" }}>{active.answeredCount}/{active.totalQuestions} respondidas</p>
+              <p className="text-xs" style={{ color: "#A1887F" }}>Você tem um simulado aberto — continue de onde parou!</p>
+              <p className="text-xs font-bold" style={{ color: "#795548" }}>{active.answeredCount}/{active.totalQuestions} respondidas</p>
             </div>
           </div>
           <ChevronRight className="h-4 w-4" style={{ color: "#A1887F" }} />
@@ -254,7 +263,7 @@ export default function Dashboard() {
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino livre</p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                  Escolha o tópico e quantidade · com tempo registrado
+                  Escolha o tópico e a quantidade de questões e treine com cronômetro. Foco total no que você quer praticar.
                 </p>
               </div>
             </div>
@@ -286,7 +295,7 @@ export default function Dashboard() {
                     style={{ background: "#E65100", color: "#fff" }}>TRI</span>
                 </div>
                 <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>
-                  45 questões · Nota real do ENEM
+                  45 questões com correção TRI — a mesma metodologia do ENEM. Descubra sua nota real.
                 </p>
               </div>
             </div>

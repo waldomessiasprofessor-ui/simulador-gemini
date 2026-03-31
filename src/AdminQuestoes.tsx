@@ -200,6 +200,8 @@ type AuditResult = {
   gabarito_sugerido: string | null;
   dificuldade_real: string;
   dificuldade_compativel: boolean;
+  tags_sugeridas: string[];
+  tags_atuais_corretas: boolean;
   nota_qualidade: number;
   problemas: string[];
   sugestoes: string[];
@@ -213,6 +215,7 @@ type ApplyState = {
   dificuldade: boolean;
   enunciado: boolean;
   resolucao: boolean;
+  tags: boolean;
 };
 
 const DISCIPLINA_COLORS: Record<string, { bg: string; border: string; text: string; badge: string }> = {
@@ -243,7 +246,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
   const audit = auditMutation.data?.audit as AuditResult | undefined;
 
   const [apply, setApply] = useState<ApplyState>({
-    gabarito: false, dificuldade: false, enunciado: false, resolucao: false,
+    gabarito: false, dificuldade: false, enunciado: false, resolucao: false, tags: false,
   });
   const [enunciadoPreview, setEnunciadoPreview] = useState("");
   const [resolucaoPreview, setResolucaoPreview] = useState("");
@@ -257,6 +260,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
       dificuldade: !result.dificuldade_compativel,
       enunciado: !!result.enunciado_reescrito,
       resolucao: !!result.comentario_resolucao_reescrito,
+      tags: !result.tags_atuais_corretas && (result.tags_sugeridas?.length ?? 0) > 0,
     });
     setConfirmDelete(false);
   }
@@ -264,10 +268,11 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
   function handleApply() {
     if (!audit) return;
     const payload: any = { id: questionId };
-    if (apply.gabarito && audit.gabarito_sugerido)  payload.gabarito = audit.gabarito_sugerido;
-    if (apply.dificuldade)                          payload.nivel_dificuldade = audit.dificuldade_real;
-    if (apply.enunciado && enunciadoPreview.trim()) payload.enunciado = enunciadoPreview.trim();
-    if (apply.resolucao && resolucaoPreview.trim()) payload.comentario_resolucao = resolucaoPreview.trim();
+    if (apply.gabarito && audit.gabarito_sugerido)          payload.gabarito = audit.gabarito_sugerido;
+    if (apply.dificuldade)                                   payload.nivel_dificuldade = audit.dificuldade_real;
+    if (apply.enunciado && enunciadoPreview.trim())          payload.enunciado = enunciadoPreview.trim();
+    if (apply.resolucao && resolucaoPreview.trim())          payload.comentario_resolucao = resolucaoPreview.trim();
+    if (apply.tags && audit.tags_sugeridas?.length > 0)     payload.tags = audit.tags_sugeridas;
     if (Object.keys(payload).length <= 1) { toast.error("Nenhuma correção selecionada."); return; }
     applyMutation.mutate(payload);
   }
@@ -284,6 +289,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
   const hasCorrections = audit && (
     !audit.gabarito_correto ||
     !audit.dificuldade_compativel ||
+    !audit.tags_atuais_corretas ||
     !!audit.enunciado_reescrito ||
     !!audit.comentario_resolucao_reescrito
   );
@@ -477,6 +483,30 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
                 </p>
               </div>
 
+              {/* Tags */}
+              <div className="rounded-xl p-4"
+                style={{
+                  background: audit.tags_atuais_corretas ? "#F0FDF4" : "#EFF6FF",
+                  border: `1.5px solid ${audit.tags_atuais_corretas ? "#86EFAC" : "#93C5FD"}`
+                }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Tag className="h-4 w-4 flex-shrink-0" style={{ color: audit.tags_atuais_corretas ? "#166534" : "#1D4ED8" }} />
+                  <p className="text-sm font-bold" style={{ color: audit.tags_atuais_corretas ? "#166534" : "#1D4ED8" }}>
+                    {audit.tags_atuais_corretas ? "Tags corretas ✓" : "Tags precisam de atualização"}
+                  </p>
+                </div>
+                {audit.tags_sugeridas?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {audit.tags_sugeridas.map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                        style={{ background: "#DBEAFE", color: "#1D4ED8", border: "1px solid #93C5FD" }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Problemas */}
               {audit.problemas?.length > 0 && (
                 <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
@@ -548,6 +578,33 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
                             <p className="text-xs mt-1" style={{ color: "#64748B" }}>
                               Dificuldade real: <b style={{ color: "#92400E" }}>{audit.dificuldade_real}</b>
                             </p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+
+                    {!audit.tags_atuais_corretas && audit.tags_sugeridas?.length > 0 && (
+                      <div className="px-4 py-4" style={{ borderBottom: "1px solid #E2D9EE" }}>
+                        <label className="flex items-start gap-3 cursor-pointer">
+                          <input type="checkbox" checked={apply.tags}
+                            onChange={(e) => setApply((a) => ({ ...a, tags: e.target.checked }))}
+                            className="h-4 w-4 mt-0.5 accent-purple-700" />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Tag className="h-4 w-4" style={{ color: "#01738d" }} />
+                              <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Atualizar tags de conteúdo</p>
+                            </div>
+                            <p className="text-xs mt-0.5 mb-2" style={{ color: "#64748B" }}>
+                              Tags atuais estão incorretas ou incompletas. O Gemini sugere:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                              {audit.tags_sugeridas.map((tag) => (
+                                <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                                  style={{ background: "#E0F7F4", color: "#01738d", border: "1px solid #01738d44" }}>
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </label>
                       </div>
@@ -761,7 +818,9 @@ export default function AdminQuestoes() {
     });
     setEditId(q.id);
     setShowForm(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      document.getElementById("questao-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
   }
 
   function toggleTag(tag: string) {
@@ -906,12 +965,25 @@ export default function AdminQuestoes() {
 
       {/* Formulário */}
       {showForm && (
-        <div className="rounded-2xl p-6 space-y-5" style={{ background: "#fff", border: "1.5px solid #E2D9EE" }}>
+        <div id="questao-form" className="rounded-2xl p-6 space-y-5" style={{ background: "#fff", border: "1.5px solid #E2D9EE" }}>
+          {editId && (
+            <div className="rounded-xl px-4 py-3 flex items-center gap-3"
+              style={{ background: "#FFF3E0", border: "1.5px solid #E65100" }}>
+              <Pencil className="h-4 w-4 flex-shrink-0" style={{ color: "#E65100" }} />
+              <div className="flex-1">
+                <p className="text-sm font-bold" style={{ color: "#E65100" }}>Editando questão #{editId}</p>
+                <p className="text-xs" style={{ color: "#BF360C" }}>Altere os campos e clique em "Salvar alterações"</p>
+              </div>
+              <button onClick={resetForm} className="text-xs font-bold px-3 py-1.5 rounded-lg"
+                style={{ background: "#E65100", color: "#fff" }}>Cancelar</button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-lg" style={{ color: "#1A1A2E" }}>
               {editId ? `Editar questão #${editId}` : "Nova questão"}
             </h2>
-            <button onClick={resetForm}><X className="h-5 w-5" style={{ color: "#94A3B8" }} /></button>
+            {!editId && <button onClick={resetForm}><X className="h-5 w-5" style={{ color: "#94A3B8" }} /></button>}
           </div>
 
           {/* Metadados */}
