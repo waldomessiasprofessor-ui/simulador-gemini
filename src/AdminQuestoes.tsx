@@ -818,9 +818,6 @@ export default function AdminQuestoes() {
     });
     setEditId(q.id);
     setShowForm(true);
-    setTimeout(() => {
-      document.getElementById("questao-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 80);
   }
 
   function toggleTag(tag: string) {
@@ -963,28 +960,25 @@ export default function AdminQuestoes() {
         )}
       </div>
 
-      {/* Formulário */}
+      {/* Formulário — Modal */}
       {showForm && (
-        <div id="questao-form" className="rounded-2xl p-6 space-y-5" style={{ background: "#fff", border: "1.5px solid #E2D9EE" }}>
-          {editId && (
-            <div className="rounded-xl px-4 py-3 flex items-center gap-3"
-              style={{ background: "#FFF3E0", border: "1.5px solid #E65100" }}>
-              <Pencil className="h-4 w-4 flex-shrink-0" style={{ color: "#E65100" }} />
-              <div className="flex-1">
-                <p className="text-sm font-bold" style={{ color: "#E65100" }}>Editando questão #{editId}</p>
-                <p className="text-xs" style={{ color: "#BF360C" }}>Altere os campos e clique em "Salvar alterações"</p>
-              </div>
-              <button onClick={resetForm} className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                style={{ background: "#E65100", color: "#fff" }}>Cancelar</button>
-            </div>
-          )}
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
+            style={{ background: "#fff" }}>
 
-          <div className="flex items-center justify-between">
-            <h2 className="font-bold text-lg" style={{ color: "#1A1A2E" }}>
-              {editId ? `Editar questão #${editId}` : "Nova questão"}
-            </h2>
-            {!editId && <button onClick={resetForm}><X className="h-5 w-5" style={{ color: "#94A3B8" }} /></button>}
-          </div>
+            {/* Header do modal */}
+            <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
+              style={{ background: editId ? "linear-gradient(135deg, #E65100, #BF360C)" : "linear-gradient(135deg, #01738d, #004d61)", color: "#fff" }}>
+              <div className="flex items-center gap-2">
+                {editId ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                <span className="font-bold">
+                  {editId ? `Editar questão #${editId}` : "Nova questão"}
+                </span>
+              </div>
+              <button onClick={resetForm}><X className="h-5 w-5 opacity-80 hover:opacity-100" /></button>
+            </div>
+
+          <div className="overflow-y-auto flex-1 p-6 space-y-5">
 
           {/* Metadados */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1120,16 +1114,18 @@ export default function AdminQuestoes() {
           </div>
 
           <div className="flex gap-3 pt-1">
-            <button onClick={handleSubmit} disabled={isPending}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"
-              style={{ background: "#01738d" }}>
-              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {editId ? "Salvar alterações" : "Criar questão"}
-            </button>
-            <button onClick={resetForm} className="px-5 py-2.5 rounded-xl font-bold text-sm"
-              style={{ background: "#F1F5F9", color: "#64748B" }}>
-              Cancelar
-            </button>
+              <button onClick={handleSubmit} disabled={isPending}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"
+                style={{ background: "#01738d" }}>
+                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {editId ? "Salvar alterações" : "Criar questão"}
+              </button>
+              <button onClick={resetForm} className="px-5 py-2.5 rounded-xl font-bold text-sm"
+                style={{ background: "#F1F5F9", color: "#64748B" }}>
+                Cancelar
+              </button>
+            </div>
+          </div>
           </div>
         </div>
       )}
