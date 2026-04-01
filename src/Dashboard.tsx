@@ -159,12 +159,12 @@ export default function Dashboard() {
           )}
         </div>
         {stats && (
-          <div className="flex-shrink-0 rounded-xl px-3 py-2 text-center"
-            style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-            <p className="text-lg font-black flex items-center gap-1 justify-center" style={{ color: "#E65100" }}>
-              <Flame className="h-4 w-4" /> {stats.streak}
+          <div className="flex-shrink-0 rounded-xl px-4 py-3 text-center"
+            style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
+            <p className="stat-number flex items-center gap-1 justify-center" style={{ color: "#E65100" }}>
+              <Flame className="h-5 w-5" /> {stats.streak}
             </p>
-            <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>dias streak</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>dias streak</p>
           </div>
         )}
       </div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
       {stats && (
         <section className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl p-4 space-y-3"
-            style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+            style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Semana atual</h2>
               <button onClick={() => navigate("/ranking")}
@@ -194,14 +194,14 @@ export default function Dashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</p>
-                    <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{value}</p>
+                    <p className="font-black text-base" style={{ color: "var(--foreground)" }}>{value}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl p-4" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+          <div className="rounded-2xl p-4" style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
             <h2 className="font-bold text-sm mb-3" style={{ color: "var(--foreground)" }}>Questões por dia</h2>
             <ResponsiveContainer width="100%" height={130}>
               <BarChart data={stats.dailyData} margin={{ top: 0, right: 0, left: -28, bottom: 0 }}>
@@ -252,8 +252,8 @@ export default function Dashboard() {
 
         {/* Treino livre */}
         <button onClick={() => navigate("/treino")}
-          className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-          style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+          className="w-full text-left rounded-2xl p-4 card-interactive"
+          style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -278,8 +278,8 @@ export default function Dashboard() {
         <button
           onClick={() => active ? navigate("/simulado") : startMutation.mutate({ stage: 3 })}
           disabled={startMutation.isPending}
-          className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90 disabled:opacity-60"
-          style={{ background: "#1a1a2e", border: "2px solid #E65100" }}>
+          className="w-full text-left rounded-2xl p-4 card-interactive disabled:opacity-60"
+          style={{ background: "#0F172A", border: "2px solid #E65100", boxShadow: "0 4px 20px rgba(230,81,0,0.25)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
