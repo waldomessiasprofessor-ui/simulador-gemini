@@ -725,6 +725,8 @@ const TAGS_CONTEUDO = [
   "Funções de 1º e 2º Grau",
   "Equações e Inequações",
   "Sequências",
+  "Progressão Aritmética",
+  "Progressão Geométrica",
   "Matemática Financeira",
   "Análise Combinatória",
   "Logaritmos",
