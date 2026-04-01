@@ -221,12 +221,15 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
       const [q] = await ctx.db.select({ id: questions.id }).from(questions).where(eq(questions.id, id)).limit(1);
       if (!q) throw new TRPCError({ code: "NOT_FOUND", message: "Questão não encontrada." });
 
+      const NIVEIS_VALIDOS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const;
+
       const updateData: Record<string, any> = {};
-      if (fields.gabarito)                              updateData.gabarito = fields.gabarito.toUpperCase();
-      if (fields.nivel_dificuldade)                     updateData.nivel_dificuldade = fields.nivel_dificuldade;
-      if (fields.enunciado)                             updateData.enunciado = fields.enunciado;
-      if (fields.comentario_resolucao !== undefined)    updateData.comentario_resolucao = fields.comentario_resolucao;
-      if (fields.tags !== undefined)                    updateData.tags = fields.tags;
+      if (fields.gabarito)           updateData.gabarito = fields.gabarito.toUpperCase();
+      if (fields.nivel_dificuldade && NIVEIS_VALIDOS.includes(fields.nivel_dificuldade as any))
+                                     updateData.nivel_dificuldade = fields.nivel_dificuldade;
+      if (fields.enunciado)          updateData.enunciado = fields.enunciado;
+      if (fields.comentario_resolucao !== undefined) updateData.comentario_resolucao = fields.comentario_resolucao;
+      if (fields.tags !== undefined) updateData.tags = fields.tags;
 
       if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
 
