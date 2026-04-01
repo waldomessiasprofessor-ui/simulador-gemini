@@ -720,6 +720,7 @@ const TAGS_CONTEUDO = [
   "Trigonometria",
   "Leitura de Gráficos e Tabelas",
   "Medidas de Tendência Central",
+  "Estatística",
   "Probabilidade",
   "Funções de 1º e 2º Grau",
   "Equações e Inequações",
