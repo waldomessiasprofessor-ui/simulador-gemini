@@ -136,6 +136,7 @@ export const questionsRouter = createTRPCRouter({
         "Conversão de Unidades", "Geometria Espacial", "Geometria Plana",
         "Visualização Espacial/Projeção Ortogonal", "Trigonometria", "Leitura de Gráficos e Tabelas",
         "Medidas de Tendência Central", "Estatística", "Probabilidade", "Funções de 1º e 2º Grau",
+        "Funções de 1º e 2º Grau", "Função do Primeiro Grau", "Função Quadrática", "Função Exponencial", "Função Logarítmica",
         "Equações e Inequações", "Sequências", "Progressão Aritmética", "Progressão Geométrica", "Matemática Financeira", "Análise Combinatória", "Logaritmos",
       ];
 
