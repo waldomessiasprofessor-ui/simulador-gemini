@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight,
-  User, Mail, Shield, Zap
+  User, Mail, Shield, Zap, Target,
 } from "lucide-react";
 
 interface NavLinkItem {
@@ -22,6 +22,7 @@ const NAV_LINKS: NavLinkItem[] = [
   { href: "/formulas", label: "Fórmulas", icon: FlaskConical },
   { href: "/historico", label: "Histórico", icon: History },
   { href: "/ranking", label: "Ranking", icon: Trophy },
+  { href: "/desempenho", label: "Desempenho por tema", icon: Target },
   { href: "/questoes", label: "Banco de questões", icon: BookOpen },
   { href: "/admin/questoes", label: "Admin — questões", icon: Users, adminOnly: true },
   { href: "/admin/usuarios", label: "Admin — usuários", icon: Users, adminOnly: true },

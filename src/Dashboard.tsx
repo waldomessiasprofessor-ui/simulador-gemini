@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   PlayCircle, Clock, Target, Loader2, Flame, Zap,
   Timer, CheckCircle2, XCircle, ChevronRight, Medal,
-  Dumbbell, BookOpen, Brain
+  Dumbbell, BookOpen, Brain, TrendingDown, TrendingUp, Minus,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -120,6 +120,75 @@ function ReviseCard() {
         {revise && <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />}
       </div>
     </button>
+  );
+}
+
+function StudyMapCard() {
+  const [, navigate] = useLocation();
+  const { data: topics } = trpc.simulations.getTopicStats.useQuery(undefined, {
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Temas com dados suficientes, ordenados do mais fraco ao mais forte
+  const ranked = (topics ?? [])
+    .filter((t) => t.total >= 3)
+    .sort((a, b) => a.accuracy - b.accuracy);
+
+  if (!ranked.length) return null;
+
+  const priorities = ranked.slice(0, 3);
+
+  function Icon({ accuracy }: { accuracy: number }) {
+    if (accuracy >= 75) return <TrendingUp className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "#16A34A" }} />;
+    if (accuracy >= 50) return <Minus className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "#D97706" }} />;
+    return <TrendingDown className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "#DC2626" }} />;
+  }
+
+  function barColor(accuracy: number) {
+    if (accuracy >= 75) return "#22C55E";
+    if (accuracy >= 50) return "#F59E0B";
+    return "#EF4444";
+  }
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3"
+      style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Target className="h-4 w-4" style={{ color: "#01738d" }} />
+          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Mapa de estudo</p>
+        </div>
+        <button onClick={() => navigate("/desempenho")}
+          className="text-xs font-semibold flex items-center gap-1"
+          style={{ color: "#01738d" }}>
+          Ver tudo <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      <div className="space-y-2.5">
+        {priorities.map((t) => (
+          <div key={t.conteudo} className="space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Icon accuracy={t.accuracy} />
+                <p className="text-xs font-medium truncate" style={{ color: "var(--foreground)" }}>
+                  {t.conteudo}
+                </p>
+              </div>
+              <span className="text-xs font-black flex-shrink-0"
+                style={{ color: barColor(t.accuracy) }}>
+                {t.accuracy}%
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+              <div className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${t.accuracy}%`, background: barColor(t.accuracy) }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -241,6 +310,9 @@ export default function Dashboard() {
           <ChevronRight className="h-4 w-4" style={{ color: "#A1887F" }} />
         </div>
       )}
+
+      {/* Mapa de estudo */}
+      <StudyMapCard />
 
       {/* Cards de ação */}
       <section className="space-y-3">
