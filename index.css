@@ -10,20 +10,24 @@
 
   --teal:          #01738d;
   --teal-dark:     #005f75;
-  --teal-soft:     #E0F7F4;
+  --teal-soft:     #E0F7FA;
 
-  --background:         #FFFFFF;
-  --foreground:         #1A1A2E;
+  --background:         #F0F4F8;
+  --foreground:         #0F1729;
   --card:               #FFFFFF;
-  --card-foreground:    #1A1A2E;
-  --muted:              #F5F3F8;
-  --muted-foreground:   #6B6880;
-  --border:             #E2D9EE;
+  --card-foreground:    #0F1729;
+  --secondary:          #EFF6FF;
+  --muted:              #F1F5F9;
+  --muted-foreground:   #64748B;
+  --border:             #E2E8F0;
   --primary:            #01738d;
   --primary-foreground: #FFFFFF;
-  --input:              #E2D9EE;
-  --text-question:      #1A1A2E;
+  --input:              #E2E8F0;
+  --text-question:      #0F1729;
   --bg-alt:             #F8FAFC;
+
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --card-shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
 }
 
 /* ============================================================
@@ -74,31 +78,34 @@ body {
    ============================================================ */
 .card {
   background-color: var(--card);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem;
   color: var(--card-foreground);
+  box-shadow: var(--card-shadow);
 }
 
 .btn-primary {
   display: inline-flex; align-items: center; gap: 0.5rem;
   padding: 0.55rem 1.25rem; border-radius: var(--radius);
-  background-color: var(--teal); color: var(--primary-foreground);
-  font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer;
-  transition: opacity 0.15s;
+  background: linear-gradient(135deg, #01738d, #015e74);
+  color: var(--primary-foreground);
+  font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(1,115,141,0.35);
+  transition: opacity 0.15s, box-shadow 0.15s;
 }
-.btn-primary:hover { opacity: 0.85; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:hover { opacity: 0.9; box-shadow: 0 4px 14px rgba(1,115,141,0.4); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
 .btn-outline {
   display: inline-flex; align-items: center; gap: 0.5rem;
   padding: 0.55rem 1.25rem; border-radius: var(--radius);
   background: transparent; color: var(--teal);
-  font-weight: 600; font-size: 0.9rem;
+  font-weight: 700; font-size: 0.9rem;
   border: 2px solid var(--teal); cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
-.btn-outline:hover { background-color: var(--teal-soft); }
+.btn-outline:hover { background-color: var(--teal); color: #fff; }
 .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .timer {
@@ -120,6 +127,24 @@ body {
 }
 .progress-bar-fill {
   height: 100%; border-radius: 99px;
-  background: linear-gradient(90deg, var(--teal), #8B5CF6);
+  background: linear-gradient(90deg, #01738d, #6366F1);
   transition: width 0.4s ease;
+  box-shadow: 0 0 6px rgba(1,115,141,0.4);
+}
+
+/* Stat highlight — números de destaque em cards de performance */
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* Cards elevados — hover interativo */
+.card-interactive {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card-interactive:hover {
+  box-shadow: var(--card-shadow-md);
+  transform: translateY(-1px);
 }
