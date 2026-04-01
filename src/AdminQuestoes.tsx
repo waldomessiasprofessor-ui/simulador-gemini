@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp } from "lucide-react";
 
 const NIVEIS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const;
 
@@ -750,6 +750,77 @@ const emptyForm = {
 
 type Form = typeof emptyForm;
 
+// ─── Campo de imagem com upload para Cloudinary ───────────────────────────────
+
+function ImageUploadField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/upload-image", { method: "POST", body, credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Erro no upload");
+      onChange(data.url);
+      toast.success("Imagem enviada com sucesso!");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  const inputStyle: React.CSSProperties = {
+    flex: 1, padding: "0.6rem 0.85rem", borderRadius: "0.75rem",
+    border: "1.5px solid var(--border)", fontSize: "0.875rem",
+    outline: "none", color: "var(--foreground)", background: "var(--card)",
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          style={inputStyle}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://... ou use o botão para enviar"
+        />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold flex-shrink-0"
+          style={{ background: "var(--teal-soft)", color: "#01738d", border: "1.5px solid #01738d44" }}>
+          {uploading
+            ? <Loader2 className="h-4 w-4 animate-spin" />
+            : <ImageUp className="h-4 w-4" />}
+          {uploading ? "Enviando..." : "Enviar"}
+        </button>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="p-2 rounded-xl hover:opacity-70 flex-shrink-0"
+            style={{ color: "var(--muted-foreground)" }}>
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+      {value && (
+        <img src={value} alt="Preview" className="max-h-32 rounded-lg object-contain"
+          style={{ border: "1px solid var(--border)" }} />
+      )}
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    </div>
+  );
+}
+
 export default function AdminQuestoes() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -1052,12 +1123,11 @@ export default function AdminQuestoes() {
           </div>
 
           <div>
-            <label style={labelStyle}>URL da imagem do enunciado (opcional)</label>
-            <input className={inputClass} style={inputStyle} value={form.url_imagem}
-              onChange={(e) => setForm({ ...form, url_imagem: e.target.value })}
-              placeholder="https://..."
-              onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-              onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+            <label style={labelStyle}>Imagem do enunciado (opcional)</label>
+            <ImageUploadField
+              value={form.url_imagem}
+              onChange={(url) => setForm({ ...form, url_imagem: url })}
+            />
           </div>
 
           {/* Alternativas */}

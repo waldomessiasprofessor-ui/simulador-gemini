@@ -2,6 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import path from "node:path";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
 import { createContext } from "./trpc";
 import { appRouter } from "./router";
 import { authMiddleware } from "./auth";
@@ -12,6 +14,22 @@ import { eq } from "drizzle-orm";
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const isProd = process.env.NODE_ENV === "production";
+
+// Cloudinary — configurado via variáveis de ambiente no Railway
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Apenas imagens são permitidas."));
+  },
+});
 
 app.set("trust proxy", 1);
 app.use(express.json({ limit: "10mb" }));
@@ -167,6 +185,35 @@ app.get("/admin/import", async (req, res) => {
     log(`Erro: ${err.message}`);
   }
   res.end();
+});
+
+// =============================================================================
+// Rota: upload de imagem para Cloudinary (somente admin)
+// POST /api/upload-image  —  multipart/form-data, campo "file"
+// =============================================================================
+
+app.post("/api/upload-image", upload.single("file"), async (req: any, res: any) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(401).json({ error: "Não autorizado." });
+  }
+  if (!req.file) {
+    return res.status(400).json({ error: "Nenhum arquivo enviado." });
+  }
+  if (!process.env.CLOUDINARY_CLOUD_NAME) {
+    return res.status(503).json({ error: "Cloudinary não configurado. Adicione as variáveis no Railway." });
+  }
+
+  try {
+    const result = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: "questoes-enem", resource_type: "image" },
+        (error, result) => (error ? reject(error) : resolve(result))
+      ).end(req.file!.buffer);
+    });
+    res.json({ url: result.secure_url });
+  } catch (err: any) {
+    res.status(500).json({ error: `Erro no upload: ${err.message}` });
+  }
 });
 
 // =============================================================================
