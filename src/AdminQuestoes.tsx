@@ -234,8 +234,9 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
   const applyMutation = trpc.questions.applyAuditFixes.useMutation({
     onSuccess: (data) => {
       toast.success(`✅ ${data.applied.length} correção(ões) aplicada(s) com sucesso!`);
+      utils.questions.list.invalidate();
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.error(`Erro ao salvar: ${e.message}`),
   });
   const deleteMutation = trpc.questions.delete.useMutation({
     onSuccess: () => {
