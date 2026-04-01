@@ -16,6 +16,7 @@ import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
 import DesafioPage from "@/DesafioPage";
 import Revise from "@/Revise";
+import Desempenho from "@/Desempenho";
 import Login from "@/Login";
 import { Loader2, AlertTriangle } from "lucide-react";
 
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/formulas"><Formulas /></Route>
           <Route path="/desafio"><DesafioPage /></Route>
           <Route path="/revise"><Revise /></Route>
+          <Route path="/desempenho"><Desempenho /></Route>
           <Route path="/admin/questoes">
             {isAdmin ? <AdminQuestoes /> : <Redirect to="/" />}
           </Route>
