@@ -10,10 +10,10 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 const VESTIBULARES = [
-  { id: "ENEM",    label: "ENEM",    sub: "45 questões · TRI",        badge: "TRI",      color: "#4A148C" },
-  { id: "FUVEST",  label: "FUVEST",  sub: "90 questões · 1ª fase",    badge: "USP",      color: "#00838F" },
-  { id: "UNICAMP", label: "UNICAMP", sub: "72 questões · 1ª fase",    badge: "Paulista", color: "#00838F" },
-  { id: "UNESP",   label: "UNESP",   sub: "90 questões · 1ª fase",    badge: "Paulista", color: "#00838F" },
+  { id: "ENEM",    label: "ENEM",    sub: "45 questões · TRI",          badge: "Nacional", color: "#009688", comingSoon: false },
+  { id: "FUVEST",  label: "FUVEST",  sub: "90 questões · 1ª fase",    badge: "USP",      color: "#00695C", comingSoon: true },
+  { id: "UNICAMP", label: "UNICAMP", sub: "72 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: true },
+  { id: "UNESP",   label: "UNESP",   sub: "90 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: true },
 ];
 
 // ─── DailyCard ────────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ function DailyCard() {
 
   if (isLoading) return (
     <div className="rounded-2xl p-4 flex justify-center" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#4A148C" }} />
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
     </div>
   );
   if (!daily) return null;
@@ -37,14 +37,14 @@ function DailyCard() {
   if (daily.completed) {
     const correct = daily.correctCount ?? 0;
     return (
-      <div className="rounded-2xl p-4" style={{ background: "var(--pr-purple-soft, #F3E5F5)", border: "1.5px solid #4A148C44" }}>
+      <div className="rounded-2xl p-4" style={{ background: "var(--pr-purple-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#4A148C" }}>
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
               <Trophy className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-sm" style={{ color: "#4A148C" }}>Desafio do dia — concluído!</p>
+              <p className="font-bold text-sm" style={{ color: "#009688" }}>Desafio do dia — concluído!</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{correct}/{questions.length} acertos</p>
             </div>
           </div>
@@ -53,7 +53,7 @@ function DailyCard() {
               const ok = answers[q.id] === q.gabarito;
               return (
                 <div key={i} className="h-7 w-7 rounded-full flex items-center justify-center"
-                  style={{ background: ok ? "#00BCD4" : "#E53935" }}>
+                  style={{ background: ok ? "#009688" : "#E53935" }}>
                   {ok ? <CheckCircle2 className="h-3.5 w-3.5 text-white" /> : <XCircle className="h-3.5 w-3.5 text-white" />}
                 </div>
               );
@@ -66,25 +66,25 @@ function DailyCard() {
 
   return (
     <button onClick={() => navigate("/desafio")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "var(--pr-purple-soft, #F3E5F5)", border: "1.5px solid #4A148C44" }}>
+      style={{ background: "var(--pr-purple-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#4A148C" }}>
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
             <Flame className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#4A148C" }}>3 questões do dia</p>
+            <p className="font-bold text-sm" style={{ color: "#009688" }}>3 questões do dia</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               {answered}/{questions.length} respondidas · Toque para começar
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#4A148C" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#009688" }} />
       </div>
       <div className="flex gap-1.5 mt-3">
         {questions.map((_, i) => (
           <div key={i} className="h-1.5 flex-1 rounded-full"
-            style={{ background: answers[questions[i].id] ? "#4A148C" : "var(--border)" }} />
+            style={{ background: answers[questions[i].id] ? "#009688" : "var(--border)" }} />
         ))}
       </div>
     </button>
@@ -100,7 +100,7 @@ function ReviseCard() {
 
   if (isLoading) return (
     <div className="rounded-2xl p-4 flex justify-center" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#00838F" }} />
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
     </div>
   );
 
@@ -110,8 +110,8 @@ function ReviseCard() {
   if (!content) return (
     <div className="rounded-2xl p-4 opacity-60" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-cyan-soft, #E0F7FA)" }}>
-          <BookOpen className="h-5 w-5" style={{ color: "#00838F" }} />
+        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-cyan-soft, #E0F2F1)" }}>
+          <BookOpen className="h-5 w-5" style={{ color: "#009688" }} />
         </div>
         <div>
           <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Revise</p>
@@ -122,13 +122,13 @@ function ReviseCard() {
   );
 
   if (review?.completed) return (
-    <div className="rounded-2xl p-4" style={{ background: "var(--pr-cyan-soft, #E0F7FA)", border: "1.5px solid #00BCD444" }}>
+    <div className="rounded-2xl p-4" style={{ background: "var(--pr-cyan-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#00838F" }}>
+        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
           <CheckCircle2 className="h-5 w-5 text-white" />
         </div>
         <div>
-          <p className="font-bold text-sm" style={{ color: "#00838F" }}>Revise — concluído!</p>
+          <p className="font-bold text-sm" style={{ color: "#009688" }}>Revise — concluído!</p>
           <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{review.correctCount}/3 acertos · {content.topico ?? content.titulo}</p>
         </div>
       </div>
@@ -137,18 +137,18 @@ function ReviseCard() {
 
   return (
     <button onClick={() => navigate("/revise")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "var(--pr-cyan-soft, #E0F7FA)", border: "1.5px solid #00BCD444" }}>
+      style={{ background: "var(--pr-cyan-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#00838F" }}>
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#00838F" }}>Revise</p>
-            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{content.topico ?? content.titulo} · leitura + 3 questões</p>
+            <p className="font-bold text-sm" style={{ color: "#009688" }}>Revise</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{content.topico ?? content.titulo}</p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#00838F" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#009688" }} />
       </div>
     </button>
   );
@@ -161,7 +161,7 @@ function MissaoCumprida() {
   if (!daily?.completed || !review?.review?.completed) return null;
   return (
     <div className="rounded-2xl p-5 flex items-center gap-4"
-      style={{ background: "linear-gradient(135deg, #4A148C, #00838F)" }}>
+      style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
       <div className="h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ background: "rgba(255,255,255,0.2)" }}>
         <PartyPopper className="h-6 w-6 text-white" />
@@ -204,11 +204,11 @@ export default function Dashboard() {
     <div className="space-y-4 py-2">
 
       {/* ── Hero ── */}
-      <div style={{ background: "linear-gradient(135deg, #4A148C 0%, #00838F 100%)", borderRadius: 20, padding: "24px 20px" }}>
+      <div style={{ background: "linear-gradient(135deg, #263238 0%, #009688 100%)", borderRadius: 20, padding: "24px 20px" }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div style={{ width: 44, height: 44, background: "#00BCD4", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 20, fontWeight: 700, color: "#4A148C" }}>P</span>
+            <div style={{ width: 44, height: 44, background: "#009688", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>P</span>
             </div>
             <div>
               <p style={{ fontSize: 16, fontWeight: 700, color: "#fff", lineHeight: 1 }}>Prova Real</p>
@@ -230,15 +230,22 @@ export default function Dashboard() {
         {/* Seletor de vestibular */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {VESTIBULARES.map(v => (
-            <button key={v.id} onClick={() => setVestibularSelecionado(v.id)}
-              style={{
-                padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer",
-                background: vestibularSelecionado === v.id ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.15)",
-                color: vestibularSelecionado === v.id ? "#4A148C" : "#fff",
-                transition: "all 0.15s",
-              }}>
-              {v.label}
-            </button>
+            <div key={v.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <button onClick={() => !v.comingSoon && setVestibularSelecionado(v.id)}
+                style={{
+                  padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, border: "none",
+                  cursor: v.comingSoon ? "default" : "pointer",
+                  background: vestibularSelecionado === v.id ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.15)",
+                  color: vestibularSelecionado === v.id ? "#263238" : "#fff",
+                  opacity: v.comingSoon ? 0.6 : 1,
+                  transition: "all 0.15s",
+                }}>
+                {v.label}
+              </button>
+              {v.comingSoon && (
+                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", fontWeight: 600, letterSpacing: "0.05em" }}>Em breve!</span>
+              )}
+            </div>
           ))}
         </div>
       </div>
@@ -261,8 +268,8 @@ export default function Dashboard() {
           style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#EDE7F6" }}>
-                <Dumbbell className="h-5 w-5" style={{ color: "#4A148C" }} />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+                <Dumbbell className="h-5 w-5" style={{ color: "#009688" }} />
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino livre</p>
@@ -270,7 +277,7 @@ export default function Dashboard() {
                   Tópico, quantidade e vestibular · com cronômetro
                 </p>
                 {totalQuestions > 0 && (
-                  <p className="text-xs mt-1 font-semibold" style={{ color: "#4A148C" }}>{totalQuestions} questões disponíveis</p>
+                  <p className="text-xs mt-1 font-semibold" style={{ color: "#009688" }}>{totalQuestions} questões disponíveis</p>
                 )}
               </div>
             </div>
@@ -285,8 +292,8 @@ export default function Dashboard() {
           style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E0F7FA" }}>
-                <BarChart2 className="h-5 w-5" style={{ color: "#00838F" }} />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+                <BarChart2 className="h-5 w-5" style={{ color: "#009688" }} />
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Banco de questões</p>
@@ -301,8 +308,8 @@ export default function Dashboard() {
           style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#F3E5F5" }}>
-                <FlaskConical className="h-5 w-5" style={{ color: "#4A148C" }} />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+                <FlaskConical className="h-5 w-5" style={{ color: "#009688" }} />
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Fórmulas</p>
@@ -321,7 +328,7 @@ export default function Dashboard() {
           onClick={() => active ? navigate("/simulado") : startMutation.mutate({ stage: 3 })}
           disabled={startMutation.isPending}
           className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, #4A148C, #00838F)", border: "none" }}>
+          style={{ background: "linear-gradient(135deg, #263238, #009688)", border: "none" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.2)" }}>
@@ -352,7 +359,7 @@ export default function Dashboard() {
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
             <div className="flex items-center justify-between">
               <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Semana atual</p>
-              <button onClick={() => navigate("/ranking")} className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#4A148C" }}>
+              <button onClick={() => navigate("/ranking")} className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#009688" }}>
                 <Medal className="h-3.5 w-3.5" /> Ranking
               </button>
             </div>
@@ -363,8 +370,8 @@ export default function Dashboard() {
                 { icon: Star, label: "Simulados completos", value: String(stats.totalSimulations ?? 0) },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#EDE7F6" }}>
-                    <Icon className="h-3.5 w-3.5" style={{ color: "#4A148C" }} />
+                  <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+                    <Icon className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                   </div>
                   <div className="flex-1">
                     <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</p>
@@ -386,7 +393,7 @@ export default function Dashboard() {
                   formatter={(v: number) => [v, "Questões"]} />
                 <Bar dataKey="questoes" radius={[4, 4, 0, 0]} maxBarSize={32}>
                   {stats.dailyData.map((entry, i) => (
-                    <Cell key={i} fill={entry.questoes > 0 ? "#4A148C" : "var(--border)"} />
+                    <Cell key={i} fill={entry.questoes > 0 ? "#009688" : "var(--border)"} />
                   ))}
                 </Bar>
               </BarChart>

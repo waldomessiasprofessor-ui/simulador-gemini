@@ -66,14 +66,14 @@ export default function Simulador() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#4A148C" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
     </div>
   );
 
   if (!active) {
     return (
       <div className="space-y-6 py-2">
-        <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "linear-gradient(135deg, #4A148C, #004d61)" }}>
+        <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
           <h1 className="text-2xl font-bold mb-2">Simulado ENEM</h1>
           <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.85)" }}>
             45 questões de Matemática com correção pela Teoria de Resposta ao Item — a mesma metodologia usada pelo INEP.
@@ -94,7 +94,7 @@ export default function Simulador() {
             onClick={() => start.mutate({ stage: 3 })}
             disabled={start.isPending}
             className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm"
-            style={{ background: "#fff", color: "#4A148C" }}
+            style={{ background: "#fff", color: "#009688" }}
           >
             {start.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
             Iniciar simulado
@@ -138,7 +138,7 @@ export default function Simulador() {
             <button
               onClick={() => setShowOptions(false)}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
-              style={{ background: "var(--teal-soft)", color: "#4A148C", border: "1.5px solid #4A148C44" }}>
+              style={{ background: "var(--teal-soft)", color: "#009688", border: "1.5px solid #00968844" }}>
               <Pause className="h-4 w-4" />
               Pausar — continuar depois
               <span className="ml-auto text-xs opacity-70">salva progresso</span>
@@ -175,9 +175,9 @@ export default function Simulador() {
       )}
 
       <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap"
-        style={{ background: "var(--teal-soft)", border: "1.5px solid #4A148C44" }}>
+        style={{ background: "var(--teal-soft)", border: "1.5px solid #00968844" }}>
         <div className="flex items-center gap-3">
-          <button onClick={() => setShowOptions(true)} className="flex items-center gap-1.5 text-sm font-bold hover:opacity-70 transition-opacity" style={{ color: "#4A148C" }}>
+          <button onClick={() => setShowOptions(true)} className="flex items-center gap-1.5 text-sm font-bold hover:opacity-70 transition-opacity" style={{ color: "#009688" }}>
             <Pause className="h-3.5 w-3.5" />
             Simulado
           </button>
@@ -238,9 +238,9 @@ export default function Simulador() {
               <button key={q.id} onClick={() => { setIdx(i); setShowGrid(false); }}
                 className="h-8 rounded-lg text-xs font-bold transition-colors"
                 style={i === idx
-                  ? { background: "var(--teal-soft)", border: "2px solid #4A148C", color: "#4A148C" }
+                  ? { background: "var(--teal-soft)", border: "2px solid #009688", color: "#009688" }
                   : answers[q.id]
-                  ? { background: "#4A148C", color: "#fff", border: "2px solid transparent" }
+                  ? { background: "#009688", color: "#fff", border: "2px solid transparent" }
                   : { background: "var(--muted)", color: "var(--muted-foreground)", border: "2px solid var(--border)" }}>
                 {i + 1}
               </button>

@@ -103,7 +103,7 @@ function LatexImportModal({ onImport, onClose }: {
 
           {/* Header */}
           <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #521F80, #4A148C)", color: "#fff" }}>
+            style={{ background: "linear-gradient(135deg, #00695C, #009688)", color: "#fff" }}>
             <div className="flex items-center gap-2">
               <FileCode2 className="h-5 w-5" />
               <span className="font-bold">Importar questão via LaTeX</span>
@@ -116,7 +116,7 @@ function LatexImportModal({ onImport, onClose }: {
             {/* Botão exemplo */}
             <button onClick={() => setShowExample(!showExample)}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5"
-              style={{ background: "#E0F7F4", color: "#4A148C" }}>
+              style={{ background: "#E0F2F1", color: "#009688" }}>
               <ClipboardPaste className="h-3.5 w-3.5" />
               {showExample ? "Ocultar" : "Ver"} formato esperado
             </button>
@@ -169,7 +169,7 @@ function LatexImportModal({ onImport, onClose }: {
             {!preview ? (
               <button onClick={handleParse} disabled={!text.trim()}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white disabled:opacity-40"
-                style={{ background: "#4A148C" }}>
+                style={{ background: "#009688" }}>
                 <FileCode2 className="h-4 w-4" /> Interpretar questão
               </button>
             ) : (
@@ -210,7 +210,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
 
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)", color: "#fff" }}>
+          style={{ background: "linear-gradient(135deg, #1A1A2E, #00695C)", color: "#fff" }}>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-yellow-300" />
             <span className="font-bold">Auditoria Gemini — Questão #{questionId}</span>
@@ -224,7 +224,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
           {!auditMutation.isPending && !audit && !auditMutation.error && (
             <div className="text-center py-6 space-y-4">
               <div className="h-16 w-16 rounded-2xl mx-auto flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)" }}>
+                style={{ background: "linear-gradient(135deg, #1A1A2E, #00695C)" }}>
                 <Sparkles className="h-8 w-8 text-yellow-300" />
               </div>
               <div>
@@ -236,7 +236,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
               <button
                 onClick={() => auditMutation.mutate({ id: questionId })}
                 className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-bold text-white"
-                style={{ background: "linear-gradient(135deg, #521F80, #4A148C)" }}>
+                style={{ background: "linear-gradient(135deg, #00695C, #009688)" }}>
                 <Sparkles className="h-4 w-4" /> Iniciar auditoria
               </button>
             </div>
@@ -245,7 +245,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
           {/* Carregando */}
           {auditMutation.isPending && (
             <div className="text-center py-10 space-y-3">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#521F80" }} />
+              <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#00695C" }} />
               <p className="text-sm font-semibold" style={{ color: "#64748B" }}>Gemini analisando a questão...</p>
               <p className="text-xs" style={{ color: "#94A3B8" }}>Isso pode levar alguns segundos</p>
             </div>
@@ -533,7 +533,7 @@ export default function AdminQuestoes() {
 
       {/* Cabeçalho */}
       <div className="rounded-2xl px-6 py-5 text-white flex items-center justify-between gap-4"
-        style={{ background: "linear-gradient(135deg, #521F80, #4A148C)" }}>
+        style={{ background: "linear-gradient(135deg, #00695C, #009688)" }}>
         <div>
           <h1 className="text-xl font-bold">Gerenciar Questões</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
@@ -641,14 +641,14 @@ export default function AdminQuestoes() {
               <input className={inputClass} style={inputStyle} value={form.conteudo_principal}
                 onChange={(e) => setForm({ ...form, conteudo_principal: e.target.value })}
                 placeholder="Ex: Logaritmos"
-                onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+                onFocus={(e) => (e.target.style.borderColor = "#009688")}
                 onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
             </div>
             <div>
               <label style={labelStyle}>Ano</label>
               <input className={inputClass} style={inputStyle} type="number" value={form.ano}
                 onChange={(e) => setForm({ ...form, ano: Number(e.target.value) })}
-                onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+                onFocus={(e) => (e.target.style.borderColor = "#009688")}
                 onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
             </div>
             <div>
@@ -663,7 +663,7 @@ export default function AdminQuestoes() {
           {/* Tags de conteúdo */}
           <div>
             <label style={{ ...labelStyle, display: "flex", alignItems: "center", gap: 6 }}>
-              <Tag className="h-3.5 w-3.5" style={{ color: "#4A148C" }} />
+              <Tag className="h-3.5 w-3.5" style={{ color: "#009688" }} />
               Tags de conteúdo
               <span style={{ fontWeight: 400, color: "#94A3B8", fontSize: "0.75rem" }}>
                 — clique para selecionar (pode escolher várias)
@@ -676,8 +676,8 @@ export default function AdminQuestoes() {
                   <button key={tag} type="button" onClick={() => toggleTag(tag)}
                     className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                     style={selected
-                      ? { background: "#4A148C", color: "#fff", border: "1.5px solid #4A148C" }
-                      : { background: "#fff", color: "#4A148C", border: "1.5px solid #4A148C" }}>
+                      ? { background: "#009688", color: "#fff", border: "1.5px solid #009688" }
+                      : { background: "#fff", color: "#009688", border: "1.5px solid #009688" }}>
                     {selected ? "✓ " : ""}{tag}
                   </button>
                 );
@@ -697,7 +697,7 @@ export default function AdminQuestoes() {
               value={form.enunciado}
               onChange={(e) => setForm({ ...form, enunciado: e.target.value })}
               placeholder="Texto do enunciado..."
-              onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+              onFocus={(e) => (e.target.style.borderColor = "#009688")}
               onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
           </div>
 
@@ -706,7 +706,7 @@ export default function AdminQuestoes() {
             <input className={inputClass} style={inputStyle} value={form.url_imagem}
               onChange={(e) => setForm({ ...form, url_imagem: e.target.value })}
               placeholder="https://..."
-              onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+              onFocus={(e) => (e.target.style.borderColor = "#009688")}
               onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
           </div>
 
@@ -716,14 +716,14 @@ export default function AdminQuestoes() {
             <div className="space-y-2">
               {["A", "B", "C", "D", "E"].map((letra) => (
                 <div key={letra} className="flex items-center gap-2">
-                  <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "#4A148C" }}>{letra}</span>
+                  <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "#009688" }}>{letra}</span>
                   <input className={inputClass} style={inputStyle}
                     value={typeof form.alternativas[letra] === "object"
                       ? (form.alternativas[letra] as any).text ?? ""
                       : form.alternativas[letra] ?? ""}
                     onChange={(e) => setForm({ ...form, alternativas: { ...form.alternativas, [letra]: e.target.value } })}
                     placeholder={`Alternativa ${letra} — use $formula$ para LaTeX`}
-                    onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+                    onFocus={(e) => (e.target.style.borderColor = "#009688")}
                     onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
                 </div>
               ))}
@@ -748,7 +748,7 @@ export default function AdminQuestoes() {
                       value={form[p]}
                       onChange={(e) => setForm({ ...form, [p]: Number(e.target.value) })}
                       placeholder={["a", "b", "c"][i]}
-                      onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+                      onFocus={(e) => (e.target.style.borderColor = "#009688")}
                       onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
                   </div>
                 ))}
@@ -763,14 +763,14 @@ export default function AdminQuestoes() {
               value={form.comentario_resolucao}
               onChange={(e) => setForm({ ...form, comentario_resolucao: e.target.value })}
               placeholder="Passo a passo da resolução..."
-              onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+              onFocus={(e) => (e.target.style.borderColor = "#009688")}
               onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
           </div>
 
           <div className="flex gap-3 pt-1">
             <button onClick={handleSubmit} disabled={isPending}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"
-              style={{ background: "#4A148C" }}>
+              style={{ background: "#009688" }}>
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {editId ? "Salvar alterações" : "Criar questão"}
             </button>
@@ -790,7 +790,7 @@ export default function AdminQuestoes() {
             placeholder="Buscar por conteúdo..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
             style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
-            onFocus={(e) => (e.target.style.borderColor = "#4A148C")}
+            onFocus={(e) => (e.target.style.borderColor = "#009688")}
             onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
         </div>
 
@@ -804,8 +804,8 @@ export default function AdminQuestoes() {
               <button key={tag} onClick={() => setFilterTag(tag)}
                 className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
                 style={filterTag === tag
-                  ? { background: "#4A148C", color: "#fff" }
-                  : { background: "#E0F7F4", color: "#4A148C" }}>
+                  ? { background: "#009688", color: "#fff" }
+                  : { background: "#E0F2F1", color: "#009688" }}>
                 {tag}
               </button>
             ))}
@@ -822,7 +822,7 @@ export default function AdminQuestoes() {
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#4A148C" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
         </div>
       ) : (
         <div className="space-y-2">
@@ -844,7 +844,7 @@ export default function AdminQuestoes() {
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {qTags.map((tag: string) => (
                             <span key={tag} className="text-xs px-2 py-0.5 rounded-full font-medium"
-                              style={{ background: "#E0F7F4", color: "#00897B" }}>
+                              style={{ background: "#E0F2F1", color: "#00897B" }}>
                               {tag}
                             </span>
                           ))}
@@ -858,10 +858,10 @@ export default function AdminQuestoes() {
                   {/* Acções */}
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button onClick={() => setAuditQuestionId(q.id)} className="p-1.5 rounded-lg hover:bg-purple-50" title="Auditar com Gemini">
-                      <Sparkles className="h-3.5 w-3.5" style={{ color: "#521F80" }} />
+                      <Sparkles className="h-3.5 w-3.5" style={{ color: "#00695C" }} />
                     </button>
                     <button onClick={() => startEdit(q)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
-                      <Pencil className="h-3.5 w-3.5" style={{ color: "#4A148C" }} />
+                      <Pencil className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                     </button>
                     <button onClick={() => toggleMutation.mutate({ id: q.id, active: !q.active })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title={q.active ? "Desativar" : "Ativar"}>
@@ -890,8 +890,8 @@ export default function AdminQuestoes() {
                         const file = typeof value === "object" ? value.file : null;
                         return (
                           <div key={id} className="flex gap-2 px-3 py-1.5 rounded-lg text-sm"
-                            style={{ background: id === q.gabarito ? "#E0F7F4" : "#F8FAFC", border: id === q.gabarito ? "1px solid #00897B" : "none" }}>
-                            <span className="font-bold w-4 flex-shrink-0" style={{ color: id === q.gabarito ? "#00897B" : "#4A148C" }}>{id}</span>
+                            style={{ background: id === q.gabarito ? "#E0F2F1" : "#F8FAFC", border: id === q.gabarito ? "1px solid #00897B" : "none" }}>
+                            <span className="font-bold w-4 flex-shrink-0" style={{ color: id === q.gabarito ? "#00897B" : "#009688" }}>{id}</span>
                             <div className="flex-1">
                               {file && <img src={file} alt={`Alt ${id}`} className="max-w-xs rounded mb-1" />}
                               {text && <LatexRenderer inline>{text}</LatexRenderer>}
@@ -902,7 +902,7 @@ export default function AdminQuestoes() {
                     </div>
                     {q.comentario_resolucao && (
                       <div className="rounded-lg p-3" style={{ background: "#F3EAF9" }}>
-                        <p className="text-xs font-bold mb-1" style={{ color: "#521F80" }}>Resolução</p>
+                        <p className="text-xs font-bold mb-1" style={{ color: "#00695C" }}>Resolução</p>
                         <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                       </div>
                     )}

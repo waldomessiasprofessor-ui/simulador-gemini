@@ -62,8 +62,8 @@ export default function Revise() {
           border: `1.5px solid ${correct === total ? "#7B3FA0" : "var(--border)"}`,
         }}>
           <div className="h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ background: correct === total ? "#7B3FA0" : "#E0F7F4" }}>
-            <Brain className="h-8 w-8" style={{ color: correct === total ? "#fff" : "#4A148C" }} />
+            style={{ background: correct === total ? "#7B3FA0" : "#E0F2F1" }}>
+            <Brain className="h-8 w-8" style={{ color: correct === total ? "#fff" : "#009688" }} />
           </div>
           <p className="text-3xl font-black mb-1" style={{ color: correct === total ? "#7B3FA0" : "var(--foreground)" }}>
             {correct}/{total}

@@ -10,7 +10,7 @@ export default function Ranking() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#4A148C" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
     </div>
   );
 
@@ -41,8 +41,8 @@ export default function Ranking() {
                 key={entry.userId}
                 className="flex items-center gap-4 p-4 rounded-xl"
                 style={{
-                  background: entry.isMe ? "#E0F7F4" : "#fff",
-                  border: `1.5px solid ${entry.isMe ? "#4A148C55" : "#E2D9EE"}`,
+                  background: entry.isMe ? "#E0F2F1" : "#fff",
+                  border: `1.5px solid ${entry.isMe ? "#00968855" : "#E2E8F0"}`,
                 }}
               >
                 {/* Posição */}
@@ -56,14 +56,14 @@ export default function Ranking() {
 
                 {/* Avatar */}
                 <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{ background: entry.isMe ? "#4A148C" : "#E2D9EE", color: entry.isMe ? "#fff" : "#64748B" }}>
+                  style={{ background: entry.isMe ? "#009688" : "#E2E8F0", color: entry.isMe ? "#fff" : "#64748B" }}>
                   {entry.userName[0]?.toUpperCase() ?? "?"}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate" style={{ color: "#1A1A2E" }}>
-                    {entry.userName} {entry.isMe && <span className="text-xs font-normal" style={{ color: "#4A148C" }}>(você)</span>}
+                    {entry.userName} {entry.isMe && <span className="text-xs font-normal" style={{ color: "#009688" }}>(você)</span>}
                   </p>
                   <p className="text-xs" style={{ color: "#94A3B8" }}>
                     {entry.completedAt ? format(new Date(entry.completedAt), "dd/MM/yyyy", { locale: ptBR }) : "—"}
@@ -72,7 +72,7 @@ export default function Ranking() {
 
                 {/* Nota */}
                 <div className="text-right flex-shrink-0">
-                  <p className="text-lg font-black" style={{ color: entry.isMe ? "#4A148C" : "#1A1A2E" }}>
+                  <p className="text-lg font-black" style={{ color: entry.isMe ? "#009688" : "#1A1A2E" }}>
                     {entry.score != null ? Math.round(entry.score) : "—"}
                   </p>
                   <p className="text-xs" style={{ color: "#94A3B8" }}>pts TRI</p>

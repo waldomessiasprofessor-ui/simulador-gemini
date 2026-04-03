@@ -48,7 +48,7 @@ function FilterDropdown({ filterTag, setFilterTag }: { filterTag: string; setFil
         {filterTag === "Todas" ? "Filtrar conteúdo" : filterTag}
         {open ? <ChevronUp className="h-3.5 w-3.5 ml-auto" /> : <ChevronDown className="h-3.5 w-3.5 ml-auto" />}
         {filterTag !== "Todas" && (
-          <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ background: "#01738d", color: "#fff" }}>1</span>
+          <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ background: "#009688", color: "#fff" }}>1</span>
         )}
       </button>
 
@@ -58,7 +58,7 @@ function FilterDropdown({ filterTag, setFilterTag }: { filterTag: string; setFil
             <button key={tag} onClick={() => { setFilterTag(tag); setOpen(false); }}
               className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
               style={filterTag === tag
-                ? { background: "#01738d", color: "#fff" }
+                ? { background: "#009688", color: "#fff" }
                 : { background: "var(--muted)", color: "var(--muted-foreground)" }}>
               {tag}
             </button>
@@ -94,7 +94,7 @@ export default function Questoes() {
   return (
     <div className="space-y-6 py-2">
       {/* Cabeçalho */}
-      <div className="rounded-2xl px-6 py-6 text-white" style={{ background: "linear-gradient(135deg, #01738d, #00BFA5)" }}>
+      <div className="rounded-2xl px-6 py-6 text-white" style={{ background: "linear-gradient(135deg, #009688, #009688)" }}>
         <h1 className="text-xl font-bold">Banco de Questões</h1>
         <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
           {data?.pagination.total ?? "—"} questões de Matemática do ENEM
@@ -109,7 +109,7 @@ export default function Questoes() {
           placeholder="Buscar por conteúdo..."
           className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
           style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
-          onFocus={(e) => (e.target.style.borderColor = "#01738d")}
+          onFocus={(e) => (e.target.style.borderColor = "#009688")}
           onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
       </div>
 
@@ -125,7 +125,7 @@ export default function Questoes() {
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#01738d" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 space-y-2">
@@ -139,7 +139,7 @@ export default function Questoes() {
           </p>
           {filterTag !== "Todas" && (
             <button onClick={() => setFilterTag("Todas")}
-              className="text-sm font-semibold underline underline-offset-2" style={{ color: "#01738d" }}>
+              className="text-sm font-semibold underline underline-offset-2" style={{ color: "#009688" }}>
               Ver todas as questões
             </button>
           )}
@@ -158,7 +158,7 @@ export default function Questoes() {
                 <button className="w-full flex items-start gap-3 px-4 py-3.5 text-left"
                   onClick={() => setOpenId(isOpen ? null : q.id)}>
                   <div className="h-8 w-8 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-black"
-                    style={{ background: "#E0F7F4", color: "#01738d" }}>
+                    style={{ background: "#E0F2F1", color: "#009688" }}>
                     {q.conteudo_principal.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -173,7 +173,7 @@ export default function Questoes() {
                         {qTags.map((tag: string) => (
                           <button key={tag} onClick={(e) => { e.stopPropagation(); setFilterTag(tag); }}
                             className="text-xs px-2 py-0.5 rounded-full font-medium transition-colors hover:opacity-80"
-                            style={{ background: "#E0F7F4", color: "#00897B" }}>
+                            style={{ background: "#E0F2F1", color: "#00897B" }}>
                             {tag}
                           </button>
                         ))}
@@ -201,7 +201,7 @@ export default function Questoes() {
                         return (
                           <div key={id} className="flex gap-2 px-3 py-2 rounded-lg text-sm"
                             style={{ background: "var(--muted)" }}>
-                            <span className="font-bold flex-shrink-0 w-4" style={{ color: "#01738d" }}>{id}</span>
+                            <span className="font-bold flex-shrink-0 w-4" style={{ color: "#009688" }}>{id}</span>
                             <div className="flex-1">
                               {file && <img src={file} alt={`Alt ${id}`} className="max-w-xs rounded mb-1" />}
                               {text && <LatexRenderer inline>{text}</LatexRenderer>}

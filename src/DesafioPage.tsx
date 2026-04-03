@@ -30,7 +30,7 @@ export default function DesafioPage() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#4A148C" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
     </div>
   );
   if (!daily) return null;
@@ -94,16 +94,16 @@ export default function DesafioPage() {
   return (
     <div className="space-y-5 py-2">
       <div className="rounded-xl px-4 py-3 flex items-center justify-between"
-        style={{ background: "var(--teal-soft)", border: "1.5px solid #4A148C44" }}>
+        style={{ background: "var(--teal-soft)", border: "1.5px solid #00968844" }}>
         <div className="flex items-center gap-2">
           <Flame className="h-4 w-4" style={{ color: "#E65100" }} />
-          <span className="font-bold text-sm" style={{ color: "#4A148C" }}>Desafio do dia</span>
+          <span className="font-bold text-sm" style={{ color: "#009688" }}>Desafio do dia</span>
         </div>
         <div className="flex gap-1.5">
           {questions.map((_, i) => (
             <button key={i} onClick={() => setIdx(i)}
               className="h-2 rounded-full transition-all"
-              style={{ width: idx === i ? 20 : 8, background: answers[questions[i].id] ? "#4A148C" : "var(--border)" }} />
+              style={{ width: idx === i ? 20 : 8, background: answers[questions[i].id] ? "#009688" : "var(--border)" }} />
           ))}
         </div>
       </div>
@@ -123,8 +123,8 @@ export default function DesafioPage() {
       </div>
 
       {isRevealed && q.comentario_resolucao && (
-        <div className="rounded-xl p-4" style={{ background: "var(--teal-soft)", border: "1px solid #4A148C22" }}>
-          <p className="text-xs font-semibold mb-1" style={{ color: "#4A148C" }}>Resolução</p>
+        <div className="rounded-xl p-4" style={{ background: "var(--teal-soft)", border: "1px solid #00968822" }}>
+          <p className="text-xs font-semibold mb-1" style={{ color: "#009688" }}>Resolução</p>
           <p className="text-sm" style={{ color: "var(--foreground)" }}>{q.comentario_resolucao}</p>
         </div>
       )}

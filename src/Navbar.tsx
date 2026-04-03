@@ -53,7 +53,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
 
         <div className="px-5 py-6 flex items-center gap-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <div className="h-14 w-14 rounded-full flex items-center justify-center text-xl font-black flex-shrink-0"
-            style={{ background: "#4A148C", color: "#fff" }}>
+            style={{ background: "#009688", color: "#fff" }}>
             {(session.name as string)?.[0]?.toUpperCase() ?? "U"}
           </div>
           <div className="min-w-0">
@@ -71,15 +71,15 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
         {stats && (
           <div className="px-5 py-4 grid grid-cols-3 gap-3" style={{ borderBottom: "1px solid var(--border)" }}>
             <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "#4A148C" }}>{stats.streak}</p>
+              <p className="text-lg font-black" style={{ color: "#009688" }}>{stats.streak}</p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>streak</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "#4A148C" }}>{stats.weeklyQuestions}</p>
+              <p className="text-lg font-black" style={{ color: "#009688" }}>{stats.weeklyQuestions}</p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>esta semana</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "#4A148C" }}>{stats.weeklyAccuracy}%</p>
+              <p className="text-lg font-black" style={{ color: "#009688" }}>{stats.weeklyAccuracy}%</p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>acerto</p>
             </div>
           </div>
@@ -88,11 +88,11 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
         <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <p className="text-xs font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>Assinatura</p>
           {session.role === "admin" ? (
-            <span className="text-sm font-medium" style={{ color: "#4A148C" }}>Acesso admin (ilimitado)</span>
+            <span className="text-sm font-medium" style={{ color: "#009688" }}>Acesso admin (ilimitado)</span>
           ) : expired ? (
             <span className="text-sm font-medium" style={{ color: "#E53935" }}>Expirada em {expiry?.toLocaleDateString("pt-BR")}</span>
           ) : expiry ? (
-            <span className="text-sm font-medium" style={{ color: "#4A148C" }}>Ativa · {daysLeft} dias restantes</span>
+            <span className="text-sm font-medium" style={{ color: "#009688" }}>Ativa · {daysLeft} dias restantes</span>
           ) : (
             <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>Sem assinatura ativa</span>
           )}
@@ -137,7 +137,7 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-30"
-        style={{ backgroundColor: "#4A148C", boxShadow: "0 2px 8px rgba(1,115,141,0.3)" }}>
+        style={{ backgroundColor: "#009688", boxShadow: "0 2px 8px rgba(0,150,136,0.3)" }}>
         <div className="container mx-auto px-4 max-w-5xl flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)}
@@ -190,7 +190,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: "1px solid var(--border)" }}>
           <div className="flex items-center gap-2">
             <img src="/logo-vetor.png" alt="Prova Real" className="h-8 w-8 object-contain"
-              style={{ filter: "brightness(0) invert(1)", background: "#4A148C", borderRadius: 6, padding: 2 }} />
+              style={{ filter: "brightness(0) invert(1)", background: "#009688", borderRadius: 6, padding: 2 }} />
             <div>
               <p className="font-black text-sm leading-none" style={{ color: "var(--foreground)" }}>VETOR</p>
               <p className="text-xs leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Escola de Talentos</p>
@@ -208,7 +208,7 @@ export default function Navbar() {
               <Link key={href} href={href}>
                 <span onClick={() => setSidebarOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
-                  style={active ? { background: "#E0F7F4", color: "#4A148C" } : { color: "var(--muted-foreground)" }}>
+                  style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   {label}
                   {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
@@ -222,14 +222,14 @@ export default function Navbar() {
           <div className="px-3 py-4" style={{ borderTop: "1px solid var(--border)" }}>
             <button onClick={() => { setSidebarOpen(false); setProfileOpen(true); }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:opacity-80"
-              style={{ background: "#E0F7F4", color: "#4A148C" }}>
+              style={{ background: "#E0F2F1", color: "#009688" }}>
               <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold"
-                style={{ background: "#4A148C", color: "#fff" }}>
+                style={{ background: "#009688", color: "#fff" }}>
                 {(session.name as string)?.[0]?.toUpperCase() ?? "U"}
               </div>
               <div className="text-left min-w-0">
                 <p className="font-semibold truncate text-xs">{session.name as string}</p>
-                <p className="text-xs truncate" style={{ color: "#005f75" }}>{session.email as string}</p>
+                <p className="text-xs truncate" style={{ color: "#00695C" }}>{session.email as string}</p>
               </div>
               <User className="h-4 w-4 ml-auto flex-shrink-0" />
             </button>

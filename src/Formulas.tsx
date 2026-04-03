@@ -19,7 +19,7 @@ const SECOES: Secao[] = [
   {
     id: "algebra",
     titulo: "Álgebra",
-    cor: "#4A148C",
+    cor: "#009688",
     formulas: [
       { titulo: "Fórmula de Bhaskara", formula: "$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$", descricao: "Resolve equações de 2º grau $ax^2 + bx + c = 0$. O discriminante $\\Delta = b^2 - 4ac$ determina o número de raízes reais." },
       { titulo: "Discriminante", formula: "$$\\Delta = b^2 - 4ac$$", descricao: "Se $\\Delta > 0$: duas raízes reais distintas. Se $\\Delta = 0$: uma raiz real dupla. Se $\\Delta < 0$: sem raízes reais." },
@@ -157,7 +157,7 @@ function SecaoCard({ secao }: { secao: Secao }) {
 export default function Formulas() {
   return (
     <div className="space-y-6 py-2">
-      <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "linear-gradient(135deg, #01738d, #004d61)" }}>
+      <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "linear-gradient(135deg, #009688, #00695C)" }}>
         <h1 className="text-2xl font-bold mb-1">Fórmulas</h1>
         <p className="text-sm opacity-80">Todas as fórmulas que você precisa para o ENEM, organizadas por área.</p>
       </div>

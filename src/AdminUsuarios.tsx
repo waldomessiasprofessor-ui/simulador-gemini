@@ -14,8 +14,8 @@ type ActionState =
   | { type: "setSubscription"; userId: number; name: string };
 
 const STATUS_CONFIG = {
-  admin:          { label: "Admin",           bg: "#F3EAF9", color: "#521F80" },
-  ativa:          { label: "Assinatura ativa", bg: "#E0F7F4", color: "#00897B" },
+  admin:          { label: "Admin",           bg: "#F3EAF9", color: "#263238" },
+  ativa:          { label: "Assinatura ativa", bg: "#E0F2F1", color: "#00897B" },
   expirada:       { label: "Expirada",         bg: "#FFEBEE", color: "#C62828" },
   sem_assinatura: { label: "Sem assinatura",   bg: "#F1F5F9", color: "#64748B" },
 };
@@ -72,7 +72,7 @@ export default function AdminUsuarios() {
 
       {/* Cabeçalho */}
       <div className="rounded-2xl px-6 py-5 text-white"
-        style={{ background: "linear-gradient(135deg, #521F80, #01738d)" }}>
+        style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
         <h1 className="text-xl font-bold">Usuários e Assinaturas</h1>
         <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
           {users_list.length} usuário(s) cadastrado(s)
@@ -82,7 +82,7 @@ export default function AdminUsuarios() {
       {/* Cards de resumo */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Ativas", value: ativas, bg: "#E0F7F4", color: "#00897B" },
+          { label: "Ativas", value: ativas, bg: "#E0F2F1", color: "#00897B" },
           { label: "Expiradas", value: expiradas, bg: "#FFEBEE", color: "#C62828" },
           { label: "Sem assinatura", value: semAssinatura, bg: "#F1F5F9", color: "#64748B" },
         ].map(({ label, value, bg, color }) => (
@@ -100,14 +100,14 @@ export default function AdminUsuarios() {
           placeholder="Buscar por nome ou e-mail..."
           className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
           style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
-          onFocus={(e) => (e.target.style.borderColor = "#01738d")}
+          onFocus={(e) => (e.target.style.borderColor = "#009688")}
           onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
       </div>
 
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#01738d" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
         </div>
       ) : users_list.length === 0 ? (
         <div className="text-center py-16 text-sm" style={{ color: "#64748B" }}>Nenhum usuário encontrado.</div>
@@ -127,7 +127,7 @@ export default function AdminUsuarios() {
                 {/* Linha principal */}
                 <div className="flex items-center gap-3 px-4 py-3.5">
                   <div className="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
-                    style={{ background: u.role === "admin" ? "#521F80" : "#E0F7F4", color: u.role === "admin" ? "#fff" : "#01738d" }}>
+                    style={{ background: u.role === "admin" ? "#263238" : "#E0F2F1", color: u.role === "admin" ? "#fff" : "#009688" }}>
                     {u.name[0].toUpperCase()}
                   </div>
 
@@ -161,13 +161,13 @@ export default function AdminUsuarios() {
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button onClick={() => { setAction(isSettingSub ? { type: "none" } : { type: "setSubscription", userId: u.id, name: u.name }); }}
                         className="p-2 rounded-lg transition-colors" title="Gerenciar assinatura"
-                        style={{ background: isSettingSub ? "#E0F7F4" : "transparent" }}>
-                        <Calendar className="h-4 w-4" style={{ color: "#01738d" }} />
+                        style={{ background: isSettingSub ? "#E0F2F1" : "transparent" }}>
+                        <Calendar className="h-4 w-4" style={{ color: "#009688" }} />
                       </button>
                       <button onClick={() => { setNewPassword(""); setAction(isResetting ? { type: "none" } : { type: "resetPassword", userId: u.id, name: u.name }); }}
                         className="p-2 rounded-lg transition-colors" title="Redefinir senha"
-                        style={{ background: isResetting ? "#E0F7F4" : "transparent" }}>
-                        <KeyRound className="h-4 w-4" style={{ color: "#01738d" }} />
+                        style={{ background: isResetting ? "#E0F2F1" : "transparent" }}>
+                        <KeyRound className="h-4 w-4" style={{ color: "#009688" }} />
                       </button>
                       <button onClick={() => setAction(isConfirmingDelete ? { type: "none" } : { type: "confirmDelete", userId: u.id })}
                         className="p-2 rounded-lg transition-colors" title="Excluir"
@@ -184,8 +184,8 @@ export default function AdminUsuarios() {
 
                 {/* Painel: gerenciar assinatura */}
                 {isSettingSub && (
-                  <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid #E0F7F4", background: "#F0FDFB" }}>
-                    <p className="text-sm font-bold" style={{ color: "#01738d" }}>
+                  <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid #E0F2F1", background: "#F1F8F7" }}>
+                    <p className="text-sm font-bold" style={{ color: "#009688" }}>
                       Assinatura de {u.name}
                     </p>
 
@@ -193,7 +193,7 @@ export default function AdminUsuarios() {
                       <div className="flex items-center gap-2">
                         <button onClick={() => setMonths((m) => Math.max(1, m - 1))}
                           className="h-8 w-8 rounded-lg flex items-center justify-center"
-                          style={{ background: "#E0F7F4", color: "#01738d" }}>
+                          style={{ background: "#E0F2F1", color: "#009688" }}>
                           <MinusCircle className="h-4 w-4" />
                         </button>
                         <span className="text-sm font-bold w-28 text-center" style={{ color: "#1A1A2E" }}>
@@ -201,7 +201,7 @@ export default function AdminUsuarios() {
                         </span>
                         <button onClick={() => setMonths((m) => Math.min(24, m + 1))}
                           className="h-8 w-8 rounded-lg flex items-center justify-center"
-                          style={{ background: "#E0F7F4", color: "#01738d" }}>
+                          style={{ background: "#E0F2F1", color: "#009688" }}>
                           <PlusCircle className="h-4 w-4" />
                         </button>
                       </div>
@@ -211,8 +211,8 @@ export default function AdminUsuarios() {
                           <button key={m} onClick={() => setMonths(m)}
                             className="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
                             style={months === m
-                              ? { background: "#01738d", color: "#fff" }
-                              : { background: "#E0F7F4", color: "#01738d" }}>
+                              ? { background: "#009688", color: "#fff" }
+                              : { background: "#E0F2F1", color: "#009688" }}>
                             {m === 1 ? "1 mês" : m === 12 ? "1 ano" : `${m} meses`}
                           </button>
                         ))}
@@ -240,7 +240,7 @@ export default function AdminUsuarios() {
                     <div className="flex gap-2 flex-wrap">
                       <button onClick={() => subMutation.mutate({ id: u.id, months })} disabled={subMutation.isPending}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50"
-                        style={{ background: "#01738d" }}>
+                        style={{ background: "#009688" }}>
                         {subMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                         Confirmar assinatura
                       </button>
@@ -262,19 +262,19 @@ export default function AdminUsuarios() {
 
                 {/* Painel: redefinir senha */}
                 {isResetting && (
-                  <div className="px-4 py-3 space-y-2" style={{ borderTop: "1px solid #E0F7F4", background: "#F0FDFB" }}>
-                    <p className="text-sm font-semibold" style={{ color: "#01738d" }}>Nova senha para {u.name}</p>
+                  <div className="px-4 py-3 space-y-2" style={{ borderTop: "1px solid #E0F2F1", background: "#F1F8F7" }}>
+                    <p className="text-sm font-semibold" style={{ color: "#009688" }}>Nova senha para {u.name}</p>
                     <div className="flex items-center gap-2 flex-wrap">
                       <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Nova senha (mínimo 6 caracteres)"
                         style={{ ...inputStyle, flex: 1, minWidth: 200 }}
-                        onFocus={(e) => (e.target.style.borderColor = "#01738d")}
+                        onFocus={(e) => (e.target.style.borderColor = "#009688")}
                         onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")}
                         onKeyDown={(e) => e.key === "Enter" && resetMutation.mutate({ id: u.id, newPassword })} />
                       <button onClick={() => resetMutation.mutate({ id: u.id, newPassword })}
                         disabled={resetMutation.isPending || newPassword.length < 6}
                         className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50"
-                        style={{ background: "#01738d" }}>
+                        style={{ background: "#009688" }}>
                         {resetMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                         Redefinir
                       </button>

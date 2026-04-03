@@ -49,7 +49,7 @@ export default function App() {
   const { data: session, isLoading, isError } = trpc.auth.me.useQuery(undefined, { retry: false });
 
   if (isLoading) return (
-    <div className="flex h-screen items-center justify-center" style={{ background: "#4A148C" }}>
+    <div className="flex h-screen items-center justify-center" style={{ background: "#009688" }}>
       <Loader2 className="h-8 w-8 animate-spin text-white" />
     </div>
   );

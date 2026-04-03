@@ -82,7 +82,7 @@ export default function Desempenho() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#01738d" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
     </div>
   );
 
@@ -110,7 +110,7 @@ export default function Desempenho() {
 
       {/* Header */}
       <div className="rounded-2xl px-6 py-8 text-white"
-        style={{ background: "linear-gradient(135deg, #1e3a5f, #01738d)" }}>
+        style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
         <h1 className="text-2xl font-black mb-1">Desempenho por Tema</h1>
         <p className="text-sm opacity-80">Veja onde você é forte e onde precisa melhorar.</p>
         {hasData && (
@@ -133,7 +133,7 @@ export default function Desempenho() {
 
       {!hasData ? (
         <div className="text-center py-16 space-y-3 card">
-          <Target className="h-12 w-12 mx-auto opacity-30" style={{ color: "#01738d" }} />
+          <Target className="h-12 w-12 mx-auto opacity-30" style={{ color: "#009688" }} />
           <p className="font-semibold" style={{ color: "var(--foreground)" }}>Nenhum dado ainda</p>
           <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
             Complete simulados ou treinos para ver sua análise por tema.

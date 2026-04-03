@@ -176,7 +176,7 @@ export default function AdminRevise() {
     <div className="space-y-6 py-2">
       {/* Header */}
       <div className="rounded-2xl px-6 py-5 text-white flex items-center justify-between gap-4"
-        style={{ background: "linear-gradient(135deg, #7B3FA0, #01738d)" }}>
+        style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
         <div>
           <h1 className="text-xl font-bold">Conteúdos — Revise</h1>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
@@ -231,7 +231,7 @@ export default function AdminRevise() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button onClick={() => setModalData({ ...item })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
-                      <Pencil className="h-3.5 w-3.5" style={{ color: "#01738d" }} />
+                      <Pencil className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                     </button>
                     <button onClick={() => toggleMutation.mutate({ id: item.id, active: !item.active })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title={item.active ? "Ocultar" : "Mostrar"}>
