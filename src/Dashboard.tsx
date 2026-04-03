@@ -12,7 +12,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 const VESTIBULARES = [
   { id: "ENEM",    label: "ENEM",    sub: "45 questões · TRI",          badge: "Nacional", color: "#009688", comingSoon: false },
   { id: "FUVEST",  label: "FUVEST",  sub: "90 questões · 1ª fase",    badge: "USP",      color: "#00695C", comingSoon: true },
-  { id: "UNICAMP", label: "UNICAMP", sub: "72 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: true },
+  { id: "UNICAMP", label: "UNICAMP", sub: "72 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: false },
   { id: "UNESP",   label: "UNESP",   sub: "90 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: true },
 ];
 
@@ -325,7 +325,7 @@ export default function Dashboard() {
       <section>
         <p className="text-xs font-semibold uppercase tracking-wider px-1 mb-2" style={{ color: "var(--muted-foreground)" }}>Simulado completo</p>
         <button
-          onClick={() => active ? navigate("/simulado") : startMutation.mutate({ stage: 3 })}
+          onClick={() => active ? navigate("/simulado") : startMutation.mutate({ stage: 3, fonte: vestibularSelecionado })}
           disabled={startMutation.isPending}
           className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
           style={{ background: "linear-gradient(135deg, #263238, #009688)", border: "none" }}>

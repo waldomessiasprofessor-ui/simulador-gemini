@@ -48,7 +48,11 @@ type Stage = 1 | 2 | 3;
 // =============================================================================
 
 /** Sorteia N questões aleatórias activas do banco */
-async function drawQuestions(db: any, count: number, excludeIds: number[] = []) {
+async function drawQuestions(db: any, count: number, excludeIds: number[] = [], fonte?: string) {
+  const whereClause = fonte
+    ? and(eq(questions.active, true), eq(questions.fonte, fonte))
+    : eq(questions.active, true);
+
   const rows = await db
     .select({
       id: questions.id,
@@ -63,7 +67,7 @@ async function drawQuestions(db: any, count: number, excludeIds: number[] = []) 
       tags: questions.tags,
     })
     .from(questions)
-    .where(eq(questions.active, true))
+    .where(whereClause)
     .orderBy(sql`RAND()`)
     .limit(count + (excludeIds.length > 0 ? excludeIds.length : 0));
 
@@ -95,10 +99,11 @@ export const simulationsRouter = createTRPCRouter({
     .input(
       z.object({
         stage: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+        fonte: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { stage } = input;
+      const { stage, fonte } = input;
       const userId = ctx.user.id;
       const config = STAGE_CONFIG[stage];
 
@@ -124,7 +129,7 @@ export const simulationsRouter = createTRPCRouter({
       // Etapa única: qualquer aluno pode iniciar diretamente
 
       // --- Sorteia questões ---
-      const drawn = await drawQuestions(ctx.db, config.total);
+      const drawn = await drawQuestions(ctx.db, config.total, [], fonte);
 
       if (drawn.length < config.total) {
         throw new TRPCError({
