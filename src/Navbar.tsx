@@ -3,9 +3,15 @@ import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
-  Trophy, Users, LogOut, X, FlaskConical, ChevronRight,
-  User, Mail, Shield, Zap
+  Trophy, Users, LogOut, X, FlaskConical, ChevronRight, ChevronDown,
+  User, Mail, Shield, Zap, GraduationCap
 } from "lucide-react";
+
+const PAULISTAS = [
+  { id: "unicamp", label: "UNICAMP", comingSoon: false },
+  { id: "fuvest",  label: "FUVEST",  comingSoon: true },
+  { id: "unesp",   label: "UNESP",   comingSoon: true },
+];
 
 interface NavLinkItem {
   href: string;
@@ -125,6 +131,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [paulistasOpen, setPaulistasOpen] = useState(false);
   const [location] = useLocation();
   const { data: session } = trpc.auth.me.useQuery();
 
@@ -217,6 +224,61 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          {/* ── Paulistas ── */}
+          <div>
+            <button
+              onClick={() => setPaulistasOpen((o) => !o)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={location.startsWith("/questoes/") || location.startsWith("/simulado/unicamp") || location.startsWith("/simulado/fuvest") || location.startsWith("/simulado/unesp")
+                ? { background: "#E0F2F1", color: "#009688" }
+                : { color: "var(--muted-foreground)" }}>
+              <GraduationCap className="h-4 w-4 flex-shrink-0" />
+              Paulistas
+              {paulistasOpen
+                ? <ChevronDown className="h-3.5 w-3.5 ml-auto" />
+                : <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+            </button>
+
+            {paulistasOpen && (
+              <div className="ml-4 mt-1 space-y-0.5 border-l-2 pl-3" style={{ borderColor: "#00968844" }}>
+                {PAULISTAS.map((p) => (
+                  <div key={p.id}>
+                    {p.comingSoon ? (
+                      <div className="flex items-center justify-between px-3 py-2 rounded-xl opacity-50 cursor-default">
+                        <span className="text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>{p.label}</span>
+                        <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                          style={{ background: "#E0F2F1", color: "#009688" }}>Em breve</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-0.5">
+                        <Link href={`/questoes/${p.id}`}>
+                          <span onClick={() => setSidebarOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all"
+                            style={location === `/questoes/${p.id}`
+                              ? { background: "#E0F2F1", color: "#009688" }
+                              : { color: "var(--muted-foreground)" }}>
+                            <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                            {p.label} — Questões
+                          </span>
+                        </Link>
+                        <Link href={`/simulado/${p.id}`}>
+                          <span onClick={() => setSidebarOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all"
+                            style={location === `/simulado/${p.id}`
+                              ? { background: "#E0F2F1", color: "#009688" }
+                              : { color: "var(--muted-foreground)" }}>
+                            <ClipboardList className="h-3.5 w-3.5 flex-shrink-0" />
+                            {p.label} — Simulado
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         {session && (

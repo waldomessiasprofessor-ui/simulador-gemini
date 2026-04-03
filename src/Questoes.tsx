@@ -69,16 +69,26 @@ function FilterDropdown({ filterTag, setFilterTag }: { filterTag: string; setFil
   );
 }
 
-export default function Questoes() {
+const FONTE_INFO: Record<string, { titulo: string; subtitulo: string }> = {
+  ENEM:    { titulo: "Banco de Questões — ENEM",    subtitulo: "questões de Matemática do ENEM" },
+  UNICAMP: { titulo: "Banco de Questões — UNICAMP", subtitulo: "questões de Matemática da UNICAMP" },
+  FUVEST:  { titulo: "Banco de Questões — FUVEST",  subtitulo: "questões de Matemática da FUVEST" },
+  UNESP:   { titulo: "Banco de Questões — UNESP",   subtitulo: "questões de Matemática da UNESP" },
+};
+
+export default function Questoes({ fonte }: { fonte?: string }) {
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("Todas");
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<number | null>(null);
 
+  const info = fonte ? (FONTE_INFO[fonte] ?? FONTE_INFO["ENEM"]) : FONTE_INFO["ENEM"];
+
   const { data, isLoading } = trpc.questions.list.useQuery({
     page,
     pageSize: 20,
     conteudo: search || undefined,
+    fonte: fonte || undefined,
     activeOnly: true,
     orderBy: "conteudo_principal",
     orderDir: "asc",
@@ -94,10 +104,10 @@ export default function Questoes() {
   return (
     <div className="space-y-6 py-2">
       {/* Cabeçalho */}
-      <div className="rounded-2xl px-6 py-6 text-white" style={{ background: "linear-gradient(135deg, #009688, #009688)" }}>
-        <h1 className="text-xl font-bold">Banco de Questões</h1>
+      <div className="rounded-2xl px-6 py-6 text-white" style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
+        <h1 className="text-xl font-bold">{info.titulo}</h1>
         <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.85)" }}>
-          {data?.pagination.total ?? "—"} questões de Matemática do ENEM
+          {data?.pagination.total ?? "—"} {info.subtitulo}
         </p>
       </div>
 
