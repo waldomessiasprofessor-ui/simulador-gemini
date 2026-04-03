@@ -187,10 +187,6 @@ export default function Dashboard() {
   const { data: qData } = trpc.questions.list.useQuery({ page: 1, pageSize: 1, activeOnly: true, orderBy: "id", orderDir: "desc" });
   const totalQuestions = qData?.pagination.total ?? 0;
 
-  const startMutation = trpc.simulations.start.useMutation({
-    onSuccess: () => navigate("/simulado"),
-    onError: (e) => toast.error(e.message),
-  });
   const utils = trpc.useUtils();
   const abandon = trpc.simulations.abandon?.useMutation?.({
     onSuccess: () => { utils.simulations.getActive.invalidate(); navigate("/simulado"); },
@@ -242,9 +238,10 @@ export default function Dashboard() {
                 }}>
                 {v.label}
               </button>
-              {v.comingSoon && (
-                <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", fontWeight: 600, letterSpacing: "0.05em" }}>Em breve!</span>
-              )}
+              {v.comingSoon
+                ? <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", fontWeight: 600, letterSpacing: "0.05em" }}>Em breve!</span>
+                : <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{v.sub}</span>
+              }
             </div>
           ))}
         </div>
@@ -325,16 +322,13 @@ export default function Dashboard() {
       <section>
         <p className="text-xs font-semibold uppercase tracking-wider px-1 mb-2" style={{ color: "var(--muted-foreground)" }}>Simulado completo</p>
         <button
-          onClick={() => active ? navigate("/simulado") : startMutation.mutate({ stage: 3, fonte: vestibularSelecionado })}
-          disabled={startMutation.isPending}
+          onClick={() => navigate(active ? "/simulado" : `/simulado/${vestibularSelecionado.toLowerCase()}`)}
           className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
           style={{ background: "linear-gradient(135deg, #263238, #009688)", border: "none" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.2)" }}>
-                {startMutation.isPending
-                  ? <Loader2 className="h-5 w-5 text-white animate-spin" />
-                  : <Swords className="h-5 w-5 text-white" />}
+                <Swords className="h-5 w-5 text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2">

@@ -72,6 +72,10 @@ export default function App() {
         <Switch>
           <Route path="/"><Dashboard /></Route>
           <Route path="/simulado"><Simulador /></Route>
+          <Route path="/simulado/enem"><Simulador fonte="ENEM" /></Route>
+          <Route path="/simulado/unicamp"><Simulador fonte="UNICAMP" /></Route>
+          <Route path="/simulado/fuvest"><Simulador fonte="FUVEST" /></Route>
+          <Route path="/simulado/unesp"><Simulador fonte="UNESP" /></Route>
           <Route path="/questoes"><Questoes /></Route>
           <Route path="/resultado/:id">
             {(params) => <Resultado id={Number(params.id)} />}

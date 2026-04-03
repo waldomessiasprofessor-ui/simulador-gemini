@@ -9,7 +9,14 @@ function fmt(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export default function Simulador() {
+const VESTIBULAR_INFO: Record<string, { label: string; desc: string; total: number }> = {
+  ENEM:    { label: "Simulado ENEM",    desc: "45 questões de Matemática com correção pela Teoria de Resposta ao Item — a mesma metodologia usada pelo INEP.", total: 45 },
+  UNICAMP: { label: "Simulado UNICAMP", desc: "Questões de Matemática no estilo da 1ª fase da UNICAMP — múltipla escolha, com 4 alternativas.", total: 45 },
+  FUVEST:  { label: "Simulado FUVEST",  desc: "Questões de Matemática no estilo da 1ª fase da FUVEST — múltipla escolha.", total: 45 },
+  UNESP:   { label: "Simulado UNESP",   desc: "Questões de Matemática no estilo da 1ª fase da UNESP — múltipla escolha.", total: 45 },
+};
+
+export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const { data: active, isLoading } = trpc.simulations.getActive.useQuery(undefined, { staleTime: 0 });
@@ -35,6 +42,8 @@ export default function Simulador() {
     onSuccess: () => { window.location.reload(); },
     onError: (e) => toast.error(e.message),
   });
+
+  const info = VESTIBULAR_INFO[fonte] ?? VESTIBULAR_INFO["ENEM"];
 
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -74,14 +83,12 @@ export default function Simulador() {
     return (
       <div className="space-y-6 py-2">
         <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
-          <h1 className="text-2xl font-bold mb-2">Simulado ENEM</h1>
-          <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.85)" }}>
-            45 questões de Matemática com correção pela Teoria de Resposta ao Item — a mesma metodologia usada pelo INEP.
-          </p>
+          <h1 className="text-2xl font-bold mb-2">{info.label}</h1>
+          <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.85)" }}>{info.desc}</p>
           <div className="flex items-center gap-3 flex-wrap mb-6">
             {[
-              { label: "45", sub: "questões" },
-              { label: "TRI", sub: "correção real" },
+              { label: String(info.total), sub: "questões" },
+              { label: fonte === "ENEM" ? "TRI" : "Acertos", sub: "correção" },
               { label: "3 min", sub: "por questão" },
             ].map(({ label, sub }) => (
               <div key={label} className="px-4 py-2.5 rounded-xl text-xs" style={{ background: "rgba(255,255,255,0.12)" }}>
@@ -91,7 +98,7 @@ export default function Simulador() {
             ))}
           </div>
           <button
-            onClick={() => start.mutate({ stage: 3 })}
+            onClick={() => start.mutate({ stage: 3, fonte })}
             disabled={start.isPending}
             className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm"
             style={{ background: "#fff", color: "#009688" }}
@@ -148,7 +155,7 @@ export default function Simulador() {
                 if (!confirm("Reiniciar descarta TODAS as respostas e começa do zero. Confirmar?")) return;
                 setShowOptions(false);
                 await abandon.mutateAsync({ simulationId: active.simulationId });
-                start.mutate({ stage: 3 });
+                start.mutate({ stage: 3, fonte });
               }}
               disabled={abandon.isPending || start.isPending}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
