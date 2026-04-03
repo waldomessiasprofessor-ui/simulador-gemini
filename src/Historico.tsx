@@ -33,14 +33,14 @@ function TabSimulados() {
     date: sim.completedAt ? format(new Date(sim.completedAt), "dd/MM", { locale: ptBR }) : "",
   }));
 
-  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "#01738d" }} /></div>;
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "#4A148C" }} /></div>;
 
   return (
     <div className="space-y-6">
       {chartData.length > 1 && (
         <div className="rounded-xl p-4" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <p className="font-semibold text-sm mb-3 flex items-center gap-2" style={{ color: "var(--foreground)" }}>
-            <TrendingUp className="h-4 w-4" style={{ color: "#01738d" }} /> Evolução de acertos
+            <TrendingUp className="h-4 w-4" style={{ color: "#4A148C" }} /> Evolução de acertos
           </p>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
@@ -52,8 +52,8 @@ function TabSimulados() {
                 formatter={(v: number) => [v, "Acertos"]}
                 labelFormatter={(l) => `Data: ${l}`}
               />
-              <Line type="monotone" dataKey="acertos" stroke="#01738d" strokeWidth={2}
-                dot={{ r: 3, fill: "#01738d" }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="acertos" stroke="#4A148C" strokeWidth={2}
+                dot={{ r: 3, fill: "#4A148C" }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -205,8 +205,8 @@ function TabErros() {
                     })}
                   </div>
                   {row.comentario_resolucao && (
-                    <div className="rounded-xl p-3" style={{ background: "var(--teal-soft)", border: "1px solid #01738d22" }}>
-                      <p className="text-xs font-semibold mb-1" style={{ color: "#01738d" }}>Resolução</p>
+                    <div className="rounded-xl p-3" style={{ background: "var(--teal-soft)", border: "1px solid #4A148C22" }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: "#4A148C" }}>Resolução</p>
                       <LatexRenderer fontSize="sm">{row.comentario_resolucao}</LatexRenderer>
                     </div>
                   )}
@@ -253,7 +253,7 @@ export default function Historico() {
         <button onClick={() => setTab("simulados")}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
           style={tab === "simulados"
-            ? { background: "#01738d", color: "#fff" }
+            ? { background: "#4A148C", color: "#fff" }
             : { background: "var(--muted)", color: "var(--muted-foreground)" }}>
           <TrendingUp className="h-4 w-4" /> Simulados
         </button>

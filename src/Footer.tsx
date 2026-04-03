@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer style={{ background: "#01738d", marginTop: "4rem" }}>
+    <footer style={{ background: "#4A148C", marginTop: "4rem" }}>
       <div className="container mx-auto px-4 max-w-5xl py-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
 
@@ -65,7 +65,7 @@ export default function Footer() {
         <div className="mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2"
           style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-            © {new Date().getFullYear()} Escola Vetor. Todos os direitos reservados.
+            © {new Date().getFullYear()} Prova Real — Escola Vetor. Todos os direitos reservados.
           </p>
           <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
             Questões do ENEM — uso educacional

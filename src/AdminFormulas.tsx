@@ -14,7 +14,7 @@ const SECOES_PADRAO = [
 ];
 
 const CORES_PADRAO = [
-  { label: "Teal", value: "#01738d" },
+  { label: "Teal", value: "#4A148C" },
   { label: "Roxo", value: "#6B2FA0" },
   { label: "Laranja", value: "#E65100" },
   { label: "Verde", value: "#2E7D32" },
@@ -24,7 +24,7 @@ const CORES_PADRAO = [
 const emptyForm = {
   secao: "",
   secaoCustom: "",
-  cor: "#01738d",
+  cor: "#4A148C",
   titulo: "",
   formula: "",
   descricao: "",
@@ -131,7 +131,7 @@ export default function AdminFormulas() {
 
       {/* Cabeçalho */}
       <div className="rounded-2xl px-6 py-5 text-white flex items-center justify-between gap-4"
-        style={{ background: "linear-gradient(135deg, #2E7D32, #01738d)" }}>
+        style={{ background: "linear-gradient(135deg, #2E7D32, #4A148C)" }}>
         <div>
           <h1 className="text-xl font-bold">Banco de Fórmulas</h1>
           <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.8)" }}>
@@ -239,7 +239,7 @@ export default function AdminFormulas() {
               <label style={labelStyle}>Fórmula (LaTeX — use $$...$$)</label>
               <button onClick={() => setPreview((v) => !v)}
                 className="text-xs font-semibold flex items-center gap-1"
-                style={{ color: "#01738d" }}>
+                style={{ color: "#4A148C" }}>
                 <FlaskConical className="h-3.5 w-3.5" />
                 {preview ? "Editar" : "Pré-visualizar"}
               </button>
@@ -269,7 +269,7 @@ export default function AdminFormulas() {
           <div className="flex gap-3">
             <button onClick={handleSubmit} disabled={isPending}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"
-              style={{ background: "#01738d" }}>
+              style={{ background: "#4A148C" }}>
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {editId ? "Salvar alterações" : "Criar fórmula"}
             </button>
@@ -284,7 +284,7 @@ export default function AdminFormulas() {
       {/* Lista agrupada por seção */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#01738d" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#4A148C" }} />
         </div>
       ) : Object.keys(grouped).length === 0 ? (
         <div className="text-center py-16" style={{ color: "var(--muted-foreground)" }}>
@@ -323,7 +323,7 @@ export default function AdminFormulas() {
 
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button onClick={() => startEdit(f)} className="p-1.5 rounded-lg hover:opacity-70" title="Editar">
-                            <Pencil className="h-3.5 w-3.5" style={{ color: "#01738d" }} />
+                            <Pencil className="h-3.5 w-3.5" style={{ color: "#4A148C" }} />
                           </button>
                           <button onClick={() => toggleMutation.mutate({ id: f.id, active: !f.active })}
                             className="p-1.5 rounded-lg hover:opacity-70" title={f.active ? "Desativar" : "Ativar"}>
@@ -345,9 +345,7 @@ export default function AdminFormulas() {
                             style={{ background: "var(--muted)" }}>
                             <LatexRenderer>{f.formula}</LatexRenderer>
                           </div>
-                          <p className="text-sm" style={{ color: "var(--foreground)" }}>
-                            <LatexRenderer fontSize="sm">{f.descricao}</LatexRenderer>
-                          </p>
+                          <p className="text-sm" style={{ color: "var(--foreground)" }}>{f.descricao}</p>
                         </div>
                       )}
                     </div>

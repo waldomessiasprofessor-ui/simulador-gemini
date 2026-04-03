@@ -10,13 +10,10 @@ import Questoes from "@/Questoes";
 import AdminQuestoes from "@/AdminQuestoes";
 import AdminUsuarios from "@/AdminUsuarios";
 import AdminFormulas from "@/AdminFormulas";
-import AdminRevise from "@/AdminRevise";
 import Treino from "@/Treino";
 import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
 import DesafioPage from "@/DesafioPage";
-import Revise from "@/Revise";
-import Desempenho from "@/Desempenho";
 import Login from "@/Login";
 import { Loader2, AlertTriangle } from "lucide-react";
 
@@ -52,7 +49,7 @@ export default function App() {
   const { data: session, isLoading, isError } = trpc.auth.me.useQuery(undefined, { retry: false });
 
   if (isLoading) return (
-    <div className="flex h-screen items-center justify-center" style={{ background: "#01738d" }}>
+    <div className="flex h-screen items-center justify-center" style={{ background: "#4A148C" }}>
       <Loader2 className="h-8 w-8 animate-spin text-white" />
     </div>
   );
@@ -83,8 +80,6 @@ export default function App() {
           <Route path="/ranking"><Ranking /></Route>
           <Route path="/formulas"><Formulas /></Route>
           <Route path="/desafio"><DesafioPage /></Route>
-          <Route path="/revise"><Revise /></Route>
-          <Route path="/desempenho"><Desempenho /></Route>
           <Route path="/admin/questoes">
             {isAdmin ? <AdminQuestoes /> : <Redirect to="/" />}
           </Route>
@@ -93,9 +88,6 @@ export default function App() {
           </Route>
           <Route path="/admin/formulas">
             {isAdmin ? <AdminFormulas /> : <Redirect to="/" />}
-          </Route>
-          <Route path="/admin/revise">
-            {isAdmin ? <AdminRevise /> : <Redirect to="/" />}
           </Route>
           <Route><Redirect to="/" /></Route>
         </Switch>

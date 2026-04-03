@@ -10,7 +10,7 @@ export default function Ranking() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#01738d" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#4A148C" }} />
     </div>
   );
 
@@ -42,7 +42,7 @@ export default function Ranking() {
                 className="flex items-center gap-4 p-4 rounded-xl"
                 style={{
                   background: entry.isMe ? "#E0F7F4" : "#fff",
-                  border: `1.5px solid ${entry.isMe ? "#01738d55" : "#E2D9EE"}`,
+                  border: `1.5px solid ${entry.isMe ? "#4A148C55" : "#E2D9EE"}`,
                 }}
               >
                 {/* Posição */}
@@ -56,14 +56,14 @@ export default function Ranking() {
 
                 {/* Avatar */}
                 <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{ background: entry.isMe ? "#01738d" : "#E2D9EE", color: entry.isMe ? "#fff" : "#64748B" }}>
+                  style={{ background: entry.isMe ? "#4A148C" : "#E2D9EE", color: entry.isMe ? "#fff" : "#64748B" }}>
                   {entry.userName[0]?.toUpperCase() ?? "?"}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate" style={{ color: "#1A1A2E" }}>
-                    {entry.userName} {entry.isMe && <span className="text-xs font-normal" style={{ color: "#01738d" }}>(você)</span>}
+                    {entry.userName} {entry.isMe && <span className="text-xs font-normal" style={{ color: "#4A148C" }}>(você)</span>}
                   </p>
                   <p className="text-xs" style={{ color: "#94A3B8" }}>
                     {entry.completedAt ? format(new Date(entry.completedAt), "dd/MM/yyyy", { locale: ptBR }) : "—"}
@@ -72,7 +72,7 @@ export default function Ranking() {
 
                 {/* Nota */}
                 <div className="text-right flex-shrink-0">
-                  <p className="text-lg font-black" style={{ color: entry.isMe ? "#01738d" : "#1A1A2E" }}>
+                  <p className="text-lg font-black" style={{ color: entry.isMe ? "#4A148C" : "#1A1A2E" }}>
                     {entry.score != null ? Math.round(entry.score) : "—"}
                   </p>
                   <p className="text-xs" style={{ color: "#94A3B8" }}>pts TRI</p>

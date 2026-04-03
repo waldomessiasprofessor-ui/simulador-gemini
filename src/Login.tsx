@@ -59,23 +59,23 @@ export default function Login() {
     setMode(m); resetLogin(); resetRegister();
   }
 
-  function focusBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "#01738d"; }
+  function focusBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "#4A148C"; }
   function blurBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "#D1D5DB"; }
 
   return (
     <div className="min-h-screen" style={{ background: "#f4f4f4" }}>
       {/* Hero + formulário */}
-      <div style={{ background: "linear-gradient(135deg, #01738d 0%, #004d61 100%)" }}>
+      <div style={{ background: "linear-gradient(135deg, #4A148C 0%, #00838F 100%)" }}>
         <div className="container mx-auto px-4 max-w-5xl py-12 flex flex-col lg:flex-row items-center gap-10">
 
           {/* Branding */}
           <div className="flex-1 text-white">
             <div className="flex items-center gap-3 mb-6">
-              <img src="/logo-vetor.png" alt="Vetor" className="h-14 w-14 object-contain"
+              <img src="/logo-vetor.png" alt="Prova Real" className="h-14 w-14 object-contain"
                 style={{ filter: "brightness(0) invert(1)" }} />
               <div>
-                <p className="font-black text-2xl leading-none tracking-wider">VETOR</p>
-                <p className="text-sm opacity-70">Escola de Talentos · Simulador ENEM</p>
+                <p className="font-black text-2xl leading-none tracking-wider">PROVA REAL</p>
+                <p className="text-sm opacity-70">Escola Vetor · Simulados para vestibulares</p>
               </div>
             </div>
             <h1 className="text-3xl font-black leading-tight mb-3">
@@ -101,7 +101,7 @@ export default function Login() {
                 {(["login", "register"] as const).map((m) => (
                   <button key={m} onClick={() => switchMode(m)}
                     className="flex-1 py-2.5 text-sm font-bold transition-colors rounded-xl"
-                    style={mode === m ? { background: "#01738d", color: "#fff" } : { background: "transparent", color: "#64748B" }}>
+                    style={mode === m ? { background: "#4A148C", color: "#fff" } : { background: "transparent", color: "#64748B" }}>
                     {m === "login" ? "Entrar" : "Criar conta"}
                   </button>
                 ))}
@@ -120,12 +120,12 @@ export default function Login() {
                     {loginErrors.password && <p style={errorStyle}>{loginErrors.password.message}</p>}
                   </div>
                   <button type="submit" disabled={isPending} className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2"
-                    style={{ background: isPending ? "#5BAFC0" : "#01738d", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
+                    style={{ background: isPending ? "#6a1ea8" : "#4A148C", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
                     {isPending && <Loader2 className="h-5 w-5 animate-spin" />} Entrar na conta
                   </button>
                   <p className="text-center text-sm" style={{ color: "#64748B" }}>
                     Não possui conta?{" "}
-                    <button type="button" onClick={() => switchMode("register")} className="font-bold underline" style={{ color: "#01738d" }}>Cadastre-se</button>
+                    <button type="button" onClick={() => switchMode("register")} className="font-bold underline" style={{ color: "#4A148C" }}>Cadastre-se</button>
                   </p>
                 </form>
               )}
@@ -148,12 +148,12 @@ export default function Login() {
                     {registerErrors.password && <p style={errorStyle}>{registerErrors.password.message}</p>}
                   </div>
                   <button type="submit" disabled={isPending} className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2"
-                    style={{ background: isPending ? "#5BAFC0" : "#01738d", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
+                    style={{ background: isPending ? "#6a1ea8" : "#4A148C", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
                     {isPending && <Loader2 className="h-5 w-5 animate-spin" />} Criar minha conta
                   </button>
                   <p className="text-center text-sm" style={{ color: "#64748B" }}>
                     Já possui conta?{" "}
-                    <button type="button" onClick={() => switchMode("login")} className="font-bold underline" style={{ color: "#01738d" }}>Faça login</button>
+                    <button type="button" onClick={() => switchMode("login")} className="font-bold underline" style={{ color: "#4A148C" }}>Faça login</button>
                   </p>
                 </form>
               )}
@@ -170,7 +170,7 @@ export default function Login() {
           {FEATURES.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="rounded-xl p-5" style={{ background: "#fff", border: "1.5px solid #E2D9EE" }}>
               <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "#E0F7F4" }}>
-                <Icon className="h-5 w-5" style={{ color: "#01738d" }} />
+                <Icon className="h-5 w-5" style={{ color: "#4A148C" }} />
               </div>
               <h3 className="font-bold text-sm mb-1" style={{ color: "#1A1A2E" }}>{title}</h3>
               <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
@@ -178,7 +178,7 @@ export default function Login() {
           ))}
         </div>
         <p className="text-center text-xs mt-10" style={{ color: "#94A3B8" }}>
-          © {new Date().getFullYear()} Escola Vetor · Todos os direitos reservados
+          © {new Date().getFullYear()} Escola Prova Real · Todos os direitos reservados
         </p>
       </div>
     </div>
