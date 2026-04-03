@@ -1274,7 +1274,7 @@ export default function AdminQuestoes() {
                     <span className="text-xs font-bold w-8 flex-shrink-0 mt-0.5" style={{ color: "#94A3B8" }}>#{q.id}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold" style={{ color: "#1A1A2E" }}>{q.conteudo_principal}</p>
-                      <p className="text-xs" style={{ color: "#94A3B8" }}>ENEM {q.ano} · {q.nivel_dificuldade} · Gabarito: {q.gabarito}</p>
+                      <p className="text-xs" style={{ color: "#94A3B8" }}>{q.fonte} {q.ano} · {q.nivel_dificuldade} · Gabarito: {q.gabarito}</p>
                       {qTags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {qTags.map((tag: string) => (

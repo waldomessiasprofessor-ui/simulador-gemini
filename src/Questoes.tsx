@@ -176,7 +176,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                       {q.conteudo_principal}
                     </p>
                     <p className="text-xs" style={{ color: "#94A3B8" }}>
-                      ENEM {q.ano ?? ""} · {q.nivel_dificuldade}
+                      {q.fonte} {q.ano ?? ""} · {q.nivel_dificuldade}
                     </p>
                     {qTags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
