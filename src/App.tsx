@@ -10,6 +10,7 @@ import Questoes from "@/Questoes";
 import AdminQuestoes from "@/AdminQuestoes";
 import AdminUsuarios from "@/AdminUsuarios";
 import AdminFormulas from "@/AdminFormulas";
+import AdminRevise from "@/AdminRevise";
 import Treino from "@/Treino";
 import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
@@ -88,6 +89,9 @@ export default function App() {
           </Route>
           <Route path="/admin/formulas">
             {isAdmin ? <AdminFormulas /> : <Redirect to="/" />}
+          </Route>
+          <Route path="/admin/revise">
+            {isAdmin ? <AdminRevise /> : <Redirect to="/" />}
           </Route>
           <Route><Redirect to="/" /></Route>
         </Switch>

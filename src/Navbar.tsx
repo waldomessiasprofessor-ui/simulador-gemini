@@ -26,6 +26,7 @@ const NAV_LINKS: NavLinkItem[] = [
   { href: "/admin/questoes", label: "Admin — questões", icon: Users, adminOnly: true },
   { href: "/admin/usuarios", label: "Admin — usuários", icon: Users, adminOnly: true },
   { href: "/admin/formulas", label: "Admin — fórmulas", icon: FlaskConical, adminOnly: true },
+  { href: "/admin/revise", label: "Admin — revise", icon: BookOpen, adminOnly: true },
 ];
 
 function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void }) {
