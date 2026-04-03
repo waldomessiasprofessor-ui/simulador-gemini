@@ -736,6 +736,8 @@ const TAGS_CONTEUDO = [
   "Logaritmos",
 ];
 
+const NIVEIS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const;
+
 const emptyForm = {
   fonte: "ENEM",
   ano: new Date().getFullYear(),
