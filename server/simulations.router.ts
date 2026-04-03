@@ -106,6 +106,7 @@ export const simulationsRouter = createTRPCRouter({
       const { stage, fonte } = input;
       const userId = ctx.user.id;
       const config = STAGE_CONFIG[stage];
+      const total = fonte && fonte !== "ENEM" ? 12 : config.total;
 
       // --- Verifica se já existe simulado em andamento ---
       const [existing] = await ctx.db
@@ -129,12 +130,12 @@ export const simulationsRouter = createTRPCRouter({
       // Etapa única: qualquer aluno pode iniciar diretamente
 
       // --- Sorteia questões ---
-      const drawn = await drawQuestions(ctx.db, config.total, [], fonte);
+      const drawn = await drawQuestions(ctx.db, total, [], fonte);
 
-      if (drawn.length < config.total) {
+      if (drawn.length < total) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: `Banco de questões insuficiente. Necessário: ${config.total}, disponível: ${drawn.length}.`,
+          message: `Banco de questões insuficiente. Necessário: ${total}, disponível: ${drawn.length}.`,
         });
       }
 
@@ -142,7 +143,7 @@ export const simulationsRouter = createTRPCRouter({
       const newSim: NewSimulation = {
         userId,
         stage,
-        totalQuestions: config.total,
+        totalQuestions: total,
         status: "in_progress",
       };
 
