@@ -224,13 +224,23 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini não retornou conteúdo. Verifique a cota da API ou tente novamente." });
       }
 
-      try {
-        const audit = JSON.parse(rawText);
-        return { success: true, audit, questionId: q.id };
-      } catch {
-        const preview = rawText.slice(0, 400);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Gemini retornou JSON inválido mesmo com modo estruturado. Início: ${preview}` });
+      // Tenta parsear direto; se falhar (LaTeX com \frac etc. não escapado),
+      // corrige as barras invertidas soltas antes de tentar de novo.
+      const parseJson = (text: string) => {
+        try { return JSON.parse(text); } catch { return null; }
+      };
+
+      const SAFE_PLACEHOLDER = "\x00\x00";
+      const fixedText = rawText
+        .replace(/\\\\/g, SAFE_PLACEHOLDER)   // protege \\ já escapados
+        .replace(/\\/g, "\\\\")                // escapa \ sozinhos → \\
+        .replace(new RegExp(SAFE_PLACEHOLDER.replace(/\x00/g, "\\x00"), "g"), "\\\\"); // restaura \\
+
+      const audit = parseJson(rawText) ?? parseJson(fixedText);
+      if (!audit) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini retornou resposta que não pôde ser interpretada. Tente novamente." });
       }
+      return { success: true, audit, questionId: q.id };
     }),
 
   // ─── Auditoria com Claude ──────────────────────────────────────────────────
