@@ -147,13 +147,22 @@ export const questionsRouter = createTRPCRouter({
         ? (q.tags as string[]).join(", ")
         : "Nenhuma tag definida";
 
-      const prompt = `Você é um especialista em elaboração de questões para o ENEM. Analise a questão abaixo com rigor técnico e pedagógico.
+      const systemInstruction = `Você é um especialista em elaboração de questões para o ENEM e vestibulares brasileiros.
 
-QUESTÃO #${q.id}
+REGRAS ABSOLUTAS DE FORMATAÇÃO — nunca as ignore:
+1. Responda SEMPRE em português do Brasil. Nunca em inglês.
+2. Toda expressão matemática DEVE estar em LaTeX com delimitadores $ ou $$.
+   - Inline: $P = \\frac{1}{2}$, $x^2 + 3x - 4 = 0$, $\\frac{3}{4}$
+   - Bloco:  $$P(A) = \\frac{1}{2} \\cdot \\frac{1}{2} = \\frac{1}{4}$$
+3. PROIBIDO escrever fórmulas em texto puro: nunca "1/2", "x^2", "(1/2)^3" — sempre dentro de $.
+4. PROIBIDO usar crases ou backticks para qualquer coisa matemática.
+5. O campo "comentario_resolucao_reescrito" deve ser uma resolução passo a passo completa, inteiramente em LaTeX com $...$ e $$...$$, explicada em português.`;
+
+      const prompt = `QUESTÃO #${q.id}
+Fonte: ${q.fonte} · Ano: ${q.ano ?? "Não informado"}
 Conteúdo declarado: ${q.conteudo_principal}
 Tags atuais: ${tagsAtuais}
 Dificuldade declarada: ${q.nivel_dificuldade}
-Ano: ${q.ano ?? "Não informado"}
 
 ENUNCIADO:
 ${q.enunciado}
@@ -162,33 +171,36 @@ ALTERNATIVAS:
 ${alts}
 
 GABARITO DECLARADO: ${q.gabarito}
-RESOLUÇÃO: ${q.comentario_resolucao ?? "Não informada"}
+RESOLUÇÃO EXISTENTE: ${q.comentario_resolucao ?? "Não informada"}
 
 TAGS DISPONÍVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
 ${TAGS_VALIDAS.join(", ")}
 
-Responda em JSON puro (sem markdown) com exatamente esta estrutura:
+Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta estrutura:
 {
   "disciplina": "Matemática" | "Física" | "Química" | "Outra",
-  "disciplina_justificativa": "Breve explicação de por que classificou como esta disciplina",
+  "disciplina_justificativa": "Breve explicação em português",
   "gabarito_correto": true | false,
   "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
   "dificuldade_real": "Muito Baixa" | "Baixa" | "Média" | "Alta" | "Muito Alta",
   "dificuldade_compativel": true | false,
-  "tags_sugeridas": ["array com as tags da lista acima que se aplicam a esta questão"],
+  "tags_sugeridas": ["array com as tags da lista acima que se aplicam"],
   "tags_atuais_corretas": true | false,
   "nota_qualidade": 1 a 10,
-  "problemas": ["lista de problemas encontrados, ou array vazio se nenhum"],
-  "sugestoes": ["lista de sugestões de melhoria"],
-  "parecer": "Texto curto de 2-3 frases com avaliação geral",
-  "enunciado_reescrito": "Enunciado melhorado com base nas sugestões, ou null se não precisar de mudanças",
-  "comentario_resolucao_reescrito": "Resolução melhorada ou complementada, ou null se não precisar de mudanças"
+  "problemas": ["lista de problemas em português, ou array vazio se nenhum"],
+  "sugestoes": ["lista de sugestões em português"],
+  "parecer": "Texto de 2-3 frases em português com avaliação geral",
+  "enunciado_reescrito": "Enunciado melhorado em português com LaTeX correto, ou null",
+  "comentario_resolucao_reescrito": "Resolução passo a passo COMPLETA em português com LaTeX ($...$ e $$...$$) para TODA expressão matemática, ou null"
 }`;
 
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
       });
 
       if (!res.ok) {
@@ -239,7 +251,19 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
         ? (q.tags as string[]).join(", ")
         : "Nenhuma tag definida";
 
+      const latexInstructions = `
+REGRAS OBRIGATÓRIAS DE FORMATAÇÃO (siga sem exceção):
+- Responda SEMPRE em português do Brasil.
+- Use LaTeX para todas as expressões matemáticas.
+- Fórmulas inline: $f(x)$, $T^2 - 4$, $P = \\frac{1}{2}$
+- Fórmulas em bloco (equações centralizadas): $$V = T^2 - 4$$
+- NUNCA use crases, backticks (\`) ou markdown para math. Apenas $ e $$.
+- NUNCA escreva fórmulas em texto puro como "T^2-4" — sempre com $.
+- Textos normais (parecer, problemas, sugestões) em português corrido, sem LaTeX desnecessário.`;
+
       const prompt = `Você é um especialista em elaboração de questões para o ENEM e vestibulares brasileiros. Analise a questão abaixo com rigor técnico e pedagógico.
+
+${latexInstructions}
 
 QUESTÃO #${q.id}
 Fonte: ${q.fonte} · Ano: ${q.ano ?? "Não informado"}
@@ -259,22 +283,22 @@ RESOLUÇÃO: ${q.comentario_resolucao ?? "Não informada"}
 TAGS DISPONÍVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
 ${TAGS_VALIDAS.join(", ")}
 
-Responda em JSON puro (sem markdown) com exatamente esta estrutura:
+Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta estrutura:
 {
   "disciplina": "Matemática" | "Física" | "Química" | "Outra",
-  "disciplina_justificativa": "Breve explicação de por que classificou como esta disciplina",
+  "disciplina_justificativa": "Breve explicação em português",
   "gabarito_correto": true | false,
   "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
   "dificuldade_real": "Muito Baixa" | "Baixa" | "Média" | "Alta" | "Muito Alta",
   "dificuldade_compativel": true | false,
-  "tags_sugeridas": ["array com as tags da lista acima que se aplicam a esta questão"],
+  "tags_sugeridas": ["array com as tags da lista acima que se aplicam"],
   "tags_atuais_corretas": true | false,
   "nota_qualidade": 1 a 10,
-  "problemas": ["lista de problemas encontrados, ou array vazio se nenhum"],
-  "sugestoes": ["lista de sugestões de melhoria"],
-  "parecer": "Texto curto de 2-3 frases com avaliação geral",
-  "enunciado_reescrito": "Enunciado melhorado com base nas sugestões, ou null se não precisar de mudanças",
-  "comentario_resolucao_reescrito": "Resolução melhorada ou complementada, ou null se não precisar de mudanças"
+  "problemas": ["lista de problemas em português, ou array vazio se nenhum"],
+  "sugestoes": ["lista de sugestões em português"],
+  "parecer": "Texto de 2-3 frases em português com avaliação geral",
+  "enunciado_reescrito": "Enunciado melhorado em português com LaTeX correto, ou null",
+  "comentario_resolucao_reescrito": "Resolução passo a passo em português com LaTeX correto ($...$ e $$...$$), ou null"
 }`;
 
       const client = new Anthropic({ apiKey });
