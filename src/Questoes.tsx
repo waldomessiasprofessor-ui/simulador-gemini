@@ -29,6 +29,8 @@ const TAGS_CONTEUDO = [
   "Matemática Financeira",
   "Análise Combinatória",
   "Logaritmos",
+  "Noções de Lógica Matemática",
+  "Áreas de Figuras Planas",
 ];
 
 function FilterDropdown({ filterTag, setFilterTag }: { filterTag: string; setFilterTag: (t: string) => void }) {

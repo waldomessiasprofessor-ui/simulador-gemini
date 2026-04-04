@@ -734,6 +734,8 @@ const TAGS_CONTEUDO = [
   "Matemática Financeira",
   "Análise Combinatória",
   "Logaritmos",
+  "Noções de Lógica Matemática",
+  "Áreas de Figuras Planas",
 ];
 
 const NIVEIS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const;
