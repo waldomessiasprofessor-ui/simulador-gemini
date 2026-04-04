@@ -224,19 +224,31 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini não retornou conteúdo. Verifique a cota da API ou tente novamente." });
       }
 
-      // Tenta parsear direto; se falhar (LaTeX com \frac etc. não escapado),
-      // corrige as barras invertidas soltas antes de tentar de novo.
+      // Tenta parsear direto; se falhar (LaTeX com \frac, \cdot etc. não escapado),
+      // corrige barras invertidas preservando os escapes válidos de JSON (\n \r \t \b \\).
       const parseJson = (text: string) => {
         try { return JSON.parse(text); } catch { return null; }
       };
 
-      const SAFE_PLACEHOLDER = "\x00\x00";
-      const fixedText = rawText
-        .replace(/\\\\/g, SAFE_PLACEHOLDER)   // protege \\ já escapados
-        .replace(/\\/g, "\\\\")                // escapa \ sozinhos → \\
-        .replace(new RegExp(SAFE_PLACEHOLDER.replace(/\x00/g, "\\x00"), "g"), "\\\\"); // restaura \\
+      const fixLatexBackslashes = (raw: string) => {
+        // Usa placeholders para proteger os escapes JSON válidos antes de tocar em qualquer \
+        return raw
+          .replace(/\\\\/g, "\x00DS\x00")  // \\ → placeholder (barra dupla já correta)
+          .replace(/\\n/g,   "\x00NL\x00") // \n → placeholder (newline)
+          .replace(/\\r/g,   "\x00CR\x00") // \r → placeholder (carriage return)
+          .replace(/\\t/g,   "\x00TB\x00") // \t → placeholder (tab)
+          .replace(/\\b/g,   "\x00BS\x00") // \b → placeholder (backspace)
+          .replace(/\\"/g,   "\x00QT\x00") // \" → placeholder (aspas)
+          .replace(/\\/g,    "\\\\")        // todas as \ restantes são LaTeX → escapa
+          .replace(/\x00DS\x00/g, "\\\\")  // restaura \\
+          .replace(/\x00NL\x00/g, "\\n")   // restaura \n
+          .replace(/\x00CR\x00/g, "\\r")   // restaura \r
+          .replace(/\x00TB\x00/g, "\\t")   // restaura \t
+          .replace(/\x00BS\x00/g, "\\b")   // restaura \b
+          .replace(/\x00QT\x00/g, '\\"');  // restaura \"
+      };
 
-      const audit = parseJson(rawText) ?? parseJson(fixedText);
+      const audit = parseJson(rawText) ?? parseJson(fixLatexBackslashes(rawText));
       if (!audit) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini retornou resposta que não pôde ser interpretada. Tente novamente." });
       }
