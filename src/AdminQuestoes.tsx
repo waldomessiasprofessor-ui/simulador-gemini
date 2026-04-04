@@ -225,9 +225,11 @@ const DISCIPLINA_COLORS: Record<string, { bg: string; border: string; text: stri
   "Outra":      { bg: "#F3E5F5", border: "#CE93D8", text: "#4A148C", badge: "#7B1FA2" },
 };
 
-function AuditModal({ questionId, onClose }: { questionId: number; onClose: () => void }) {
+function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: number; onClose: () => void; provider?: "gemini" | "claude" }) {
   const utils = trpc.useUtils();
-  const auditMutation = trpc.questions.auditQuestion.useMutation();
+  const geminiMutation = trpc.questions.auditQuestion.useMutation();
+  const claudeMutation = trpc.questions.auditQuestionClaude.useMutation();
+  const auditMutation = provider === "claude" ? claudeMutation : geminiMutation;
   const applyMutation = trpc.questions.applyAuditFixes.useMutation({
     onSuccess: (data) => {
       toast.success(`✅ ${data.applied.length} correção(ões) aplicada(s) com sucesso!`);
@@ -302,10 +304,10 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
 
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)", color: "#fff" }}>
+          style={{ background: provider === "claude" ? "linear-gradient(135deg, #263238, #009688)" : "linear-gradient(135deg, #1A1A2E, #521F80)", color: "#fff" }}>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-yellow-300" />
-            <span className="font-bold">Auditoria Gemini — Questão #{questionId}</span>
+            <span className="font-bold">Auditoria {provider === "claude" ? "Claude" : "Gemini"} — Questão #{questionId}</span>
           </div>
           <button onClick={onClose}><X className="h-5 w-5 opacity-80 hover:opacity-100" /></button>
         </div>
@@ -316,7 +318,7 @@ function AuditModal({ questionId, onClose }: { questionId: number; onClose: () =
           {!auditMutation.isPending && !audit && !auditMutation.error && (
             <div className="text-center py-6 space-y-4">
               <div className="h-16 w-16 rounded-2xl mx-auto flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)" }}>
+                style={{ background: provider === "claude" ? "linear-gradient(135deg, #263238, #009688)" : "linear-gradient(135deg, #1A1A2E, #521F80)" }}>
                 <Sparkles className="h-8 w-8 text-yellow-300" />
               </div>
               <div>
@@ -836,6 +838,7 @@ export default function AdminQuestoes() {
   const [showForm, setShowForm] = useState(false);
   const [showLatexImport, setShowLatexImport] = useState(false);
   const [auditQuestionId, setAuditQuestionId] = useState<number | null>(null);
+  const [auditProvider, setAuditProvider] = useState<"gemini" | "claude">("gemini");
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<Form>(emptyForm);
   const [openId, setOpenId] = useState<number | null>(null);
@@ -1294,8 +1297,11 @@ export default function AdminQuestoes() {
 
                   {/* Acções */}
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => setAuditQuestionId(q.id)} className="p-1.5 rounded-lg hover:bg-purple-50" title="Auditar com Gemini">
+                    <button onClick={() => { setAuditProvider("gemini"); setAuditQuestionId(q.id); }} className="p-1.5 rounded-lg hover:bg-purple-50" title="Auditar com Gemini">
                       <Sparkles className="h-3.5 w-3.5" style={{ color: "#521F80" }} />
+                    </button>
+                    <button onClick={() => { setAuditProvider("claude"); setAuditQuestionId(q.id); }} className="p-1.5 rounded-lg hover:bg-teal-50" title="Auditar com Claude">
+                      <Sparkles className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                     </button>
                     <button onClick={() => startEdit(q)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
                       <Pencil className="h-3.5 w-3.5" style={{ color: "#01738d" }} />
@@ -1364,11 +1370,12 @@ export default function AdminQuestoes() {
         </div>
       )}
 
-      {/* Modal auditoria Gemini */}
+      {/* Modal auditoria */}
       {auditQuestionId && (
         <AuditModal
           questionId={auditQuestionId}
           onClose={() => setAuditQuestionId(null)}
+          provider={auditProvider}
         />
       )}
 

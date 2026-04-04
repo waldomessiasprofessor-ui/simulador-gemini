@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, adminProcedure } from "./trpc";
 import { questions, simulationAnswers } from "./schema";
 import type { NewQuestion } from "./schema";
+import Anthropic from "@anthropic-ai/sdk";
 
 const NivelDificuldadeEnum = z.enum(["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"]);
 
@@ -204,6 +205,93 @@ Responda em JSON puro (sem markdown) com exatamente esta estrutura:
         return { success: true, audit, questionId: q.id };
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "O Gemini retornou uma resposta em formato inválido. Tente novamente." });
+      }
+    }),
+
+  // ─── Auditoria com Claude ──────────────────────────────────────────────────
+
+  auditQuestionClaude: adminProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "ANTHROPIC_API_KEY não configurada no servidor. Adicione a variável no Railway." });
+
+      const [q] = await ctx.db.select().from(questions).where(eq(questions.id, input.id)).limit(1);
+      if (!q) throw new TRPCError({ code: "NOT_FOUND", message: "Questão não encontrada." });
+
+      const alts = Object.entries(q.alternativas as Record<string, any>)
+        .sort()
+        .map(([k, v]) => `${k}) ${typeof v === "object" ? v.text ?? "" : v}`)
+        .join("\n");
+
+      const TAGS_VALIDAS = [
+        "Razão, Proporção e Regra de Três", "Porcentagem", "Escala", "Operações Básicas",
+        "Conversão de Unidades", "Geometria Espacial", "Geometria Plana",
+        "Visualização Espacial/Projeção Ortogonal", "Trigonometria", "Leitura de Gráficos e Tabelas",
+        "Medidas de Tendência Central", "Estatística", "Probabilidade", "Funções de 1º e 2º Grau",
+        "Função do Primeiro Grau", "Função Quadrática", "Função Exponencial", "Função Logarítmica",
+        "Equações e Inequações", "Sequências", "Progressão Aritmética", "Progressão Geométrica",
+        "Matemática Financeira", "Análise Combinatória", "Logaritmos",
+        "Noções de Lógica Matemática", "Áreas de Figuras Planas",
+      ];
+
+      const tagsAtuais = Array.isArray(q.tags) && q.tags.length > 0
+        ? (q.tags as string[]).join(", ")
+        : "Nenhuma tag definida";
+
+      const prompt = `Você é um especialista em elaboração de questões para o ENEM e vestibulares brasileiros. Analise a questão abaixo com rigor técnico e pedagógico.
+
+QUESTÃO #${q.id}
+Fonte: ${q.fonte} · Ano: ${q.ano ?? "Não informado"}
+Conteúdo declarado: ${q.conteudo_principal}
+Tags atuais: ${tagsAtuais}
+Dificuldade declarada: ${q.nivel_dificuldade}
+
+ENUNCIADO:
+${q.enunciado}
+
+ALTERNATIVAS:
+${alts}
+
+GABARITO DECLARADO: ${q.gabarito}
+RESOLUÇÃO: ${q.comentario_resolucao ?? "Não informada"}
+
+TAGS DISPONÍVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
+${TAGS_VALIDAS.join(", ")}
+
+Responda em JSON puro (sem markdown) com exatamente esta estrutura:
+{
+  "disciplina": "Matemática" | "Física" | "Química" | "Outra",
+  "disciplina_justificativa": "Breve explicação de por que classificou como esta disciplina",
+  "gabarito_correto": true | false,
+  "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
+  "dificuldade_real": "Muito Baixa" | "Baixa" | "Média" | "Alta" | "Muito Alta",
+  "dificuldade_compativel": true | false,
+  "tags_sugeridas": ["array com as tags da lista acima que se aplicam a esta questão"],
+  "tags_atuais_corretas": true | false,
+  "nota_qualidade": 1 a 10,
+  "problemas": ["lista de problemas encontrados, ou array vazio se nenhum"],
+  "sugestoes": ["lista de sugestões de melhoria"],
+  "parecer": "Texto curto de 2-3 frases com avaliação geral",
+  "enunciado_reescrito": "Enunciado melhorado com base nas sugestões, ou null se não precisar de mudanças",
+  "comentario_resolucao_reescrito": "Resolução melhorada ou complementada, ou null se não precisar de mudanças"
+}`;
+
+      const client = new Anthropic({ apiKey });
+      const message = await client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 2048,
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      const rawText = message.content[0].type === "text" ? message.content[0].text : "";
+      const clean = rawText.replace(/```json|```/g, "").trim();
+
+      try {
+        const audit = JSON.parse(clean);
+        return { success: true, audit, questionId: q.id };
+      } catch {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Claude retornou uma resposta em formato inválido. Tente novamente." });
       }
     }),
 
