@@ -135,12 +135,15 @@ export const questionsRouter = createTRPCRouter({
         .join("\n");
 
       const TAGS_VALIDAS = [
-        "Razão, Proporção e Regra de Três", "Porcentagem", "Escala", "Operações Básicas",
-        "Conversão de Unidades", "Geometria Espacial", "Geometria Plana",
-        "Visualização Espacial/Projeção Ortogonal", "Trigonometria", "Leitura de Gráficos e Tabelas",
-        "Medidas de Tendência Central", "Estatística", "Probabilidade", "Funções de 1º e 2º Grau",
-        "Funções de 1º e 2º Grau", "Função do Primeiro Grau", "Função Quadrática", "Função Exponencial", "Função Logarítmica",
-        "Equações e Inequações", "Sequências", "Progressão Aritmética", "Progressão Geométrica", "Matemática Financeira", "Análise Combinatória", "Logaritmos",
+        "Análise Combinatória", "Áreas de Figuras Planas", "Conversão de Unidades",
+        "Equações e Inequações", "Escala", "Estatística",
+        "Função do Primeiro Grau", "Função Exponencial", "Função Logarítmica", "Função Quadrática",
+        "Funções de 1º e 2º Grau", "Geometria Espacial", "Geometria Plana",
+        "Leitura de Gráficos e Tabelas", "Logaritmos", "Matemática Financeira",
+        "Medidas de Tendência Central", "Noções de Lógica Matemática", "Operações Básicas",
+        "Porcentagem", "Probabilidade", "Progressão Aritmética", "Progressão Geométrica",
+        "Razão, Proporção e Regra de Três", "Sequências", "Trigonometria",
+        "Visualização Espacial/Projeção Ortogonal",
       ];
 
       const tagsAtuais = Array.isArray(q.tags) && q.tags.length > 0
@@ -209,14 +212,25 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       }
 
       const data = await res.json();
+
+      const finishReason = data.candidates?.[0]?.finishReason;
+      if (finishReason && finishReason !== "STOP") {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Gemini encerrou com motivo: ${finishReason}. Tente novamente ou simplifique a questão.` });
+      }
+
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-      const clean = rawText.replace(/```json|```/g, "").trim();
+      if (!rawText) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini não retornou conteúdo. Verifique a cota da API ou tente novamente." });
+      }
+
+      const clean = rawText.replace(/```json\n?|```/g, "").trim();
 
       try {
         const audit = JSON.parse(clean);
         return { success: true, audit, questionId: q.id };
       } catch {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "O Gemini retornou uma resposta em formato inválido. Tente novamente." });
+        const preview = clean.slice(0, 300);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Gemini retornou JSON inválido. Início da resposta: ${preview}` });
       }
     }),
 
