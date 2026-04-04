@@ -158,8 +158,9 @@ REGRAS ABSOLUTAS DE FORMATAÇÃO — nunca as ignore:
    - Inline: $P = \\frac{1}{2}$, $x^2 + 3x - 4 = 0$, $\\frac{3}{4}$
    - Bloco:  $$P(A) = \\frac{1}{2} \\cdot \\frac{1}{2} = \\frac{1}{4}$$
 3. PROIBIDO escrever fórmulas em texto puro: nunca "1/2", "x^2", "(1/2)^3" — sempre dentro de $.
-4. PROIBIDO usar crases ou backticks para qualquer coisa matemática.
-5. O campo "comentario_resolucao_reescrito" deve ser uma resolução passo a passo completa, inteiramente em LaTeX com $...$ e $$...$$, explicada em português.`;
+4. PROIBIDO usar crases, backticks ou marcação markdown (**, *, _) nos campos de texto.
+5. Moeda brasileira: escreva sempre "R$ 675,00" como texto simples — NUNCA use "R\\$" nem coloque valores monetários dentro de $ $.
+6. O campo "comentario_resolucao_reescrito" deve ser uma resolução passo a passo completa em português, com expressões matemáticas em $...$ ou $$...$$, e texto corrido sem markdown.`;
 
       const prompt = `QUESTÃO #${q.id}
 Fonte: ${q.fonte} · Ano: ${q.ano ?? "Não informado"}
@@ -231,21 +232,19 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       };
 
       const fixLatexBackslashes = (raw: string) => {
-        // Usa placeholders para proteger os escapes JSON válidos antes de tocar em qualquer \
+        // Protege APENAS os escapes JSON que o Gemini realmente usa em texto corrido:
+        //   \\ (barra literal), \" (aspas), \n (quebra de parágrafo)
+        // Todo o resto (\t \b \f \r) em contexto matemático é LaTeX:
+        //   \t → \times \theta \tau | \b → \beta \bar | \f → \frac | \r → \rho
+        // Deixamos esses serem corrigidos para \\ + letra, que é o escape correto em JSON.
         return raw
-          .replace(/\\\\/g, "\x00DS\x00")  // \\ → placeholder (barra dupla já correta)
-          .replace(/\\n/g,   "\x00NL\x00") // \n → placeholder (newline)
-          .replace(/\\r/g,   "\x00CR\x00") // \r → placeholder (carriage return)
-          .replace(/\\t/g,   "\x00TB\x00") // \t → placeholder (tab)
-          .replace(/\\b/g,   "\x00BS\x00") // \b → placeholder (backspace)
-          .replace(/\\"/g,   "\x00QT\x00") // \" → placeholder (aspas)
-          .replace(/\\/g,    "\\\\")        // todas as \ restantes são LaTeX → escapa
+          .replace(/\\\\/g, "\x00DS\x00")  // protege \\ (já correto)
+          .replace(/\\"/g,   "\x00QT\x00") // protege \" (aspas escapadas)
+          .replace(/\\n/g,   "\x00NL\x00") // protege \n (Gemini usa para parágrafos)
+          .replace(/\\/g,    "\\\\")        // escapa todas as \ restantes (são LaTeX)
           .replace(/\x00DS\x00/g, "\\\\")  // restaura \\
-          .replace(/\x00NL\x00/g, "\\n")   // restaura \n
-          .replace(/\x00CR\x00/g, "\\r")   // restaura \r
-          .replace(/\x00TB\x00/g, "\\t")   // restaura \t
-          .replace(/\x00BS\x00/g, "\\b")   // restaura \b
-          .replace(/\x00QT\x00/g, '\\"');  // restaura \"
+          .replace(/\x00QT\x00/g, '\\"')   // restaura \"
+          .replace(/\x00NL\x00/g, "\\n");  // restaura \n
       };
 
       const audit = parseJson(rawText) ?? parseJson(fixLatexBackslashes(rawText));
