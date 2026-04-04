@@ -203,6 +203,7 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
         body: JSON.stringify({
           system_instruction: { parts: [{ text: systemInstruction }] },
           contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" },
         }),
       });
 
@@ -223,14 +224,12 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini não retornou conteúdo. Verifique a cota da API ou tente novamente." });
       }
 
-      const clean = rawText.replace(/```json\n?|```/g, "").trim();
-
       try {
-        const audit = JSON.parse(clean);
+        const audit = JSON.parse(rawText);
         return { success: true, audit, questionId: q.id };
       } catch {
-        const preview = clean.slice(0, 300);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Gemini retornou JSON inválido. Início da resposta: ${preview}` });
+        const preview = rawText.slice(0, 400);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Gemini retornou JSON inválido mesmo com modo estruturado. Início: ${preview}` });
       }
     }),
 
