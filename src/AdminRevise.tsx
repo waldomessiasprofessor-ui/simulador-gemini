@@ -15,8 +15,6 @@ type FormData = {
   active: boolean;
 };
 
-type ContentMode = "texto" | "pdf";
-
 const emptyForm = (): FormData => ({ titulo: "", conteudo: "", url_pdf: null, topico: "", active: true });
 
 const inputStyle: React.CSSProperties = {
@@ -51,13 +49,11 @@ function FormModal({ initial, onSave, onClose }: {
   onClose: () => void;
 }) {
   const [form, setForm] = useState<FormData>(initial ?? emptyForm());
-  const [mode, setMode] = useState<ContentMode>(initial?.url_pdf ? "pdf" : "texto");
   const [preview, setPreview] = useState(false);
 
   function validate(): string | null {
     if (!form.titulo.trim()) return "Título obrigatório.";
-    if (mode === "texto" && !form.conteudo.trim()) return "Conteúdo obrigatório.";
-    if (mode === "pdf" && !form.url_pdf) return "Faça o upload do PDF antes de salvar.";
+    if (!form.conteudo.trim() && !form.url_pdf) return "Preencha o texto ou adicione um link de PDF.";
     return null;
   }
 
@@ -83,100 +79,70 @@ function FormModal({ initial, onSave, onClose }: {
           onChange={v => setForm(f => ({ ...f, topico: v }))}
           placeholder="Ex: Álgebra" />
 
-        {/* Toggle modo */}
-        <div>
-          <label className="block text-xs font-semibold mb-2" style={{ color: "var(--muted-foreground)" }}>
-            Tipo de conteúdo
+        {/* ── Texto / LaTeX ── */}
+        <div className="space-y-2">
+          <label className="block text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            Texto / LaTeX <span className="font-normal">(opcional)</span>
           </label>
-          <div className="flex gap-2">
-            {(["texto", "pdf"] as ContentMode[]).map(m => (
-              <button key={m} onClick={() => setMode(m)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                style={{
-                  background: mode === m ? "#7B3FA0" : "var(--secondary)",
-                  color: mode === m ? "#fff" : "var(--foreground)",
-                  border: `1.5px solid ${mode === m ? "#7B3FA0" : "var(--border)"}`,
-                }}>
-                {m === "texto" ? <BookOpen className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                {m === "texto" ? "Texto / LaTeX" : "PDF"}
-              </button>
-            ))}
-          </div>
+          <Field label="" value={form.conteudo}
+            onChange={v => setForm(f => ({ ...f, conteudo: v }))}
+            placeholder="Conteúdo em texto... (suporta LaTeX com $...$)" rows={8} />
+          <button onClick={() => setPreview(p => !p)}
+            className="flex items-center gap-2 text-xs font-semibold"
+            style={{ color: "#7B3FA0" }}>
+            {preview ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            {preview ? "Ocultar preview" : "Ver preview LaTeX"}
+          </button>
+          {preview && form.conteudo && (
+            <div className="p-4 rounded-xl" style={{ background: "var(--secondary)", border: "1px solid var(--border)" }}>
+              <p className="text-xs font-semibold mb-2" style={{ color: "var(--muted-foreground)" }}>Preview</p>
+              <LatexRenderer fontSize="base">{form.conteudo}</LatexRenderer>
+            </div>
+          )}
         </div>
 
-        {/* Modo texto */}
-        {mode === "texto" && (
-          <>
-            <Field label="Conteúdo (suporta LaTeX com $...$)" value={form.conteudo}
-              onChange={v => setForm(f => ({ ...f, conteudo: v }))}
-              placeholder="Texto do conteúdo..." rows={10} />
+        {/* ── PDF ── */}
+        <div className="space-y-2">
+          <label className="block text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>
+            PDF para download <span className="font-normal">(opcional)</span>
+          </label>
 
-            <div>
-              <button onClick={() => setPreview(p => !p)}
-                className="flex items-center gap-2 text-sm font-semibold"
-                style={{ color: "#7B3FA0" }}>
-                {preview ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                {preview ? "Ocultar preview" : "Ver preview com LaTeX"}
-              </button>
-              {preview && form.conteudo && (
-                <div className="mt-3 p-4 rounded-xl" style={{ background: "var(--secondary)", border: "1px solid var(--border)" }}>
-                  <p className="text-xs font-semibold mb-2" style={{ color: "var(--muted-foreground)" }}>Preview</p>
-                  <LatexRenderer fontSize="base">{form.conteudo}</LatexRenderer>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Modo PDF */}
-        {mode === "pdf" && (
-          <div className="space-y-3">
-            {/* Instrução */}
-            <div className="rounded-xl p-3 text-sm space-y-1"
-              style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA033" }}>
-              <p className="font-semibold text-xs" style={{ color: "#7B3FA0" }}>Como obter o link do PDF</p>
-              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                <strong>Google Drive:</strong> Abrir PDF → Compartilhar → "Qualquer pessoa com o link" → copiar e substituir <code>/view</code> por <code>/preview</code>
-              </p>
-              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                <strong>Dropbox:</strong> Copiar link e trocar <code>?dl=0</code> por <code>?raw=1</code>
-              </p>
-            </div>
-
-            {/* URL input */}
-            <div>
-              <label className="block text-xs font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
-                URL pública do PDF
-              </label>
-              <input
-                type="url"
-                value={form.url_pdf ?? ""}
-                onChange={e => setForm(f => ({ ...f, url_pdf: e.target.value || null }))}
-                placeholder="https://drive.google.com/file/d/.../preview"
-                style={{
-                  width: "100%", borderRadius: "0.75rem", padding: "0.6rem 0.8rem",
-                  border: "1.5px solid var(--border)", background: "var(--card)",
-                  color: "var(--foreground)", fontSize: "0.875rem", outline: "none",
-                }}
-              />
-            </div>
-
-            {/* Preview do link */}
-            {form.url_pdf && (
-              <div className="rounded-xl p-3 flex items-center gap-3"
-                style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
-                <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
-                <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>{form.url_pdf}</p>
-                <a href={form.url_pdf} target="_blank" rel="noopener noreferrer" title="Testar link">
-                  <ExternalLink className="h-4 w-4" style={{ color: "#7B3FA0" }} />
-                </a>
-                <button onClick={() => setForm(f => ({ ...f, url_pdf: null }))} title="Remover">
-                  <X className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
-                </button>
-              </div>
-            )}
+          {/* Instrução */}
+          <div className="rounded-xl p-3 text-xs space-y-1"
+            style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA033" }}>
+            <p className="font-semibold" style={{ color: "#7B3FA0" }}>Como obter o link do PDF</p>
+            <p style={{ color: "var(--muted-foreground)" }}>
+              <strong>Google Drive:</strong> Compartilhar → "Qualquer pessoa" → copiar link → substituir <code>/view</code> por <code>/preview</code>
+            </p>
+            <p style={{ color: "var(--muted-foreground)" }}>
+              <strong>Dropbox:</strong> Copiar link → trocar <code>?dl=0</code> por <code>?raw=1</code>
+            </p>
           </div>
-        )}
+
+          {/* URL input */}
+          <input
+            type="url"
+            value={form.url_pdf ?? ""}
+            onChange={e => setForm(f => ({ ...f, url_pdf: e.target.value || null }))}
+            placeholder="https://drive.google.com/file/d/.../preview"
+            style={inputStyle}
+          />
+
+          {/* Preview do link */}
+          {form.url_pdf && (
+            <div className="rounded-xl p-3 flex items-center gap-3"
+              style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+              <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
+              <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>{form.url_pdf}</p>
+              <a href={form.url_pdf} target="_blank" rel="noopener noreferrer" title="Testar link">
+                <ExternalLink className="h-4 w-4" style={{ color: "#7B3FA0" }} />
+              </a>
+              <button onClick={() => setForm(f => ({ ...f, url_pdf: null }))} title="Remover">
+                <X className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-2">
           <input type="checkbox" id="active-check" checked={form.active}
@@ -240,7 +206,7 @@ export default function AdminRevise() {
   function handleSave(form: FormData & { id?: number }) {
     const payload = {
       titulo: form.titulo,
-      conteudo: form.url_pdf ? "" : form.conteudo,
+      conteudo: form.conteudo,
       url_pdf: form.url_pdf ?? null,
       topico: form.topico,
       active: form.active,
@@ -292,17 +258,17 @@ export default function AdminRevise() {
         <div className="space-y-2">
           {items.map((item: any) => {
             const isOpen = openId === item.id;
-            const isPdf = !!item.url_pdf;
+            const hasPdf = !!item.url_pdf;
+            const hasText = !!(item.conteudo?.trim());
             return (
               <div key={item.id} className="rounded-xl overflow-hidden"
                 style={{ border: "1.5px solid var(--border)", background: item.active ? "var(--card)" : "var(--secondary)", opacity: item.active ? 1 : 0.65 }}>
                 <div className="flex items-center gap-3 px-4 py-3">
                   <button onClick={() => setOpenId(isOpen ? null : item.id)}
                     className="flex-1 flex items-start gap-3 text-left">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {isPdf
-                        ? <FileText className="h-4 w-4" style={{ color: "#7B3FA0" }} />
-                        : <BookOpen className="h-4 w-4" style={{ color: "#009688" }} />}
+                    <div className="flex gap-1 flex-shrink-0 mt-0.5">
+                      {hasText && <BookOpen className="h-4 w-4" style={{ color: "#009688" }} />}
+                      {hasPdf  && <FileText  className="h-4 w-4" style={{ color: "#7B3FA0" }} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
@@ -310,7 +276,7 @@ export default function AdminRevise() {
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                         {item.topico ? `${item.topico} · ` : ""}
-                        {isPdf ? "PDF · " : "Texto · "}
+                        {[hasText && "Texto", hasPdf && "PDF"].filter(Boolean).join(" + ")} ·{" "}
                         {item.active ? "Visível" : "Oculto"}
                       </p>
                     </div>
@@ -327,7 +293,7 @@ export default function AdminRevise() {
                       className="p-1.5 rounded-lg hover:bg-gray-100" title={item.active ? "Ocultar" : "Mostrar"}>
                       {item.active
                         ? <EyeOff className="h-3.5 w-3.5" style={{ color: "#F57F17" }} />
-                        : <Eye className="h-3.5 w-3.5" style={{ color: "#00897B" }} />}
+                        : <Eye  className="h-3.5 w-3.5" style={{ color: "#00897B" }} />}
                     </button>
                     <button onClick={() => { if (confirm("Excluir permanentemente?")) deleteMutation.mutate({ id: item.id }); }}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title="Excluir">
@@ -335,11 +301,20 @@ export default function AdminRevise() {
                     </button>
                   </div>
                 </div>
+
                 {isOpen && (
                   <div className="px-4 pb-4 pt-2 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
-                    {isPdf ? (
+                    {hasText && (
+                      <>
+                        <p className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>Preview do texto:</p>
+                        <div className="rounded-xl p-4" style={{ background: "var(--secondary)" }}>
+                          <LatexRenderer fontSize="sm">{item.conteudo}</LatexRenderer>
+                        </div>
+                      </>
+                    )}
+                    {hasPdf && (
                       <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "#F3EAF9" }}>
-                        <FileText className="h-6 w-6 flex-shrink-0" style={{ color: "#7B3FA0" }} />
+                        <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
                         <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>{item.url_pdf}</p>
                         <a href={item.url_pdf} target="_blank" rel="noopener noreferrer"
                           className="flex items-center gap-1 text-xs font-bold flex-shrink-0 px-3 py-1.5 rounded-lg"
@@ -347,13 +322,6 @@ export default function AdminRevise() {
                           <ExternalLink className="h-3 w-3" /> Abrir
                         </a>
                       </div>
-                    ) : (
-                      <>
-                        <p className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>Preview do conteúdo:</p>
-                        <div className="rounded-xl p-4" style={{ background: "var(--secondary)" }}>
-                          <LatexRenderer fontSize="sm">{item.conteudo}</LatexRenderer>
-                        </div>
-                      </>
                     )}
                   </div>
                 )}

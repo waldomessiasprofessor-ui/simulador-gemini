@@ -183,7 +183,7 @@ function MissaoCumprida() {
         <PartyPopper className="h-6 w-6 text-white" />
       </div>
       <div className="text-white">
-        <p className="font-black text-base">Desafio concluído hoje! 🔥</p>
+        <p className="font-black text-base">Desafio de hoje: Concluído ✅</p>
         <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.8)" }}>
           Continue praticando — você está à frente de muitos!
         </p>
@@ -195,7 +195,7 @@ function MissaoCumprida() {
 // ─── Dashboard principal ──────────────────────────────────────────────────────
 export default function Dashboard() {
   const [, navigate] = useLocation();
-  const [vestibularSelecionado, setVestibularSelecionado] = useState("ENEM");
+  const vestibularSelecionado = "ENEM";
 
   const { data: session } = trpc.auth.me.useQuery(undefined, { staleTime: 30_000 });
   const { data: stats } = trpc.simulations.getStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
@@ -239,21 +239,17 @@ export default function Dashboard() {
         <p style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{greeting}, {firstName}! 👋</p>
         <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 16 }}>Escolha o vestibular e comece a treinar.</p>
 
-        {/* Seletor de vestibular */}
+        {/* Vestibulares — visual apenas */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {VESTIBULARES.map(v => (
             <div key={v.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-              <button onClick={() => !v.comingSoon && setVestibularSelecionado(v.id)}
-                style={{
-                  padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, border: "none",
-                  cursor: v.comingSoon ? "default" : "pointer",
-                  background: vestibularSelecionado === v.id ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.15)",
-                  color: vestibularSelecionado === v.id ? "#263238" : "#fff",
-                  opacity: v.comingSoon ? 0.6 : 1,
-                  transition: "all 0.15s",
-                }}>
+              <span style={{
+                padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                background: "rgba(255,255,255,0.15)", color: "#fff",
+                opacity: v.comingSoon ? 0.5 : 1,
+              }}>
                 {v.label}
-              </button>
+              </span>
               {v.comingSoon
                 ? <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", fontWeight: 600, letterSpacing: "0.05em" }}>Em breve!</span>
                 : <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{v.sub}</span>

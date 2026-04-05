@@ -40,7 +40,9 @@ export default function Revise({ id }: { id?: number }) {
     </div>
   );
 
-  const hasPdf = !!(content as any).url_pdf;
+  const c = content as any;
+  const hasPdf  = !!c.url_pdf;
+  const hasText = !!(c.conteudo?.trim());
 
   return (
     <div className="space-y-5 py-2">
@@ -60,7 +62,7 @@ export default function Revise({ id }: { id?: number }) {
             {id !== undefined ? "Revisão" : "Vamos estudar?"}
           </p>
           <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-            {(content as any).topico ?? "Leitura"} · Leia com atenção
+            {c.topico ?? "Leitura"} · Leia com atenção
           </p>
         </div>
       </div>
@@ -68,44 +70,46 @@ export default function Revise({ id }: { id?: number }) {
       {/* Conteúdo */}
       <div className="card space-y-4">
         <h2 className="font-black text-base" style={{ color: "var(--foreground)" }}>
-          {(content as any).titulo}
+          {c.titulo}
         </h2>
 
-        {hasPdf ? (
+        {/* Texto */}
+        {hasText && (
+          <LatexRenderer fontSize="base">{c.conteudo}</LatexRenderer>
+        )}
+
+        {/* PDF */}
+        {hasPdf && (
           <div className="space-y-3">
+            {hasText && (
+              <hr style={{ borderColor: "var(--border)" }} />
+            )}
+
             {/* Viewer desktop */}
             <div className="hidden sm:block rounded-xl overflow-hidden"
               style={{ height: "68vh", border: "1.5px solid var(--border)" }}>
-              <embed
-                src={(content as any).url_pdf}
-                type="application/pdf"
-                className="w-full h-full"
-              />
+              <embed src={c.url_pdf} type="application/pdf" className="w-full h-full" />
             </div>
 
             {/* Fallback mobile */}
-            <div className="sm:hidden rounded-xl p-6 text-center space-y-4"
+            <div className="sm:hidden rounded-xl p-5 text-center space-y-3"
               style={{ background: "var(--secondary)", border: "1.5px solid var(--border)" }}>
-              <FileText className="h-12 w-12 mx-auto" style={{ color: "#7B3FA0" }} />
-              <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                Conteúdo disponível em PDF
-              </p>
-              <a href={(content as any).url_pdf} target="_blank" rel="noopener noreferrer"
+              <FileText className="h-10 w-10 mx-auto" style={{ color: "#7B3FA0" }} />
+              <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>PDF disponível</p>
+              <a href={c.url_pdf} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-white text-sm"
                 style={{ background: "#7B3FA0" }}>
                 <ExternalLink className="h-4 w-4" /> Abrir PDF
               </a>
             </div>
 
-            {/* Download */}
-            <a href={(content as any).url_pdf} download
+            {/* Botão de download — sempre visível */}
+            <a href={c.url_pdf} target="_blank" rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-semibold text-sm"
               style={{ background: "var(--secondary)", border: "1.5px solid var(--border)", color: "var(--foreground)" }}>
               <Download className="h-4 w-4" /> Baixar PDF
             </a>
           </div>
-        ) : (
-          <LatexRenderer fontSize="base">{(content as any).conteudo}</LatexRenderer>
         )}
       </div>
 
