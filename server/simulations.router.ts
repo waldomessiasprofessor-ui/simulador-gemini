@@ -885,11 +885,12 @@ export const simulationsRouter = createTRPCRouter({
     const userId = ctx.user.id;
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-    // Verifica se já existe desafio de hoje
+    // Verifica se já existe desafio de hoje (pega o mais recente)
     const [existing] = await ctx.db
       .select()
       .from(dailyChallenges)
       .where(and(eq(dailyChallenges.userId, userId), eq(dailyChallenges.challengeDate, today)))
+      .orderBy(desc(dailyChallenges.id))
       .limit(1);
 
     if (existing) {
@@ -1044,6 +1045,60 @@ export const simulationsRouter = createTRPCRouter({
 
       return { ok: true, correctCount, total: challenge.questionIds.length };
     }),
+
+  // ---------------------------------------------------------------------------
+  // NOVO DESAFIO — força criação de novo desafio (permite repetir ilimitadamente)
+  // ---------------------------------------------------------------------------
+  newDailyChallenge: protectedProcedure.mutation(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Busca todos os IDs já usados pelo aluno para evitar repetição imediata
+    const pastChallenges = await ctx.db
+      .select({ questionIds: dailyChallenges.questionIds })
+      .from(dailyChallenges)
+      .where(eq(dailyChallenges.userId, userId));
+
+    const usedIds = new Set<number>(pastChallenges.flatMap((c) => c.questionIds));
+
+    const drawn = await ctx.db
+      .select({
+        id: questions.id,
+        enunciado: questions.enunciado,
+        url_imagem: questions.url_imagem,
+        alternativas: questions.alternativas,
+        gabarito: questions.gabarito,
+        comentario_resolucao: questions.comentario_resolucao,
+        conteudo_principal: questions.conteudo_principal,
+        nivel_dificuldade: questions.nivel_dificuldade,
+      })
+      .from(questions)
+      .where(eq(questions.active, true))
+      .orderBy(sql`RAND()`)
+      .limit(100);
+
+    const filtered = drawn.filter((q) => !usedIds.has(q.id)).slice(0, 3);
+    const final = filtered.length >= 3 ? filtered : drawn.slice(0, 3);
+
+    const newChallenge: NewDailyChallenge = {
+      userId,
+      challengeDate: today,
+      questionIds: final.map((q) => q.id),
+      answers: {},
+      completed: false,
+    };
+
+    const [result] = await ctx.db.insert(dailyChallenges).values(newChallenge);
+
+    return {
+      challengeId: Number(result.insertId),
+      date: today,
+      completed: false,
+      correctCount: null,
+      answers: {},
+      questions: final,
+    };
+  }),
 
   getDailyHistory: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;

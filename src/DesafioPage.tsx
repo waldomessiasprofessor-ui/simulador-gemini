@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard } from "@/LatexRenderer";
-import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw } from "lucide-react";
 import { LatexRenderer } from "@/LatexRenderer";
 
 type DailyQ = {
@@ -23,6 +23,16 @@ export default function DesafioPage() {
   const saveDailyAnswer = trpc.simulations.saveDailyAnswer.useMutation();
   const finishDaily = trpc.simulations.finishDailyChallenge.useMutation({
     onSuccess: () => { refetch(); utils.simulations.getStats.invalidate(); },
+  });
+  const newChallenge = trpc.simulations.newDailyChallenge.useMutation({
+    onSuccess: () => {
+      setLocalAnswers({});
+      setRevealed({});
+      setOpenResolution({});
+      setIdx(0);
+      refetch();
+      utils.simulations.getStats.invalidate();
+    },
   });
 
   const [localAnswers, setLocalAnswers] = useState<Record<number, string>>({});
@@ -100,9 +110,20 @@ export default function DesafioPage() {
           })}
         </div>
 
-        <button onClick={() => navigate("/")} className="btn-primary w-full justify-center">
-          Voltar ao início
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => navigate("/")} className="btn-outline flex-1 justify-center">
+            Voltar ao início
+          </button>
+          <button
+            onClick={() => newChallenge.mutate()}
+            disabled={newChallenge.isPending}
+            className="btn-primary flex-1 flex items-center justify-center gap-2">
+            {newChallenge.isPending
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <RefreshCw className="h-4 w-4" />}
+            Tentar novamente
+          </button>
+        </div>
       </div>
     );
   }

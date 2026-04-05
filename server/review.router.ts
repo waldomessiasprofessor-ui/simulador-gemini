@@ -69,6 +69,34 @@ export const reviewRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  // ── Aluno: lista todos os conteúdos ativos (para página de browse) ───────
+  listAll: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db
+      .select({
+        id: reviewContents.id,
+        titulo: reviewContents.titulo,
+        topico: reviewContents.topico,
+        url_pdf: reviewContents.url_pdf,
+        createdAt: reviewContents.createdAt,
+      })
+      .from(reviewContents)
+      .where(eq(reviewContents.active, true))
+      .orderBy(desc(reviewContents.createdAt));
+    return rows;
+  }),
+
+  // ── Aluno: busca conteúdo específico por id ───────────────────────────────
+  getById: protectedProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const [content] = await ctx.db
+        .select()
+        .from(reviewContents)
+        .where(and(eq(reviewContents.id, input.id), eq(reviewContents.active, true)))
+        .limit(1);
+      return content ?? null;
+    }),
+
   // ── Aluno: pega (ou cria) o Revise do dia ────────────────────────────────
   getDaily: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;

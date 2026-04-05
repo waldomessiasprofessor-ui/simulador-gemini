@@ -12,6 +12,7 @@ import AdminUsuarios from "@/AdminUsuarios";
 import AdminFormulas from "@/AdminFormulas";
 import AdminRevise from "@/AdminRevise";
 import Revise from "@/Revise";
+import Revisao from "@/Revisao";
 import Treino from "@/Treino";
 import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
@@ -85,6 +86,10 @@ export default function App() {
             {(params) => <Resultado id={Number(params.id)} />}
           </Route>
           <Route path="/revise"><Revise /></Route>
+          <Route path="/revise/:id">
+            {(params) => <Revise id={Number(params.id)} />}
+          </Route>
+          <Route path="/revisao"><Revisao /></Route>
           <Route path="/historico"><Historico /></Route>
           <Route path="/treino"><Treino /></Route>
           <Route path="/ranking"><Ranking /></Route>

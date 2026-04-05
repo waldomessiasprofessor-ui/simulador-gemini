@@ -27,6 +27,7 @@ const NAV_LINKS: NavLinkItem[] = [
   { href: "/questoes", label: "Banco de questões ENEM", icon: BookOpen },
   { href: "/treino", label: "Treino livre", icon: Dumbbell },
   { href: "/desafio", label: "Desafio do dia", icon: Zap },
+  { href: "/revisao", label: "Revisão", icon: BookOpen },
   { href: "/formulas", label: "Fórmulas", icon: FlaskConical },
   { href: "/historico", label: "Histórico", icon: History },
   { href: "/ranking", label: "Ranking", icon: Trophy },

@@ -4,8 +4,8 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
   Flame, Trophy, CheckCircle2, XCircle, ChevronRight,
-  Loader2, Zap, Target, Medal, BookOpen, Dumbbell,
-  Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical
+  Loader2, Zap, Medal, BookOpen, Dumbbell,
+  Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
@@ -91,8 +91,8 @@ function DailyCard() {
   );
 }
 
-// ─── ReviseCard ───────────────────────────────────────────────────────────────
-function ReviseCard() {
+// ─── StudyCard ("Vamos estudar?") ─────────────────────────────────────────────
+function StudyCard() {
   const [, navigate] = useLocation();
   const { data, isLoading } = trpc.review.getDaily.useQuery(
     undefined, { staleTime: 0, refetchOnWindowFocus: true }
@@ -100,36 +100,22 @@ function ReviseCard() {
 
   if (isLoading) return (
     <div className="rounded-2xl p-4 flex justify-center" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#7B3FA0" }} />
     </div>
   );
 
-  const review = data?.review;
   const content = data?.content;
 
   if (!content) return (
     <div className="rounded-2xl p-4 opacity-60" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-cyan-soft, #E0F2F1)" }}>
-          <BookOpen className="h-5 w-5" style={{ color: "#009688" }} />
+        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: "#F3EAF9" }}>
+          <BookOpen className="h-5 w-5" style={{ color: "#7B3FA0" }} />
         </div>
         <div>
-          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Revise</p>
+          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Vamos estudar?</p>
           <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Nenhum conteúdo disponível ainda</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  if (review?.completed) return (
-    <div className="rounded-2xl p-4" style={{ background: "var(--pr-cyan-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
-          <CheckCircle2 className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <p className="font-bold text-sm" style={{ color: "#009688" }}>Revise — concluído!</p>
-          <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{review.correctCount}/3 acertos · {content.topico ?? content.titulo}</p>
         </div>
       </div>
     </div>
@@ -137,28 +123,58 @@ function ReviseCard() {
 
   return (
     <button onClick={() => navigate("/revise")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "var(--pr-cyan-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
+      style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "#7B3FA0" }}>
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#009688" }}>Revise</p>
-            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{content.topico ?? content.titulo}</p>
+            <p className="font-bold text-sm" style={{ color: "#7B3FA0" }}>Vamos estudar?</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              {content.topico ?? content.titulo}
+            </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#009688" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
       </div>
     </button>
+  );
+}
+
+// ─── Gráfico circular de taxa de acerto ───────────────────────────────────────
+function CircularAccuracy({ value }: { value: number }) {
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(100, value));
+  const offset = circumference - (clamped / 100) * circumference;
+  const color = clamped >= 70 ? "#009688" : clamped >= 40 ? "#E65100" : "#C62828";
+
+  return (
+    <svg width="80" height="80" viewBox="0 0 80 80">
+      <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--border)" strokeWidth="7" />
+      <circle
+        cx="40" cy="40" r={radius} fill="none"
+        stroke={color} strokeWidth="7"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform="rotate(-90 40 40)"
+        style={{ transition: "stroke-dashoffset 0.6s ease" }}
+      />
+      <text x="40" y="44" textAnchor="middle" fontSize="13" fontWeight="700"
+        fill={color}>
+        {clamped}%
+      </text>
+    </svg>
   );
 }
 
 // ─── MissaoCumprida ───────────────────────────────────────────────────────────
 function MissaoCumprida() {
   const { data: daily } = trpc.simulations.getDailyChallenge.useQuery(undefined, { staleTime: 0 });
-  const { data: review } = trpc.review.getDaily.useQuery(undefined, { staleTime: 0 });
-  if (!daily?.completed || !review?.review?.completed) return null;
+  if (!daily?.completed) return null;
   return (
     <div className="rounded-2xl p-5 flex items-center gap-4"
       style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
@@ -167,9 +183,9 @@ function MissaoCumprida() {
         <PartyPopper className="h-6 w-6 text-white" />
       </div>
       <div className="text-white">
-        <p className="font-black text-base">Missão cumprida hoje! 🔥</p>
+        <p className="font-black text-base">Desafio concluído hoje! 🔥</p>
         <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.8)" }}>
-          Desafio e Revise completos. Você está à frente de muitos!
+          Continue praticando — você está à frente de muitos!
         </p>
       </div>
     </div>
@@ -254,7 +270,7 @@ export default function Dashboard() {
       <section className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--muted-foreground)" }}>Missão do dia</p>
         <DailyCard />
-        <ReviseCard />
+        <StudyCard />
       </section>
 
       {/* ── Treine agora ── */}
@@ -360,7 +376,6 @@ export default function Dashboard() {
             <div className="space-y-2">
               {[
                 { icon: Zap, label: "Questões respondidas", value: String(stats.weeklyQuestions) },
-                { icon: Target, label: "Taxa de acerto", value: `${stats.weeklyAccuracy}%` },
                 { icon: Star, label: "Simulados completos", value: String(stats.totalSimulations ?? 0) },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center gap-3">
@@ -373,6 +388,16 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+              {/* Taxa de acerto circular */}
+              <div className="flex items-center gap-3 pt-1">
+                <CircularAccuracy value={stats.weeklyAccuracy} />
+                <div className="flex-1">
+                  <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Taxa de acerto</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                    {stats.weeklyAccuracy >= 70 ? "Excelente!" : stats.weeklyAccuracy >= 40 ? "Bom trabalho!" : "Continue praticando!"}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
