@@ -149,40 +149,78 @@ function FormModal({ initial, onSave, onClose }: {
 
         {/* Modo PDF */}
         {mode === "pdf" && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <input ref={fileRef} type="file" accept="application/pdf" className="hidden"
               onChange={e => { const f = e.target.files?.[0]; if (f) handlePdfUpload(f); }} />
 
-            {form.url_pdf ? (
-              <div className="rounded-xl p-4 space-y-3" style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
-                <div className="flex items-center gap-3">
-                  <FileText className="h-8 w-8 flex-shrink-0" style={{ color: "#7B3FA0" }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: "#7B3FA0" }}>PDF enviado</p>
-                    <p className="text-xs truncate" style={{ color: "var(--muted-foreground)" }}>{form.url_pdf}</p>
-                  </div>
-                  <a href={form.url_pdf} target="_blank" rel="noopener noreferrer"
-                    className="p-2 rounded-lg hover:opacity-70" title="Abrir PDF">
-                    <ExternalLink className="h-4 w-4" style={{ color: "#7B3FA0" }} />
-                  </a>
+            {/* Upload via arquivo */}
+            <div>
+              <label className="block text-xs font-semibold mb-2" style={{ color: "var(--muted-foreground)" }}>
+                Opção 1 — Upload direto
+              </label>
+              {form.url_pdf && !form.url_pdf.startsWith("http") === false && form.url_pdf.includes("cloudinary") ? (
+                <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+                  <FileText className="h-6 w-6 flex-shrink-0" style={{ color: "#7B3FA0" }} />
+                  <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>PDF enviado via Cloudinary</p>
+                  <button onClick={() => fileRef.current?.click()} disabled={uploading}
+                    className="text-xs font-semibold flex-shrink-0" style={{ color: "#7B3FA0" }}>
+                    Trocar
+                  </button>
                 </div>
+              ) : (
                 <button onClick={() => fileRef.current?.click()} disabled={uploading}
-                  className="text-xs font-semibold" style={{ color: "#7B3FA0" }}>
-                  Trocar PDF
+                  className="w-full flex items-center justify-center gap-3 py-6 rounded-xl border-2 border-dashed transition-all"
+                  style={{ borderColor: "#7B3FA066", background: "var(--secondary)" }}>
+                  {uploading
+                    ? <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#7B3FA0" }} />
+                    : <Upload className="h-5 w-5" style={{ color: "#7B3FA0" }} />}
+                  <span className="text-sm font-semibold" style={{ color: "#7B3FA0" }}>
+                    {uploading ? "Enviando..." : "Selecionar PDF (máx. 20 MB)"}
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* Separador */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+              <span className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>ou</span>
+              <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+            </div>
+
+            {/* URL manual — alternativa caso Cloudinary não aceite o tipo de arquivo */}
+            <div>
+              <label className="block text-xs font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
+                Opção 2 — Colar URL pública do PDF
+              </label>
+              <p className="text-xs mb-2" style={{ color: "var(--muted-foreground)" }}>
+                Hospede o PDF no Google Drive, Dropbox ou outro serviço e cole o link direto abaixo.
+              </p>
+              <input
+                type="url"
+                value={form.url_pdf && !form.url_pdf.includes("cloudinary") ? form.url_pdf : ""}
+                onChange={e => setForm(f => ({ ...f, url_pdf: e.target.value || null }))}
+                placeholder="https://drive.google.com/..."
+                style={{
+                  width: "100%", borderRadius: "0.75rem", padding: "0.6rem 0.8rem",
+                  border: "1.5px solid var(--border)", background: "var(--card)",
+                  color: "var(--foreground)", fontSize: "0.875rem", outline: "none",
+                }}
+              />
+            </div>
+
+            {/* Preview do PDF selecionado */}
+            {form.url_pdf && (
+              <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+                <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
+                <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>{form.url_pdf}</p>
+                <a href={form.url_pdf} target="_blank" rel="noopener noreferrer" title="Abrir">
+                  <ExternalLink className="h-4 w-4" style={{ color: "#7B3FA0" }} />
+                </a>
+                <button onClick={() => setForm(f => ({ ...f, url_pdf: null }))} title="Remover">
+                  <X className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
                 </button>
               </div>
-            ) : (
-              <button onClick={() => fileRef.current?.click()} disabled={uploading}
-                className="w-full flex flex-col items-center gap-3 py-10 rounded-xl border-2 border-dashed transition-all"
-                style={{ borderColor: "#7B3FA066", background: "var(--secondary)" }}>
-                {uploading
-                  ? <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#7B3FA0" }} />
-                  : <Upload className="h-8 w-8" style={{ color: "#7B3FA0" }} />}
-                <span className="text-sm font-semibold" style={{ color: "#7B3FA0" }}>
-                  {uploading ? "Enviando..." : "Clique para selecionar o PDF"}
-                </span>
-                <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>Máximo 20 MB</span>
-              </button>
             )}
           </div>
         )}

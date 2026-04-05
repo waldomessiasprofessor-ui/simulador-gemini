@@ -242,9 +242,11 @@ app.post("/api/upload-pdf", uploadPdf.single("file"), async (req: any, res: any)
   }
 
   try {
+    // Tenta "image" (aceito em todos os planos Cloudinary, incluindo free)
+    // Cloudinary suporta PDFs como resource_type "image" e entrega o arquivo original
     const result = await new Promise<any>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: "revise-pdfs", resource_type: "auto" },
+        { folder: "revise-pdfs", resource_type: "image", format: "pdf" },
         (error, result) => (error ? reject(error) : resolve(result))
       ).end(req.file!.buffer);
     });
