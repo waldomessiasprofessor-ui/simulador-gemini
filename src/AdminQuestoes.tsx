@@ -717,6 +717,7 @@ const TAGS_CONTEUDO = [
   "Equações e Inequações",
   "Escala",
   "Estatística",
+  "Função Composta",
   "Função do Primeiro Grau",
   "Função Exponencial",
   "Função Logarítmica",

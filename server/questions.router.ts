@@ -137,7 +137,7 @@ export const questionsRouter = createTRPCRouter({
       const TAGS_VALIDAS = [
         "Análise Combinatória", "Áreas de Figuras Planas", "Conversão de Unidades",
         "Equações e Inequações", "Escala", "Estatística",
-        "Função do Primeiro Grau", "Função Exponencial", "Função Logarítmica", "Função Quadrática",
+        "Função Composta", "Função do Primeiro Grau", "Função Exponencial", "Função Logarítmica", "Função Quadrática",
         "Funções de 1º e 2º Grau", "Geometria Espacial", "Geometria Plana",
         "Leitura de Gráficos e Tabelas", "Logaritmos", "Matemática Financeira",
         "Medidas de Tendência Central", "Noções de Lógica Matemática", "Operações Básicas",
