@@ -217,6 +217,44 @@ app.post("/api/upload-image", upload.single("file"), async (req: any, res: any) 
 });
 
 // =============================================================================
+// Rota: upload de PDF para Cloudinary (somente admin)
+// POST /api/upload-pdf  —  multipart/form-data, campo "file"
+// =============================================================================
+
+const uploadPdf = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === "application/pdf") cb(null, true);
+    else cb(new Error("Apenas arquivos PDF são permitidos."));
+  },
+});
+
+app.post("/api/upload-pdf", uploadPdf.single("file"), async (req: any, res: any) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(401).json({ error: "Não autorizado." });
+  }
+  if (!req.file) {
+    return res.status(400).json({ error: "Nenhum arquivo enviado." });
+  }
+  if (!process.env.CLOUDINARY_CLOUD_NAME) {
+    return res.status(503).json({ error: "Cloudinary não configurado." });
+  }
+
+  try {
+    const result = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: "revise-pdfs", resource_type: "raw", format: "pdf" },
+        (error, result) => (error ? reject(error) : resolve(result))
+      ).end(req.file!.buffer);
+    });
+    res.json({ url: result.secure_url });
+  } catch (err: any) {
+    res.status(500).json({ error: `Erro no upload: ${err.message}` });
+  }
+});
+
+// =============================================================================
 // tRPC
 // =============================================================================
 

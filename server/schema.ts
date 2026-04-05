@@ -168,7 +168,8 @@ export const reviewContents = mysqlTable(
   {
     id: int("id").primaryKey().autoincrement(),
     titulo: varchar("titulo", { length: 200 }).notNull(),
-    conteudo: text("conteudo").notNull(),          // suporta LaTeX
+    conteudo: text("conteudo").notNull().default(""), // suporta LaTeX; vazio quando usa PDF
+    url_pdf: varchar("url_pdf", { length: 500 }),     // URL Cloudinary do PDF (opcional)
     topico: varchar("topico", { length: 100 }),
     questoes: json("questoes").$type<Array<{
       enunciado: string;

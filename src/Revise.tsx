@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import {
   Loader2, BookOpen, ChevronRight, CheckCircle2, XCircle,
-  ChevronLeft, ArrowLeft, Brain
+  ChevronLeft, ArrowLeft, Brain, FileText, Download, ExternalLink,
 } from "lucide-react";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -135,7 +135,42 @@ export default function Revise() {
 
         <div className="card space-y-4">
           <h2 className="font-black text-base" style={{ color: "var(--foreground)" }}>{content.titulo}</h2>
-          <LatexRenderer fontSize="base">{content.conteudo}</LatexRenderer>
+
+          {(content as any).url_pdf ? (
+            <div className="space-y-3">
+              {/* Viewer desktop — embed nativo do browser */}
+              <div className="hidden sm:block rounded-xl overflow-hidden" style={{ height: "68vh", border: "1.5px solid var(--border)" }}>
+                <embed
+                  src={(content as any).url_pdf}
+                  type="application/pdf"
+                  className="w-full h-full"
+                />
+              </div>
+
+              {/* Fallback mobile — embed não funciona no iOS */}
+              <div className="sm:hidden rounded-xl p-6 text-center space-y-4"
+                style={{ background: "var(--secondary)", border: "1.5px solid var(--border)" }}>
+                <FileText className="h-12 w-12 mx-auto" style={{ color: "#7B3FA0" }} />
+                <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  Conteúdo disponível em PDF
+                </p>
+                <a href={(content as any).url_pdf} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-white text-sm"
+                  style={{ background: "#7B3FA0" }}>
+                  <ExternalLink className="h-4 w-4" /> Abrir PDF
+                </a>
+              </div>
+
+              {/* Botão download — sempre visível */}
+              <a href={(content as any).url_pdf} download
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl font-semibold text-sm"
+                style={{ background: "var(--secondary)", border: "1.5px solid var(--border)", color: "var(--foreground)" }}>
+                <Download className="h-4 w-4" /> Baixar PDF
+              </a>
+            </div>
+          ) : (
+            <LatexRenderer fontSize="base">{content.conteudo}</LatexRenderer>
+          )}
         </div>
 
         <button onClick={() => setPhase("questions")}

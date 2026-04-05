@@ -13,7 +13,8 @@ const QuestaoSchema = z.object({
 
 const ReviewBaseSchema = z.object({
   titulo: z.string().min(3).max(200),
-  conteudo: z.string().min(10),
+  conteudo: z.string().default(""),
+  url_pdf: z.string().url().nullable().optional(),
   topico: z.string().optional(),
   questoes: z.array(QuestaoSchema).default([]),
   active: z.boolean().default(true),
