@@ -244,7 +244,7 @@ app.post("/api/upload-pdf", uploadPdf.single("file"), async (req: any, res: any)
   try {
     const result = await new Promise<any>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: "revise-pdfs", resource_type: "raw", format: "pdf" },
+        { folder: "revise-pdfs", resource_type: "auto" },
         (error, result) => (error ? reject(error) : resolve(result))
       ).end(req.file!.buffer);
     });

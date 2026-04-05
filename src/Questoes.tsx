@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
-import { ChevronDown, ChevronUp, Search, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, Loader2, BookOpen } from "lucide-react";
 
 const TAGS_CONTEUDO = [
   "Análise Combinatória",
@@ -83,6 +83,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
   const [filterTag, setFilterTag] = useState("Todas");
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [openResolution, setOpenResolution] = useState<number | null>(null);
 
   const info = fonte ? (FONTE_INFO[fonte] ?? FONTE_INFO["ENEM"]) : FONTE_INFO["ENEM"];
 
@@ -221,6 +222,39 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                           </div>
                         );
                       })}
+                    </div>
+
+                    {/* Gabarito + Ver resolução */}
+                    <div className="pt-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+                          style={{ background: "#E0F2F1", color: "#00695C" }}>
+                          Gabarito: {q.gabarito}
+                        </span>
+                        {q.comentario_resolucao && (
+                          <button
+                            onClick={() => setOpenResolution(openResolution === q.id ? null : q.id)}
+                            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full transition-all"
+                            style={{
+                              background: openResolution === q.id ? "#009688" : "var(--muted)",
+                              color: openResolution === q.id ? "#fff" : "#009688",
+                              border: "1.5px solid #00968844",
+                            }}>
+                            <BookOpen className="h-3 w-3" />
+                            {openResolution === q.id ? "Ocultar resolução" : "Ver resolução"}
+                          </button>
+                        )}
+                      </div>
+
+                      {openResolution === q.id && q.comentario_resolucao && (
+                        <div className="rounded-xl p-4 space-y-1"
+                          style={{ background: "#E0F2F1", border: "1px solid #00968833" }}>
+                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#00695C" }}>
+                            Resolução
+                          </p>
+                          <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

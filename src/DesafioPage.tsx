@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard } from "@/LatexRenderer";
-import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { LatexRenderer } from "@/LatexRenderer";
 
 type DailyQ = {
   id: number;
@@ -26,6 +27,7 @@ export default function DesafioPage() {
 
   const [localAnswers, setLocalAnswers] = useState<Record<number, string>>({});
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+  const [openResolution, setOpenResolution] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
 
   if (isLoading) return (
@@ -59,16 +61,40 @@ export default function DesafioPage() {
         <div className="space-y-2">
           {questions.map((q, i) => {
             const isCorrect = answers[q.id] === q.gabarito;
+            const resolutionOpen = openResolution[q.id];
             return (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
+              <div key={i} className="rounded-xl overflow-hidden"
                 style={{ background: isCorrect ? "var(--secondary)" : "#FFEBEE", border: `1px solid ${isCorrect ? "#00BFA544" : "#E5393544"}` }}>
-                {isCorrect
-                  ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#00695C" }} />
-                  : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#C62828" }} />}
-                <span className="flex-1 text-sm truncate" style={{ color: "var(--muted-foreground)" }}>{q.conteudo_principal}</span>
-                <span className="text-xs font-bold" style={{ color: isCorrect ? "#00695C" : "#C62828" }}>
-                  {answers[q.id] ?? "—"} → {q.gabarito}
-                </span>
+                <div className="flex items-center gap-3 p-3">
+                  {isCorrect
+                    ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#00695C" }} />
+                    : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#C62828" }} />}
+                  <span className="flex-1 text-sm truncate" style={{ color: "var(--muted-foreground)" }}>{q.conteudo_principal}</span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-xs font-bold" style={{ color: isCorrect ? "#00695C" : "#C62828" }}>
+                      {answers[q.id] ?? "—"} → {q.gabarito}
+                    </span>
+                    {!isCorrect && q.comentario_resolucao && (
+                      <button
+                        onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
+                        className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-all"
+                        style={{
+                          background: resolutionOpen ? "#C62828" : "#FFCDD2",
+                          color: resolutionOpen ? "#fff" : "#C62828",
+                        }}>
+                        <BookOpen className="h-3 w-3" />
+                        {resolutionOpen ? "Fechar" : "Ver resolução"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {!isCorrect && resolutionOpen && q.comentario_resolucao && (
+                  <div className="px-4 pb-4 pt-2 space-y-1" style={{ borderTop: "1px solid #E5393522" }}>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#C62828" }}>Resolução</p>
+                    <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
+                  </div>
+                )}
               </div>
             );
           })}
