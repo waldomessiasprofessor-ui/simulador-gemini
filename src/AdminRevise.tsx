@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X,
-  BookOpen, ChevronDown, ChevronUp, FileText, Upload, ExternalLink,
+  BookOpen, ChevronDown, ChevronUp, FileText, ExternalLink,
 } from "lucide-react";
 
 type FormData = {
@@ -53,25 +53,6 @@ function FormModal({ initial, onSave, onClose }: {
   const [form, setForm] = useState<FormData>(initial ?? emptyForm());
   const [mode, setMode] = useState<ContentMode>(initial?.url_pdf ? "pdf" : "texto");
   const [preview, setPreview] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  async function handlePdfUpload(file: File) {
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload-pdf", { method: "POST", body: fd });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Erro no upload");
-      setForm(f => ({ ...f, url_pdf: json.url }));
-      toast.success("PDF enviado!");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setUploading(false);
-    }
-  }
 
   function validate(): string | null {
     if (!form.titulo.trim()) return "Título obrigatório.";
@@ -149,58 +130,29 @@ function FormModal({ initial, onSave, onClose }: {
 
         {/* Modo PDF */}
         {mode === "pdf" && (
-          <div className="space-y-4">
-            <input ref={fileRef} type="file" accept="application/pdf" className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) handlePdfUpload(f); }} />
-
-            {/* Upload via arquivo */}
-            <div>
-              <label className="block text-xs font-semibold mb-2" style={{ color: "var(--muted-foreground)" }}>
-                Opção 1 — Upload direto
-              </label>
-              {form.url_pdf && !form.url_pdf.startsWith("http") === false && form.url_pdf.includes("cloudinary") ? (
-                <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
-                  <FileText className="h-6 w-6 flex-shrink-0" style={{ color: "#7B3FA0" }} />
-                  <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>PDF enviado via Cloudinary</p>
-                  <button onClick={() => fileRef.current?.click()} disabled={uploading}
-                    className="text-xs font-semibold flex-shrink-0" style={{ color: "#7B3FA0" }}>
-                    Trocar
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => fileRef.current?.click()} disabled={uploading}
-                  className="w-full flex items-center justify-center gap-3 py-6 rounded-xl border-2 border-dashed transition-all"
-                  style={{ borderColor: "#7B3FA066", background: "var(--secondary)" }}>
-                  {uploading
-                    ? <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#7B3FA0" }} />
-                    : <Upload className="h-5 w-5" style={{ color: "#7B3FA0" }} />}
-                  <span className="text-sm font-semibold" style={{ color: "#7B3FA0" }}>
-                    {uploading ? "Enviando..." : "Selecionar PDF (máx. 20 MB)"}
-                  </span>
-                </button>
-              )}
+          <div className="space-y-3">
+            {/* Instrução */}
+            <div className="rounded-xl p-3 text-sm space-y-1"
+              style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA033" }}>
+              <p className="font-semibold text-xs" style={{ color: "#7B3FA0" }}>Como obter o link do PDF</p>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                <strong>Google Drive:</strong> Abrir PDF → Compartilhar → "Qualquer pessoa com o link" → copiar e substituir <code>/view</code> por <code>/preview</code>
+              </p>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                <strong>Dropbox:</strong> Copiar link e trocar <code>?dl=0</code> por <code>?raw=1</code>
+              </p>
             </div>
 
-            {/* Separador */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-              <span className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>ou</span>
-              <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-            </div>
-
-            {/* URL manual — alternativa caso Cloudinary não aceite o tipo de arquivo */}
+            {/* URL input */}
             <div>
               <label className="block text-xs font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Opção 2 — Colar URL pública do PDF
+                URL pública do PDF
               </label>
-              <p className="text-xs mb-2" style={{ color: "var(--muted-foreground)" }}>
-                Hospede o PDF no Google Drive, Dropbox ou outro serviço e cole o link direto abaixo.
-              </p>
               <input
                 type="url"
-                value={form.url_pdf && !form.url_pdf.includes("cloudinary") ? form.url_pdf : ""}
+                value={form.url_pdf ?? ""}
                 onChange={e => setForm(f => ({ ...f, url_pdf: e.target.value || null }))}
-                placeholder="https://drive.google.com/..."
+                placeholder="https://drive.google.com/file/d/.../preview"
                 style={{
                   width: "100%", borderRadius: "0.75rem", padding: "0.6rem 0.8rem",
                   border: "1.5px solid var(--border)", background: "var(--card)",
@@ -209,12 +161,13 @@ function FormModal({ initial, onSave, onClose }: {
               />
             </div>
 
-            {/* Preview do PDF selecionado */}
+            {/* Preview do link */}
             {form.url_pdf && (
-              <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+              <div className="rounded-xl p-3 flex items-center gap-3"
+                style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
                 <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
                 <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>{form.url_pdf}</p>
-                <a href={form.url_pdf} target="_blank" rel="noopener noreferrer" title="Abrir">
+                <a href={form.url_pdf} target="_blank" rel="noopener noreferrer" title="Testar link">
                   <ExternalLink className="h-4 w-4" style={{ color: "#7B3FA0" }} />
                 </a>
                 <button onClick={() => setForm(f => ({ ...f, url_pdf: null }))} title="Remover">
