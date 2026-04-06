@@ -324,7 +324,7 @@ export function QuestionCard({
   order, total, enunciado, url_imagem, alternativas,
   selectedAnswer, correctAnswer, onAnswer, disabled = false,
 }: QuestionCardProps) {
-  const altEntries = Object.entries(alternativas).sort(([a], [b]) => a.localeCompare(b));
+  const altEntries = Object.entries(alternativas).filter(([, v]) => v !== null && v !== "").sort(([a], [b]) => a.localeCompare(b));
 
   return (
     <div className="space-y-5">
@@ -345,8 +345,8 @@ export function QuestionCard({
       <div className="space-y-2.5">
         {altEntries.map(([id, value]) => {
           // Suporta tanto string simples quanto objeto {text, file}
-          const text = typeof value === "string" ? value : (value.text ?? "");
-          const imageUrl = typeof value === "object" ? value.file ?? null : null;
+          const text = typeof value === "string" ? value : (value !== null && value?.text) ? value.text : "";
+          const imageUrl = value !== null && typeof value === "object" ? value.file ?? null : null;
 
           const isSelected = selectedAnswer === id;
           const isCorrect = correctAnswer != null

@@ -1329,9 +1329,9 @@ export default function AdminQuestoes() {
                       <img src={q.url_imagem} alt="" className="max-w-full rounded-lg" style={{ border: "1px solid #E2D9EE" }} />
                     )}
                     <div className="space-y-1">
-                      {Object.entries(q.alternativas as Record<string, any>).sort().map(([id, value]) => {
-                        const text = typeof value === "object" ? value.text ?? "" : value;
-                        const file = typeof value === "object" ? value.file : null;
+                      {Object.entries(q.alternativas as Record<string, any>).sort().filter(([, value]) => value !== null && value !== "").map(([id, value]) => {
+                        const text = value !== null && typeof value === "object" ? value.text ?? "" : value ?? "";
+                        const file = value !== null && typeof value === "object" ? value.file : null;
                         return (
                           <div key={id} className="flex gap-2 px-3 py-1.5 rounded-lg text-sm"
                             style={{ background: id === q.gabarito ? "#E0F7F4" : "#F8FAFC", border: id === q.gabarito ? "1px solid #00897B" : "none" }}>

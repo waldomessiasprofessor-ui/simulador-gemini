@@ -183,8 +183,8 @@ function TabErros() {
                       style={{ border: "1px solid var(--border)" }} />
                   )}
                   <div className="space-y-1.5">
-                    {Object.entries(alts).sort().map(([id, value]) => {
-                      const text = typeof value === "object" ? value.text ?? "" : value;
+                    {Object.entries(alts).sort().filter(([, value]) => value !== null && value !== "").map(([id, value]) => {
+                      const text = value !== null && typeof value === "object" ? value.text ?? "" : value ?? "";
                       const isCorrect = id === row.gabarito;
                       const isSelected = id === row.selectedAnswer;
                       return (
