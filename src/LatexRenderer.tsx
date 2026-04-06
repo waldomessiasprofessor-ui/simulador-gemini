@@ -13,7 +13,32 @@ type Segment =
   | { type: "text"; content: string }
   | { type: "latex-display"; content: string }
   | { type: "latex-inline"; content: string }
-  | { type: "image"; url: string };
+  | { type: "image"; url: string }
+  | { type: "table"; headers: string[]; rows: string[][] };
+
+// ─── Tabelas Markdown ────────────────────────────────────────────────────────
+
+function isTableRow(line: string): boolean {
+  const t = line.trim();
+  return t.startsWith("|") && t.endsWith("|") && t.length > 2;
+}
+
+function isSeparatorRow(line: string): boolean {
+  return /^\|[\s\-:|]+\|$/.test(line.trim());
+}
+
+function parseTableBlock(lines: string[]): { headers: string[]; rows: string[][] } {
+  const splitRow = (line: string) =>
+    line.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  const dataLines = lines.filter(l => !isSeparatorRow(l));
+  const [headerLine, ...bodyLines] = dataLines;
+  return {
+    headers: headerLine ? splitRow(headerLine) : [],
+    rows: bodyLines.map(splitRow),
+  };
+}
+
+// ─── Normalização ─────────────────────────────────────────────────────────────
 
 function normalizeImageFormats(text: string): string {
   // Converte formato Markdown ![alt](url) para [Imagem: url]
@@ -21,13 +46,39 @@ function normalizeImageFormats(text: string): string {
   return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, "[Imagem: $2]");
 }
 
-function parseSegments(rawText: string): Segment[] {
-  const text = normalizeImageFormats(rawText);
+// Divide o texto em "chunks" separando blocos de tabela Markdown do restante.
+function splitTableChunks(text: string): Array<{ isTable: boolean; content: string }> {
+  const lines = text.split("\n");
+  const chunks: Array<{ isTable: boolean; content: string }> = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    if (isTableRow(lines[i])) {
+      // Coleta todas as linhas consecutivas da tabela
+      const tableLines: string[] = [];
+      while (i < lines.length && (isTableRow(lines[i]) || isSeparatorRow(lines[i]))) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      chunks.push({ isTable: true, content: tableLines.join("\n") });
+    } else {
+      // Coleta linhas de texto comuns
+      const textLines: string[] = [];
+      while (i < lines.length && !isTableRow(lines[i])) {
+        textLines.push(lines[i]);
+        i++;
+      }
+      const joined = textLines.join("\n");
+      if (joined) chunks.push({ isTable: false, content: joined });
+    }
+  }
+
+  return chunks;
+}
+
+function parseLatexChunk(text: string): Segment[] {
   const segments: Segment[] = [];
-
-  // Une todos os padrões: [Imagem: url], LaTeX display, LaTeX inline
   const combined = /\[Imagem(?::\s*(https?:\/\/[^\]]+))?\]|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)|\$([^\s$][^$]*?[^\s$]|\S)\$/gi;
-
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -35,30 +86,37 @@ function parseSegments(rawText: string): Segment[] {
     if (match.index > lastIndex) {
       segments.push({ type: "text", content: text.slice(lastIndex, match.index) });
     }
-
     const full = match[0];
-    // É imagem?
     if (full.toLowerCase().startsWith("[imagem")) {
       const url = match[1];
-      if (url) {
-        segments.push({ type: "image", url });
-      } else {
-        // Placeholder — imagem sem URL
-        segments.push({ type: "text", content: "[imagem não disponível]" });
-      }
+      segments.push(url ? { type: "image", url } : { type: "text", content: "[imagem não disponível]" });
     } else if (match[2] !== undefined || match[3] !== undefined) {
-      // Display: \[...\] ou $$...$$
       segments.push({ type: "latex-display", content: (match[2] ?? match[3]).trim() });
     } else {
-      // Inline: \(...\) ou $...$
       segments.push({ type: "latex-inline", content: (match[4] ?? match[5] ?? "").trim() });
     }
-
     lastIndex = match.index + full.length;
   }
 
   if (lastIndex < text.length) {
     segments.push({ type: "text", content: text.slice(lastIndex) });
+  }
+
+  return segments;
+}
+
+function parseSegments(rawText: string): Segment[] {
+  const text = normalizeImageFormats(rawText);
+  const segments: Segment[] = [];
+
+  for (const chunk of splitTableChunks(text)) {
+    if (chunk.isTable) {
+      const tableLines = chunk.content.split("\n");
+      const { headers, rows } = parseTableBlock(tableLines);
+      segments.push({ type: "table", headers, rows });
+    } else {
+      segments.push(...parseLatexChunk(chunk.content));
+    }
   }
 
   return segments;
@@ -81,6 +139,39 @@ function renderTextSegment(text: string): React.ReactNode[] {
     });
   });
   return nodes;
+}
+
+function renderMarkdownTable(headers: string[], rows: string[][], key: string): React.ReactNode {
+  return (
+    <div key={key} className="overflow-x-auto my-3">
+      <table className="min-w-full border-collapse text-sm" style={{ borderColor: "var(--border)" }}>
+        {headers.length > 0 && (
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} className="px-3 py-2 text-left font-semibold"
+                  style={{ border: "1px solid var(--border)", background: "var(--secondary)", color: "var(--secondary-foreground)" }}>
+                  <LatexRenderer inline fontSize="sm">{h}</LatexRenderer>
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} style={{ background: ri % 2 === 0 ? "var(--card)" : "var(--secondary)" }}>
+              {row.map((cell, ci) => (
+                <td key={ci} className="px-3 py-2"
+                  style={{ border: "1px solid var(--border)", color: "var(--card-foreground)" }}>
+                  <LatexRenderer inline fontSize="sm">{cell}</LatexRenderer>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function renderKatex(latex: string, displayMode: boolean, key: string): React.ReactNode {
@@ -216,6 +307,7 @@ export function LatexRenderer({ children, className, fontSize = "base", inline =
             className="max-w-full rounded-lg my-2 mx-auto block"
             style={{ border: "1px solid #E2D9EE" }} />
         );
+        case "table": return renderMarkdownTable(seg.headers, seg.rows, key);
         case "text": return <React.Fragment key={key}>{renderTextSegment(seg.content)}</React.Fragment>;
       }
     });
