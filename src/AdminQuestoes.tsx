@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp, Image as ImageIcon } from "lucide-react";
 
 // ─── Importador LaTeX ─────────────────────────────────────────────────────────
 
@@ -708,6 +708,60 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
   );
 }
 
+// ─── Botão: inserir imagem inline no enunciado ────────────────────────────────
+function InlineImageInsert({ onInsert }: { onInsert: (tag: string) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
+  return (
+    <>
+      <button type="button" disabled={loading}
+        onClick={() => ref.current?.click()}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
+        style={{ background: "#E0F7F4", color: "#01738d", border: "1.5px solid #01738d44" }}>
+        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+        Inserir imagem
+      </button>
+      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={async (e) => {
+        const file = e.target.files?.[0]; if (!file) return;
+        setLoading(true);
+        try {
+          const url = await uploadToImgBB(file);
+          onInsert(`[Imagem: ${url}]`);
+          toast.success("Imagem inserida no enunciado!");
+        } catch (err: any) { toast.error(err.message); }
+        finally { setLoading(false); e.target.value = ""; }
+      }} />
+    </>
+  );
+}
+
+// ─── Botão: upload de imagem para alternativa ─────────────────────────────────
+function AltImageUpload({ currentUrl, onUpload }: { currentUrl: string | null; onUpload: (url: string | null) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
+  return (
+    <>
+      <button type="button" disabled={loading}
+        onClick={() => ref.current?.click()}
+        title={currentUrl ? "Trocar imagem" : "Adicionar imagem à alternativa"}
+        className="flex-shrink-0 p-2 rounded-lg"
+        style={{ background: currentUrl ? "#E0F7F4" : "#F8FAFC", border: "1.5px solid #E2D9EE", color: "#01738d" }}>
+        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+      </button>
+      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={async (e) => {
+        const file = e.target.files?.[0]; if (!file) return;
+        setLoading(true);
+        try {
+          const url = await uploadToImgBB(file);
+          onUpload(url);
+          toast.success("Imagem adicionada!");
+        } catch (err: any) { toast.error(err.message); }
+        finally { setLoading(false); e.target.value = ""; }
+      }} />
+    </>
+  );
+}
+
 // ─── AdminQuestoes ────────────────────────────────────────────────────────────
 
 const TAGS_CONTEUDO = [
@@ -853,6 +907,34 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (url: 
   );
 }
 
+// ─── Upload ImgBB reutilizável ────────────────────────────────────────────────
+async function uploadToImgBB(file: File): Promise<string> {
+  if (!IMGBB_KEY) throw new Error("Chave ImgBB não configurada (VITE_IMGBB_API_KEY).");
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const body = new FormData();
+  body.append("image", base64);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error?.message ?? "Erro no upload ImgBB");
+  return data.data.url as string;
+}
+
+// ─── Helpers: texto e imagem por alternativa ──────────────────────────────────
+function getAltText(val: any): string {
+  if (!val) return "";
+  if (typeof val === "string") return val;
+  return val.text ?? "";
+}
+function getAltFile(val: any): string | null {
+  if (!val || typeof val !== "object") return null;
+  return val.file ?? null;
+}
+
 export default function AdminQuestoes() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -864,6 +946,7 @@ export default function AdminQuestoes() {
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<Form>(emptyForm);
   const [openId, setOpenId] = useState<number | null>(null);
+  const enunciadoRef = useRef<HTMLTextAreaElement>(null);
 
   const utils = trpc.useUtils();
 
@@ -1153,13 +1236,27 @@ export default function AdminQuestoes() {
 
           {/* Enunciado */}
           <div>
-            <label style={labelStyle}>Enunciado (suporta LaTeX com $...$)</label>
-            <textarea className={inputClass} style={{ ...inputStyle, resize: "vertical" }} rows={5}
+            <div className="flex items-center justify-between mb-1">
+              <label style={labelStyle}>Enunciado (suporta LaTeX com $...$)</label>
+              <InlineImageInsert onInsert={(tag) => {
+                const ta = enunciadoRef.current;
+                if (!ta) { setForm(f => ({ ...f, enunciado: f.enunciado + tag })); return; }
+                const start = ta.selectionStart ?? form.enunciado.length;
+                const end   = ta.selectionEnd   ?? start;
+                const next  = form.enunciado.slice(0, start) + tag + form.enunciado.slice(end);
+                setForm(f => ({ ...f, enunciado: next }));
+                requestAnimationFrame(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + tag.length; });
+              }} />
+            </div>
+            <textarea ref={enunciadoRef} className={inputClass} style={{ ...inputStyle, resize: "vertical" }} rows={5}
               value={form.enunciado}
               onChange={(e) => setForm({ ...form, enunciado: e.target.value })}
-              placeholder="Texto do enunciado..."
+              placeholder="Texto do enunciado... Use o botão 'Inserir imagem' para colocar imagens onde quiser."
               onFocus={(e) => (e.target.style.borderColor = "#01738d")}
               onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+            <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>
+              Use <code style={{ fontSize: 11 }}>[Imagem: url]</code> para inserir imagens dentro do texto. O botão acima faz isso automaticamente.
+            </p>
           </div>
 
           <div>
@@ -1172,21 +1269,48 @@ export default function AdminQuestoes() {
 
           {/* Alternativas */}
           <div>
-            <label style={labelStyle}>Alternativas (suportam LaTeX)</label>
-            <div className="space-y-2">
-              {["A", "B", "C", "D", "E"].map((letra) => (
-                <div key={letra} className="flex items-center gap-2">
-                  <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "#01738d" }}>{letra}</span>
-                  <input className={inputClass} style={inputStyle}
-                    value={typeof form.alternativas[letra] === "object"
-                      ? (form.alternativas[letra] as any).text ?? ""
-                      : form.alternativas[letra] ?? ""}
-                    onChange={(e) => setForm({ ...form, alternativas: { ...form.alternativas, [letra]: e.target.value } })}
-                    placeholder={`Alternativa ${letra} — use $formula$ para LaTeX`}
-                    onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-                    onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
-                </div>
-              ))}
+            <label style={labelStyle}>Alternativas (suportam LaTeX e imagem)</label>
+            <div className="space-y-3">
+              {["A", "B", "C", "D", "E"].map((letra) => {
+                const altVal = form.alternativas[letra];
+                const altFile = getAltFile(altVal);
+                return (
+                  <div key={letra} className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "#01738d" }}>{letra}</span>
+                      <input className={inputClass} style={{ ...inputStyle, flex: 1 }}
+                        value={getAltText(altVal)}
+                        onChange={(e) => {
+                          const file = getAltFile(altVal);
+                          setForm(f => ({ ...f, alternativas: { ...f.alternativas, [letra]: file ? { text: e.target.value, file } : e.target.value } }));
+                        }}
+                        placeholder={`Alternativa ${letra} — texto opcional se tiver imagem`}
+                        onFocus={(e) => (e.target.style.borderColor = "#01738d")}
+                        onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+                      <AltImageUpload
+                        currentUrl={altFile}
+                        onUpload={(url) => {
+                          const text = getAltText(altVal);
+                          setForm(f => ({ ...f, alternativas: { ...f.alternativas, [letra]: url ? { text, file: url } : text } }));
+                        }}
+                      />
+                    </div>
+                    {altFile && (
+                      <div className="ml-7 flex items-center gap-2">
+                        <img src={altFile} alt={`Alternativa ${letra}`}
+                          className="max-h-20 rounded-lg object-contain"
+                          style={{ border: "1px solid #E2D9EE" }} />
+                        <button type="button" onClick={() => {
+                          const text = getAltText(altVal);
+                          setForm(f => ({ ...f, alternativas: { ...f.alternativas, [letra]: text } }));
+                        }} className="p-1 rounded hover:opacity-70" title="Remover imagem">
+                          <X className="h-3.5 w-3.5" style={{ color: "#E53935" }} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
