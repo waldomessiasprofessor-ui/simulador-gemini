@@ -763,6 +763,8 @@ type Form = typeof emptyForm;
 
 // ─── Campo de imagem com upload para Cloudinary ───────────────────────────────
 
+const IMGBB_KEY = import.meta.env.VITE_IMGBB_API_KEY as string | undefined;
+
 function ImageUploadField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -770,17 +772,36 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (url: 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!IMGBB_KEY) {
+      toast.error("Chave ImgBB não configurada. Cole a URL da imagem diretamente no campo.");
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+
     setUploading(true);
     try {
+      // Converte para base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Upload direto para ImgBB (client-side, sem servidor)
       const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/upload-image", { method: "POST", body, credentials: "include" });
+      body.append("image", base64);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+        method: "POST",
+        body,
+      });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Erro no upload");
-      onChange(data.url);
+      if (!data.success) throw new Error(data.error?.message ?? "Erro no upload");
+      onChange(data.data.url);
       toast.success("Imagem enviada com sucesso!");
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(`Erro no upload: ${err.message}`);
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
