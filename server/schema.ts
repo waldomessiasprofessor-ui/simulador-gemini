@@ -52,6 +52,7 @@ export const questions = mysqlTable(
     gabarito: varchar("gabarito", { length: 1 }).notNull(),
     comentario_resolucao: text("comentario_resolucao"),
     active: boolean("active").notNull().default(true),
+    auditada: boolean("auditada").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },

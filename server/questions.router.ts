@@ -347,10 +347,27 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
 
       try {
         const audit = JSON.parse(clean);
+        // Marca a questão como auditada
+        await ctx.db.update(questions).set({ auditada: true }).where(eq(questions.id, input.id));
         return { success: true, audit, questionId: q.id };
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Claude retornou uma resposta em formato inválido. Tente novamente." });
       }
+    }),
+
+  // ─── Estatísticas de auditoria ────────────────────────────────────────────
+
+  getAuditStats: adminProcedure
+    .query(async ({ ctx }) => {
+      const [{ total }] = await ctx.db
+        .select({ total: sql<number>`COUNT(*)` })
+        .from(questions)
+        .where(eq(questions.active, true));
+      const [{ auditadas }] = await ctx.db
+        .select({ auditadas: sql<number>`COUNT(*)` })
+        .from(questions)
+        .where(and(eq(questions.active, true), eq(questions.auditada, true)));
+      return { total: Number(total), auditadas: Number(auditadas) };
     }),
 
   // ─── Aplica correções sugeridas pela auditoria ─────────────────────────────

@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp, Image as ImageIcon, ShieldCheck } from "lucide-react";
 
 // ─── Importador LaTeX ─────────────────────────────────────────────────────────
 
@@ -266,6 +266,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
       tags: !result.tags_atuais_corretas && (result.tags_sugeridas?.length ?? 0) > 0,
     });
     setConfirmDelete(false);
+    utils.questions.getAuditStats.invalidate();
   }
 
   function handleApply() {
@@ -952,6 +953,8 @@ export default function AdminQuestoes() {
 
   const utils = trpc.useUtils();
 
+  const { data: auditStats } = trpc.questions.getAuditStats.useQuery();
+
   const { data, isLoading } = trpc.questions.list.useQuery({
     page, pageSize: 20,
     conteudo: search || undefined,
@@ -1063,11 +1066,40 @@ export default function AdminQuestoes() {
       {/* Cabeçalho */}
       <div className="rounded-2xl px-6 py-5 text-white flex items-center justify-between gap-4"
         style={{ background: "linear-gradient(135deg, #521F80, #01738d)" }}>
-        <div>
-          <h1 className="text-xl font-bold">Gerenciar Questões</h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-            {data?.pagination.total ?? 0} questões no banco
-          </p>
+        <div className="flex items-center gap-4 flex-wrap">
+          <div>
+            <h1 className="text-xl font-bold">Gerenciar Questões</h1>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
+              {data?.pagination.total ?? 0} questões no banco
+            </p>
+          </div>
+          {auditStats && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl"
+              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)" }}>
+              <ShieldCheck className="h-5 w-5 flex-shrink-0" style={{ color: auditStats.auditadas === auditStats.total ? "#4ADE80" : "rgba(255,255,255,0.9)" }} />
+              <div>
+                <p className="text-xs font-semibold leading-tight" style={{ color: "rgba(255,255,255,0.7)" }}>Auditadas</p>
+                <p className="text-base font-bold leading-tight">
+                  {auditStats.auditadas}
+                  <span className="text-sm font-normal" style={{ color: "rgba(255,255,255,0.7)" }}>/{auditStats.total}</span>
+                </p>
+              </div>
+              <div className="ml-1 h-8 w-8 relative flex-shrink-0">
+                <svg viewBox="0 0 36 36" className="h-8 w-8 -rotate-90">
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3.5" />
+                  <circle cx="18" cy="18" r="14" fill="none"
+                    stroke={auditStats.auditadas === auditStats.total ? "#4ADE80" : "#A78BFA"}
+                    strokeWidth="3.5"
+                    strokeDasharray={`${(auditStats.auditadas / Math.max(auditStats.total, 1)) * 87.96} 87.96`}
+                    strokeLinecap="round"
+                    style={{ transition: "stroke-dasharray 0.6s ease" }} />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold">
+                  {auditStats.total > 0 ? Math.round((auditStats.auditadas / auditStats.total) * 100) : 0}%
+                </span>
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setShowLatexImport(true)}
