@@ -346,7 +346,7 @@ export default function Dashboard() {
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino Livre</p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                  Selecione a quantidade de questões e o tempo para aumentar a performance na resolução
+                  Selecione a quantidade de questões e o tempo para aumentar a sua performance na resolução de questões
                 </p>
               </div>
             </div>
@@ -367,7 +367,7 @@ export default function Dashboard() {
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Banco de Questões</p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                  Navegue à vontade, sem pressão, analisando enunciados e resoluções
+                  Navegue à vontade, sem pressão, analisando enunciados e resoluções das questões
                 </p>
               </div>
             </div>
