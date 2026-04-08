@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
-import { QuestionCard } from "@/LatexRenderer";
+import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
 import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +25,14 @@ export default function Treino() {
   const [finished, setFinished] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const simulationIdRef = useRef<number | null>(null);
+  const elapsedRef = useRef(0);
 
   useEffect(() => {
     if (questions.length > 0 && !finished) {
-      timerRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds(s => { elapsedRef.current = s + 1; return s + 1; });
+      }, 1000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [questions.length, finished]);
@@ -39,24 +43,58 @@ export default function Treino() {
   }
 
   const { data: topics, isLoading: loadingTopics } = trpc.simulations.getTopics.useQuery();
+  const saveTrainingAnswer = trpc.simulations.saveTrainingAnswer.useMutation();
+  const finishTrainingSession = trpc.simulations.finishTrainingSession.useMutation();
+
   const startTraining = trpc.simulations.startFreeTraining.useMutation({
     onSuccess: (data) => {
+      simulationIdRef.current = data.simulationId;
       setQuestions(data.questions as TrainingQuestion[]);
       setAnswers({});
       setRevealed({});
       setIdx(0);
       setFinished(false);
+      elapsedRef.current = 0;
+      setElapsedSeconds(0);
     },
   });
 
   function handleAnswer(questionId: number, alt: string) {
     if (revealed[questionId]) return;
+    const q = questions.find(q => q.id === questionId);
+    const isCorrect = q ? alt === q.gabarito : false;
     setAnswers((p) => ({ ...p, [questionId]: alt }));
     setRevealed((p) => ({ ...p, [questionId]: true }));
+    // Save to DB in background for stats tracking
+    if (simulationIdRef.current) {
+      const order = questions.findIndex(q => q.id === questionId);
+      saveTrainingAnswer.mutate({
+        simulationId: simulationIdRef.current,
+        questionId,
+        selectedAnswer: alt,
+        isCorrect,
+        order,
+      });
+    }
   }
 
   function handleStart() {
     startTraining.mutate({ conteudo: selectedTopic ?? undefined, count });
+  }
+
+  function handleFinish(qs: TrainingQuestion[], ans: Record<number, string>) {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setFinished(true);
+    // Save session completion in background
+    if (simulationIdRef.current) {
+      const correct = qs.filter(q => ans[q.id] === q.gabarito).length;
+      finishTrainingSession.mutate({
+        simulationId: simulationIdRef.current,
+        correctCount: correct,
+        totalTimeSeconds: elapsedRef.current,
+      });
+      simulationIdRef.current = null;
+    }
   }
 
   function handleReset() {
@@ -65,6 +103,7 @@ export default function Treino() {
     setRevealed({});
     setIdx(0);
     setFinished(false);
+    simulationIdRef.current = null;
   }
 
   // Tela de seleção
@@ -237,7 +276,7 @@ export default function Treino() {
       {isRevealed && q.comentario_resolucao && (
         <div className="rounded-xl p-4" style={{ background: "#F3EAF9", border: "1px solid #7B3FA022" }}>
           <p className="text-xs font-semibold mb-1.5" style={{ color: "#7B3FA0" }}>Resolução</p>
-          <p className="text-sm" style={{ color: "#4A235A" }}>{q.comentario_resolucao}</p>
+          <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
         </div>
       )}
 
@@ -256,7 +295,7 @@ export default function Treino() {
             Próxima <ChevronRight className="h-4 w-4" />
           </button>
         ) : (
-          <button onClick={() => setFinished(true)} className="btn-primary flex items-center gap-1">
+          <button onClick={() => handleFinish(questions, answers)} className="btn-primary flex items-center gap-1">
             <CheckSquare className="h-4 w-4" /> Ver resultado
           </button>
         )}

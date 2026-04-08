@@ -108,14 +108,15 @@ export const simulationsRouter = createTRPCRouter({
       const config = STAGE_CONFIG[stage];
       const total = fonte && fonte !== "ENEM" ? 12 : config.total;
 
-      // --- Verifica se já existe simulado em andamento ---
+      // --- Verifica se já existe simulado em andamento (exclui treino livre stage=0) ---
       const [existing] = await ctx.db
         .select({ id: simulations.id })
         .from(simulations)
         .where(
           and(
             eq(simulations.userId, userId),
-            eq(simulations.status, "in_progress")
+            eq(simulations.status, "in_progress"),
+            sql`${simulations.stage} > 0`,
           )
         )
         .limit(1);
@@ -529,6 +530,7 @@ export const simulationsRouter = createTRPCRouter({
       const filters = [
         eq(simulations.userId, userId),
         eq(simulations.status, "completed"),
+        sql`${simulations.stage} > 0`, // Exclui sessões de treino livre (stage=0)
       ];
       if (input.stage) filters.push(eq(simulations.stage, input.stage));
 
@@ -837,6 +839,7 @@ export const simulationsRouter = createTRPCRouter({
       count: z.number().int().min(1).max(20).default(10),
     }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
       const filters: any[] = [eq(questions.active, true)];
       if (input.conteudo) {
         filters.push(sql`${questions.conteudo_principal} = ${input.conteudo}`);
@@ -859,7 +862,84 @@ export const simulationsRouter = createTRPCRouter({
         .orderBy(sql`RAND()`)
         .limit(input.count);
 
-      return { questions: rows };
+      // Abandona qualquer sessão de treino pendente
+      await ctx.db
+        .update(simulations)
+        .set({ status: "abandoned" })
+        .where(and(
+          eq(simulations.userId, userId),
+          eq(simulations.status, "in_progress"),
+          sql`${simulations.stage} = 0`,
+        ));
+
+      // Cria registro de simulação para treino (stage = 0) para rastrear no stats
+      const [result] = await ctx.db.insert(simulations).values({
+        userId,
+        stage: 0 as any,
+        totalQuestions: rows.length,
+        status: "in_progress",
+      });
+      const simulationId = Number(result.insertId);
+
+      return { simulationId, questions: rows };
+    }),
+
+  // Salva uma resposta de treino livre no banco
+  saveTrainingAnswer: protectedProcedure
+    .input(z.object({
+      simulationId: z.number().int().positive(),
+      questionId: z.number().int().positive(),
+      selectedAnswer: z.string().length(1),
+      isCorrect: z.boolean(),
+      order: z.number().int().min(0),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Verifica que o simulado pertence ao usuário
+      const [sim] = await ctx.db
+        .select({ id: simulations.id })
+        .from(simulations)
+        .where(and(
+          eq(simulations.id, input.simulationId),
+          eq(simulations.userId, ctx.user.id),
+        ))
+        .limit(1);
+
+      if (!sim) return { success: false };
+
+      await ctx.db.insert(simulationAnswers).values({
+        simulationId: input.simulationId,
+        questionId: input.questionId,
+        selectedAnswer: input.selectedAnswer,
+        isCorrect: input.isCorrect,
+        questionOrder: input.order,
+        answeredAt: new Date(),
+      });
+
+      return { success: true };
+    }),
+
+  // Finaliza sessão de treino livre
+  finishTrainingSession: protectedProcedure
+    .input(z.object({
+      simulationId: z.number().int().positive(),
+      correctCount: z.number().int().min(0),
+      totalTimeSeconds: z.number().int().min(0),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(simulations)
+        .set({
+          status: "completed",
+          correctCount: input.correctCount,
+          totalTimeSeconds: input.totalTimeSeconds,
+          completedAt: new Date(),
+        })
+        .where(and(
+          eq(simulations.id, input.simulationId),
+          eq(simulations.userId, ctx.user.id),
+        ));
+
+      return { success: true };
     }),
 
   // Tópicos disponíveis para treino livre
@@ -1122,6 +1202,7 @@ export const simulationsRouter = createTRPCRouter({
 
   // ---------------------------------------------------------------------------
   // QUESTÕES ERRADAS — histórico de erros do aluno para revisão
+  // Inclui erros de: simulados, treino livre e desafio diário
   // ---------------------------------------------------------------------------
   getWrongAnswers: protectedProcedure
     .input(z.object({
@@ -1131,14 +1212,14 @@ export const simulationsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
-      const rows = await ctx.db
+      // ── Fonte 1: simulationAnswers (simulados + treino livre salvo) ──────────
+      const simRows = await ctx.db
         .select({
           answerId: simulationAnswers.id,
           simulationId: simulationAnswers.simulationId,
           questionId: simulationAnswers.questionId,
           selectedAnswer: simulationAnswers.selectedAnswer,
           answeredAt: simulationAnswers.answeredAt,
-          // Dados da questão
           enunciado: questions.enunciado,
           url_imagem: questions.url_imagem,
           alternativas: questions.alternativas,
@@ -1157,24 +1238,94 @@ export const simulationsRouter = createTRPCRouter({
             eq(simulationAnswers.isCorrect, false),
           )
         )
-        .orderBy(desc(simulationAnswers.answeredAt))
-        .limit(input.limit)
-        .offset(input.offset);
+        .orderBy(desc(simulationAnswers.answeredAt));
 
-      // Conta total
-      const [{ total }] = await ctx.db
-        .select({ total: sql<number>`COUNT(*)` })
-        .from(simulationAnswers)
-        .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
-        .where(
-          and(
-            eq(simulations.userId, userId),
-            eq(simulations.status, "completed"),
-            eq(simulationAnswers.isCorrect, false),
-          )
-        );
+      // ── Fonte 2: desafio diário (erros em challenges completos) ──────────────
+      const completedChallenges = await ctx.db
+        .select()
+        .from(dailyChallenges)
+        .where(and(
+          eq(dailyChallenges.userId, userId),
+          eq(dailyChallenges.completed, true),
+        ));
 
-      return { rows, total: Number(total) };
+      type WrongRow = (typeof simRows)[number];
+      let dailyRows: WrongRow[] = [];
+
+      if (completedChallenges.length > 0) {
+        // Coleta todos os itens respondidos nos desafios
+        const dailyItems: Array<{
+          questionId: number;
+          selectedAnswer: string;
+          challengeId: number;
+          answeredAt: Date | null;
+        }> = [];
+
+        for (const ch of completedChallenges) {
+          const answers = ch.answers as Record<string, string>;
+          for (const [qIdStr, selected] of Object.entries(answers)) {
+            dailyItems.push({
+              questionId: parseInt(qIdStr),
+              selectedAnswer: selected,
+              challengeId: ch.id,
+              answeredAt: ch.completedAt,
+            });
+          }
+        }
+
+        if (dailyItems.length > 0) {
+          const uniqueQIds = [...new Set(dailyItems.map((w) => w.questionId))];
+          const qDetails = await ctx.db
+            .select({
+              id: questions.id,
+              enunciado: questions.enunciado,
+              url_imagem: questions.url_imagem,
+              alternativas: questions.alternativas,
+              gabarito: questions.gabarito,
+              comentario_resolucao: questions.comentario_resolucao,
+              conteudo_principal: questions.conteudo_principal,
+              nivel_dificuldade: questions.nivel_dificuldade,
+            })
+            .from(questions)
+            .where(inArray(questions.id, uniqueQIds));
+
+          const qMap = new Map(qDetails.map((q) => [q.id, q]));
+          let syntheticId = -1;
+
+          for (const item of dailyItems) {
+            const q = qMap.get(item.questionId);
+            if (!q) continue;
+            if (item.selectedAnswer === q.gabarito) continue; // acerto, ignora
+
+            dailyRows.push({
+              answerId: syntheticId--,
+              simulationId: -item.challengeId,
+              questionId: item.questionId,
+              selectedAnswer: item.selectedAnswer,
+              answeredAt: item.answeredAt,
+              enunciado: q.enunciado,
+              url_imagem: q.url_imagem,
+              alternativas: q.alternativas,
+              gabarito: q.gabarito,
+              comentario_resolucao: q.comentario_resolucao,
+              conteudo_principal: q.conteudo_principal,
+              nivel_dificuldade: q.nivel_dificuldade,
+            });
+          }
+        }
+      }
+
+      // ── Merge e paginação em memória ─────────────────────────────────────────
+      const allRows = [...simRows, ...dailyRows].sort((a, b) => {
+        const da = a.answeredAt ? new Date(a.answeredAt as any).getTime() : 0;
+        const db2 = b.answeredAt ? new Date(b.answeredAt as any).getTime() : 0;
+        return db2 - da;
+      });
+
+      const total = allRows.length;
+      const rows = allRows.slice(input.offset, input.offset + input.limit);
+
+      return { rows, total };
     }),
 
   // ---------------------------------------------------------------------------
