@@ -883,7 +883,9 @@ export const simulationsRouter = createTRPCRouter({
   // ---------------------------------------------------------------------------
   getDailyChallenge: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    // Usa Horário de Brasília (UTC-3, sem horário de verão desde 2019)
+    // Garante reset à meia-noite local do aluno, não às 21h/00h UTC
+    const today = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
     // Verifica se já existe desafio de hoje (pega o mais recente)
     const [existing] = await ctx.db
@@ -1051,7 +1053,7 @@ export const simulationsRouter = createTRPCRouter({
   // ---------------------------------------------------------------------------
   newDailyChallenge: protectedProcedure.mutation(async ({ ctx }) => {
     const userId = ctx.user.id;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
     // Busca todos os IDs já usados pelo aluno para evitar repetição imediata
     const pastChallenges = await ctx.db

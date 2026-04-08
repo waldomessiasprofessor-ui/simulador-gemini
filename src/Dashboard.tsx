@@ -73,8 +73,11 @@ function DailyCard() {
             <Flame className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#009688" }}>3 questões do dia</p>
+            <p className="font-bold text-sm" style={{ color: "#009688" }}>Desafio de Hoje</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              Resolva três questões escolhidas por nós para manter o cérebro ativo
+            </p>
+            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#009688" }}>
               {answered}/{questions.length} respondidas · Toque para começar
             </p>
           </div>
@@ -100,7 +103,7 @@ function StudyCard() {
 
   if (isLoading) return (
     <div className="rounded-2xl p-4 flex justify-center" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#7B3FA0" }} />
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#1E40AF" }} />
     </div>
   );
 
@@ -110,8 +113,8 @@ function StudyCard() {
     <div className="rounded-2xl p-4 opacity-60" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "#F3EAF9" }}>
-          <BookOpen className="h-5 w-5" style={{ color: "#7B3FA0" }} />
+          style={{ background: "#EFF6FF" }}>
+          <BookOpen className="h-5 w-5" style={{ color: "#1E40AF" }} />
         </div>
         <div>
           <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Vamos estudar?</p>
@@ -123,21 +126,24 @@ function StudyCard() {
 
   return (
     <button onClick={() => navigate("/revise")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+      style={{ background: "#EFF6FF", border: "1.5px solid #1E40AF33" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "#7B3FA0" }}>
+            style={{ background: "#1E40AF" }}>
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#7B3FA0" }}>Vamos estudar?</p>
+            <p className="font-bold text-sm" style={{ color: "#1E40AF" }}>Vamos Estudar?</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              Selecionamos um tópico para revisar e manter os conteúdos sempre em dia
+            </p>
+            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#1E40AF" }}>
               {content.topico ?? content.titulo}
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#1E40AF" }} />
       </div>
     </button>
   );
@@ -259,6 +265,63 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ── Desempenho Semanal + Diário de Questões — logo abaixo da saudação ── */}
+      {stats && (
+        <section className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Desempenho Semanal</p>
+              <button onClick={() => navigate("/ranking")} className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#009688" }}>
+                <Medal className="h-3.5 w-3.5" /> Ranking
+              </button>
+            </div>
+            <div className="space-y-2">
+              {[
+                { icon: Zap, label: "Questões respondidas", value: String(stats.weeklyQuestions) },
+                { icon: Star, label: "Simulados completos", value: String(stats.totalSimulations ?? 0) },
+              ].map(({ icon: Icon, label, value }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+                    <Icon className="h-3.5 w-3.5" style={{ color: "#009688" }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</p>
+                    <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{value}</p>
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center gap-3 pt-1">
+                <CircularAccuracy value={stats.weeklyAccuracy} />
+                <div className="flex-1">
+                  <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Taxa de acerto</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                    {stats.weeklyAccuracy >= 70 ? "Excelente!" : stats.weeklyAccuracy >= 40 ? "Bom trabalho!" : "Continue praticando!"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-4" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+            <p className="font-bold text-sm mb-3" style={{ color: "var(--foreground)" }}>Diário de Questões</p>
+            <ResponsiveContainer width="100%" height={130}>
+              <BarChart data={stats.dailyData} margin={{ top: 0, right: 0, left: -28, bottom: 0 }}>
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+                  formatter={(v: number) => [v, "Questões"]} />
+                <Bar dataKey="questoes" radius={[4, 4, 0, 0]} maxBarSize={32}>
+                  {stats.dailyData.map((entry, i) => (
+                    <Cell key={i} fill={entry.questoes > 0 ? "#009688" : "var(--border)"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+      )}
+
       {/* ── Missão cumprida ── */}
       <MissaoCumprida />
 
@@ -281,13 +344,10 @@ export default function Dashboard() {
                 <Dumbbell className="h-5 w-5" style={{ color: "#009688" }} />
               </div>
               <div>
-                <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino livre</p>
+                <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino Livre</p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                  Tópico, quantidade e vestibular · com cronômetro
+                  Selecione a quantidade de questões e o tempo para aumentar a performance na resolução
                 </p>
-                {totalQuestions > 0 && (
-                  <p className="text-xs mt-1 font-semibold" style={{ color: "#009688" }}>{totalQuestions} questões disponíveis</p>
-                )}
               </div>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -305,8 +365,10 @@ export default function Dashboard() {
                 <BarChart2 className="h-5 w-5" style={{ color: "#009688" }} />
               </div>
               <div>
-                <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Banco de questões</p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Filtre por vestibular, tópico e dificuldade</p>
+                <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Banco de Questões</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                  Navegue à vontade, sem pressão, analisando enunciados e resoluções
+                </p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
@@ -322,7 +384,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Fórmulas</p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Álgebra, Geometria, Trigonometria e mais</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                  As fórmulas mais importantes de Matemática e Física a um clique de distância
+                </p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
@@ -350,7 +414,7 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <p style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
-                  {active ? "Simulado em andamento — continuar" : `${vestibularSelecionado} · ${VESTIBULARES.find(v => v.id === vestibularSelecionado)?.sub}`}
+                  {active ? "Simulado em andamento — continuar" : "Simule o ENEM com 45 questões de Matemática e correção com TRI"}
                 </p>
               </div>
             </div>
@@ -359,63 +423,6 @@ export default function Dashboard() {
         </button>
       </section>
 
-      {/* ── Stats semanais ── */}
-      {stats && (
-        <section className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-            <div className="flex items-center justify-between">
-              <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Semana atual</p>
-              <button onClick={() => navigate("/ranking")} className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#009688" }}>
-                <Medal className="h-3.5 w-3.5" /> Ranking
-              </button>
-            </div>
-            <div className="space-y-2">
-              {[
-                { icon: Zap, label: "Questões respondidas", value: String(stats.weeklyQuestions) },
-                { icon: Star, label: "Simulados completos", value: String(stats.totalSimulations ?? 0) },
-              ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
-                    <Icon className="h-3.5 w-3.5" style={{ color: "#009688" }} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</p>
-                    <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{value}</p>
-                  </div>
-                </div>
-              ))}
-              {/* Taxa de acerto circular */}
-              <div className="flex items-center gap-3 pt-1">
-                <CircularAccuracy value={stats.weeklyAccuracy} />
-                <div className="flex-1">
-                  <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Taxa de acerto</p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                    {stats.weeklyAccuracy >= 70 ? "Excelente!" : stats.weeklyAccuracy >= 40 ? "Bom trabalho!" : "Continue praticando!"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-4" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-            <p className="font-bold text-sm mb-3" style={{ color: "var(--foreground)" }}>Questões por dia</p>
-            <ResponsiveContainer width="100%" height={130}>
-              <BarChart data={stats.dailyData} margin={{ top: 0, right: 0, left: -28, bottom: 0 }}>
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
-                  formatter={(v: number) => [v, "Questões"]} />
-                <Bar dataKey="questoes" radius={[4, 4, 0, 0]} maxBarSize={32}>
-                  {stats.dailyData.map((entry, i) => (
-                    <Cell key={i} fill={entry.questoes > 0 ? "#009688" : "var(--border)"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
