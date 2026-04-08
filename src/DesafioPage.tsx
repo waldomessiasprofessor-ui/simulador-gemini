@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { QuestionCard } from "@/LatexRenderer";
+import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
 import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw } from "lucide-react";
-import { LatexRenderer } from "@/LatexRenderer";
 
 type DailyQ = {
   id: number;
@@ -51,6 +50,7 @@ export default function DesafioPage() {
   const answers = { ...(daily.answers as Record<string, string>), ...localAnswers };
   const allAnswered = questions.every((q) => answers[q.id]);
 
+  // ─── Tela de resultado ──────────────────────────────────────────────────────
   if (daily.completed) {
     const correct = daily.correctCount ?? 0;
     const total = questions.length;
@@ -59,7 +59,8 @@ export default function DesafioPage() {
     const border = correct === total ? "#00BFA5" : correct >= 2 ? "#F9A825" : "#E53935";
 
     return (
-      <div className="space-y-6 py-2">
+      <div className="space-y-4 py-2">
+        {/* Placar */}
         <div className="rounded-2xl p-6 text-center" style={{ background: bg, border: `1.5px solid ${border}` }}>
           <Flame className="h-10 w-10 mx-auto mb-3" style={{ color }} />
           <p className="text-3xl font-black mb-1" style={{ color }}>{correct}/{total}</p>
@@ -68,40 +69,49 @@ export default function DesafioPage() {
           </p>
         </div>
 
+        {/* Gabarito comentado — todas as questões */}
         <div className="space-y-2">
-          {questions.map((q, i) => {
+          <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--muted-foreground)" }}>
+            Gabarito comentado
+          </p>
+          {questions.map((q) => {
             const isCorrect = answers[q.id] === q.gabarito;
-            const resolutionOpen = openResolution[q.id];
+            const resOpen = openResolution[q.id];
             return (
-              <div key={i} className="rounded-xl overflow-hidden"
-                style={{ background: isCorrect ? "var(--secondary)" : "#FFEBEE", border: `1px solid ${isCorrect ? "#00BFA544" : "#E5393544"}` }}>
-                <div className="flex items-center gap-3 p-3">
+              <div key={q.id} className="rounded-xl overflow-hidden"
+                style={{ border: `1px solid ${isCorrect ? "#00BFA544" : "#E5393544"}` }}>
+                {/* Linha de resultado */}
+                <div className="flex items-center gap-3 px-4 py-3"
+                  style={{ background: isCorrect ? "var(--secondary)" : "#FFEBEE" }}>
                   {isCorrect
                     ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#00695C" }} />
                     : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#C62828" }} />}
-                  <span className="flex-1 text-sm truncate" style={{ color: "var(--muted-foreground)" }}>{q.conteudo_principal}</span>
+                  <span className="flex-1 text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>
+                    {q.conteudo_principal}
+                  </span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-xs font-bold" style={{ color: isCorrect ? "#00695C" : "#C62828" }}>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded"
+                      style={{ background: isCorrect ? "#00695C" : "#C62828", color: "#fff" }}>
                       {answers[q.id] ?? "—"} → {q.gabarito}
                     </span>
-                    {!isCorrect && q.comentario_resolucao && (
+                    {q.comentario_resolucao && (
                       <button
                         onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
                         className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-all"
                         style={{
-                          background: resolutionOpen ? "#C62828" : "#FFCDD2",
-                          color: resolutionOpen ? "#fff" : "#C62828",
+                          background: resOpen ? "#01738d" : "rgba(1,115,141,0.12)",
+                          color: resOpen ? "#fff" : "#01738d",
                         }}>
                         <BookOpen className="h-3 w-3" />
-                        {resolutionOpen ? "Fechar" : "Ver resolução"}
+                        {resOpen ? "Fechar" : "Resolução"}
                       </button>
                     )}
                   </div>
                 </div>
-
-                {!isCorrect && resolutionOpen && q.comentario_resolucao && (
-                  <div className="px-4 pb-4 pt-2 space-y-1" style={{ borderTop: "1px solid #E5393522" }}>
-                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#C62828" }}>Resolução</p>
+                {/* Resolução expandida com LaTeX */}
+                {resOpen && q.comentario_resolucao && (
+                  <div className="px-4 pb-4 pt-3 space-y-2" style={{ background: "var(--card)", borderTop: "1px solid var(--border)" }}>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#01738d" }}>Resolução</p>
                     <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                   </div>
                 )}
@@ -110,6 +120,7 @@ export default function DesafioPage() {
           })}
         </div>
 
+        {/* Ações */}
         <div className="flex gap-2">
           <button onClick={() => navigate("/")} className="btn-outline flex-1 justify-center">
             Voltar ao início
@@ -128,6 +139,7 @@ export default function DesafioPage() {
     );
   }
 
+  // ─── Questão atual ──────────────────────────────────────────────────────────
   const q = questions[idx];
   const isRevealed = revealed[q.id];
 
@@ -140,6 +152,7 @@ export default function DesafioPage() {
 
   return (
     <div className="space-y-5 py-2">
+      {/* Barra de progresso */}
       <div className="rounded-xl px-4 py-3 flex items-center justify-between"
         style={{ background: "var(--teal-soft)", border: "1.5px solid #00968844" }}>
         <div className="flex items-center gap-2">
@@ -155,6 +168,7 @@ export default function DesafioPage() {
         </div>
       </div>
 
+      {/* Questão */}
       <div className="card">
         <QuestionCard
           order={idx + 1}
@@ -169,13 +183,15 @@ export default function DesafioPage() {
         />
       </div>
 
+      {/* Resolução inline com LaTeX */}
       {isRevealed && q.comentario_resolucao && (
         <div className="rounded-xl p-4" style={{ background: "var(--teal-soft)", border: "1px solid #00968822" }}>
-          <p className="text-xs font-semibold mb-1" style={{ color: "#009688" }}>Resolução</p>
-          <p className="text-sm" style={{ color: "var(--foreground)" }}>{q.comentario_resolucao}</p>
+          <p className="text-xs font-semibold mb-2" style={{ color: "#009688" }}>Resolução</p>
+          <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
         </div>
       )}
 
+      {/* Navegação */}
       <div className="flex items-center justify-between gap-2">
         <button onClick={() => setIdx(Math.max(0, idx - 1))} disabled={idx === 0}
           className="btn-outline flex items-center gap-1" style={{ fontSize: "0.85rem", padding: "0.45rem 1rem" }}>
