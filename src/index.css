@@ -138,6 +138,59 @@ body {
   justify-content: center; font-size: 0.78rem; font-weight: 700; margin-top: 1px;
 }
 
+/* ─── HTML content (tabelas e outros blocos HTML no conteúdo de revisão/resolução) ─── */
+.html-content table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+}
+.html-content th,
+.html-content td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+  color: var(--foreground);
+}
+.html-content th {
+  background: var(--secondary);
+  font-weight: 600;
+  color: var(--secondary-foreground);
+}
+.html-content tr:nth-child(even) td {
+  background: var(--secondary);
+}
+.html-content ul,
+.html-content ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.html-content li { margin-bottom: 0.25rem; }
+.html-content h1, .html-content h2, .html-content h3,
+.html-content h4, .html-content h5, .html-content h6 {
+  font-weight: 700;
+  margin: 0.75rem 0 0.35rem;
+  color: var(--foreground);
+}
+.html-content p { margin: 0.4rem 0; color: var(--foreground); }
+.html-content strong, .html-content b { font-weight: 600; }
+.html-content em, .html-content i { font-style: italic; }
+.html-content pre {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+}
+.html-content blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  margin-left: 0;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
 @media (prefers-color-scheme: dark) {
   :root { --logo-filter: brightness(0) invert(1); }
 }
