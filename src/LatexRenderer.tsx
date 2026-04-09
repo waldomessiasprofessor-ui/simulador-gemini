@@ -14,7 +14,49 @@ type Segment =
   | { type: "latex-display"; content: string }
   | { type: "latex-inline"; content: string }
   | { type: "image"; url: string }
-  | { type: "table"; headers: string[]; rows: string[][] };
+  | { type: "table"; headers: string[]; rows: string[][] }
+  | { type: "html"; content: string };
+
+// ─── HTML blocks ─────────────────────────────────────────────────────────────
+
+// Remove atributos perigosos do HTML (conteúdo vem do admin, não de usuários)
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "")
+    .replace(/javascript\s*:/gi, "")
+    .replace(/data\s*:\s*text\/html/gi, "");
+}
+
+// Divide o texto separando blocos HTML de nível de bloco do restante
+function splitHtmlAndText(text: string): Array<{ isHtml: boolean; content: string }> {
+  // Detecta elementos HTML de bloco comuns (não aninhados do mesmo tipo)
+  const htmlBlockRe = /<(table|div|ul|ol|pre|blockquote|figure|section|article|h[1-6])[\s>][\s\S]*?<\/\1>/gi;
+  const chunks: Array<{ isHtml: boolean; content: string }> = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = htmlBlockRe.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      const before = text.slice(lastIndex, match.index);
+      if (before.trim()) chunks.push({ isHtml: false, content: before });
+    }
+    chunks.push({ isHtml: true, content: match[0] });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    const after = text.slice(lastIndex);
+    if (after.trim()) chunks.push({ isHtml: false, content: after });
+  }
+
+  // Nenhum HTML encontrado — retorna o texto inteiro
+  if (chunks.length === 0) {
+    chunks.push({ isHtml: false, content: text });
+  }
+
+  return chunks;
+}
 
 // ─── Tabelas Markdown ────────────────────────────────────────────────────────
 
@@ -109,13 +151,21 @@ function parseSegments(rawText: string): Segment[] {
   const text = normalizeImageFormats(rawText);
   const segments: Segment[] = [];
 
-  for (const chunk of splitTableChunks(text)) {
-    if (chunk.isTable) {
-      const tableLines = chunk.content.split("\n");
-      const { headers, rows } = parseTableBlock(tableLines);
-      segments.push({ type: "table", headers, rows });
+  for (const htmlChunk of splitHtmlAndText(text)) {
+    if (htmlChunk.isHtml) {
+      // Bloco HTML nativo — sanitiza e empacota
+      segments.push({ type: "html", content: sanitizeHtml(htmlChunk.content) });
     } else {
-      segments.push(...parseLatexChunk(chunk.content));
+      // Texto comum — processa Markdown tables e LaTeX
+      for (const chunk of splitTableChunks(htmlChunk.content)) {
+        if (chunk.isTable) {
+          const tableLines = chunk.content.split("\n");
+          const { headers, rows } = parseTableBlock(tableLines);
+          segments.push({ type: "table", headers, rows });
+        } else {
+          segments.push(...parseLatexChunk(chunk.content));
+        }
+      }
     }
   }
 
@@ -139,6 +189,16 @@ function renderTextSegment(text: string): React.ReactNode[] {
     });
   });
   return nodes;
+}
+
+function renderHtmlBlock(html: string, key: string): React.ReactNode {
+  return (
+    <div
+      key={key}
+      className="html-content overflow-x-auto my-3"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
 
 function renderMarkdownTable(headers: string[], rows: string[][], key: string): React.ReactNode {
@@ -308,6 +368,7 @@ export function LatexRenderer({ children, className, fontSize = "base", inline =
             style={{ border: "1px solid #E2D9EE" }} />
         );
         case "table": return renderMarkdownTable(seg.headers, seg.rows, key);
+        case "html": return renderHtmlBlock(seg.content, key);
         case "text": return <React.Fragment key={key}>{renderTextSegment(seg.content)}</React.Fragment>;
       }
     });
