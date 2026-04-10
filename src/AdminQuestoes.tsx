@@ -983,6 +983,14 @@ export default function AdminQuestoes() {
     onError: (e) => toast.error(e.message),
   });
 
+  const toggleAuditadaMutation = trpc.questions.toggleAuditada.useMutation({
+    onSuccess: () => {
+      utils.questions.list.invalidate();
+      utils.questions.getAuditStats.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   function handleLatexImport(data: Partial<typeof emptyForm>) {
     setForm({ ...emptyForm, ...data });
     setEditId(null);
@@ -1477,6 +1485,18 @@ export default function AdminQuestoes() {
 
                   {/* Acções */}
                   <div className="flex items-center gap-1 flex-shrink-0">
+                    {/* Checkbox de auditada manual */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleAuditadaMutation.mutate({ id: q.id, auditada: !q.auditada }); }}
+                      className="p-1 rounded-md flex-shrink-0 transition-all"
+                      style={{
+                        border: `1.5px solid ${q.auditada ? "#16A34A" : "#CBD5E1"}`,
+                        background: q.auditada ? "#DCFCE7" : "transparent",
+                      }}
+                      title={q.auditada ? "Auditada ✓ — clique para desmarcar" : "Marcar como auditada"}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5" style={{ color: q.auditada ? "#16A34A" : "#CBD5E1" }} />
+                    </button>
                     <button onClick={() => { setAuditProvider("gemini"); setAuditQuestionId(q.id); }} className="p-1.5 rounded-lg hover:bg-purple-50" title="Auditar com Gemini">
                       <Sparkles className="h-3.5 w-3.5" style={{ color: "#521F80" }} />
                     </button>
