@@ -370,6 +370,20 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       return { total: Number(total), auditadas: Number(auditadas) };
     }),
 
+  // Marca/desmarca auditada manualmente (sem passar pelo processo de IA)
+  toggleAuditada: adminProcedure
+    .input(z.object({
+      id: z.number().int().positive(),
+      auditada: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(questions)
+        .set({ auditada: input.auditada })
+        .where(eq(questions.id, input.id));
+      return { success: true };
+    }),
+
   // ─── Aplica correções sugeridas pela auditoria ─────────────────────────────
 
   applyAuditFixes: adminProcedure
