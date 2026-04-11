@@ -11,14 +11,12 @@ function useDarkMode() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
-
   function toggle() {
     const next = !dark;
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
     setDark(next);
   }
-
   return [dark, toggle] as const;
 }
 
@@ -204,8 +202,8 @@ export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [location] = useLocation();
-  const [dark, toggleDark] = useDarkMode();
   const { data: session } = trpc.auth.me.useQuery();
+  const [dark, toggleDark] = useDarkMode();
 
   function isActive(href: string) {
     if (href === "/") return location === "/";
@@ -232,22 +230,17 @@ export default function Navbar() {
                   style={{ filter: "brightness(0) invert(1)" }} />
                 <div className="hidden sm:block">
                   <p className="font-black text-white text-sm leading-none tracking-wide">VETOR</p>
-                  <p className="text-xs leading-none" style={{ color: "rgba(255,255,255,0.7)" }}>Escola de Talentos</p>
+                  <p className="text-xs leading-none" style={{ color: "rgba(255,255,255,0.7)" }}>Escola de Alta Performance</p>
                 </div>
               </span>
             </Link>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={toggleDark}
-              className="flex items-center justify-center p-1.5 rounded-lg transition-colors hover:bg-white/10"
-              aria-label="Alternar tema"
-              title={dark ? "Mudar para modo claro" : "Mudar para modo escuro"}
-            >
-              {dark
-                ? <Sun  className="h-4 w-4" style={{ color: "rgba(255,255,255,0.85)" }} />
-                : <Moon className="h-4 w-4" style={{ color: "rgba(255,255,255,0.85)" }} />}
+            <button onClick={toggleDark} aria-label="Alternar tema"
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.85)" }}>
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <Link href="/">
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-colors"
@@ -283,7 +276,7 @@ export default function Navbar() {
               style={{ filter: "brightness(0) invert(1)", background: "#009688", borderRadius: 6, padding: 2 }} />
             <div>
               <p className="font-black text-sm leading-none" style={{ color: "var(--foreground)" }}>VETOR</p>
-              <p className="text-xs leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Escola de Talentos</p>
+              <p className="text-xs leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Escola de Alta Performance</p>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>

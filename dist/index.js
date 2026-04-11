@@ -1267,7 +1267,7 @@ var simulationsRouter = createTRPCRouter({
         }
       }
     }
-    return Array.from(map.entries()).filter(([, v]) => v.total >= 3).map(([conteudo, v]) => ({
+    return Array.from(map.entries()).filter(([, v]) => v.total >= 1).map(([conteudo, v]) => ({
       conteudo,
       total: v.total,
       correct: v.correct,
