@@ -858,9 +858,17 @@ export const simulationsRouter = createTRPCRouter({
       }
     }
 
-    // Converte para array com % de acerto (0–100), mínimo 3 questões para aparecer
+    // Grandes áreas genéricas — não são conteúdos específicos, excluir do radar
+    const AREAS_GERAIS = new Set([
+      "Matemática e Suas Tecnologias",
+      "Linguagens, Códigos e Suas Tecnologias",
+      "Ciências Humanas e Suas Tecnologias",
+      "Ciências da Natureza e Suas Tecnologias",
+    ]);
+
+    // Converte para array com % de acerto (0–100), mínimo 1 questão para aparecer
     return Array.from(map.entries())
-      .filter(([, v]) => v.total >= 1)
+      .filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo))
       .map(([conteudo, v]) => ({
         conteudo,
         total: v.total,

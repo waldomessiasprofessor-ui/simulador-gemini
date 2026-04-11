@@ -1267,7 +1267,13 @@ var simulationsRouter = createTRPCRouter({
         }
       }
     }
-    return Array.from(map.entries()).filter(([, v]) => v.total >= 1).map(([conteudo, v]) => ({
+    const AREAS_GERAIS = /* @__PURE__ */ new Set([
+      "Matem\xE1tica e Suas Tecnologias",
+      "Linguagens, C\xF3digos e Suas Tecnologias",
+      "Ci\xEAncias Humanas e Suas Tecnologias",
+      "Ci\xEAncias da Natureza e Suas Tecnologias"
+    ]);
+    return Array.from(map.entries()).filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo)).map(([conteudo, v]) => ({
       conteudo,
       total: v.total,
       correct: v.correct,
