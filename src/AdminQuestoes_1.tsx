@@ -389,6 +389,7 @@ const TAGS_CONTEUDO = [
   "Matemática Financeira",
   "Análise Combinatória",
   "Logaritmos",
+  "Potenciação",
 ];
 
 const emptyForm = {

@@ -24,6 +24,7 @@ const TAGS_CONTEUDO = [
   "Noções de Lógica Matemática",
   "Operações Básicas",
   "Porcentagem",
+  "Potenciação",
   "Probabilidade",
   "Progressão Aritmética",
   "Progressão Geométrica",

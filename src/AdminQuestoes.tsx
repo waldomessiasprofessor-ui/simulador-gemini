@@ -789,6 +789,7 @@ const TAGS_CONTEUDO = [
   "Operações Básicas",
   "Polinômios",
   "Porcentagem",
+  "Potenciação",
   "Probabilidade",
   "Progressão Aritmética",
   "Progressão Geométrica",
