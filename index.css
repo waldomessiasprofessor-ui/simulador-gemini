@@ -2,6 +2,18 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ── Aumentar fonte dos títulos ──────────────────────────────────────── */
+@theme {
+  --text-lg:   1.4375rem; /* 23px */
+  --text-xl:   1.5625rem; /* 25px */
+  --text-2xl:  1.8125rem; /* 29px */
+  --text-3xl:  2.1875rem; /* 35px */
+  --text-4xl:  2.5625rem; /* 41px */
+  --text-5xl:  3.3125rem; /* 53px */
+}
+
 /* ============================================================
    Tema claro (padrão)
    ============================================================ */
@@ -31,26 +43,24 @@
 }
 
 /* ============================================================
-   Tema escuro — detectado automaticamente pelo sistema
+   Tema escuro — activado pela classe .dark no <html>
    ============================================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background:         #0F172A;
-    --foreground:         #F1F5F9;
-    --card:               #1E293B;
-    --card-foreground:    #F1F5F9;
-    --muted:              #1E293B;
-    --muted-foreground:   #94A3B8;
-    --border:             #334155;
-    --primary:            #4DB6AC;
-    --primary-foreground: #0F172A;
-    --input:              #334155;
-    --teal:               #4DB6AC;
-    --teal-dark:          #009688;
-    --teal-soft:          #0D2B27;
-    --text-question:      #F1F5F9;
-    --bg-alt:             #1E293B;
-  }
+.dark {
+  --background:         #0F172A;
+  --foreground:         #F1F5F9;
+  --card:               #1E293B;
+  --card-foreground:    #F1F5F9;
+  --muted:              #1E293B;
+  --muted-foreground:   #94A3B8;
+  --border:             #334155;
+  --primary:            #4DB6AC;
+  --primary-foreground: #0F172A;
+  --input:              #334155;
+  --teal:               #4DB6AC;
+  --teal-dark:          #009688;
+  --teal-soft:          #0D2B27;
+  --text-question:      #F1F5F9;
+  --bg-alt:             #1E293B;
 }
 
 /* ============================================================
@@ -64,8 +74,12 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  font-size: 19px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* KaTeX — sempre na cor do texto */
@@ -115,11 +129,8 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 .timer.ok   { background: var(--teal-soft); color: var(--teal-dark); }
-.timer.warn { background: #450A0A; color: #FCA5A5; }
-
-@media (prefers-color-scheme: light) {
-  .timer.warn { background: #FFEBEE; color: #C62828; }
-}
+.timer.warn { background: #FFEBEE; color: #C62828; }
+.dark .timer.warn { background: #450A0A; color: #FCA5A5; }
 
 .progress-bar {
   height: 6px; background: var(--border);
@@ -147,4 +158,76 @@ body {
 .card-interactive:hover {
   box-shadow: var(--card-shadow-md);
   transform: translateY(-1px);
+}
+
+/* ─── HTML content (tabelas e outros blocos HTML no conteúdo de revisão/resolução) ─── */
+.html-content table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+}
+.html-content th,
+.html-content td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+  color: var(--foreground);
+}
+.html-content th {
+  background: var(--secondary);
+  font-weight: 600;
+  color: var(--foreground);
+}
+.html-content tr:nth-child(even) td {
+  background: var(--muted);
+}
+.html-content ul,
+.html-content ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.html-content li { margin-bottom: 0.25rem; }
+.html-content h1, .html-content h2, .html-content h3,
+.html-content h4, .html-content h5, .html-content h6 {
+  font-weight: 700;
+  margin: 0.75rem 0 0.35rem;
+  color: var(--foreground);
+}
+.html-content p { margin: 0.4rem 0; color: var(--foreground); }
+.html-content strong, .html-content b { font-weight: 600; }
+.html-content em, .html-content i { font-style: italic; }
+.html-content pre {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+}
+.html-content blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  margin-left: 0;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.alternative {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.75rem 1rem; border-radius: var(--radius);
+  border: 2px solid var(--border); background: var(--card);
+  cursor: pointer; text-align: left; width: 100%;
+  transition: border-color 0.15s, background 0.15s;
+}
+.alternative:hover:not(:disabled) { border-color: var(--teal); background: var(--teal-soft); }
+.alternative.selected { border-color: var(--teal); background: var(--teal-soft); }
+.alternative.correct  { border-color: var(--teal-dark); background: var(--teal-soft); }
+.alternative.wrong    { border-color: #E53935; background: #FFEBEE; }
+.dark .alternative.wrong { background: #2D0A0A; }
+
+.alt-badge {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid currentColor; display: flex; align-items: center;
+  justify-content: center; font-size: 0.78rem; font-weight: 700; margin-top: 1px;
 }

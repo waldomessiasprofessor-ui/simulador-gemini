@@ -10,7 +10,7 @@ export default function Footer() {
                 style={{ filter: "brightness(0) invert(1)" }} />
               <div>
                 <p className="font-black text-white text-lg leading-none tracking-wide">VETOR</p>
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>Escola de Talentos</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>Escola de Alta Performance</p>
               </div>
             </div>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.75)", maxWidth: 220 }}>
