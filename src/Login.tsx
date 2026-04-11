@@ -85,7 +85,7 @@ export default function Login() {
               Simulados com correção pela Teoria de Resposta ao Item — a mesma metodologia usada pelo INEP.
             </p>
             <div className="flex items-center gap-3 flex-wrap">
-              {[{ value: "TRI", label: "correção real" }, { value: "ENEM", label: "questões reais" }, { value: "0%", label: "chute detectado" }].map(({ value, label }) => (
+              {[{ value: "TRI", label: "correção real" }, { value: "ENEM", label: "questões reais" }, { value: "100%", label: "dedicação" }].map(({ value, label }) => (
                 <div key={value} className="px-4 py-2 rounded-xl text-center" style={{ background: "rgba(255,255,255,0.12)" }}>
                   <p className="font-black text-xl">{value}</p>
                   <p className="text-xs opacity-75">{label}</p>

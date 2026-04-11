@@ -859,10 +859,15 @@ export const simulationsRouter = createTRPCRouter({
     }
 
     // Grandes áreas genéricas — não são conteúdos específicos, excluir do radar
+    // (aceita variações com S maiúsculo ou minúsculo em "suas/Suas")
     const AREAS_GERAIS = new Set([
+      "Matemática e suas Tecnologias",
       "Matemática e Suas Tecnologias",
+      "Linguagens, Códigos e suas Tecnologias",
       "Linguagens, Códigos e Suas Tecnologias",
+      "Ciências Humanas e suas Tecnologias",
       "Ciências Humanas e Suas Tecnologias",
+      "Ciências da Natureza e suas Tecnologias",
       "Ciências da Natureza e Suas Tecnologias",
     ]);
 
