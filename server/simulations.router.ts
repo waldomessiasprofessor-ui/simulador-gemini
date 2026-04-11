@@ -751,43 +751,6 @@ export const simulationsRouter = createTRPCRouter({
   }),
 
   // ---------------------------------------------------------------------------
-  // DESEMPENHO POR TEMA — acertos/erros agrupados por conteudo_principal
-  // ---------------------------------------------------------------------------
-  getTopicStats: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user.id;
-
-    const rows = await ctx.db
-      .select({
-        conteudo: questions.conteudo_principal,
-        total:   sql<number>`COUNT(*)`,
-        correct: sql<number>`SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END)`,
-        avgTime: sql<number>`ROUND(AVG(${simulationAnswers.timeSpentSeconds}))`,
-      })
-      .from(simulationAnswers)
-      .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
-      .innerJoin(questions, eq(simulationAnswers.questionId, questions.id))
-      .where(
-        and(
-          eq(simulations.userId, userId),
-          eq(simulations.status, "completed"),
-          sql`${simulationAnswers.isCorrect} IS NOT NULL`
-        )
-      )
-      .groupBy(questions.conteudo_principal)
-      .orderBy(sql`COUNT(*) DESC`);
-
-    return rows.map((r) => ({
-      conteudo: r.conteudo,
-      total:    Number(r.total),
-      correct:  Number(r.correct),
-      accuracy: Number(r.total) > 0
-        ? Math.round((Number(r.correct) / Number(r.total)) * 100)
-        : 0,
-      avgTime: r.avgTime ? Math.round(Number(r.avgTime)) : null,
-    }));
-  }),
-
-  // ---------------------------------------------------------------------------
   // RANKING — top 20 alunos por melhor nota TRI na Etapa 3
   // ---------------------------------------------------------------------------
   getRanking: protectedProcedure.query(async ({ ctx }) => {
