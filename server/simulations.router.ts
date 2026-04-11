@@ -860,7 +860,7 @@ export const simulationsRouter = createTRPCRouter({
 
     // Converte para array com % de acerto (0–100), mínimo 3 questões para aparecer
     return Array.from(map.entries())
-      .filter(([, v]) => v.total >= 3)
+      .filter(([, v]) => v.total >= 1)
       .map(([conteudo, v]) => ({
         conteudo,
         total: v.total,

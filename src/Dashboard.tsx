@@ -223,7 +223,7 @@ function RadarTopicos() {
     </div>
   );
 
-  if (!data || data.length < 3) return null; // sem dados suficientes, não exibe
+  if (!data || data.length < 2) return null; // sem dados suficientes, não exibe
 
   const chartData = data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
 
