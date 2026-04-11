@@ -193,12 +193,31 @@ function renderTextSegment(text: string): React.ReactNode[] {
   return nodes;
 }
 
+// Renderiza $...$ e $$...$$ dentro de HTML bruto (ex: células de tabela)
+function renderLatexInHtml(html: string): string {
+  // $$...$$ display mode primeiro
+  let result = html.replace(/\$\$([\s\S]+?)\$\$/g, (_, latex) => {
+    try {
+      return katex.renderToString(latex.trim(), { displayMode: true, throwOnError: false, strict: false, trust: true });
+    } catch { return `$$${latex}$$`; }
+  });
+  // $...$ inline — evita matches dentro de atributos HTML (não contém < ou >)
+  result = result.replace(/\$([^$<>\n]+?)\$/g, (_, latex) => {
+    const trimmed = latex.trim();
+    if (!trimmed) return `$${latex}$`;
+    try {
+      return katex.renderToString(trimmed, { displayMode: false, throwOnError: false, strict: false, trust: true });
+    } catch { return `$${latex}$`; }
+  });
+  return result;
+}
+
 function renderHtmlBlock(html: string, key: string): React.ReactNode {
   return (
     <div
       key={key}
       className="html-content overflow-x-auto my-3"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: renderLatexInHtml(html) }}
     />
   );
 }

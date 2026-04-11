@@ -24,6 +24,7 @@ export default function Treino() {
   const [questions, setQuestions] = useState<TrainingQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+  const [openResolution, setOpenResolution] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
   const [finished, setFinished] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -62,6 +63,7 @@ export default function Treino() {
       setQuestions(data.questions as TrainingQuestion[]);
       setAnswers({});
       setRevealed({});
+      setOpenResolution({});
       setIdx(0);
       setFinished(false);
       elapsedRef.current = 0;
@@ -290,9 +292,20 @@ export default function Treino() {
 
       {/* Resolução */}
       {isRevealed && q.comentario_resolucao && (
-        <div className="rounded-xl p-4" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
-          <p className="text-xs font-semibold mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
-          <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
+        <div>
+          <button
+            onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
+            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
+            style={{ background: openResolution[q.id] ? "#1D4ED8" : "#EFF6FF", color: openResolution[q.id] ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
+            <BookOpen className="h-4 w-4" />
+            {openResolution[q.id] ? "Ocultar resolução" : "Ver resolução"}
+          </button>
+          {openResolution[q.id] && (
+            <div className="rounded-xl p-4 mt-2" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+              <p className="text-xs font-semibold mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
+              <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
+            </div>
+          )}
         </div>
       )}
 

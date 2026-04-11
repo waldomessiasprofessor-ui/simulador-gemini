@@ -112,8 +112,8 @@ export default function DesafioPage() {
                 </div>
                 {/* Resolução expandida com LaTeX */}
                 {resOpen && q.comentario_resolucao && (
-                  <div className="px-4 pb-4 pt-3 space-y-2" style={{ background: "var(--card)", borderTop: "1px solid var(--border)" }}>
-                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#01738d" }}>Resolução</p>
+                  <div className="px-4 pb-4 pt-3 space-y-2" style={{ background: "#EFF6FF", borderTop: "1px solid #BFDBFE" }}>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#1D4ED8" }}>Resolução</p>
                     <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                   </div>
                 )}
@@ -187,9 +187,20 @@ export default function DesafioPage() {
 
       {/* Resolução inline com LaTeX */}
       {isRevealed && q.comentario_resolucao && (
-        <div className="rounded-xl p-4" style={{ background: "var(--teal-soft)", border: "1px solid #00968822" }}>
-          <p className="text-xs font-semibold mb-2" style={{ color: "#009688" }}>Resolução</p>
-          <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
+        <div>
+          <button
+            onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
+            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
+            style={{ background: openResolution[q.id] ? "#1D4ED8" : "#EFF6FF", color: openResolution[q.id] ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
+            <BookOpen className="h-4 w-4" />
+            {openResolution[q.id] ? "Ocultar resolução" : "Ver resolução"}
+          </button>
+          {openResolution[q.id] && (
+            <div className="rounded-xl p-4 mt-2" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+              <p className="text-xs font-semibold mb-2" style={{ color: "#1D4ED8" }}>Resolução</p>
+              <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
+            </div>
+          )}
         </div>
       )}
 

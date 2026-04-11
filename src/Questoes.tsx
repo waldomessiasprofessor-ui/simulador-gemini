@@ -248,8 +248,8 @@ export default function Questoes({ fonte }: { fonte?: string }) {
 
                       {openResolution === q.id && q.comentario_resolucao && (
                         <div className="rounded-xl p-4 space-y-1"
-                          style={{ background: "#E0F2F1", border: "1px solid #00968833" }}>
-                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#00695C" }}>
+                          style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#1D4ED8" }}>
                             Resolução
                           </p>
                           <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
