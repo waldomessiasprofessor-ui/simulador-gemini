@@ -290,8 +290,8 @@ export default function Treino() {
 
       {/* Resolução */}
       {isRevealed && q.comentario_resolucao && (
-        <div className="rounded-xl p-4" style={{ background: "#F3EAF9", border: "1px solid #7B3FA022" }}>
-          <p className="text-xs font-semibold mb-1.5" style={{ color: "#7B3FA0" }}>Resolução</p>
+        <div className="rounded-xl p-4" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+          <p className="text-xs font-semibold mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
           <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
         </div>
       )}

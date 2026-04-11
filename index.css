@@ -175,9 +175,9 @@ body {
   color: var(--foreground);
 }
 .html-content th {
-  background: var(--secondary);
-  font-weight: 600;
-  color: var(--foreground);
+  background: #37474F;
+  font-weight: 700;
+  color: #ffffff;
 }
 .html-content tr:nth-child(even) td {
   background: var(--muted);
