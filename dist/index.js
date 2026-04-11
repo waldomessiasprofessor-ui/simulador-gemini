@@ -1991,7 +1991,7 @@ var appRouter = createTRPCRouter({
 });
 
 // server/index.ts
-import { eq as eq7 } from "drizzle-orm";
+import { eq as eq7, sql as drizzleSql } from "drizzle-orm";
 var app = express();
 var PORT = process.env.PORT ? Number(process.env.PORT) : 3e3;
 var isProd = process.env.NODE_ENV === "production";
@@ -2201,15 +2201,18 @@ if (isProd) {
 }
 async function runMigrations() {
   try {
-    const pool2 = db.$client;
-    await pool2.query(`
+    await db.execute(drizzleSql`
       ALTER TABLE questions
       ADD COLUMN IF NOT EXISTS url_video VARCHAR(512) NULL
       AFTER comentario_resolucao
     `);
     console.log("\u2705 Migration: url_video OK");
   } catch (err) {
-    console.warn("\u26A0\uFE0F  Migration url_video falhou (pode j\xE1 existir):", err);
+    if (err?.errno === 1060 || String(err).includes("Duplicate column")) {
+      console.log("\u2705 Migration: url_video j\xE1 existe.");
+    } else {
+      console.warn("\u26A0\uFE0F  Migration url_video falhou:", err);
+    }
   }
 }
 runMigrations().then(() => {

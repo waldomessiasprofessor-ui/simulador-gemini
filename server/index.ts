@@ -9,7 +9,7 @@ import { appRouter } from "./router";
 import { authMiddleware } from "./auth";
 import { db } from "./db";
 import { questions, users } from "./schema";
-import { eq } from "drizzle-orm";
+import { eq, sql as drizzleSql } from "drizzle-orm";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -281,17 +281,19 @@ if (isProd) {
 // =============================================================================
 async function runMigrations() {
   try {
-    // Usa a pool raw do mysql2 via db.$client
-    const pool = (db as any).$client as import("mysql2/promise").Pool;
-    await pool.query(`
+    await db.execute(drizzleSql`
       ALTER TABLE questions
       ADD COLUMN IF NOT EXISTS url_video VARCHAR(512) NULL
       AFTER comentario_resolucao
     `);
     console.log("✅ Migration: url_video OK");
-  } catch (err) {
-    // Não derruba o servidor — só loga o erro
-    console.warn("⚠️  Migration url_video falhou (pode já existir):", err);
+  } catch (err: any) {
+    // Erro 1060 = coluna já existe — seguro ignorar
+    if (err?.errno === 1060 || String(err).includes("Duplicate column")) {
+      console.log("✅ Migration: url_video já existe.");
+    } else {
+      console.warn("⚠️  Migration url_video falhou:", err);
+    }
   }
 }
 
