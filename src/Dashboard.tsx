@@ -229,7 +229,7 @@ function WrapTick({ x, y, payload, textAnchor }: any) {
 }
 
 function RadarTopicos() {
-  const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0 });
+  const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
 
   // Abreviações para conteúdos conhecidos; sem truncar o resto (WrapTick cuida da quebra)
   function shortLabel(s: string): string {

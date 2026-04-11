@@ -26,6 +26,7 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
       utils.simulations.getStats.invalidate();
       utils.simulations.getActive.invalidate();
       utils.simulations.getHistory.invalidate();
+      utils.simulations.getTopicStats.invalidate();
       navigate(`/resultado/${d.simulationId}`);
     },
     onError: (e) => toast.error(e.message),

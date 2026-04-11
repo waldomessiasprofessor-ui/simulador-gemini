@@ -18,6 +18,7 @@ type TrainingQuestion = {
 
 export default function Treino() {
   const [, navigate] = useLocation();
+  const utils = trpc.useUtils();
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [count, setCount] = useState(10);
   const [questions, setQuestions] = useState<TrainingQuestion[]>([]);
@@ -48,7 +49,12 @@ export default function Treino() {
 
   const { data: topics, isLoading: loadingTopics } = trpc.simulations.getTopics.useQuery();
   const saveTrainingAnswer = trpc.simulations.saveTrainingAnswer.useMutation();
-  const finishTrainingSession = trpc.simulations.finishTrainingSession.useMutation();
+  const finishTrainingSession = trpc.simulations.finishTrainingSession.useMutation({
+    onSuccess: () => {
+      utils.simulations.getTopicStats.invalidate();
+      utils.simulations.getStats.invalidate();
+    },
+  });
 
   const startTraining = trpc.simulations.startFreeTraining.useMutation({
     onSuccess: (data) => {
