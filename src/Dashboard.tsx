@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -230,9 +230,9 @@ function WrapTick({ x, y, payload, textAnchor }: any) {
 
 function RadarTopicos() {
   const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
-  // Muda a cada montagem → força RadarChart inteiro a remontar e animar
-  const [animKey] = useState(() => Date.now());
   const [showInfo, setShowInfo] = useState(false);
+  const [animatedData, setAnimatedData] = useState<{ area: string; pct: number; total: number }[]>([]);
+  const rafRef = useRef<number | null>(null);
 
   // Abreviações para conteúdos conhecidos; sem truncar o resto (WrapTick cuida da quebra)
   function shortLabel(s: string): string {
@@ -255,9 +255,28 @@ function RadarTopicos() {
     </div>
   );
 
+  // Animação manual: interpola de 0 até os valores reais com easing ease-out
+  useEffect(() => {
+    if (!data || data.length < 2) return;
+    const target = data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const DURATION = 1100;
+    const startTs = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min((now - startTs) / DURATION, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      setAnimatedData(target.map(d => ({ ...d, pct: Math.round(d.pct * eased) })));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    setAnimatedData(target.map(d => ({ ...d, pct: 0 }))); // começa do zero
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]); // dispara quando os dados chegam (isLoading muda de true→false)
+
   if (!data || data.length < 2) return null; // sem dados suficientes, não exibe
 
-  const chartData = data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
+  const chartData = animatedData.length ? animatedData : data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
 
   const best = [...data].sort((a, b) => b.pct - a.pct)[0];
   const worst = [...data].sort((a, b) => a.pct - b.pct)[0];
@@ -292,7 +311,7 @@ function RadarTopicos() {
       </div>
 
       <ResponsiveContainer width="100%" height={260}>
-        <RadarChart key={animKey} data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+        <RadarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
           <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
           <PolarAngleAxis
             dataKey="area"
@@ -312,10 +331,7 @@ function RadarTopicos() {
             fillOpacity={0.25}
             strokeWidth={2}
             dot={{ r: 3, fill: "#009688", strokeWidth: 0 }}
-            isAnimationActive={true}
-            animationBegin={100}
-            animationDuration={1200}
-            animationEasing="ease-out"
+            isAnimationActive={false}
           />
           <Tooltip
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
