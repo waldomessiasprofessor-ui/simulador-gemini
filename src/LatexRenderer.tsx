@@ -28,15 +28,18 @@ function sanitizeHtml(html: string): string {
     .replace(/data\s*:\s*text\/html/gi, "");
 }
 
+// Detecta se o texto contém pelo menos uma tag HTML de bloco
+const HTML_BLOCK_RE = /<(table|div|ul|ol|pre|blockquote|figure|section|article|h[1-6])[^>]*>[\s\S]*?<\/\1>/gi;
+
 // Divide o texto separando blocos HTML de nível de bloco do restante
 function splitHtmlAndText(text: string): Array<{ isHtml: boolean; content: string }> {
-  // Detecta elementos HTML de bloco comuns (não aninhados do mesmo tipo)
-  const htmlBlockRe = /<(table|div|ul|ol|pre|blockquote|figure|section|article|h[1-6])[\s>][\s\S]*?<\/\1>/gi;
+  // Reset lastIndex (regex com /g é stateful)
+  HTML_BLOCK_RE.lastIndex = 0;
   const chunks: Array<{ isHtml: boolean; content: string }> = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = htmlBlockRe.exec(text)) !== null) {
+  while ((match = HTML_BLOCK_RE.exec(text)) !== null) {
     if (match.index > lastIndex) {
       const before = text.slice(lastIndex, match.index);
       if (before.trim()) chunks.push({ isHtml: false, content: before });
@@ -50,7 +53,6 @@ function splitHtmlAndText(text: string): Array<{ isHtml: boolean; content: strin
     if (after.trim()) chunks.push({ isHtml: false, content: after });
   }
 
-  // Nenhum HTML encontrado — retorna o texto inteiro
   if (chunks.length === 0) {
     chunks.push({ isHtml: false, content: text });
   }
