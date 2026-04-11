@@ -21,7 +21,11 @@ export default function DesafioPage() {
   const { data: daily, isLoading, refetch } = trpc.simulations.getDailyChallenge.useQuery(undefined, { staleTime: 0 });
   const saveDailyAnswer = trpc.simulations.saveDailyAnswer.useMutation();
   const finishDaily = trpc.simulations.finishDailyChallenge.useMutation({
-    onSuccess: () => { refetch(); utils.simulations.getStats.invalidate(); },
+    onSuccess: () => {
+      refetch();
+      utils.simulations.getStats.invalidate();
+      utils.simulations.getTopicStats.invalidate();
+    },
   });
   const newChallenge = trpc.simulations.newDailyChallenge.useMutation({
     onSuccess: () => {
@@ -31,6 +35,7 @@ export default function DesafioPage() {
       setIdx(0);
       refetch();
       utils.simulations.getStats.invalidate();
+      utils.simulations.getTopicStats.invalidate();
     },
   });
 

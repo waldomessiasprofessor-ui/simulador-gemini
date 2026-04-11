@@ -245,7 +245,7 @@ function WrapTick({ x, y, payload, textAnchor }: any) {
 
 function RadarTopicos() {
   // ── Todos os hooks ANTES de qualquer return condicional ──────────────
-  const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
+  const { data, isLoading, dataUpdatedAt } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true, refetchInterval: 60_000 });
   const [showInfo, setShowInfo] = useState(false);
   const [animatedData, setAnimatedData] = useState<{ area: string; pct: number; total: number }[]>([]);
   const rafRef = useRef<number | null>(null);
@@ -266,7 +266,7 @@ function RadarTopicos() {
     setAnimatedData(target.map(d => ({ ...d, pct: 0 })));
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [data]); // dispara quando os dados chegam/mudam
+  }, [dataUpdatedAt]); // dispara sempre que chega nova resposta do servidor
 
   // ── Returns condicionais SÓ depois de todos os hooks ────────────────
   if (isLoading) return (
