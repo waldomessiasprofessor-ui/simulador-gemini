@@ -230,7 +230,7 @@ export default function Navbar() {
                   style={{ filter: "brightness(0) invert(1)" }} />
                 <div className="hidden sm:block">
                   <p className="font-black text-white text-sm leading-none tracking-wide">VETOR</p>
-                  <p className="text-xs leading-none" style={{ color: "rgba(255,255,255,0.7)" }}>Escola de Talentos</p>
+                  <p className="text-xs leading-none" style={{ color: "rgba(255,255,255,0.7)" }}>Escola de Alta Performance</p>
                 </div>
               </span>
             </Link>
@@ -276,7 +276,7 @@ export default function Navbar() {
               style={{ filter: "brightness(0) invert(1)", background: "#009688", borderRadius: 6, padding: 2 }} />
             <div>
               <p className="font-black text-sm leading-none" style={{ color: "var(--foreground)" }}>VETOR</p>
-              <p className="text-xs leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Escola de Talentos</p>
+              <p className="text-xs leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Escola de Alta Performance</p>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>
