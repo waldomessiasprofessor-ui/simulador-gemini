@@ -230,6 +230,8 @@ function WrapTick({ x, y, payload, textAnchor }: any) {
 
 function RadarTopicos() {
   const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
+  // Hook deve ficar no topo, antes de qualquer return condicional
+  const [animKey] = useState(() => Date.now());
 
   // Abreviações para conteúdos conhecidos; sem truncar o resto (WrapTick cuida da quebra)
   function shortLabel(s: string): string {
@@ -258,9 +260,6 @@ function RadarTopicos() {
 
   const best = [...data].sort((a, b) => b.pct - a.pct)[0];
   const worst = [...data].sort((a, b) => a.pct - b.pct)[0];
-
-  // Key muda a cada montagem → recharts re-anima do centro sempre que o componente aparece
-  const [animKey] = useState(() => Date.now());
 
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
