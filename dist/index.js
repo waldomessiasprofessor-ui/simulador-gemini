@@ -84,7 +84,6 @@ var questions = mysqlTable(
     alternativas: json("alternativas").$type().notNull(),
     gabarito: varchar("gabarito", { length: 1 }).notNull(),
     comentario_resolucao: text("comentario_resolucao"),
-    url_video: varchar("url_video", { length: 512 }),
     active: boolean("active").notNull().default(true),
     auditada: boolean("auditada").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
