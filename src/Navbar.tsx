@@ -4,8 +4,21 @@ import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight, ChevronDown,
-  User, Mail, Shield, Zap, GraduationCap
+  User, Mail, Shield, Zap, GraduationCap, Moon, Sun
 } from "lucide-react";
+
+function useDarkMode() {
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+  function toggle() {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    setDark(next);
+  }
+  return [dark, toggle] as const;
+}
 
 const PAULISTAS = [
   { id: "unicamp", label: "UNICAMP", comingSoon: false },
@@ -190,6 +203,7 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [location] = useLocation();
   const { data: session } = trpc.auth.me.useQuery();
+  const [dark, toggleDark] = useDarkMode();
 
   function isActive(href: string) {
     if (href === "/") return location === "/";
@@ -223,6 +237,11 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button onClick={toggleDark} aria-label="Alternar tema"
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.85)" }}>
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
             <Link href="/">
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-colors"
                 style={isActive("/") ? { backgroundColor: "rgba(255,255,255,0.25)", color: "#fff" } : { color: "rgba(255,255,255,0.85)" }}>
