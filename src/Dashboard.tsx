@@ -259,6 +259,9 @@ function RadarTopicos() {
   const best = [...data].sort((a, b) => b.pct - a.pct)[0];
   const worst = [...data].sort((a, b) => a.pct - b.pct)[0];
 
+  // Key muda a cada montagem → recharts re-anima do centro sempre que o componente aparece
+  const [animKey] = useState(() => Date.now());
+
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
       <div className="flex items-center justify-between">
@@ -283,12 +286,17 @@ function RadarTopicos() {
             axisLine={false}
           />
           <Radar
+            key={animKey}
             dataKey="pct"
             stroke="#009688"
             fill="#009688"
             fillOpacity={0.25}
             strokeWidth={2}
             dot={{ r: 3, fill: "#009688", strokeWidth: 0 }}
+            isAnimationActive={true}
+            animationBegin={100}
+            animationDuration={1200}
+            animationEasing="ease-out"
           />
           <Tooltip
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
