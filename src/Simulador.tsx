@@ -59,7 +59,8 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
     const saved: Record<number, string> = {};
     active.questions.forEach((q: any) => { if (q.selectedAnswer) saved[q.id] = q.selectedAnswer; });
     setAnswers(saved);
-  }, [active]);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [active?.simulationId]);
 
   useEffect(() => {
     const t = setInterval(() => {

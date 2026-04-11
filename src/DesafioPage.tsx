@@ -39,6 +39,7 @@ export default function DesafioPage() {
   const [openResolution, setOpenResolution] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
+  useEffect(() => { if (daily) window.scrollTo({ top: 0, behavior: "instant" }); }, [daily?.id]);
 
   if (isLoading) return (
     <div className="flex justify-center py-20">

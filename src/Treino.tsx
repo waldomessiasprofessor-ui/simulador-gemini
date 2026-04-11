@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
-import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock } from "lucide-react";
+import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type TrainingQuestion = {
@@ -16,6 +17,7 @@ type TrainingQuestion = {
 };
 
 export default function Treino() {
+  const [, navigate] = useLocation();
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [count, setCount] = useState(10);
   const [questions, setQuestions] = useState<TrainingQuestion[]>([]);
@@ -58,6 +60,7 @@ export default function Treino() {
       setFinished(false);
       elapsedRef.current = 0;
       setElapsedSeconds(0);
+      window.scrollTo({ top: 0, behavior: "instant" });
     },
   });
 
@@ -87,6 +90,7 @@ export default function Treino() {
   function handleFinish(qs: TrainingQuestion[], ans: Record<number, string>) {
     if (timerRef.current) clearInterval(timerRef.current);
     setFinished(true);
+    window.scrollTo({ top: 0, behavior: "instant" });
     // Save session completion in background
     if (simulationIdRef.current) {
       const correct = qs.filter(q => ans[q.id] === q.gabarito).length;
@@ -106,6 +110,7 @@ export default function Treino() {
     setIdx(0);
     setFinished(false);
     simulationIdRef.current = null;
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   // Tela de seleção
@@ -235,9 +240,12 @@ export default function Treino() {
           })}
         </div>
 
-        <div className="flex gap-3">
-          <button onClick={handleReset} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white" style={{ background: "#7B3FA0" }}>
+        <div className="flex flex-col gap-3">
+          <button onClick={handleReset} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white" style={{ background: "#7B3FA0" }}>
             <RotateCcw className="h-4 w-4" /> Novo treino
+          </button>
+          <button onClick={() => navigate("/")} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold" style={{ background: "var(--muted)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}>
+            <Home className="h-4 w-4" /> Início
           </button>
         </div>
       </div>
