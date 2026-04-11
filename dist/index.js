@@ -84,6 +84,7 @@ var questions = mysqlTable(
     alternativas: json("alternativas").$type().notNull(),
     gabarito: varchar("gabarito", { length: 1 }).notNull(),
     comentario_resolucao: text("comentario_resolucao"),
+    url_video: varchar("url_video", { length: 512 }),
     active: boolean("active").notNull().default(true),
     auditada: boolean("auditada").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -2198,6 +2199,21 @@ if (isProd) {
   app.use(express.static(distPath));
   app.get("*", (_req, res) => res.sendFile(path.join(distPath, "index.html")));
 }
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`\u{1F680} http://localhost:${PORT} [${process.env.NODE_ENV ?? "development"}]`);
+async function runMigrations() {
+  try {
+    const pool2 = db.$client;
+    await pool2.query(`
+      ALTER TABLE questions
+      ADD COLUMN IF NOT EXISTS url_video VARCHAR(512) NULL
+      AFTER comentario_resolucao
+    `);
+    console.log("\u2705 Migration: url_video OK");
+  } catch (err) {
+    console.warn("\u26A0\uFE0F  Migration url_video falhou (pode j\xE1 existir):", err);
+  }
+}
+runMigrations().then(() => {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`\u{1F680} http://localhost:${PORT} [${process.env.NODE_ENV ?? "development"}]`);
+  });
 });

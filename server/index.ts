@@ -276,8 +276,29 @@ if (isProd) {
   app.get("*", (_req, res) => res.sendFile(path.join(distPath, "index.html")));
 }
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 http://localhost:${PORT} [${process.env.NODE_ENV ?? "development"}]`);
+// =============================================================================
+// Migrations automáticas — executadas no startup, idempotentes (IF NOT EXISTS)
+// =============================================================================
+async function runMigrations() {
+  try {
+    // Usa a pool raw do mysql2 via db.$client
+    const pool = (db as any).$client as import("mysql2/promise").Pool;
+    await pool.query(`
+      ALTER TABLE questions
+      ADD COLUMN IF NOT EXISTS url_video VARCHAR(512) NULL
+      AFTER comentario_resolucao
+    `);
+    console.log("✅ Migration: url_video OK");
+  } catch (err) {
+    // Não derruba o servidor — só loga o erro
+    console.warn("⚠️  Migration url_video falhou (pode já existir):", err);
+  }
+}
+
+runMigrations().then(() => {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 http://localhost:${PORT} [${process.env.NODE_ENV ?? "development"}]`);
+  });
 });
 
 export type { AppRouter } from "./router";
