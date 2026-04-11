@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
-import { ChevronDown, ChevronUp, Search, Loader2, BookOpen } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, Loader2, BookOpen, PlayCircle } from "lucide-react";
 
 const TAGS_CONTEUDO = [
   "Análise Combinatória",
@@ -227,7 +227,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
 
                     {/* Gabarito + Ver resolução */}
                     <div className="pt-1 space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-bold px-2.5 py-1 rounded-full"
                           style={{ background: "#E0F2F1", color: "#00695C" }}>
                           Gabarito: {q.gabarito}
@@ -244,6 +244,14 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                             <BookOpen className="h-3 w-3" />
                             {openResolution === q.id ? "Ocultar resolução" : "Ver resolução"}
                           </button>
+                        )}
+                        {(q as any).url_video && (
+                          <a href={(q as any).url_video} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full transition-all"
+                            style={{ background: "#FEE2E2", color: "#DC2626", border: "1.5px solid #FECACA" }}>
+                            <PlayCircle className="h-3 w-3" />
+                            Assistir vídeo
+                          </a>
                         )}
                       </div>
 

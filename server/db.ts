@@ -7,7 +7,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 // Pool em vez de connection única — mais estável em produção
-const pool = mysql.createPool({
+export const pool = mysql.createPool({
   uri: process.env.DATABASE_URL,
   waitForConnections: true,
   connectionLimit: 10,

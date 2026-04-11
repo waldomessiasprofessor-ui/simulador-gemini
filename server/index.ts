@@ -7,9 +7,9 @@ import { v2 as cloudinary } from "cloudinary";
 import { createContext } from "./trpc";
 import { appRouter } from "./router";
 import { authMiddleware } from "./auth";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { questions, users } from "./schema";
-import { eq, sql as drizzleSql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -280,8 +280,10 @@ if (isProd) {
 // Migrations automáticas — executadas no startup, idempotentes (IF NOT EXISTS)
 // =============================================================================
 async function runMigrations() {
+  let conn: any;
   try {
-    await db.execute(drizzleSql`
+    conn = await pool.getConnection();
+    await conn.query(`
       ALTER TABLE questions
       ADD COLUMN IF NOT EXISTS url_video VARCHAR(512) NULL
       AFTER comentario_resolucao
@@ -289,11 +291,13 @@ async function runMigrations() {
     console.log("✅ Migration: url_video OK");
   } catch (err: any) {
     // Erro 1060 = coluna já existe — seguro ignorar
-    if (err?.errno === 1060 || String(err).includes("Duplicate column")) {
+    if (err?.errno === 1060 || String(err).includes("Duplicate column") || String(err.message).includes("Duplicate column")) {
       console.log("✅ Migration: url_video já existe.");
     } else {
       console.warn("⚠️  Migration url_video falhou:", err);
     }
+  } finally {
+    if (conn) conn.release();
   }
 }
 

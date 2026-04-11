@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "./LatexRenderer";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen, PlayCircle } from "lucide-react";
 
 const DIFFICULTY_ORDER = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"];
 
@@ -143,17 +143,29 @@ export default function Resultado({ id }: { id: number }) {
                       </div>
                     ))}
                   </div>
-                  {ans.comentario_resolucao && (
-                    <div>
-                      <button
-                        onClick={() => setOpenRes(openRes === i ? null : i)}
-                        className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all"
-                        style={{ background: openRes === i ? "#1D4ED8" : "#EFF6FF", color: openRes === i ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
-                        <BookOpen className="h-3 w-3" />
-                        {openRes === i ? "Ocultar resolução" : "Ver resolução"}
-                      </button>
-                      {openRes === i && (
-                        <div className="rounded-lg p-3 mt-2" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                  {(ans.comentario_resolucao || (ans as any).url_video) && (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {ans.comentario_resolucao && (
+                          <button
+                            onClick={() => setOpenRes(openRes === i ? null : i)}
+                            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all"
+                            style={{ background: openRes === i ? "#1D4ED8" : "#EFF6FF", color: openRes === i ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
+                            <BookOpen className="h-3 w-3" />
+                            {openRes === i ? "Ocultar resolução" : "Ver resolução"}
+                          </button>
+                        )}
+                        {(ans as any).url_video && (
+                          <a href={(ans as any).url_video} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all"
+                            style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>
+                            <PlayCircle className="h-3 w-3" />
+                            Assistir vídeo
+                          </a>
+                        )}
+                      </div>
+                      {openRes === i && ans.comentario_resolucao && (
+                        <div className="rounded-lg p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
                           <p className="text-xs font-medium mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
                           <LatexRenderer fontSize="sm">{ans.comentario_resolucao}</LatexRenderer>
                         </div>

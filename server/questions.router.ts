@@ -22,6 +22,7 @@ const QuestionBaseSchema = z.object({
   alternativas: z.record(z.string().min(1).max(5), z.any()),
   gabarito: z.string().length(1),
   comentario_resolucao: z.string().optional(),
+  url_video: z.string().url().nullable().optional(),
 });
 
 export const questionsRouter = createTRPCRouter({
@@ -86,6 +87,7 @@ export const questionsRouter = createTRPCRouter({
         ...input,
         gabarito: input.gabarito.toUpperCase(),
         url_imagem: input.url_imagem ?? null,
+        url_video: input.url_video ?? null,
         active: true,
       } as NewQuestion);
       return { id: Number(result.insertId), success: true };
@@ -98,6 +100,7 @@ export const questionsRouter = createTRPCRouter({
       const updateData: Partial<NewQuestion> = { ...data } as any;
       if (data.gabarito) updateData.gabarito = data.gabarito.toUpperCase();
       if (data.url_imagem !== undefined) updateData.url_imagem = data.url_imagem ?? null;
+      if (data.url_video !== undefined) updateData.url_video = data.url_video ?? null;
       await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
       return { success: true };
     }),

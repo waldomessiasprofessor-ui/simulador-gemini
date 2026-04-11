@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
-import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw, PlayCircle } from "lucide-react";
 
 type DailyQ = {
   id: number;
   enunciado: string;
   url_imagem: string | null;
+  url_video: string | null;
   alternativas: Record<string, string>;
   gabarito: string;
   comentario_resolucao: string | null;
@@ -101,18 +102,28 @@ export default function DesafioPage() {
                       style={{ background: isCorrect ? "#00695C" : "#C62828", color: "#fff" }}>
                       {answers[q.id] ?? "—"} → {q.gabarito}
                     </span>
-                    {q.comentario_resolucao && (
-                      <button
-                        onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
-                        className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-all"
-                        style={{
-                          background: resOpen ? "#01738d" : "rgba(1,115,141,0.12)",
-                          color: resOpen ? "#fff" : "#01738d",
-                        }}>
-                        <BookOpen className="h-3 w-3" />
-                        {resOpen ? "Fechar" : "Resolução"}
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {q.comentario_resolucao && (
+                        <button
+                          onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
+                          className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-all"
+                          style={{
+                            background: resOpen ? "#01738d" : "rgba(1,115,141,0.12)",
+                            color: resOpen ? "#fff" : "#01738d",
+                          }}>
+                          <BookOpen className="h-3 w-3" />
+                          {resOpen ? "Fechar" : "Resolução"}
+                        </button>
+                      )}
+                      {q.url_video && (
+                        <a href={q.url_video} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-all"
+                          style={{ background: "#FEE2E2", color: "#DC2626" }}>
+                          <PlayCircle className="h-3 w-3" />
+                          Vídeo
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {/* Resolução expandida com LaTeX */}
@@ -191,17 +202,29 @@ export default function DesafioPage() {
       </div>
 
       {/* Resolução inline com LaTeX */}
-      {isRevealed && q.comentario_resolucao && (
-        <div>
-          <button
-            onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
-            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
-            style={{ background: openResolution[q.id] ? "#1D4ED8" : "#EFF6FF", color: openResolution[q.id] ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
-            <BookOpen className="h-4 w-4" />
-            {openResolution[q.id] ? "Ocultar resolução" : "Ver resolução"}
-          </button>
-          {openResolution[q.id] && (
-            <div className="rounded-xl p-4 mt-2" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+      {isRevealed && (q.comentario_resolucao || q.url_video) && (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            {q.comentario_resolucao && (
+              <button
+                onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
+                className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
+                style={{ background: openResolution[q.id] ? "#1D4ED8" : "#EFF6FF", color: openResolution[q.id] ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
+                <BookOpen className="h-4 w-4" />
+                {openResolution[q.id] ? "Ocultar resolução" : "Ver resolução"}
+              </button>
+            )}
+            {q.url_video && (
+              <a href={q.url_video} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
+                style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>
+                <PlayCircle className="h-4 w-4" />
+                Assistir resolução em vídeo
+              </a>
+            )}
+          </div>
+          {openResolution[q.id] && q.comentario_resolucao && (
+            <div className="rounded-xl p-4" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
               <p className="text-xs font-semibold mb-2" style={{ color: "#1D4ED8" }}>Resolução</p>
               <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
             </div>
