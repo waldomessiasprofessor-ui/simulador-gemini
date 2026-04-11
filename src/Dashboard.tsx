@@ -7,7 +7,7 @@ import {
   Loader2, Zap, Medal, BookOpen, Dumbbell,
   Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 
 const VESTIBULARES = [
   { id: "ENEM",    label: "ENEM",    sub: "45 questões · TRI",          badge: "Nacional", color: "#009688", comingSoon: false },
@@ -198,6 +198,93 @@ function MissaoCumprida() {
   );
 }
 
+// ─── Radar de Tópicos ─────────────────────────────────────────────────────────
+function RadarTopicos() {
+  const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0 });
+
+  // Encurta labels longos para caber no gráfico
+  function shortLabel(s: string): string {
+    const map: Record<string, string> = {
+      "Geometria Plana": "Geo. Plana",
+      "Geometria Espacial": "Geo. Espacial",
+      "Geometria Analítica": "Geo. Analítica",
+      "Probabilidade e Estatística": "Prob./Estat.",
+      "Matemática Básica": "Mat. Básica",
+      "Trigonometria": "Trigo.",
+      "Funções": "Funções",
+      "Álgebra": "Álgebra",
+    };
+    return map[s] ?? (s.length > 14 ? s.slice(0, 13) + "…" : s);
+  }
+
+  if (isLoading) return (
+    <div className="rounded-2xl p-4 flex justify-center items-center" style={{ height: 200, background: "var(--card)", border: "1.5px solid var(--border)" }}>
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
+    </div>
+  );
+
+  if (!data || data.length < 3) return null; // sem dados suficientes, não exibe
+
+  const chartData = data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
+
+  const best = [...data].sort((a, b) => b.pct - a.pct)[0];
+  const worst = [...data].sort((a, b) => a.pct - b.pct)[0];
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+      <div className="flex items-center justify-between">
+        <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Desempenho por Área</p>
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#E0F2F1", color: "#00695C" }}>
+          {data.length} áreas
+        </span>
+      </div>
+
+      <ResponsiveContainer width="100%" height={230}>
+        <RadarChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+          <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
+          <PolarAngleAxis
+            dataKey="area"
+            tick={{ fontSize: 10, fill: "var(--muted-foreground)", fontWeight: 500 }}
+          />
+          <PolarRadiusAxis
+            angle={30}
+            domain={[0, 100]}
+            tick={{ fontSize: 9, fill: "var(--muted-foreground)" }}
+            tickCount={4}
+            axisLine={false}
+          />
+          <Radar
+            dataKey="pct"
+            stroke="#009688"
+            fill="#009688"
+            fillOpacity={0.25}
+            strokeWidth={2}
+            dot={{ r: 3, fill: "#009688", strokeWidth: 0 }}
+          />
+          <Tooltip
+            contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+            formatter={(v: number, _: string, props: any) => [`${v}% (${props.payload.total} questões)`, "Acerto"]}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
+
+      {/* Destaques */}
+      <div className="grid grid-cols-2 gap-2 pt-1">
+        <div className="rounded-xl px-3 py-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+          <p className="text-xs font-semibold" style={{ color: "#15803D" }}>Melhor área</p>
+          <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#166534" }}>{shortLabel(best.conteudo)}</p>
+          <p className="text-xs" style={{ color: "#15803D" }}>{best.pct}% de acerto</p>
+        </div>
+        <div className="rounded-xl px-3 py-2" style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}>
+          <p className="text-xs font-semibold" style={{ color: "#DC2626" }}>Área a reforçar</p>
+          <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#991B1B" }}>{shortLabel(worst.conteudo)}</p>
+          <p className="text-xs" style={{ color: "#DC2626" }}>{worst.pct}% de acerto</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Dashboard principal ──────────────────────────────────────────────────────
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -321,6 +408,9 @@ export default function Dashboard() {
           </div>
         </section>
       )}
+
+      {/* ── Radar de áreas ── */}
+      <RadarTopicos />
 
       {/* ── Missão cumprida ── */}
       <MissaoCumprida />
