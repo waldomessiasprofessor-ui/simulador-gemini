@@ -397,19 +397,33 @@ export function Alternative({ id, text, imageUrl, selected, correct, onClick, di
   const isCorrectAnswer = isRevealed && correct === true;
   const isWrongSelected = isRevealed && selected && correct === false;
 
-  const borderColor = isCorrectAnswer ? "#00897B"
-    : isWrongSelected ? "#E53935"
-    : selected ? "#01738d"
-    : "var(--border)";
+  // Estilo "prova": borda esquerda colorida + fundo sutilmente tintado
+  const accentColor = isCorrectAnswer ? "#16A34A"
+    : isWrongSelected ? "#DC2626"
+    : selected ? "#1E40AF"
+    : "transparent";
 
-  const bgColor = isCorrectAnswer ? "var(--secondary)"
-    : isWrongSelected ? "var(--color-danger-soft, #FFEBEE)"
-    : selected ? "var(--secondary)"
-    : "var(--card)";
+  const bgColor = isCorrectAnswer ? "#F0FDF4"
+    : isWrongSelected ? "#FEF2F2"
+    : selected ? "#EFF6FF"
+    : "#FAFAFA";
 
-  const textColor = isCorrectAnswer ? "var(--secondary-foreground)"
-    : isWrongSelected ? "#C62828"
-    : "var(--card-foreground)";
+  const borderColor = isCorrectAnswer ? "#BBF7D0"
+    : isWrongSelected ? "#FECACA"
+    : selected ? "#BFDBFE"
+    : "#E5E7EB";
+
+  const badgeBg = isCorrectAnswer ? "#16A34A"
+    : isWrongSelected ? "#DC2626"
+    : selected ? "#1E40AF"
+    : "#fff";
+
+  const badgeBorder = isCorrectAnswer ? "#16A34A"
+    : isWrongSelected ? "#DC2626"
+    : selected ? "#1E40AF"
+    : "#D1D5DB";
+
+  const badgeColor = (selected || isCorrectAnswer) ? "#fff" : "#6B7280";
 
   return (
     <button
@@ -417,38 +431,39 @@ export function Alternative({ id, text, imageUrl, selected, correct, onClick, di
       disabled={disabled}
       className="w-full flex items-start gap-3 text-left transition-all"
       style={{
-        padding: "0.75rem 1rem",
-        borderRadius: "0.75rem",
-        border: `2px solid ${borderColor}`,
+        padding: "0.65rem 1rem",
+        borderRadius: "0.5rem",
+        border: `1px solid ${borderColor}`,
+        borderLeft: `3px solid ${accentColor === "transparent" ? "#E5E7EB" : accentColor}`,
         background: bgColor,
-        color: textColor,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled && !selected && !isCorrectAnswer ? 0.6 : 1,
+        color: "#2C2C3A",
+        cursor: disabled ? "default" : "pointer",
+        opacity: disabled && !selected && !isCorrectAnswer ? 0.55 : 1,
+        transition: "border-color 0.15s, background 0.15s",
       }}
     >
       <span
-        className="flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
+        className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
         style={{
-          border: `2px solid ${borderColor}`,
-          background: (selected && !isRevealed) || isCorrectAnswer ? borderColor : "transparent",
-          color: (selected && !isRevealed) || isCorrectAnswer ? "#fff" : borderColor,
+          border: `1.5px solid ${badgeBorder}`,
+          background: badgeBg,
+          color: badgeColor,
+          fontSize: "0.7rem",
+          letterSpacing: "0.01em",
         }}
       >
         {id}
       </span>
 
       <div className="flex-1">
-        {/* Imagem directa da alternativa (da API) */}
         {imageUrl && (
           <img src={imageUrl} alt={`Alternativa ${id}`}
             className="max-w-full rounded mb-1"
             style={{ maxHeight: 200, objectFit: "contain" }} />
         )}
-        {/* Texto com suporte LaTeX */}
         {text && text !== "[Imagem]" && (
           <LatexRenderer inline fontSize="sm">{text}</LatexRenderer>
         )}
-        {/* Se texto é só "[Imagem]" e não há imageUrl, avisa */}
         {text === "[Imagem]" && !imageUrl && (
           <span className="text-xs italic" style={{ color: "#94A3B8" }}>Imagem não disponível</span>
         )}
@@ -480,38 +495,44 @@ export function QuestionCard({
   const altEntries = Object.entries(alternativas).filter(([, v]) => v !== null && v !== "").sort(([a], [b]) => a.localeCompare(b));
 
   return (
-    <div className="space-y-5">
-      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#94A3B8" }}>
-        Questão {order} de {total}
+    <div className="space-y-4">
+      {/* Contador — discreto, canto superior */}
+      <p className="text-xs" style={{ color: "#9CA3AF", letterSpacing: "0.04em" }}>
+        Questão <span style={{ fontWeight: 600, color: "#6B7280" }}>{order}</span> de {total}
       </p>
 
-      <LatexRenderer fontSize="base">{enunciado}</LatexRenderer>
+      {/* Enunciado — tipografia limpa, sem caixa */}
+      <div style={{ lineHeight: 1.75, color: "#2C2C3A" }}>
+        <LatexRenderer fontSize="base">{enunciado}</LatexRenderer>
+      </div>
 
       {url_imagem && !enunciado.includes(url_imagem) && (
-        <figure className="my-3">
+        <figure className="my-2">
           <img src={url_imagem} alt={`Imagem da questão ${order}`}
-            className="max-w-full rounded-xl mx-auto"
-            style={{ border: "1px solid #E2D9EE" }} loading="lazy" />
+            className="max-w-full mx-auto"
+            style={{ borderRadius: "0.375rem", border: "1px solid #E5E7EB" }} loading="lazy" />
         </figure>
       )}
 
-      <div className="space-y-2.5">
-        {altEntries.map(([id, value]) => {
-          // Suporta tanto string simples quanto objeto {text, file}
-          const text = typeof value === "string" ? value : (value !== null && value?.text) ? value.text : "";
-          const imageUrl = value !== null && typeof value === "object" ? value.file ?? null : null;
+      {/* Separador sutil antes das alternativas */}
+      <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "0.75rem" }}>
+        <div className="space-y-2">
+          {altEntries.map(([id, value]) => {
+            const text = typeof value === "string" ? value : (value !== null && value?.text) ? value.text : "";
+            const imageUrl = value !== null && typeof value === "object" ? value.file ?? null : null;
 
-          const isSelected = selectedAnswer === id;
-          const isCorrect = correctAnswer != null
-            ? id === correctAnswer ? true : isSelected ? false : null
-            : null;
+            const isSelected = selectedAnswer === id;
+            const isCorrect = correctAnswer != null
+              ? id === correctAnswer ? true : isSelected ? false : null
+              : null;
 
-          return (
-            <Alternative key={id} id={id} text={text} imageUrl={imageUrl}
-              selected={isSelected} correct={isCorrect}
-              onClick={() => onAnswer(id)} disabled={disabled} />
-          );
-        })}
+            return (
+              <Alternative key={id} id={id} text={text} imageUrl={imageUrl}
+                selected={isSelected} correct={isCorrect}
+                onClick={() => onAnswer(id)} disabled={disabled} />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
