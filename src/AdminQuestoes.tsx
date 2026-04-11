@@ -959,7 +959,7 @@ export default function AdminQuestoes() {
     page, pageSize: 20,
     conteudo: search || undefined,
     activeOnly: false,
-    orderBy: "conteudo_principal",
+    orderBy: "ano",
     orderDir: "asc",
   });
 
