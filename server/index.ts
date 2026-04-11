@@ -283,19 +283,29 @@ async function runMigrations() {
   let conn: any;
   try {
     conn = await pool.getConnection();
-    await conn.query(`
-      ALTER TABLE questions
-      ADD COLUMN IF NOT EXISTS url_video VARCHAR(512) NULL
-      AFTER comentario_resolucao
+
+    // Verifica se a coluna já existe — compatível com todas as versões MySQL
+    const [rows]: any[] = await conn.query(`
+      SELECT COLUMN_NAME
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME   = 'questions'
+        AND COLUMN_NAME  = 'url_video'
     `);
-    console.log("✅ Migration: url_video OK");
-  } catch (err: any) {
-    // Erro 1060 = coluna já existe — seguro ignorar
-    if (err?.errno === 1060 || String(err).includes("Duplicate column") || String(err.message).includes("Duplicate column")) {
-      console.log("✅ Migration: url_video já existe.");
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      console.log("✅ Migration: url_video já existe — nada a fazer.");
     } else {
-      console.warn("⚠️  Migration url_video falhou:", err);
+      await conn.query(`
+        ALTER TABLE questions
+        ADD COLUMN url_video VARCHAR(512) NULL
+        AFTER comentario_resolucao
+      `);
+      console.log("✅ Migration: url_video adicionada com sucesso.");
     }
+  } catch (err: any) {
+    console.error("❌ Migration url_video falhou:", err?.message ?? err);
+    // NÃO relança — servidor deve iniciar mesmo assim
   } finally {
     if (conn) conn.release();
   }
