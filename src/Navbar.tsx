@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
@@ -11,16 +11,15 @@ function useDarkMode() {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [dark]);
-  return [dark, setDark] as const;
+
+  function toggle() {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    setDark(next);
+  }
+
+  return [dark, toggle] as const;
 }
 
 const PAULISTAS = [
@@ -205,7 +204,7 @@ export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [location] = useLocation();
-  const [dark, setDark] = useDarkMode();
+  const [dark, toggleDark] = useDarkMode();
   const { data: session } = trpc.auth.me.useQuery();
 
   function isActive(href: string) {
@@ -241,7 +240,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setDark(d => !d)}
+              onClick={toggleDark}
               className="flex items-center justify-center p-1.5 rounded-lg transition-colors hover:bg-white/10"
               aria-label="Alternar tema"
               title={dark ? "Mudar para modo claro" : "Mudar para modo escuro"}

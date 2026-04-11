@@ -6,12 +6,12 @@
 
 /* ── Aumentar fonte dos títulos em 3px ───────────────────────────────── */
 @theme {
-  --text-lg:   1.3125rem; /* 18px → 21px */
-  --text-xl:   1.4375rem; /* 20px → 23px */
-  --text-2xl:  1.6875rem; /* 24px → 27px */
-  --text-3xl:  2.0625rem; /* 30px → 33px */
-  --text-4xl:  2.4375rem; /* 36px → 39px */
-  --text-5xl:  3.1875rem; /* 48px → 51px */
+  --text-lg:   1.4375rem; /* 18px → 23px (+5px total) */
+  --text-xl:   1.5625rem; /* 20px → 25px (+5px total) */
+  --text-2xl:  1.8125rem; /* 24px → 29px (+5px total) */
+  --text-3xl:  2.1875rem; /* 30px → 35px (+5px total) */
+  --text-4xl:  2.5625rem; /* 36px → 41px (+5px total) */
+  --text-5xl:  3.3125rem; /* 48px → 53px (+5px total) */
 }
 
 :root {
@@ -82,7 +82,7 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
-  font-size: 17px;
+  font-size: 19px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
