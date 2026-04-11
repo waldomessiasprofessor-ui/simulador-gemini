@@ -199,22 +199,51 @@ function MissaoCumprida() {
 }
 
 // ─── Radar de Tópicos ─────────────────────────────────────────────────────────
+// Tick customizado para PolarAngleAxis — quebra labels longos em múltiplas linhas
+function WrapTick({ x, y, payload, textAnchor }: any) {
+  const text: string = payload?.value ?? "";
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? current + " " + word : word;
+    if (current && candidate.length > 13) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+
+  const lineH = 12;
+  const offsetY = -((lines.length - 1) * lineH) / 2;
+
+  return (
+    <text x={x} y={y} textAnchor={textAnchor} fill="var(--muted-foreground)" fontSize={10} fontWeight={500}>
+      {lines.map((line, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? offsetY : lineH}>{line}</tspan>
+      ))}
+    </text>
+  );
+}
+
 function RadarTopicos() {
   const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0 });
 
-  // Encurta labels longos para caber no gráfico
+  // Abreviações para conteúdos conhecidos; sem truncar o resto (WrapTick cuida da quebra)
   function shortLabel(s: string): string {
     const map: Record<string, string> = {
-      "Geometria Plana": "Geo. Plana",
-      "Geometria Espacial": "Geo. Espacial",
+      "Probabilidade e Estatística": "Prob. e Estatística",
       "Geometria Analítica": "Geo. Analítica",
-      "Probabilidade e Estatística": "Prob./Estat.",
       "Matemática Básica": "Mat. Básica",
-      "Trigonometria": "Trigo.",
+      "Geometria Espacial": "Geo. Espacial",
+      "Geometria Plana": "Geo. Plana",
+      "Trigonometria": "Trigonometria",
       "Funções": "Funções",
       "Álgebra": "Álgebra",
     };
-    return map[s] ?? (s.length > 14 ? s.slice(0, 13) + "…" : s);
+    return map[s] ?? s;
   }
 
   if (isLoading) return (
@@ -239,12 +268,12 @@ function RadarTopicos() {
         </span>
       </div>
 
-      <ResponsiveContainer width="100%" height={230}>
-        <RadarChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+      <ResponsiveContainer width="100%" height={260}>
+        <RadarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
           <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
           <PolarAngleAxis
             dataKey="area"
-            tick={{ fontSize: 10, fill: "var(--muted-foreground)", fontWeight: 500 }}
+            tick={<WrapTick />}
           />
           <PolarRadiusAxis
             angle={30}
