@@ -230,8 +230,9 @@ function WrapTick({ x, y, payload, textAnchor }: any) {
 
 function RadarTopicos() {
   const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
-  // Hook deve ficar no topo, antes de qualquer return condicional
+  // Muda a cada montagem → força RadarChart inteiro a remontar e animar
   const [animKey] = useState(() => Date.now());
+  const [showInfo, setShowInfo] = useState(false);
 
   // Abreviações para conteúdos conhecidos; sem truncar o resto (WrapTick cuida da quebra)
   function shortLabel(s: string): string {
@@ -264,14 +265,34 @@ function RadarTopicos() {
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
       <div className="flex items-center justify-between">
-        <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Desempenho por Área</p>
+        <div className="flex items-center gap-1.5">
+          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Desempenho por Área</p>
+          <div className="relative">
+            <button
+              onClick={() => setShowInfo(v => !v)}
+              className="flex items-center justify-center rounded-full"
+              style={{ width: 17, height: 17, background: "var(--muted)", color: "var(--muted-foreground)", fontSize: 10, fontWeight: 700, border: "1px solid var(--border)", lineHeight: 1 }}
+            >i</button>
+            {showInfo && (
+              <div
+                className="absolute z-20 rounded-xl p-3 space-y-1.5 text-xs"
+                style={{ top: 22, left: 0, width: 240, background: "var(--card)", border: "1.5px solid var(--border)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", color: "var(--foreground)" }}
+              >
+                <p className="font-semibold" style={{ color: "var(--foreground)" }}>Como ler este gráfico</p>
+                <p style={{ color: "var(--muted-foreground)" }}>Cada ponta representa uma área da Matemática. Quanto mais o polígono se estende em direção à ponta, maior é o seu percentual de acerto naquele conteúdo.</p>
+                <p style={{ color: "var(--muted-foreground)" }}>Um polígono grande e simétrico indica desempenho equilibrado. Pontas "afundadas" indicam onde concentrar os estudos.</p>
+                <button onClick={() => setShowInfo(false)} className="text-xs font-semibold mt-1" style={{ color: "#009688" }}>Fechar</button>
+              </div>
+            )}
+          </div>
+        </div>
         <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#E0F2F1", color: "#00695C" }}>
           {data.length} áreas
         </span>
       </div>
 
       <ResponsiveContainer width="100%" height={260}>
-        <RadarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+        <RadarChart key={animKey} data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
           <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
           <PolarAngleAxis
             dataKey="area"
@@ -285,7 +306,6 @@ function RadarTopicos() {
             axisLine={false}
           />
           <Radar
-            key={animKey}
             dataKey="pct"
             stroke="#009688"
             fill="#009688"
