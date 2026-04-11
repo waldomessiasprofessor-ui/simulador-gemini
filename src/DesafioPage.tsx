@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
@@ -38,6 +38,7 @@ export default function DesafioPage() {
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
   const [openResolution, setOpenResolution] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
 
   if (isLoading) return (
     <div className="flex justify-center py-20">

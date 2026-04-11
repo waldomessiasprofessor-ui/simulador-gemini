@@ -71,7 +71,7 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
     return () => clearInterval(t);
   }, []);
 
-  useEffect(() => { qTimeRef.current = 0; setQTime(0); }, [idx]);
+  useEffect(() => { qTimeRef.current = 0; setQTime(0); window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
 
   if (isLoading) return (
     <div className="flex justify-center py-20">

@@ -37,6 +37,8 @@ export default function Treino() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [questions.length, finished]);
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
+
   function fmtTime(s: number) {
     const m = Math.floor(s / 60);
     return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
