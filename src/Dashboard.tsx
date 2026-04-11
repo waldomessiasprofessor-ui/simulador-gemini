@@ -199,6 +199,21 @@ function MissaoCumprida() {
 }
 
 // ─── Radar de Tópicos ─────────────────────────────────────────────────────────
+// Abreviações de conteúdos para o gráfico radar (fora do componente — função pura)
+function shortLabel(s: string): string {
+  const map: Record<string, string> = {
+    "Probabilidade e Estatística": "Prob. e Estatística",
+    "Geometria Analítica": "Geo. Analítica",
+    "Matemática Básica": "Mat. Básica",
+    "Geometria Espacial": "Geo. Espacial",
+    "Geometria Plana": "Geo. Plana",
+    "Trigonometria": "Trigonometria",
+    "Funções": "Funções",
+    "Álgebra": "Álgebra",
+  };
+  return map[s] ?? s;
+}
+
 // Tick customizado para PolarAngleAxis — quebra labels longos em múltiplas linhas
 function WrapTick({ x, y, payload, textAnchor }: any) {
   const text: string = payload?.value ?? "";
@@ -229,33 +244,13 @@ function WrapTick({ x, y, payload, textAnchor }: any) {
 }
 
 function RadarTopicos() {
+  // ── Todos os hooks ANTES de qualquer return condicional ──────────────
   const { data, isLoading } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true, refetchInterval: 30_000 });
   const [showInfo, setShowInfo] = useState(false);
   const [animatedData, setAnimatedData] = useState<{ area: string; pct: number; total: number }[]>([]);
   const rafRef = useRef<number | null>(null);
 
-  // Abreviações para conteúdos conhecidos; sem truncar o resto (WrapTick cuida da quebra)
-  function shortLabel(s: string): string {
-    const map: Record<string, string> = {
-      "Probabilidade e Estatística": "Prob. e Estatística",
-      "Geometria Analítica": "Geo. Analítica",
-      "Matemática Básica": "Mat. Básica",
-      "Geometria Espacial": "Geo. Espacial",
-      "Geometria Plana": "Geo. Plana",
-      "Trigonometria": "Trigonometria",
-      "Funções": "Funções",
-      "Álgebra": "Álgebra",
-    };
-    return map[s] ?? s;
-  }
-
-  if (isLoading) return (
-    <div className="rounded-2xl p-4 flex justify-center items-center" style={{ height: 200, background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
-    </div>
-  );
-
-  // Animação manual: interpola de 0 até os valores reais com easing ease-out
+  // Animação manual: interpola de 0 até os valores reais com ease-out cúbico
   useEffect(() => {
     if (!data || data.length < 2) return;
     const target = data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
@@ -264,17 +259,23 @@ function RadarTopicos() {
     const startTs = performance.now();
     const tick = (now: number) => {
       const t = Math.min((now - startTs) / DURATION, 1);
-      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const eased = 1 - Math.pow(1 - t, 3);
       setAnimatedData(target.map(d => ({ ...d, pct: Math.round(d.pct * eased) })));
       if (t < 1) rafRef.current = requestAnimationFrame(tick);
     };
-    setAnimatedData(target.map(d => ({ ...d, pct: 0 }))); // começa do zero
+    setAnimatedData(target.map(d => ({ ...d, pct: 0 })));
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]); // dispara quando os dados chegam (isLoading muda de true→false)
+  }, [data]); // dispara quando os dados chegam/mudam
 
-  if (!data || data.length < 2) return null; // sem dados suficientes, não exibe
+  // ── Returns condicionais SÓ depois de todos os hooks ────────────────
+  if (isLoading) return (
+    <div className="rounded-2xl p-4 flex justify-center items-center" style={{ height: 200, background: "var(--card)", border: "1.5px solid var(--border)" }}>
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
+    </div>
+  );
+
+  if (!data || data.length < 2) return null;
 
   const chartData = animatedData.length ? animatedData : data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
 
