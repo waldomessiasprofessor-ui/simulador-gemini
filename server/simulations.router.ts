@@ -831,6 +831,83 @@ export const simulationsRouter = createTRPCRouter({
   }),
 
   // ---------------------------------------------------------------------------
+  // DESEMPENHO POR TÓPICO — para o gráfico radar da dashboard
+  // Combina simulationAnswers + dailyChallenges para dar % de acerto por área
+  // ---------------------------------------------------------------------------
+  getTopicStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+
+    // Fonte 1: simulationAnswers (simulados + treino livre salvo)
+    const simRows = await ctx.db
+      .select({
+        conteudo: questions.conteudo_principal,
+        isCorrect: simulationAnswers.isCorrect,
+      })
+      .from(simulationAnswers)
+      .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
+      .innerJoin(questions, eq(simulationAnswers.questionId, questions.id))
+      .where(and(
+        eq(simulations.userId, userId),
+        sql`${simulationAnswers.isCorrect} IS NOT NULL`,
+      ));
+
+    // Agrupa por conteúdo
+    const map = new Map<string, { total: number; correct: number }>();
+
+    for (const r of simRows) {
+      const key = r.conteudo;
+      const entry = map.get(key) ?? { total: 0, correct: 0 };
+      entry.total++;
+      if (r.isCorrect) entry.correct++;
+      map.set(key, entry);
+    }
+
+    // Fonte 2: dailyChallenges completos
+    const challenges = await ctx.db
+      .select({
+        answers: dailyChallenges.answers,
+        questionIds: dailyChallenges.questionIds,
+        completed: dailyChallenges.completed,
+      })
+      .from(dailyChallenges)
+      .where(and(eq(dailyChallenges.userId, userId), eq(dailyChallenges.completed, true)));
+
+    if (challenges.length > 0) {
+      const allQIds = [...new Set(challenges.flatMap(c => c.questionIds as number[]))];
+      if (allQIds.length > 0) {
+        const qDetails = await ctx.db
+          .select({ id: questions.id, conteudo: questions.conteudo_principal, gabarito: questions.gabarito })
+          .from(questions)
+          .where(inArray(questions.id, allQIds));
+        const qMap = new Map(qDetails.map(q => [q.id, q]));
+
+        for (const ch of challenges) {
+          const answers = ch.answers as Record<string, string>;
+          for (const [qIdStr, selected] of Object.entries(answers)) {
+            const q = qMap.get(parseInt(qIdStr));
+            if (!q) continue;
+            const entry = map.get(q.conteudo) ?? { total: 0, correct: 0 };
+            entry.total++;
+            if (selected === q.gabarito) entry.correct++;
+            map.set(q.conteudo, entry);
+          }
+        }
+      }
+    }
+
+    // Converte para array com % de acerto (0–100), mínimo 3 questões para aparecer
+    return Array.from(map.entries())
+      .filter(([, v]) => v.total >= 3)
+      .map(([conteudo, v]) => ({
+        conteudo,
+        total: v.total,
+        correct: v.correct,
+        pct: Math.round((v.correct / v.total) * 100),
+      }))
+      .sort((a, b) => b.total - a.total);
+  }),
+
+  // ---------------------------------------------------------------------------
   // TREINO LIVRE — sorteia N questões de um tópico com gabarito imediato
   // ---------------------------------------------------------------------------
   startFreeTraining: protectedProcedure
