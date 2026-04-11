@@ -34,7 +34,7 @@ export const questionsRouter = createTRPCRouter({
       fonte: z.string().optional(),
       nivel_dificuldade: NivelDificuldadeEnum.optional(),
       activeOnly: z.boolean().default(true),
-      orderBy: z.enum(["id", "conteudo_principal", "nivel_dificuldade", "createdAt"]).default("conteudo_principal"),
+      orderBy: z.enum(["id", "ano", "conteudo_principal", "nivel_dificuldade", "createdAt"]).default("ano"),
       orderDir: z.enum(["asc", "desc"]).default("asc"),
     }))
     .query(async ({ ctx, input }) => {
@@ -51,11 +51,17 @@ export const questionsRouter = createTRPCRouter({
       const orderColumn = orderBy === "conteudo_principal" ? questions.conteudo_principal
         : orderBy === "nivel_dificuldade" ? questions.nivel_dificuldade
         : orderBy === "createdAt" ? questions.createdAt
+        : orderBy === "ano" ? questions.ano
         : questions.id;
       const orderFn = orderDir === "asc" ? asc : desc;
 
+      // Ordenação composta: ano → id (estável, sem pulos ao salvar/auditar)
+      const orderClauses = orderBy === "id"
+        ? [orderFn(questions.id)]
+        : [orderFn(orderColumn), asc(questions.id)];
+
       const [rows, [{ count }]] = await Promise.all([
-        ctx.db.select().from(questions).where(where).orderBy(orderFn(orderColumn)).limit(pageSize).offset(offset),
+        ctx.db.select().from(questions).where(where).orderBy(...orderClauses).limit(pageSize).offset(offset),
         ctx.db.select({ count: sql<number>`COUNT(*)` }).from(questions).where(where),
       ]);
 
