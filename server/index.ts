@@ -304,11 +304,13 @@ async function runMigrations() {
         day_of_week TINYINT NOT NULL,
         start_time  VARCHAR(5) NOT NULL,
         end_time    VARCHAR(5) NOT NULL,
-        topic       VARCHAR(100) NOT NULL,
+        topic       TEXT NOT NULL,
         created_at  TIMESTAMP DEFAULT NOW() NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
+    // Garante que a coluna topic seja TEXT (caso tabela já existia com VARCHAR)
+    await conn.query(`ALTER TABLE study_schedule MODIFY COLUMN topic TEXT NOT NULL`);
     console.log("✅ Migration: study_schedule OK.");
 
   } catch (err: any) {

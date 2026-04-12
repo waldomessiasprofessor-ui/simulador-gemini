@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Plus, Trash2, Clock, BookOpen, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Loader2, Plus, Clock, BookOpen, ChevronDown, ChevronUp, X, Dumbbell } from "lucide-react";
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -32,7 +33,6 @@ const ENEM_TOPICS = [
   "Matemática Financeira",
 ];
 
-// Horas disponíveis (05:00 – 23:30 de 30 em 30 min)
 const TIME_OPTIONS: string[] = [];
 for (let h = 5; h <= 23; h++) {
   for (const m of [0, 30]) {
@@ -41,48 +41,53 @@ for (let h = 5; h <= 23; h++) {
   }
 }
 
-// Hoje (1=Seg … 6=Sáb, 0=Dom → default Seg)
 function getTodayDow(): number {
-  const d = new Date().getDay(); // 0=Dom
+  const d = new Date().getDay();
   return d >= 1 && d <= 6 ? d : 1;
 }
 
-// ── Componente principal ──────────────────────────────────────────────────────
+// ── Componente ────────────────────────────────────────────────────────────────
 
 export default function Agenda() {
+  const [, navigate] = useLocation();
   const utils = trpc.useUtils();
 
   const { data: slots = [], isLoading } = trpc.agenda.getMySchedule.useQuery();
-  const { data: topicStats = [] } = trpc.agenda.getTopicStats.useQuery();
+  const { data: topicStats = [] }       = trpc.agenda.getTopicStats.useQuery();
 
   const addSlot    = trpc.agenda.addSlot.useMutation({ onSuccess: () => utils.agenda.getMySchedule.invalidate() });
   const removeSlot = trpc.agenda.removeSlot.useMutation({ onSuccess: () => utils.agenda.getMySchedule.invalidate() });
 
   // UI state
-  const [openDay,       setOpenDay]       = useState<number>(getTodayDow());
-  const [startTime,     setStartTime]     = useState("08:00");
-  const [endTime,       setEndTime]       = useState("10:00");
-  const [topic,         setTopic]         = useState("");
-  const [topicSearch,   setTopicSearch]   = useState("");
-  const [showPicker,    setShowPicker]    = useState(false);
-  const [showSugest,    setShowSugest]    = useState(false);
+  const [openDay,     setOpenDay]     = useState<number>(getTodayDow());
+  const [startTime,   setStartTime]   = useState("08:00");
+  const [endTime,     setEndTime]     = useState("10:00");
+  const [selTopics,   setSelTopics]   = useState<string[]>([]);  // multi-select
+  const [topicSearch, setTopicSearch] = useState("");
+  const [showPicker,  setShowPicker]  = useState(false);
+  const [showSugest,  setShowSugest]  = useState(false);
 
   const filteredTopics = ENEM_TOPICS.filter((t) =>
     t.toLowerCase().includes(topicSearch.toLowerCase())
   );
 
+  function toggleTopic(t: string) {
+    setSelTopics((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    );
+  }
+
   function handleAdd() {
-    if (!topic) return;
-    if (startTime >= endTime) return;
-    addSlot.mutate({ dayOfWeek: openDay, startTime, endTime, topic });
-    setTopic("");
+    if (selTopics.length === 0 || startTime >= endTime) return;
+    addSlot.mutate({ dayOfWeek: openDay, startTime, endTime, topics: selTopics });
+    setSelTopics([]);
     setTopicSearch("");
+    setShowPicker(false);
   }
 
   const slotsForDay = (day: number) => slots.filter((s) => s.dayOfWeek === day);
   const totalSlots  = slots.length;
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6 py-2">
 
@@ -90,10 +95,8 @@ export default function Agenda() {
       <div className="rounded-2xl px-6 py-7 text-white"
         style={{ background: "linear-gradient(135deg, #01738d, #015f75)" }}>
         <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">Agenda semanal</p>
-        <h1 className="text-2xl font-bold mb-1">Meu cronograma</h1>
-        <p className="text-sm opacity-80">
-          Monte seu plano de estudos semanal do seu jeito
-        </p>
+        <h1 className="text-2xl font-bold mb-1">Planner de Estudos</h1>
+        <p className="text-sm opacity-80">Monte seu cronograma semanal do seu jeito</p>
         {totalSlots > 0 && (
           <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
             style={{ background: "rgba(255,255,255,0.2)" }}>
@@ -120,7 +123,9 @@ export default function Agenda() {
               {d.short}
               {count > 0 && (
                 <span className="text-xs font-semibold rounded-full px-1.5"
-                  style={active ? { background: "rgba(255,255,255,0.25)", color: "#fff" } : { background: colors.badge, color: colors.badgeText }}>
+                  style={active
+                    ? { background: "rgba(255,255,255,0.3)", color: "#fff" }
+                    : { background: colors.badge, color: colors.badgeText }}>
                   {count}
                 </span>
               )}
@@ -129,7 +134,7 @@ export default function Agenda() {
         })}
       </div>
 
-      {/* Painel do dia selecionado */}
+      {/* Painel do dia */}
       {(() => {
         const day    = DAYS.find((d) => d.value === openDay)!;
         const colors = DAY_COLORS[openDay];
@@ -138,12 +143,12 @@ export default function Agenda() {
         return (
           <div className="rounded-2xl overflow-hidden" style={{ border: `2px solid ${colors.border}` }}>
 
-            {/* Título do dia */}
+            {/* Título */}
             <div className="px-5 py-4" style={{ background: colors.bg }}>
               <p className="font-bold text-base" style={{ color: colors.text }}>{day.full}</p>
             </div>
 
-            {/* Cards existentes */}
+            {/* Post-its existentes */}
             {isLoading ? (
               <div className="flex justify-center py-8" style={{ background: "var(--card)" }}>
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -151,29 +156,48 @@ export default function Agenda() {
             ) : daySl.length > 0 ? (
               <div className="p-4 grid gap-3 sm:grid-cols-2" style={{ background: "var(--card)" }}>
                 {daySl.map((slot) => (
-                  <div key={slot.id}
-                    className="relative rounded-xl p-4 shadow-sm"
+                  <div key={slot.id} className="rounded-xl p-4 shadow-sm space-y-2"
                     style={{ background: colors.bg, border: `1.5px solid ${colors.border}` }}>
-                    {/* Botão remover */}
-                    <button
-                      onClick={() => removeSlot.mutate({ id: slot.id })}
-                      className="absolute top-2.5 right-2.5 p-1 rounded-lg opacity-50 hover:opacity-100 transition-opacity"
-                      style={{ color: colors.text }}>
-                      <X className="h-3.5 w-3.5" />
-                    </button>
 
-                    {/* Horário */}
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <Clock className="h-3.5 w-3.5" style={{ color: colors.text }} />
-                      <span className="text-xs font-bold" style={{ color: colors.text }}>
-                        {slot.startTime} – {slot.endTime}
-                      </span>
+                    {/* Header: horário + remover */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" style={{ color: colors.text }} />
+                        <span className="text-xs font-bold" style={{ color: colors.text }}>
+                          {slot.startTime} – {slot.endTime}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeSlot.mutate({ id: slot.id })}
+                        className="p-1 rounded-lg opacity-40 hover:opacity-100 transition-opacity"
+                        style={{ color: colors.text }}>
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     </div>
 
-                    {/* Tópico */}
-                    <p className="text-sm font-semibold pr-6" style={{ color: "var(--foreground)" }}>
-                      {slot.topic}
-                    </p>
+                    {/* Tags de tópico */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {slot.topics.map((t) => (
+                        <span key={t}
+                          className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                          style={{ background: colors.badge, color: colors.badgeText }}>
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Botão Praticar — um por tópico */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {slot.topics.map((t) => (
+                        <button key={t}
+                          onClick={() => navigate(`/questoes?c=${encodeURIComponent(t)}`)}
+                          className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg text-white transition-all"
+                          style={{ background: colors.text }}>
+                          <Dumbbell className="h-3 w-3" />
+                          Praticar {t.split(" ")[0]}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -184,7 +208,8 @@ export default function Agenda() {
             )}
 
             {/* Formulário — adicionar sessão */}
-            <div className="px-5 py-4 space-y-3" style={{ background: "var(--card)", borderTop: `1px solid ${colors.border}` }}>
+            <div className="px-5 py-4 space-y-3"
+              style={{ background: "var(--card)", borderTop: `1px solid ${colors.border}` }}>
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.text }}>
                 Adicionar sessão
               </p>
@@ -192,7 +217,7 @@ export default function Agenda() {
               {/* Horários */}
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 flex-1">
-                  <span className="text-xs text-muted-foreground font-medium">De</span>
+                  <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">De</span>
                   <select value={startTime} onChange={(e) => setStartTime(e.target.value)}
                     className="flex-1 text-sm rounded-lg px-2 py-2 font-medium"
                     style={{ background: "var(--muted)", color: "var(--foreground)", border: "1px solid var(--border)" }}>
@@ -200,7 +225,7 @@ export default function Agenda() {
                   </select>
                 </div>
                 <div className="flex items-center gap-1.5 flex-1">
-                  <span className="text-xs text-muted-foreground font-medium">às</span>
+                  <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">às</span>
                   <select value={endTime} onChange={(e) => setEndTime(e.target.value)}
                     className="flex-1 text-sm rounded-lg px-2 py-2 font-medium"
                     style={{ background: "var(--muted)", color: "var(--foreground)", border: "1px solid var(--border)" }}>
@@ -209,26 +234,36 @@ export default function Agenda() {
                 </div>
               </div>
 
-              {/* Seletor de conteúdo — tags clicáveis */}
+              {/* Seletor multi-tópico */}
               <div className="space-y-2">
                 <button
                   onClick={() => setShowPicker((p) => !p)}
                   className="w-full flex items-center justify-between text-sm px-3 py-2.5 rounded-xl transition-all"
-                  style={topic
+                  style={selTopics.length > 0
                     ? { background: colors.bg, border: `1.5px solid ${colors.border}`, color: "var(--foreground)" }
                     : { background: "var(--muted)", border: "1px solid var(--border)", color: "var(--muted-foreground)" }
                   }>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="font-medium">{topic || "Selecionar conteúdo..."}</span>
+                    {selTopics.length === 0
+                      ? <span className="font-medium">Selecionar conteúdo...</span>
+                      : <span className="font-medium truncate">{selTopics.join(", ")}</span>
+                    }
                   </div>
-                  {showPicker ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                    {selTopics.length > 0 && (
+                      <span className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white"
+                        style={{ background: colors.text }}>
+                        {selTopics.length}
+                      </span>
+                    )}
+                    {showPicker ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </div>
                 </button>
 
                 {showPicker && (
                   <div className="rounded-xl p-3 space-y-2"
                     style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
-                    {/* Campo de busca */}
                     <input
                       autoFocus
                       value={topicSearch}
@@ -237,19 +272,18 @@ export default function Agenda() {
                       className="w-full text-sm px-3 py-1.5 rounded-lg outline-none"
                       style={{ background: "var(--card)", color: "var(--foreground)", border: "1px solid var(--border)" }}
                     />
-                    {/* Tags clicáveis */}
                     <div className="flex flex-wrap gap-1.5">
                       {filteredTopics.map((t) => {
-                        const selected = topic === t;
+                        const sel = selTopics.includes(t);
                         return (
                           <button key={t}
-                            onClick={() => { setTopic(t); setShowPicker(false); setTopicSearch(""); }}
+                            onClick={() => toggleTopic(t)}
                             className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
-                            style={selected
+                            style={sel
                               ? { background: colors.text, color: "#fff" }
                               : { background: "var(--card)", color: "var(--foreground)", border: "1px solid var(--border)" }
                             }>
-                            {t}
+                            {sel ? "✓ " : ""}{t}
                           </button>
                         );
                       })}
@@ -257,23 +291,32 @@ export default function Agenda() {
                         <p className="text-xs text-muted-foreground px-1">Nenhum resultado</p>
                       )}
                     </div>
+                    {selTopics.length > 0 && (
+                      <button
+                        onClick={() => setSelTopics([])}
+                        className="text-xs text-muted-foreground underline">
+                        Limpar seleção
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Botão adicionar */}
+              {/* Botão salvar */}
               <button
                 onClick={handleAdd}
-                disabled={!topic || startTime >= endTime || addSlot.isPending}
+                disabled={selTopics.length === 0 || startTime >= endTime || addSlot.isPending}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm text-white transition-all disabled:opacity-40"
                 style={{ background: colors.text }}>
                 {addSlot.isPending
                   ? <Loader2 className="h-4 w-4 animate-spin" />
                   : <Plus className="h-4 w-4" />}
-                Adicionar sessão
+                {selTopics.length === 0
+                  ? "Selecione ao menos um conteúdo"
+                  : `Salvar sessão${selTopics.length > 1 ? ` (${selTopics.length} conteúdos)` : ""}`}
               </button>
 
-              {startTime >= endTime && topic && (
+              {startTime >= endTime && selTopics.length > 0 && (
                 <p className="text-xs text-center" style={{ color: "#DC2626" }}>
                   O horário de término deve ser após o início
                 </p>
@@ -283,7 +326,7 @@ export default function Agenda() {
         );
       })()}
 
-      {/* Visão geral — todos os dias com slots */}
+      {/* Visão geral */}
       {totalSlots > 0 && (
         <div>
           <p className="text-xs font-bold uppercase tracking-wider mb-3 text-muted-foreground">
@@ -299,13 +342,19 @@ export default function Agenda() {
                     style={{ background: colors.bg, color: colors.text }}>
                     {d.short}
                   </div>
-                  <div className="flex-1 flex flex-wrap gap-2">
+                  <div className="flex-1 space-y-1.5">
                     {slotsForDay(d.value).map((slot) => (
-                      <span key={slot.id} className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-                        style={{ background: colors.badge, color: colors.badgeText }}>
-                        <Clock className="h-3 w-3" />
-                        {slot.startTime}–{slot.endTime} · {slot.topic}
-                      </span>
+                      <div key={slot.id} className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-xs font-bold text-muted-foreground">
+                          {slot.startTime}–{slot.endTime}
+                        </span>
+                        {slot.topics.map((t) => (
+                          <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                            style={{ background: colors.badge, color: colors.badgeText }}>
+                            {t}
+                          </span>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -315,7 +364,7 @@ export default function Agenda() {
         </div>
       )}
 
-      {/* Sugestões baseadas no desempenho */}
+      {/* Sugestões */}
       <div>
         <button
           onClick={() => setShowSugest((p) => !p)}
@@ -328,7 +377,7 @@ export default function Agenda() {
         {showSugest && (
           <div className="mt-2 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
             {topicStats.slice(0, 10).map((item, i) => {
-              const statusColor =
+              const s =
                 item.status === "fraco"   ? { bg: "#FEF2F2", text: "#DC2626", label: "Prioridade" } :
                 item.status === "regular" ? { bg: "#FFFBEB", text: "#D97706", label: "Em progresso" } :
                 item.status === "forte"   ? { bg: "#F0FDF4", text: "#16A34A", label: "Dominado" } :
@@ -341,13 +390,12 @@ export default function Agenda() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>{item.topic}</p>
                     <p className="text-xs text-muted-foreground">
-                      {item.enemPct}% do ENEM
-                      {item.userAccuracy !== null ? ` · ${item.userAccuracy}% de acerto` : " · sem histórico"}
+                      {item.enemPct}% do ENEM{item.userAccuracy !== null ? ` · ${item.userAccuracy}% de acerto` : " · sem histórico"}
                     </p>
                   </div>
                   <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                    style={{ background: statusColor.bg, color: statusColor.text }}>
-                    {statusColor.label}
+                    style={{ background: s.bg, color: s.text }}>
+                    {s.label}
                   </span>
                 </div>
               );

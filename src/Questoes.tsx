@@ -81,7 +81,11 @@ const FONTE_INFO: Record<string, { titulo: string; subtitulo: string }> = {
 };
 
 export default function Questoes({ fonte }: { fonte?: string }) {
-  const [search, setSearch] = useState("");
+  // Suporte a ?c=TopicName vindo da Agenda (Planner de Estudos)
+  const [search, setSearch] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("c") ?? "";
+  });
   const [filterTag, setFilterTag] = useState("Todas");
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<number | null>(null);

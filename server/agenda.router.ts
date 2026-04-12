@@ -32,16 +32,32 @@ export const ENEM_TOPICS: { topic: string; weight: number }[] = [
   { topic: "Matemática Financeira",       weight: 0.005 },
 ];
 
+// Compatibilidade: dados antigos podem ser string simples, novos são JSON array
+function parseTopics(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [raw];
+  } catch {
+    return raw ? [raw] : [];
+  }
+}
+
 export const agendaRouter = createTRPCRouter({
 
   // ── Cronograma salvo pelo aluno ───────────────────────────────────────────
 
+  // Helpers para parse/stringify de topics (suporta legado string simples)
   getMySchedule: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db
+    const rows = await ctx.db
       .select()
       .from(studySchedule)
       .where(eq(studySchedule.userId, ctx.user.id))
       .orderBy(studySchedule.dayOfWeek, studySchedule.startTime);
+
+    return rows.map((r) => ({
+      ...r,
+      topics: parseTopics(r.topic),
+    }));
   }),
 
   addSlot: protectedProcedure
@@ -49,7 +65,7 @@ export const agendaRouter = createTRPCRouter({
       dayOfWeek: z.number().int().min(1).max(6),
       startTime: z.string().regex(/^\d{2}:\d{2}$/),
       endTime:   z.string().regex(/^\d{2}:\d{2}$/),
-      topic:     z.string().min(1).max(100),
+      topics:    z.array(z.string().min(1).max(100)).min(1),
     }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.insert(studySchedule).values({
@@ -57,7 +73,7 @@ export const agendaRouter = createTRPCRouter({
         dayOfWeek: input.dayOfWeek,
         startTime: input.startTime,
         endTime:   input.endTime,
-        topic:     input.topic,
+        topic:     JSON.stringify(input.topics),
       });
       return { success: true };
     }),

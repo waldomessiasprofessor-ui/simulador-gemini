@@ -261,7 +261,7 @@ export const studySchedule = mysqlTable("study_schedule", {
   dayOfWeek:  int("day_of_week").notNull(), // 1=Seg … 6=Sáb
   startTime:  varchar("start_time", { length: 5 }).notNull(),  // "08:00"
   endTime:    varchar("end_time",   { length: 5 }).notNull(),  // "10:00"
-  topic:      varchar("topic",      { length: 100 }).notNull(),
+  topic:      text("topic").notNull(), // JSON array de strings: ["Funções","Geometria Plana"]
   createdAt:  timestamp("created_at").defaultNow().notNull(),
 });
 
