@@ -209,8 +209,8 @@ export default function Agenda() {
                 </div>
               </div>
 
-              {/* Seletor de conteúdo */}
-              <div className="relative">
+              {/* Seletor de conteúdo — tags clicáveis */}
+              <div className="space-y-2">
                 <button
                   onClick={() => setShowPicker((p) => !p)}
                   className="w-full flex items-center justify-between text-sm px-3 py-2.5 rounded-xl transition-all"
@@ -226,34 +226,35 @@ export default function Agenda() {
                 </button>
 
                 {showPicker && (
-                  <div className="absolute z-20 left-0 right-0 mt-1 rounded-xl shadow-xl overflow-hidden"
-                    style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-                    {/* Busca */}
-                    <div className="p-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                      <input
-                        autoFocus
-                        value={topicSearch}
-                        onChange={(e) => setTopicSearch(e.target.value)}
-                        placeholder="Buscar conteúdo..."
-                        className="w-full text-sm px-3 py-1.5 rounded-lg outline-none"
-                        style={{ background: "var(--muted)", color: "var(--foreground)", border: "1px solid var(--border)" }}
-                      />
-                    </div>
-                    {/* Lista */}
-                    <div className="max-h-52 overflow-y-auto">
-                      {filteredTopics.map((t) => (
-                        <button key={t}
-                          onClick={() => { setTopic(t); setShowPicker(false); setTopicSearch(""); }}
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-80"
-                          style={topic === t
-                            ? { background: colors.bg, color: colors.text }
-                            : { color: "var(--foreground)" }
-                          }>
-                          {t}
-                        </button>
-                      ))}
+                  <div className="rounded-xl p-3 space-y-2"
+                    style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+                    {/* Campo de busca */}
+                    <input
+                      autoFocus
+                      value={topicSearch}
+                      onChange={(e) => setTopicSearch(e.target.value)}
+                      placeholder="Buscar conteúdo..."
+                      className="w-full text-sm px-3 py-1.5 rounded-lg outline-none"
+                      style={{ background: "var(--card)", color: "var(--foreground)", border: "1px solid var(--border)" }}
+                    />
+                    {/* Tags clicáveis */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {filteredTopics.map((t) => {
+                        const selected = topic === t;
+                        return (
+                          <button key={t}
+                            onClick={() => { setTopic(t); setShowPicker(false); setTopicSearch(""); }}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+                            style={selected
+                              ? { background: colors.text, color: "#fff" }
+                              : { background: "var(--card)", color: "var(--foreground)", border: "1px solid var(--border)" }
+                            }>
+                            {t}
+                          </button>
+                        );
+                      })}
                       {filteredTopics.length === 0 && (
-                        <p className="px-4 py-3 text-sm text-muted-foreground">Nenhum resultado</p>
+                        <p className="text-xs text-muted-foreground px-1">Nenhum resultado</p>
                       )}
                     </div>
                   </div>
