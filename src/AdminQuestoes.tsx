@@ -811,6 +811,7 @@ const emptyForm = {
   param_c: 0.2,
   enunciado: "",
   url_imagem: "",
+  url_video: "",
   alternativas: { A: "", B: "", C: "", D: "", E: "" },
   gabarito: "A",
   comentario_resolucao: "",
@@ -1016,6 +1017,7 @@ export default function AdminQuestoes() {
       param_c: q.param_c,
       enunciado: q.enunciado,
       url_imagem: q.url_imagem ?? "",
+      url_video: (q as any).url_video ?? "",
       alternativas: { A: "", B: "", C: "", D: "", E: "", ...(typeof q.alternativas === "object" ? q.alternativas : {}) },
       gabarito: q.gabarito,
       comentario_resolucao: q.comentario_resolucao ?? "",
@@ -1035,7 +1037,7 @@ export default function AdminQuestoes() {
   function handleSubmit() {
     if (!form.conteudo_principal.trim()) { toast.error("Preencha o conteúdo principal."); return; }
     if (!form.enunciado.trim()) { toast.error("Preencha o enunciado."); return; }
-    const payload = { ...form, url_imagem: form.url_imagem || null };
+    const payload = { ...form, url_imagem: form.url_imagem || null, url_video: form.url_video || null };
     if (editId) {
       updateMutation.mutate({ id: editId, ...payload });
     } else {
@@ -1390,6 +1392,16 @@ export default function AdminQuestoes() {
               value={form.comentario_resolucao}
               onChange={(e) => setForm({ ...form, comentario_resolucao: e.target.value })}
               placeholder="Passo a passo da resolução..."
+              onFocus={(e) => (e.target.style.borderColor = "#01738d")}
+              onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+          </div>
+
+          {/* Vídeo de resolução */}
+          <div>
+            <label style={labelStyle}>URL do vídeo de resolução (opcional — YouTube)</label>
+            <input className={inputClass} style={inputStyle} value={form.url_video}
+              onChange={(e) => setForm({ ...form, url_video: e.target.value })}
+              placeholder="https://www.youtube.com/watch?v=..."
               onFocus={(e) => (e.target.style.borderColor = "#01738d")}
               onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
           </div>
