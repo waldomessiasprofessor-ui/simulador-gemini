@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight, ChevronDown,
-  User, Mail, Shield, Zap, GraduationCap, Moon, Sun
+  User, Mail, Shield, Zap, GraduationCap, Moon, Sun, CalendarDays
 } from "lucide-react";
 
 function useDarkMode() {
@@ -40,6 +40,7 @@ const NAV_LINKS: NavLinkItem[] = [
   { href: "/questoes", label: "Banco de questões ENEM", icon: BookOpen },
   { href: "/treino", label: "Treino livre", icon: Dumbbell },
   { href: "/desafio", label: "Desafio do dia", icon: Zap },
+  { href: "/agenda", label: "Agenda de estudos", icon: CalendarDays },
   { href: "/revisao", label: "Revisão", icon: BookOpen },
   { href: "/formulas", label: "Fórmulas", icon: FlaskConical },
   { href: "/historico", label: "Histórico", icon: History },
