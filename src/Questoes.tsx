@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
-import { ChevronDown, ChevronUp, Search, Loader2, BookOpen, PlayCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, Loader2, BookOpen } from "lucide-react";
+import { VideoButton } from "@/YoutubeEmbed";
 
 const TAGS_CONTEUDO = [
   "Análise Combinatória",
@@ -85,6 +86,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<number | null>(null);
   const [openResolution, setOpenResolution] = useState<number | null>(null);
+  const [openVideoId, setOpenVideoId] = useState<number | null>(null);
 
   const info = fonte ? (FONTE_INFO[fonte] ?? FONTE_INFO["ENEM"]) : FONTE_INFO["ENEM"];
 
@@ -246,12 +248,12 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                           </button>
                         )}
                         {(q as any).url_video && (
-                          <a href={(q as any).url_video} target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full transition-all"
-                            style={{ background: "#FEE2E2", color: "#DC2626", border: "1.5px solid #FECACA" }}>
-                            <PlayCircle className="h-3 w-3" />
-                            Assistir vídeo
-                          </a>
+                          <VideoButton
+                            url={(q as any).url_video}
+                            open={openVideoId === q.id}
+                            onToggle={() => setOpenVideoId(openVideoId === q.id ? null : q.id)}
+                            size="sm"
+                          />
                         )}
                       </div>
 

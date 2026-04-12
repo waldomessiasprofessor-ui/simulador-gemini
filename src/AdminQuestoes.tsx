@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp, Image as ImageIcon, ShieldCheck, PlayCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp, Image as ImageIcon, ShieldCheck } from "lucide-react";
+import { VideoButton } from "@/YoutubeEmbed";
 
 // ─── Importador LaTeX ─────────────────────────────────────────────────────────
 
@@ -951,6 +952,7 @@ export default function AdminQuestoes() {
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<Form>(emptyForm);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [openVideoId, setOpenVideoId] = useState<number | null>(null);
   const enunciadoRef = useRef<HTMLTextAreaElement>(null);
 
   const utils = trpc.useUtils();
@@ -1563,12 +1565,12 @@ export default function AdminQuestoes() {
                       </div>
                     )}
                     {(q as any).url_video && (
-                      <a href={(q as any).url_video} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
-                        style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>
-                        <PlayCircle className="h-3.5 w-3.5" />
-                        Assistir vídeo de resolução
-                      </a>
+                      <VideoButton
+                        url={(q as any).url_video}
+                        open={openVideoId === q.id}
+                        onToggle={() => setOpenVideoId(openVideoId === q.id ? null : q.id)}
+                        size="sm"
+                      />
                     )}
                   </div>
                 )}

@@ -3,7 +3,8 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "./LatexRenderer";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen, PlayCircle } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen } from "lucide-react";
+import { VideoButton } from "@/YoutubeEmbed";
 
 const DIFFICULTY_ORDER = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"];
 
@@ -18,6 +19,7 @@ export default function Resultado({ id }: { id: number }) {
   const { data, isLoading } = trpc.simulations.getResult.useQuery({ simulationId: id });
   const [open, setOpen] = useState<number | null>(null);
   const [openRes, setOpenRes] = useState<number | null>(null);
+  const [openVideoIdx, setOpenVideoIdx] = useState<number | null>(null);
 
   if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
   if (!data) return <div className="text-center py-20 text-muted-foreground">Resultado não encontrado.</div>;
@@ -156,12 +158,12 @@ export default function Resultado({ id }: { id: number }) {
                           </button>
                         )}
                         {(ans as any).url_video && (
-                          <a href={(ans as any).url_video} target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all"
-                            style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>
-                            <PlayCircle className="h-3 w-3" />
-                            Assistir vídeo
-                          </a>
+                          <VideoButton
+                            url={(ans as any).url_video}
+                            open={openVideoIdx === i}
+                            onToggle={() => setOpenVideoIdx(openVideoIdx === i ? null : i)}
+                            size="sm"
+                          />
                         )}
                       </div>
                       {openRes === i && ans.comentario_resolucao && (

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
-import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock, Home, PlayCircle } from "lucide-react";
+import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock, Home } from "lucide-react";
+import { VideoButton } from "@/YoutubeEmbed";
 import { cn } from "@/lib/utils";
 
 type TrainingQuestion = {
@@ -26,6 +27,7 @@ export default function Treino() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
   const [openResolution, setOpenResolution] = useState<Record<number, boolean>>({});
+  const [openVideo, setOpenVideo] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
   const [finished, setFinished] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -65,6 +67,7 @@ export default function Treino() {
       setAnswers({});
       setRevealed({});
       setOpenResolution({});
+      setOpenVideo({});
       setIdx(0);
       setFinished(false);
       elapsedRef.current = 0;
@@ -305,12 +308,11 @@ export default function Treino() {
               </button>
             )}
             {q.url_video && (
-              <a href={q.url_video} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
-                style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>
-                <PlayCircle className="h-4 w-4" />
-                Assistir resolução em vídeo
-              </a>
+              <VideoButton
+                url={q.url_video}
+                open={!!openVideo[q.id]}
+                onToggle={() => setOpenVideo(p => ({ ...p, [q.id]: !p[q.id] }))}
+              />
             )}
           </div>
           {openResolution[q.id] && q.comentario_resolucao && (

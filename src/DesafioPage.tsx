@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
-import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw, PlayCircle } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw } from "lucide-react";
+import { VideoButton } from "@/YoutubeEmbed";
 
 type DailyQ = {
   id: number;
@@ -43,6 +44,7 @@ export default function DesafioPage() {
   const [localAnswers, setLocalAnswers] = useState<Record<number, string>>({});
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
   const [openResolution, setOpenResolution] = useState<Record<number, boolean>>({});
+  const [openVideo, setOpenVideo] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
   useEffect(() => { if (daily) window.scrollTo({ top: 0, behavior: "instant" }); }, [daily?.id]);
@@ -116,12 +118,12 @@ export default function DesafioPage() {
                         </button>
                       )}
                       {q.url_video && (
-                        <a href={q.url_video} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-all"
-                          style={{ background: "#FEE2E2", color: "#DC2626" }}>
-                          <PlayCircle className="h-3 w-3" />
-                          Vídeo
-                        </a>
+                        <VideoButton
+                          url={q.url_video}
+                          open={!!openVideo[q.id]}
+                          onToggle={() => setOpenVideo(p => ({ ...p, [q.id]: !p[q.id] }))}
+                          size="sm"
+                        />
                       )}
                     </div>
                   </div>
@@ -215,12 +217,11 @@ export default function DesafioPage() {
               </button>
             )}
             {q.url_video && (
-              <a href={q.url_video} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
-                style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>
-                <PlayCircle className="h-4 w-4" />
-                Assistir resolução em vídeo
-              </a>
+              <VideoButton
+                url={q.url_video}
+                open={!!openVideo[q.id]}
+                onToggle={() => setOpenVideo(p => ({ ...p, [q.id]: !p[q.id] }))}
+              />
             )}
           </div>
           {openResolution[q.id] && q.comentario_resolucao && (
