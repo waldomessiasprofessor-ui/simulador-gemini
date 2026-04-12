@@ -284,28 +284,35 @@ async function runMigrations() {
   try {
     conn = await pool.getConnection();
 
-    // Verifica se a coluna já existe — compatível com todas as versões MySQL
-    const [rows]: any[] = await conn.query(`
-      SELECT COLUMN_NAME
-      FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME   = 'questions'
-        AND COLUMN_NAME  = 'url_video'
+    // ── url_video ────────────────────────────────────────────────────────────
+    const [colRows]: any[] = await conn.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'questions' AND COLUMN_NAME = 'url_video'
     `);
-
-    if (Array.isArray(rows) && rows.length > 0) {
-      console.log("✅ Migration: url_video já existe — nada a fazer.");
+    if (Array.isArray(colRows) && colRows.length > 0) {
+      console.log("✅ Migration: url_video já existe.");
     } else {
-      await conn.query(`
-        ALTER TABLE questions
-        ADD COLUMN url_video VARCHAR(512) NULL
-        AFTER comentario_resolucao
-      `);
-      console.log("✅ Migration: url_video adicionada com sucesso.");
+      await conn.query(`ALTER TABLE questions ADD COLUMN url_video VARCHAR(512) NULL AFTER comentario_resolucao`);
+      console.log("✅ Migration: url_video adicionada.");
     }
+
+    // ── study_schedule ────────────────────────────────────────────────────────
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS study_schedule (
+        id          INT PRIMARY KEY AUTO_INCREMENT,
+        user_id     INT NOT NULL,
+        day_of_week TINYINT NOT NULL,
+        start_time  VARCHAR(5) NOT NULL,
+        end_time    VARCHAR(5) NOT NULL,
+        topic       VARCHAR(100) NOT NULL,
+        created_at  TIMESTAMP DEFAULT NOW() NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log("✅ Migration: study_schedule OK.");
+
   } catch (err: any) {
-    console.error("❌ Migration url_video falhou:", err?.message ?? err);
-    // NÃO relança — servidor deve iniciar mesmo assim
+    console.error("❌ Migration falhou:", err?.message ?? err);
   } finally {
     if (conn) conn.release();
   }

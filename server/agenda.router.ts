@@ -1,45 +1,79 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "./trpc";
-import { simulationAnswers, questions, simulations } from "./schema";
+import { simulationAnswers, questions, simulations, studySchedule } from "./schema";
 
 // Frequência de cada tópico no ENEM — distribuição real do banco (360 questões)
-const ENEM_WEIGHTS: Record<string, number> = {
-  "Grandezas Proporcionais":     0.25,
-  "Geometria Espacial":          0.11,
-  "Funções":                     0.09,
-  "Estatística":                 0.09,
-  "Geometria Plana":             0.08,
-  "Probabilidades":              0.06,
-  "Aritmética":                  0.05,
-  "Análise Combinatória":        0.04,
-  "Médias":                      0.04,
-  "Trigonometria":               0.03,
-  "Noções de Lógica Matemática": 0.02,
-  "Geometria Analítica":         0.02,
-  "Logarítmos":                  0.02,
-  "Conjuntos Numéricos":         0.02,
-  "Progressão Aritmética":       0.02,
-  "Progressão Geométrica":       0.02,
-  "Equações":                    0.01,
-  "Construções Geométricas":     0.01,
-  "Inequações":                  0.01,
-  "Matrizes":                    0.01,
-  "Potenciação":                 0.01,
-  "Sistemas Lineares":           0.01,
-  "Conjuntos":                   0.005,
-  "Equações polinomiais":        0.005,
-  "Matemática Financeira":       0.005,
-};
-
-const ENEM_PRIORITY_ORDER = Object.keys(ENEM_WEIGHTS);
-const WEEKDAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
+export const ENEM_TOPICS: { topic: string; weight: number }[] = [
+  { topic: "Grandezas Proporcionais",     weight: 0.25 },
+  { topic: "Geometria Espacial",          weight: 0.11 },
+  { topic: "Funções",                     weight: 0.09 },
+  { topic: "Estatística",                 weight: 0.09 },
+  { topic: "Geometria Plana",             weight: 0.08 },
+  { topic: "Probabilidades",              weight: 0.06 },
+  { topic: "Aritmética",                  weight: 0.05 },
+  { topic: "Análise Combinatória",        weight: 0.04 },
+  { topic: "Médias",                      weight: 0.04 },
+  { topic: "Trigonometria",               weight: 0.03 },
+  { topic: "Noções de Lógica Matemática", weight: 0.02 },
+  { topic: "Geometria Analítica",         weight: 0.02 },
+  { topic: "Logarítmos",                  weight: 0.02 },
+  { topic: "Conjuntos Numéricos",         weight: 0.02 },
+  { topic: "Progressão Aritmética",       weight: 0.02 },
+  { topic: "Progressão Geométrica",       weight: 0.02 },
+  { topic: "Equações",                    weight: 0.01 },
+  { topic: "Construções Geométricas",     weight: 0.01 },
+  { topic: "Inequações",                  weight: 0.01 },
+  { topic: "Matrizes",                    weight: 0.01 },
+  { topic: "Potenciação",                 weight: 0.01 },
+  { topic: "Sistemas Lineares",           weight: 0.01 },
+  { topic: "Conjuntos",                   weight: 0.005 },
+  { topic: "Equações polinomiais",        weight: 0.005 },
+  { topic: "Matemática Financeira",       weight: 0.005 },
+];
 
 export const agendaRouter = createTRPCRouter({
 
-  getSchedule: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user.id;
+  // ── Cronograma salvo pelo aluno ───────────────────────────────────────────
 
-    // ── 1. Desempenho do aluno por tópico (via join simulation_answers → simulations) ──
+  getMySchedule: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db
+      .select()
+      .from(studySchedule)
+      .where(eq(studySchedule.userId, ctx.user.id))
+      .orderBy(studySchedule.dayOfWeek, studySchedule.startTime);
+  }),
+
+  addSlot: protectedProcedure
+    .input(z.object({
+      dayOfWeek: z.number().int().min(1).max(6),
+      startTime: z.string().regex(/^\d{2}:\d{2}$/),
+      endTime:   z.string().regex(/^\d{2}:\d{2}$/),
+      topic:     z.string().min(1).max(100),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(studySchedule).values({
+        userId:    ctx.user.id,
+        dayOfWeek: input.dayOfWeek,
+        startTime: input.startTime,
+        endTime:   input.endTime,
+        topic:     input.topic,
+      });
+      return { success: true };
+    }),
+
+  removeSlot: protectedProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(studySchedule).where(
+        and(eq(studySchedule.id, input.id), eq(studySchedule.userId, ctx.user.id))
+      );
+      return { success: true };
+    }),
+
+  // ── Desempenho por tópico (para sugestões) ───────────────────────────────
+
+  getTopicStats: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db
       .select({
         topic:   questions.conteudo_principal,
@@ -49,71 +83,26 @@ export const agendaRouter = createTRPCRouter({
       .from(simulationAnswers)
       .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
       .innerJoin(questions,   eq(simulationAnswers.questionId,   questions.id))
-      .where(eq(simulations.userId, userId))
+      .where(eq(simulations.userId, ctx.user.id))
       .groupBy(questions.conteudo_principal);
 
-    // Mapa: tópico → accuracy (0–1)
     const accuracy: Record<string, number> = {};
     for (const r of rows) {
-      const total   = Number(r.total);
-      const correct = Number(r.correct);
-      if (total > 0) accuracy[r.topic] = correct / total;
+      const total = Number(r.total);
+      if (total > 0) accuracy[r.topic] = Number(r.correct) / total;
     }
 
-    // ── 2. Score de prioridade: peso_ENEM × (1 − accuracy) ─────────────────
-    const scored = ENEM_PRIORITY_ORDER.map((topic) => {
-      const weight  = ENEM_WEIGHTS[topic] ?? 0.005;
-      const acc     = accuracy[topic] ?? 0;
-      const score   = weight * (1 - acc);
-      const hasData = topic in accuracy;
-
-      let status: "sem_dados" | "fraco" | "regular" | "forte";
-      if (!hasData)      status = "sem_dados";
-      else if (acc < 0.4) status = "fraco";
-      else if (acc < 0.7) status = "regular";
-      else                status = "forte";
-
-      return { topic, score, weight, accuracy: acc, hasData, status };
+    return ENEM_TOPICS.map((t) => {
+      const acc     = accuracy[t.topic] ?? null;
+      const hasData = t.topic in accuracy;
+      let status: "sem_dados" | "fraco" | "regular" | "forte" =
+        !hasData ? "sem_dados" : acc! < 0.4 ? "fraco" : acc! < 0.7 ? "regular" : "forte";
+      return {
+        topic:        t.topic,
+        enemPct:      Math.round(t.weight * 100),
+        userAccuracy: hasData ? Math.round(acc! * 100) : null,
+        status,
+      };
     });
-
-    // Ordena por score desc; empate → peso ENEM desc
-    scored.sort((a, b) => b.score - a.score || b.weight - a.weight);
-
-    // ── 3. Distribui em janelas de 5 tópicos por semana ─────────────────────
-    const now        = new Date();
-    const startYear  = new Date(now.getFullYear(), 0, 1);
-    const weekOfYear = Math.floor((now.getTime() - startYear.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const windowStart = (weekOfYear * 5) % Math.max(scored.length, 1);
-
-    const weekTopics = Array.from({ length: 5 }, (_, i) =>
-      scored[(windowStart + i) % scored.length]
-    );
-
-    // ── 4. Índice do dia atual (0=Seg … 4=Sex, null = fim de semana) ────────
-    const todayDow         = now.getDay(); // 0=Dom … 6=Sáb
-    const todayWeekdayIdx  = todayDow >= 1 && todayDow <= 5 ? todayDow - 1 : null;
-
-    const schedule = weekTopics.map((item, i) => ({
-      weekday:      WEEKDAYS[i],
-      weekdayIdx:   i,
-      isToday:      i === todayWeekdayIdx,
-      topic:        item.topic,
-      enemPct:      Math.round(item.weight * 100),
-      userAccuracy: item.hasData ? Math.round(item.accuracy * 100) : null,
-      status:       item.status,
-    }));
-
-    return {
-      schedule,
-      weekOf:          now.toISOString().slice(0, 10),
-      practicedTopics: Object.keys(accuracy).length,
-      totalTopics:     ENEM_PRIORITY_ORDER.length,
-      allTopicsRanked: scored.map((s) => ({
-        topic:        s.topic,
-        enemPct:      Math.round(s.weight * 100),
-        userAccuracy: s.hasData ? Math.round(s.accuracy * 100) : null,
-        status:       s.status,
-      })),
-    };
   }),
 });

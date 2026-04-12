@@ -250,3 +250,20 @@ export const formulas = mysqlTable("formulas", {
 
 export type Formula = typeof formulas.$inferSelect;
 export type NewFormula = typeof formulas.$inferInsert;
+
+// =============================================================================
+// Tabela: study_schedule — cronograma semanal por aluno
+// =============================================================================
+
+export const studySchedule = mysqlTable("study_schedule", {
+  id:         int("id").primaryKey().autoincrement(),
+  userId:     int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  dayOfWeek:  int("day_of_week").notNull(), // 1=Seg … 6=Sáb
+  startTime:  varchar("start_time", { length: 5 }).notNull(),  // "08:00"
+  endTime:    varchar("end_time",   { length: 5 }).notNull(),  // "10:00"
+  topic:      varchar("topic",      { length: 100 }).notNull(),
+  createdAt:  timestamp("created_at").defaultNow().notNull(),
+});
+
+export type StudySlot    = typeof studySchedule.$inferSelect;
+export type NewStudySlot = typeof studySchedule.$inferInsert;
