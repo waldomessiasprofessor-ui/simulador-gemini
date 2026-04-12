@@ -22,7 +22,7 @@ function AccuracyBar({ pct }: { pct: number }) {
 
 export default function Agenda() {
   const [, navigate] = useLocation();
-  const { data, isLoading } = trpc.agenda.getSchedule.useQuery(undefined, {
+  const { data, isLoading, isError, error } = trpc.agenda.getSchedule.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
   });
 
@@ -32,7 +32,16 @@ export default function Agenda() {
     </div>
   );
 
-  if (!data) return null;
+  if (isError || !data) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-3">
+      <p className="text-lg font-semibold" style={{ color: "var(--foreground)" }}>
+        Não foi possível carregar a agenda
+      </p>
+      <p className="text-sm text-muted-foreground text-center max-w-sm">
+        {(error as any)?.message ?? "Erro desconhecido. Tente recarregar a página."}
+      </p>
+    </div>
+  );
 
   const todayCard = data.schedule.find((d) => d.isToday);
   const isWeekend = !todayCard;
