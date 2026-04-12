@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp, Image as ImageIcon, ShieldCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Search, X, Save, Tag, FileCode2, ClipboardPaste, CheckCircle2, Sparkles, AlertTriangle, ThumbsUp, ThumbsDown, Info, ImageUp, Image as ImageIcon, ShieldCheck, PlayCircle } from "lucide-react";
 
 // ─── Importador LaTeX ─────────────────────────────────────────────────────────
 
@@ -1557,10 +1557,18 @@ export default function AdminQuestoes() {
                       })}
                     </div>
                     {q.comentario_resolucao && (
-                      <div className="rounded-lg p-3" style={{ background: "#F3EAF9" }}>
-                        <p className="text-xs font-bold mb-1" style={{ color: "#521F80" }}>Resolução</p>
+                      <div className="rounded-lg p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                        <p className="text-xs font-bold mb-1" style={{ color: "#1D4ED8" }}>Resolução</p>
                         <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                       </div>
+                    )}
+                    {(q as any).url_video && (
+                      <a href={(q as any).url_video} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                        style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>
+                        <PlayCircle className="h-3.5 w-3.5" />
+                        Assistir vídeo de resolução
+                      </a>
                     )}
                   </div>
                 )}
