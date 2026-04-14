@@ -378,6 +378,7 @@ const TAGS_CONTEUDO = [
   "Conversão de Unidades",
   "Geometria Espacial",
   "Geometria Plana",
+  "Grandezas Proporcionais",
   "Visualização Espacial/Projeção Ortogonal",
   "Trigonometria",
   "Leitura de Gráficos e Tabelas",

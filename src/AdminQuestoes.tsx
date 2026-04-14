@@ -782,6 +782,7 @@ const TAGS_CONTEUDO = [
   "Funções de 1º e 2º Grau",
   "Geometria Espacial",
   "Geometria Plana",
+  "Grandezas Proporcionais",
   "Leitura de Gráficos e Tabelas",
   "Logaritmos",
   "Matemática Financeira",
