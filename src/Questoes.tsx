@@ -75,10 +75,11 @@ function FilterDropdown({ filterTag, setFilterTag }: { filterTag: string; setFil
 }
 
 const FONTE_INFO: Record<string, { titulo: string; subtitulo: string }> = {
-  ENEM:    { titulo: "Banco de Questões — ENEM",    subtitulo: "questões de Matemática do ENEM" },
-  UNICAMP: { titulo: "Banco de Questões — UNICAMP", subtitulo: "questões de Matemática da UNICAMP" },
-  FUVEST:  { titulo: "Banco de Questões — FUVEST",  subtitulo: "questões de Matemática da FUVEST" },
-  UNESP:   { titulo: "Banco de Questões — UNESP",   subtitulo: "questões de Matemática da UNESP" },
+  ENEM:    { titulo: "Banco de Questões — ENEM",               subtitulo: "questões de Matemática do ENEM" },
+  UNICAMP: { titulo: "Banco de Questões — UNICAMP",            subtitulo: "questões de Matemática da UNICAMP" },
+  FUVEST:  { titulo: "Banco de Questões — FUVEST",             subtitulo: "questões de Matemática da FUVEST" },
+  UNESP:   { titulo: "Banco de Questões — UNESP",              subtitulo: "questões de Matemática da UNESP" },
+  REPVET:  { titulo: "Banco de Questões — Repositório Vetor",  subtitulo: "questões do Repositório Vetor" },
 };
 
 export default function Questoes({ fonte }: { fonte?: string }) {

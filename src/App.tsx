@@ -79,10 +79,12 @@ export default function App() {
           <Route path="/simulado/unicamp"><Simulador fonte="UNICAMP" /></Route>
           <Route path="/simulado/fuvest"><Simulador fonte="FUVEST" /></Route>
           <Route path="/simulado/unesp"><Simulador fonte="UNESP" /></Route>
+          <Route path="/simulado/repvet"><Simulador fonte="REPVET" /></Route>
           <Route path="/questoes"><Questoes fonte="ENEM" /></Route>
           <Route path="/questoes/unicamp"><Questoes fonte="UNICAMP" /></Route>
           <Route path="/questoes/fuvest"><Questoes fonte="FUVEST" /></Route>
           <Route path="/questoes/unesp"><Questoes fonte="UNESP" /></Route>
+          <Route path="/questoes/repvet"><Questoes fonte="REPVET" /></Route>
           <Route path="/resultado/:id">
             {(params) => <Resultado id={Number(params.id)} />}
           </Route>

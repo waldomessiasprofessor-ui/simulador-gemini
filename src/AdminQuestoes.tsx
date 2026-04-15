@@ -1255,7 +1255,7 @@ export default function AdminQuestoes() {
               <label style={labelStyle}>Fonte</label>
               <select className={inputClass} style={inputStyle} value={form.fonte}
                 onChange={(e) => setForm({ ...form, fonte: e.target.value })}>
-                {["ENEM", "UNICAMP", "FUVEST", "UNESP"].map((f) => <option key={f}>{f}</option>)}
+                {["ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET"].map((f) => <option key={f}>{f}</option>)}
               </select>
             </div>
             <div>

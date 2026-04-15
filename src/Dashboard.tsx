@@ -11,10 +11,11 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 
 const VESTIBULARES = [
-  { id: "ENEM",    label: "ENEM",    sub: "45 questões · TRI",          badge: "Nacional", color: "#009688", comingSoon: false },
-  { id: "FUVEST",  label: "FUVEST",  sub: "90 questões · 1ª fase",    badge: "USP",      color: "#00695C", comingSoon: true },
-  { id: "UNICAMP", label: "UNICAMP", sub: "72 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: false },
-  { id: "UNESP",   label: "UNESP",   sub: "90 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: true },
+  { id: "ENEM",    label: "ENEM",        sub: "45 questões · TRI",        badge: "Nacional", color: "#009688", comingSoon: false },
+  { id: "FUVEST",  label: "FUVEST",      sub: "90 questões · 1ª fase",    badge: "USP",      color: "#00695C", comingSoon: true },
+  { id: "UNICAMP", label: "UNICAMP",     sub: "72 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: false },
+  { id: "UNESP",   label: "UNESP",       sub: "90 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: true },
+  { id: "REPVET",  label: "Rep. Vetor",  sub: "banco de questões Vetor",  badge: "Vetor",    color: "#1565C0", comingSoon: false },
 ];
 
 // ─── DailyCard ────────────────────────────────────────────────────────────────

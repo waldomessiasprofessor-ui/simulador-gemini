@@ -21,9 +21,10 @@ function useDarkMode() {
 }
 
 const PAULISTAS = [
-  { id: "unicamp", label: "UNICAMP", comingSoon: false },
-  { id: "fuvest",  label: "FUVEST",  comingSoon: true },
-  { id: "unesp",   label: "UNESP",   comingSoon: true },
+  { id: "unicamp", label: "UNICAMP",       comingSoon: false },
+  { id: "fuvest",  label: "FUVEST",        comingSoon: true },
+  { id: "unesp",   label: "UNESP",         comingSoon: true },
+  { id: "repvet",  label: "Rep. Vetor",    comingSoon: false },
 ];
 
 interface NavLinkItem {
@@ -53,7 +54,7 @@ const NAV_LINKS: NavLinkItem[] = [
 
 function PaulistasSubmenu({ location, onClose }: { location: string; onClose: () => void }) {
   const [open, setOpen] = useState(false);
-  const isPaulistasActive = location.startsWith("/questoes/") || location.startsWith("/simulado/unicamp") || location.startsWith("/simulado/fuvest") || location.startsWith("/simulado/unesp");
+  const isPaulistasActive = location.startsWith("/questoes/") || location.startsWith("/simulado/unicamp") || location.startsWith("/simulado/fuvest") || location.startsWith("/simulado/unesp") || location.startsWith("/simulado/repvet");
 
   return (
     <div>

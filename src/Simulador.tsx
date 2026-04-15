@@ -14,6 +14,7 @@ const VESTIBULAR_INFO: Record<string, { label: string; desc: string; total: numb
   UNICAMP: { label: "Simulado UNICAMP", desc: "Questões de Matemática no estilo da 1ª fase da UNICAMP — múltipla escolha, com 4 alternativas.", total: 45 },
   FUVEST:  { label: "Simulado FUVEST",  desc: "Questões de Matemática no estilo da 1ª fase da FUVEST — múltipla escolha.", total: 45 },
   UNESP:   { label: "Simulado UNESP",   desc: "Questões de Matemática no estilo da 1ª fase da UNESP — múltipla escolha.", total: 45 },
+  REPVET:  { label: "Repositório Vetor", desc: "Questões do banco Vetor para prática e revisão de conteúdos do vestibular — múltipla escolha.", total: 45 },
 };
 
 export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
