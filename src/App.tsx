@@ -11,6 +11,8 @@ import AdminQuestoes from "@/AdminQuestoes";
 import AdminUsuarios from "@/AdminUsuarios";
 import AdminFormulas from "@/AdminFormulas";
 import AdminRevise from "@/AdminRevise";
+import Flashcards from "@/Flashcards";
+import AdminFlashcards from "@/AdminFlashcards";
 import Revise from "@/Revise";
 import Revisao from "@/Revisao";
 import Treino from "@/Treino";
@@ -111,6 +113,13 @@ export default function App() {
           <Route path="/admin/revise">
             {isAdmin ? <AdminRevise /> : <Redirect to="/" />}
           </Route>
+          <Route path="/admin/flashcards">
+            {isAdmin ? <AdminFlashcards /> : <Redirect to="/" />}
+          </Route>
+          <Route path="/flashcards/:deckId">
+            {(params) => <Flashcards deckId={Number(params.deckId)} />}
+          </Route>
+          <Route path="/flashcards"><Flashcards /></Route>
           <Route><Redirect to="/" /></Route>
         </Switch>
       </main>

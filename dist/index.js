@@ -27,6 +27,9 @@ __export(schema_exports, {
   dailyChallengesRelations: () => dailyChallengesRelations,
   dailyReviews: () => dailyReviews,
   dailyReviewsRelations: () => dailyReviewsRelations,
+  flashcardDecks: () => flashcardDecks,
+  flashcardProgress: () => flashcardProgress,
+  flashcards: () => flashcards,
   formulas: () => formulas,
   questions: () => questions,
   reviewContents: () => reviewContents,
@@ -231,6 +234,46 @@ var studySchedule = mysqlTable("study_schedule", {
   // JSON array de strings: ["Funções","Geometria Plana"]
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
+var flashcardDecks = mysqlTable("flashcard_decks", {
+  id: int("id").primaryKey().autoincrement(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  color: varchar("color", { length: 20 }).notNull().default("#009688"),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+var flashcards = mysqlTable("flashcards", {
+  id: int("id").primaryKey().autoincrement(),
+  deckId: int("deck_id").notNull().references(() => flashcardDecks.id, { onDelete: "cascade" }),
+  front: text("front").notNull(),
+  back: text("back").notNull(),
+  frontImage: varchar("front_image", { length: 512 }),
+  backImage: varchar("back_image", { length: 512 }),
+  orderIndex: int("order_index").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+var flashcardProgress = mysqlTable(
+  "flashcard_progress",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    cardId: int("card_id").notNull().references(() => flashcards.id, { onDelete: "cascade" }),
+    easinessFactor: float("easiness_factor").notNull().default(2.5),
+    interval: int("interval").notNull().default(0),
+    // dias até próxima revisão
+    repetitions: int("repetitions").notNull().default(0),
+    // revisões bem-sucedidas consecutivas
+    nextReview: timestamp("next_review"),
+    // null = card novo, nunca visto
+    lastReviewed: timestamp("last_reviewed"),
+    createdAt: timestamp("created_at").defaultNow().notNull()
+  },
+  (t2) => ({
+    idxUserCard: index("idx_fc_user_card").on(t2.userId, t2.cardId),
+    idxNextReview: index("idx_fc_next_review").on(t2.userId, t2.nextReview)
+  })
+);
 
 // server/db.ts
 if (!process.env.DATABASE_URL) {
@@ -2105,6 +2148,190 @@ var agendaRouter = createTRPCRouter({
   })
 });
 
+// server/flashcards.router.ts
+import { z as z8 } from "zod";
+import { eq as eq8, and as and5, asc as asc3, inArray as inArray3, sql as sql5 } from "drizzle-orm";
+function applySM2(quality, prev) {
+  let { easinessFactor, interval, repetitions } = prev;
+  easinessFactor = Math.max(
+    1.3,
+    easinessFactor + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)
+  );
+  if (quality < 3) {
+    repetitions = 0;
+    interval = 1;
+  } else {
+    if (repetitions === 0) interval = 1;
+    else if (repetitions === 1) interval = 6;
+    else interval = Math.round(interval * easinessFactor);
+    repetitions += 1;
+  }
+  const nextReview = /* @__PURE__ */ new Date();
+  nextReview.setDate(nextReview.getDate() + interval);
+  return { easinessFactor, interval, repetitions, nextReview };
+}
+var flashcardsRouter = createTRPCRouter({
+  // ── Decks (admin) ─────────────────────────────────────────────────────────
+  listAllDecks: adminProcedure.query(async () => {
+    const decks = await db.select().from(flashcardDecks).orderBy(asc3(flashcardDecks.createdAt));
+    const counts = await db.select({ deckId: flashcards.deckId, count: sql5`COUNT(*)` }).from(flashcards).groupBy(flashcards.deckId);
+    const countMap = new Map(counts.map((r) => [r.deckId, Number(r.count)]));
+    return decks.map((d) => ({ ...d, cardCount: countMap.get(d.id) ?? 0 }));
+  }),
+  createDeck: adminProcedure.input(z8.object({
+    title: z8.string().min(1).max(255),
+    description: z8.string().optional(),
+    color: z8.string().default("#009688")
+  })).mutation(async ({ input }) => {
+    const [res] = await db.insert(flashcardDecks).values({
+      title: input.title,
+      description: input.description ?? null,
+      color: input.color
+    });
+    return { id: res.insertId };
+  }),
+  updateDeck: adminProcedure.input(z8.object({
+    id: z8.number(),
+    title: z8.string().min(1).max(255).optional(),
+    description: z8.string().nullable().optional(),
+    color: z8.string().optional(),
+    active: z8.boolean().optional()
+  })).mutation(async ({ input }) => {
+    const { id, ...rest } = input;
+    await db.update(flashcardDecks).set(rest).where(eq8(flashcardDecks.id, id));
+  }),
+  deleteDeck: adminProcedure.input(z8.object({ id: z8.number() })).mutation(async ({ input }) => {
+    await db.delete(flashcardDecks).where(eq8(flashcardDecks.id, input.id));
+  }),
+  // ── Cards (admin) ─────────────────────────────────────────────────────────
+  listCards: adminProcedure.input(z8.object({ deckId: z8.number() })).query(async ({ input }) => {
+    return db.select().from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(asc3(flashcards.orderIndex), asc3(flashcards.createdAt));
+  }),
+  createCard: adminProcedure.input(z8.object({
+    deckId: z8.number(),
+    front: z8.string().min(1),
+    back: z8.string().min(1),
+    frontImage: z8.string().url().nullable().optional(),
+    backImage: z8.string().url().nullable().optional()
+  })).mutation(async ({ input }) => {
+    const last = await db.select({ idx: flashcards.orderIndex }).from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(sql5`order_index DESC`).limit(1);
+    const orderIndex = last.length > 0 ? last[0].idx + 1 : 0;
+    const [res] = await db.insert(flashcards).values({
+      deckId: input.deckId,
+      front: input.front,
+      back: input.back,
+      frontImage: input.frontImage ?? null,
+      backImage: input.backImage ?? null,
+      orderIndex
+    });
+    return { id: res.insertId };
+  }),
+  updateCard: adminProcedure.input(z8.object({
+    id: z8.number(),
+    front: z8.string().min(1).optional(),
+    back: z8.string().min(1).optional(),
+    frontImage: z8.string().nullable().optional(),
+    backImage: z8.string().nullable().optional(),
+    active: z8.boolean().optional()
+  })).mutation(async ({ input }) => {
+    const { id, ...rest } = input;
+    await db.update(flashcards).set(rest).where(eq8(flashcards.id, id));
+  }),
+  deleteCard: adminProcedure.input(z8.object({ id: z8.number() })).mutation(async ({ input }) => {
+    await db.delete(flashcards).where(eq8(flashcards.id, input.id));
+  }),
+  // ── Decks com progresso do aluno (tela de seleção) ────────────────────────
+  listDecks: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    const now = /* @__PURE__ */ new Date();
+    const decks = await db.select().from(flashcardDecks).where(eq8(flashcardDecks.active, true)).orderBy(asc3(flashcardDecks.createdAt));
+    const result = await Promise.all(decks.map(async (deck) => {
+      const cards = await db.select({ id: flashcards.id }).from(flashcards).where(and5(eq8(flashcards.deckId, deck.id), eq8(flashcards.active, true)));
+      const totalCards = cards.length;
+      if (totalCards === 0) return { ...deck, totalCards: 0, dueCount: 0, newCount: 0, masteredCount: 0, studyableCount: 0 };
+      const cardIds = cards.map((c) => c.id);
+      const progRows = await db.select().from(flashcardProgress).where(and5(eq8(flashcardProgress.userId, userId), inArray3(flashcardProgress.cardId, cardIds)));
+      const progressMap = new Map(progRows.map((p) => [p.cardId, p]));
+      let dueCount = 0, newCount = 0, masteredCount = 0;
+      for (const { id } of cards) {
+        const p = progressMap.get(id);
+        if (!p || !p.nextReview) newCount++;
+        else if (p.nextReview <= now) dueCount++;
+        else if (p.repetitions >= 3) masteredCount++;
+      }
+      return { ...deck, totalCards, dueCount, newCount, masteredCount, studyableCount: dueCount + newCount };
+    }));
+    return result;
+  }),
+  // ── Sessão de estudo ──────────────────────────────────────────────────────
+  getStudySession: protectedProcedure.input(z8.object({ deckId: z8.number(), limit: z8.number().min(1).max(50).default(20) })).query(async ({ ctx, input }) => {
+    const userId = ctx.user.id;
+    const now = /* @__PURE__ */ new Date();
+    const [deck] = await db.select().from(flashcardDecks).where(eq8(flashcardDecks.id, input.deckId)).limit(1);
+    const allCards = await db.select().from(flashcards).where(and5(eq8(flashcards.deckId, input.deckId), eq8(flashcards.active, true))).orderBy(asc3(flashcards.orderIndex), asc3(flashcards.createdAt));
+    if (allCards.length === 0) {
+      return { deck: deck ?? null, cards: [], totalInDeck: 0, dueCount: 0, newCount: 0 };
+    }
+    const cardIds = allCards.map((c) => c.id);
+    const progRows = await db.select().from(flashcardProgress).where(and5(eq8(flashcardProgress.userId, userId), inArray3(flashcardProgress.cardId, cardIds)));
+    const progressMap = new Map(progRows.map((p) => [p.cardId, p]));
+    const due = [];
+    const nw = [];
+    for (const card of allCards) {
+      const p = progressMap.get(card.id);
+      if (!p || !p.nextReview) nw.push(card);
+      else if (p.nextReview <= now) due.push(card);
+    }
+    const session = [...due, ...nw].slice(0, input.limit);
+    let nextScheduled = null;
+    if (due.length === 0 && nw.length === 0) {
+      const upcoming = progRows.filter((p) => p.nextReview && p.nextReview > now).sort((a, b) => a.nextReview.getTime() - b.nextReview.getTime());
+      nextScheduled = upcoming[0]?.nextReview ?? null;
+    }
+    return {
+      deck: deck ?? null,
+      cards: session.map((c) => ({
+        id: c.id,
+        front: c.front,
+        back: c.back,
+        frontImage: c.frontImage,
+        backImage: c.backImage,
+        progress: progressMap.get(c.id) ?? null
+      })),
+      totalInDeck: allCards.length,
+      dueCount: due.length,
+      newCount: nw.length,
+      nextScheduled
+    };
+  }),
+  // ── Registar revisão (SM-2) ───────────────────────────────────────────────
+  recordReview: protectedProcedure.input(z8.object({
+    cardId: z8.number(),
+    quality: z8.union([z8.literal(1), z8.literal(3), z8.literal(5)])
+  })).mutation(async ({ ctx, input }) => {
+    const userId = ctx.user.id;
+    const { cardId, quality } = input;
+    const [existing] = await db.select().from(flashcardProgress).where(and5(eq8(flashcardProgress.userId, userId), eq8(flashcardProgress.cardId, cardId)));
+    const prev = existing ? { easinessFactor: existing.easinessFactor, interval: existing.interval, repetitions: existing.repetitions } : { easinessFactor: 2.5, interval: 0, repetitions: 0 };
+    const { easinessFactor, interval, repetitions, nextReview } = applySM2(quality, prev);
+    const now = /* @__PURE__ */ new Date();
+    if (existing) {
+      await db.update(flashcardProgress).set({ easinessFactor, interval, repetitions, nextReview, lastReviewed: now }).where(eq8(flashcardProgress.id, existing.id));
+    } else {
+      await db.insert(flashcardProgress).values({
+        userId,
+        cardId,
+        easinessFactor,
+        interval,
+        repetitions,
+        nextReview,
+        lastReviewed: now
+      });
+    }
+    return { interval, repetitions, nextReview };
+  })
+});
+
 // server/router.ts
 var appRouter = createTRPCRouter({
   auth: authRouter,
@@ -2113,11 +2340,12 @@ var appRouter = createTRPCRouter({
   users: usersRouter,
   review: reviewRouter,
   formulas: formulasRouter,
-  agenda: agendaRouter
+  agenda: agendaRouter,
+  flashcards: flashcardsRouter
 });
 
 // server/index.ts
-import { eq as eq8 } from "drizzle-orm";
+import { eq as eq9 } from "drizzle-orm";
 var app = express();
 var PORT = process.env.PORT ? Number(process.env.PORT) : 3e3;
 var isProd = process.env.NODE_ENV === "production";
@@ -2147,7 +2375,7 @@ app.get("/admin/make-admin", async (req, res) => {
   if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
   if (!email) return res.status(400).send("Forne\xE7a ?email=teu@email.com");
   try {
-    await db.update(users).set({ role: "admin" }).where(eq8(users.email, email.toLowerCase().trim()));
+    await db.update(users).set({ role: "admin" }).where(eq9(users.email, email.toLowerCase().trim()));
     res.send(`\u2705 ${email} \xE9 agora admin. Fa\xE7a logout e login novamente no site.`);
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);
@@ -2353,6 +2581,49 @@ async function runMigrations() {
     `);
     await conn.query(`ALTER TABLE study_schedule MODIFY COLUMN topic TEXT NOT NULL`);
     console.log("\u2705 Migration: study_schedule OK.");
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS flashcard_decks (
+        id          INT PRIMARY KEY AUTO_INCREMENT,
+        title       VARCHAR(255) NOT NULL,
+        description TEXT,
+        color       VARCHAR(20) NOT NULL DEFAULT '#009688',
+        active      TINYINT(1)  NOT NULL DEFAULT 1,
+        created_at  TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `);
+    console.log("\u2705 Migration: flashcard_decks OK.");
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS flashcards (
+        id           INT PRIMARY KEY AUTO_INCREMENT,
+        deck_id      INT NOT NULL,
+        front        TEXT NOT NULL,
+        back         TEXT NOT NULL,
+        front_image  VARCHAR(512),
+        back_image   VARCHAR(512),
+        order_index  INT NOT NULL DEFAULT 0,
+        active       TINYINT(1) NOT NULL DEFAULT 1,
+        created_at   TIMESTAMP DEFAULT NOW() NOT NULL,
+        FOREIGN KEY (deck_id) REFERENCES flashcard_decks(id) ON DELETE CASCADE
+      )
+    `);
+    console.log("\u2705 Migration: flashcards OK.");
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS flashcard_progress (
+        id               INT PRIMARY KEY AUTO_INCREMENT,
+        user_id          INT NOT NULL,
+        card_id          INT NOT NULL,
+        easiness_factor  FLOAT NOT NULL DEFAULT 2.5,
+        \`interval\`     INT   NOT NULL DEFAULT 0,
+        repetitions      INT   NOT NULL DEFAULT 0,
+        next_review      TIMESTAMP NULL,
+        last_reviewed    TIMESTAMP NULL,
+        created_at       TIMESTAMP DEFAULT NOW() NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (card_id) REFERENCES flashcards(id) ON DELETE CASCADE,
+        UNIQUE KEY uk_user_card (user_id, card_id)
+      )
+    `);
+    console.log("\u2705 Migration: flashcard_progress OK.");
   } catch (err) {
     console.error("\u274C Migration falhou:", err?.message ?? err);
   } finally {

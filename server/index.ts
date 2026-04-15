@@ -309,9 +309,57 @@ async function runMigrations() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
-    // Garante que a coluna topic seja TEXT (caso tabela já existia com VARCHAR)
     await conn.query(`ALTER TABLE study_schedule MODIFY COLUMN topic TEXT NOT NULL`);
     console.log("✅ Migration: study_schedule OK.");
+
+    // ── flashcard_decks ───────────────────────────────────────────────────────
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS flashcard_decks (
+        id          INT PRIMARY KEY AUTO_INCREMENT,
+        title       VARCHAR(255) NOT NULL,
+        description TEXT,
+        color       VARCHAR(20) NOT NULL DEFAULT '#009688',
+        active      TINYINT(1)  NOT NULL DEFAULT 1,
+        created_at  TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `);
+    console.log("✅ Migration: flashcard_decks OK.");
+
+    // ── flashcards ────────────────────────────────────────────────────────────
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS flashcards (
+        id           INT PRIMARY KEY AUTO_INCREMENT,
+        deck_id      INT NOT NULL,
+        front        TEXT NOT NULL,
+        back         TEXT NOT NULL,
+        front_image  VARCHAR(512),
+        back_image   VARCHAR(512),
+        order_index  INT NOT NULL DEFAULT 0,
+        active       TINYINT(1) NOT NULL DEFAULT 1,
+        created_at   TIMESTAMP DEFAULT NOW() NOT NULL,
+        FOREIGN KEY (deck_id) REFERENCES flashcard_decks(id) ON DELETE CASCADE
+      )
+    `);
+    console.log("✅ Migration: flashcards OK.");
+
+    // ── flashcard_progress ────────────────────────────────────────────────────
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS flashcard_progress (
+        id               INT PRIMARY KEY AUTO_INCREMENT,
+        user_id          INT NOT NULL,
+        card_id          INT NOT NULL,
+        easiness_factor  FLOAT NOT NULL DEFAULT 2.5,
+        \`interval\`     INT   NOT NULL DEFAULT 0,
+        repetitions      INT   NOT NULL DEFAULT 0,
+        next_review      TIMESTAMP NULL,
+        last_reviewed    TIMESTAMP NULL,
+        created_at       TIMESTAMP DEFAULT NOW() NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (card_id) REFERENCES flashcards(id) ON DELETE CASCADE,
+        UNIQUE KEY uk_user_card (user_id, card_id)
+      )
+    `);
+    console.log("✅ Migration: flashcard_progress OK.");
 
   } catch (err: any) {
     console.error("❌ Migration falhou:", err?.message ?? err);

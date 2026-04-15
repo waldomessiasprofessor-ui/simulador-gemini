@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight, ChevronDown,
-  User, Mail, Shield, Zap, GraduationCap, Moon, Sun, CalendarDays
+  User, Mail, Shield, Zap, GraduationCap, Moon, Sun, CalendarDays, Brain
 } from "lucide-react";
 
 function useDarkMode() {
@@ -46,10 +46,12 @@ const NAV_LINKS: NavLinkItem[] = [
   { href: "/formulas", label: "Fórmulas", icon: FlaskConical },
   { href: "/historico", label: "Histórico", icon: History },
   { href: "/ranking", label: "Ranking", icon: Trophy },
+  { href: "/flashcards", label: "Flashcards", icon: Brain },
   { href: "/admin/questoes", label: "Admin — questões", icon: Users, adminOnly: true },
   { href: "/admin/usuarios", label: "Admin — usuários", icon: Users, adminOnly: true },
   { href: "/admin/formulas", label: "Admin — fórmulas", icon: FlaskConical, adminOnly: true },
   { href: "/admin/revise", label: "Admin — revise", icon: BookOpen, adminOnly: true },
+  { href: "/admin/flashcards", label: "Admin — flashcards", icon: Brain, adminOnly: true },
 ];
 
 function PaulistasSubmenu({ location, onClose }: { location: string; onClose: () => void }) {

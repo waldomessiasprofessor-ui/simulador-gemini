@@ -267,3 +267,61 @@ export const studySchedule = mysqlTable("study_schedule", {
 
 export type StudySlot    = typeof studySchedule.$inferSelect;
 export type NewStudySlot = typeof studySchedule.$inferInsert;
+
+// =============================================================================
+// Tabela: flashcard_decks — baralhos de flashcards
+// =============================================================================
+
+export const flashcardDecks = mysqlTable("flashcard_decks", {
+  id:          int("id").primaryKey().autoincrement(),
+  title:       varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  color:       varchar("color", { length: 20 }).notNull().default("#009688"),
+  active:      boolean("active").notNull().default(true),
+  createdAt:   timestamp("created_at").defaultNow().notNull(),
+});
+
+// =============================================================================
+// Tabela: flashcards — cards dentro dos baralhos
+// =============================================================================
+
+export const flashcards = mysqlTable("flashcards", {
+  id:         int("id").primaryKey().autoincrement(),
+  deckId:     int("deck_id").notNull().references(() => flashcardDecks.id, { onDelete: "cascade" }),
+  front:      text("front").notNull(),
+  back:       text("back").notNull(),
+  frontImage: varchar("front_image", { length: 512 }),
+  backImage:  varchar("back_image",  { length: 512 }),
+  orderIndex: int("order_index").notNull().default(0),
+  active:     boolean("active").notNull().default(true),
+  createdAt:  timestamp("created_at").defaultNow().notNull(),
+});
+
+// =============================================================================
+// Tabela: flashcard_progress — progresso SM-2 por usuário × card
+// =============================================================================
+
+export const flashcardProgress = mysqlTable(
+  "flashcard_progress",
+  {
+    id:             int("id").primaryKey().autoincrement(),
+    userId:         int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    cardId:         int("card_id").notNull().references(() => flashcards.id, { onDelete: "cascade" }),
+    easinessFactor: float("easiness_factor").notNull().default(2.5),
+    interval:       int("interval").notNull().default(0),      // dias até próxima revisão
+    repetitions:    int("repetitions").notNull().default(0),   // revisões bem-sucedidas consecutivas
+    nextReview:     timestamp("next_review"),                  // null = card novo, nunca visto
+    lastReviewed:   timestamp("last_reviewed"),
+    createdAt:      timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    idxUserCard: index("idx_fc_user_card").on(t.userId, t.cardId),
+    idxNextReview: index("idx_fc_next_review").on(t.userId, t.nextReview),
+  })
+);
+
+export type FlashcardDeck      = typeof flashcardDecks.$inferSelect;
+export type NewFlashcardDeck   = typeof flashcardDecks.$inferInsert;
+export type Flashcard          = typeof flashcards.$inferSelect;
+export type NewFlashcard       = typeof flashcards.$inferInsert;
+export type FlashcardProgress  = typeof flashcardProgress.$inferSelect;
