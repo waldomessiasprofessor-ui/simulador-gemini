@@ -742,12 +742,21 @@ export const simulationsRouter = createTRPCRouter({
       ? Math.round((weeklyData.acertos / weeklyData.questoes) * 100)
       : 0;
 
+    // ── Totais gerais (vida toda) ─────────────────────────────────────────
+    const allEntries = Array.from(dayMap.values());
+    const totalQuestions = allEntries.reduce((s, d) => s + d.questoes, 0);
+    const totalCorrect   = allEntries.reduce((s, d) => s + d.acertos, 0);
+    const totalAccuracy  = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
     return {
       streak,
       weeklyQuestions: weeklyData.questoes,
       weeklyAccuracy,
       totalSimulations: completedSims.length,
       dailyData,
+      // Gerais
+      totalQuestions,
+      totalAccuracy,
     };
   }),
 

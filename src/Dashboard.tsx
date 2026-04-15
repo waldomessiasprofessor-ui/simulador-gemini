@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   Flame, Trophy, CheckCircle2, XCircle, ChevronRight,
   Loader2, Zap, Medal, BookOpen, Dumbbell,
-  Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain
+  Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain, TrendingUp
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 
@@ -146,6 +146,72 @@ function StudyCard() {
         <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#1E40AF" }} />
       </div>
     </button>
+  );
+}
+
+// ─── Card com abas Semanal / Geral ────────────────────────────────────────────
+function StatsCard({ stats, navigate }: { stats: any; navigate: (to: string) => void }) {
+  const [tab, setTab] = useState<"semanal" | "geral">("semanal");
+
+  const isSemanal = tab === "semanal";
+  const accuracy  = isSemanal ? stats.weeklyAccuracy   : stats.totalAccuracy;
+  const questions = isSemanal ? stats.weeklyQuestions  : stats.totalQuestions;
+  const label     = isSemanal ? "esta semana"          : "no total";
+  const msg       = accuracy >= 70 ? "Excelente!" : accuracy >= 40 ? "Bom trabalho!" : "Continue praticando!";
+
+  return (
+    <div className="space-y-3">
+      {/* Header com abas */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-1 p-0.5 rounded-lg" style={{ background: "var(--muted)" }}>
+          {(["semanal", "geral"] as const).map((t) => (
+            <button key={t} onClick={() => setTab(t)}
+              className="px-3 py-1 rounded-md text-xs font-bold transition-all"
+              style={tab === t
+                ? { background: "var(--card)", color: "#009688", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }
+                : { color: "var(--muted-foreground)" }}>
+              {t === "semanal" ? "Semanal" : "Geral"}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => navigate("/ranking")}
+          className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#009688" }}>
+          <Medal className="h-3.5 w-3.5" /> Ranking
+        </button>
+      </div>
+
+      {/* Itens */}
+      <div className="space-y-2">
+        {[
+          { icon: Zap,       label: "Questões respondidas", value: String(questions) },
+          { icon: Star,      label: "Simulados completos",  value: String(stats.totalSimulations ?? 0) },
+        ].map(({ icon: Icon, label: lbl, value }) => (
+          <div key={lbl} className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+              <Icon className="h-3.5 w-3.5" style={{ color: "#009688" }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{lbl}</p>
+              <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
+                {value}
+                <span className="text-xs font-normal ml-1" style={{ color: "var(--muted-foreground)" }}>{label}</span>
+              </p>
+            </div>
+          </div>
+        ))}
+
+        {/* Taxa de acerto */}
+        <div className="flex items-center gap-3 pt-1">
+          <CircularAccuracy value={accuracy} />
+          <div className="flex-1">
+            <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+              Taxa de acerto <span className="font-semibold">{label}</span>
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{msg}</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -425,41 +491,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Desempenho Semanal + Diário de Questões — logo abaixo da saudação ── */}
+      {/* ── Desempenho Semanal + Geral + Diário de Questões ── */}
       {stats && (
         <section className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-            <div className="flex items-center justify-between">
-              <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Desempenho Semanal</p>
-              <button onClick={() => navigate("/ranking")} className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#009688" }}>
-                <Medal className="h-3.5 w-3.5" /> Ranking
-              </button>
-            </div>
-            <div className="space-y-2">
-              {[
-                { icon: Zap, label: "Questões respondidas", value: String(stats.weeklyQuestions) },
-                { icon: Star, label: "Simulados completos", value: String(stats.totalSimulations ?? 0) },
-              ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
-                    <Icon className="h-3.5 w-3.5" style={{ color: "#009688" }} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</p>
-                    <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{value}</p>
-                  </div>
-                </div>
-              ))}
-              <div className="flex items-center gap-3 pt-1">
-                <CircularAccuracy value={stats.weeklyAccuracy} />
-                <div className="flex-1">
-                  <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Taxa de acerto</p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                    {stats.weeklyAccuracy >= 70 ? "Excelente!" : stats.weeklyAccuracy >= 40 ? "Bom trabalho!" : "Continue praticando!"}
-                  </p>
-                </div>
-              </div>
-            </div>
+
+            {/* Abas Semanal / Geral */}
+            <StatsCard stats={stats} navigate={navigate} />
           </div>
 
           <div className="rounded-2xl p-4" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
