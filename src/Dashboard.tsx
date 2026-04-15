@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import {
   Flame, Trophy, CheckCircle2, XCircle, ChevronRight,
   Loader2, Zap, Medal, BookOpen, Dumbbell,
-  Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain, TrendingUp
+  Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain, TrendingUp,
+  CalendarDays
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 
@@ -424,6 +425,173 @@ function RadarTopicos() {
   );
 }
 
+// ─── Card da Agenda na Dashboard ─────────────────────────────────────────────
+
+const DAY_COLORS: Record<number, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
+  1: { bg: "#EFF6FF", border: "#BFDBFE", text: "#1D4ED8", badge: "#DBEAFE", badgeText: "#1E40AF" },
+  2: { bg: "#F0FDF4", border: "#BBF7D0", text: "#16A34A", badge: "#DCFCE7", badgeText: "#15803D" },
+  3: { bg: "#FDF4FF", border: "#E9D5FF", text: "#9333EA", badge: "#F3E8FF", badgeText: "#7E22CE" },
+  4: { bg: "#FFF7ED", border: "#FED7AA", text: "#EA580C", badge: "#FFEDD5", badgeText: "#C2410C" },
+  5: { bg: "#ECFDF5", border: "#A7F3D0", text: "#059669", badge: "#D1FAE5", badgeText: "#047857" },
+  6: { bg: "#FFF1F2", border: "#FECDD3", text: "#E11D48", badge: "#FFE4E6", badgeText: "#BE123C" },
+};
+
+const DAYS_SHORT: Record<number, string> = { 1: "Seg", 2: "Ter", 3: "Qua", 4: "Qui", 5: "Sex", 6: "Sáb" };
+
+function parseTopics(raw: string): string[] {
+  try {
+    const p = JSON.parse(raw);
+    return Array.isArray(p) ? p : [raw];
+  } catch { return raw ? [raw] : []; }
+}
+
+function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
+  const { data: slots = [], isLoading } = trpc.agenda.getMySchedule.useQuery(undefined, { staleTime: 60_000 });
+
+  const todayDow = new Date().getDay(); // 0=Dom … 6=Sáb
+  const todayIdx = todayDow >= 1 && todayDow <= 6 ? todayDow : null;
+
+  const todaySlots = todayIdx ? slots.filter((s) => s.dayOfWeek === todayIdx) : [];
+  const hasAnySlot = slots.length > 0;
+  const colors     = todayIdx ? DAY_COLORS[todayIdx] : DAY_COLORS[1];
+
+  // Agrupa slots por dia para a visão semanal (apenas dias com sessão)
+  const byDay = [1,2,3,4,5,6].map((d) => ({
+    day: d,
+    slots: slots.filter((s) => s.dayOfWeek === d),
+  })).filter((d) => d.slots.length > 0);
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between"
+        style={{ background: "linear-gradient(135deg, #01738d, #015f75)" }}>
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-4 w-4 text-white opacity-80" />
+          <p className="font-bold text-sm text-white">Planner de Estudos</p>
+        </div>
+        <button onClick={() => navigate("/agenda")}
+          className="text-xs font-semibold px-3 py-1 rounded-full transition-all"
+          style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
+          Ver tudo →
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      ) : !hasAnySlot ? (
+        /* Sem sessões cadastradas */
+        <div className="px-5 py-6 text-center space-y-3">
+          <p className="text-sm text-muted-foreground">Você ainda não montou seu cronograma.</p>
+          <button onClick={() => navigate("/agenda")}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white"
+            style={{ background: "#01738d" }}>
+            <CalendarDays className="h-4 w-4" /> Criar meu planner
+          </button>
+        </div>
+      ) : (
+        <div className="p-4 space-y-4">
+
+          {/* Hoje */}
+          {todayIdx && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: colors.text }}>
+                Hoje — {DAYS_SHORT[todayIdx]}-feira
+              </p>
+              {todaySlots.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Nenhuma sessão agendada para hoje.</p>
+              ) : (
+                <div className="space-y-2">
+                  {todaySlots.map((slot) => {
+                    const topics = parseTopics(slot.topic);
+                    return (
+                      <div key={slot.id} className="rounded-xl px-3 py-2.5 space-y-1.5"
+                        style={{ background: colors.bg, border: `1.5px solid ${colors.border}` }}>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="h-3 w-3 flex-shrink-0" style={{ color: colors.text }} />
+                          <span className="text-xs font-bold" style={{ color: colors.text }}>
+                            {slot.startTime} – {slot.endTime}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {topics.map((t) => (
+                            <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                              style={{ background: colors.badge, color: colors.badgeText }}>
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                        {/* Botões Praticar */}
+                        <div className="flex flex-wrap gap-1 pt-0.5">
+                          {topics.map((t) => (
+                            <button key={t}
+                              onClick={() => navigate(`/questoes?c=${encodeURIComponent(t)}`)}
+                              className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg text-white"
+                              style={{ background: colors.text }}>
+                              <Dumbbell className="h-3 w-3" />
+                              Praticar
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Semana resumida */}
+          {byDay.length > 0 && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
+                Esta semana
+              </p>
+              <div className="space-y-1.5">
+                {byDay.map(({ day, slots: ds }) => {
+                  const c = DAY_COLORS[day];
+                  const isToday = day === todayIdx;
+                  const allTopics = ds.flatMap((s) => parseTopics(s.topic));
+                  const unique = [...new Set(allTopics)];
+                  return (
+                    <div key={day} className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                      style={{
+                        background: isToday ? c.bg : "var(--muted)",
+                        border: isToday ? `1.5px solid ${c.border}` : "1px solid var(--border)",
+                      }}>
+                      <span className="text-xs font-bold w-7 flex-shrink-0"
+                        style={{ color: isToday ? c.text : "var(--muted-foreground)" }}>
+                        {DAYS_SHORT[day]}
+                      </span>
+                      <div className="flex flex-wrap gap-1 flex-1">
+                        {unique.slice(0, 3).map((t) => (
+                          <span key={t} className="text-xs px-2 py-0.5 rounded-full font-medium"
+                            style={{ background: c.badge, color: c.badgeText }}>
+                            {t}
+                          </span>
+                        ))}
+                        {unique.length > 3 && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium text-muted-foreground"
+                            style={{ background: "var(--muted)" }}>
+                            +{unique.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Dashboard principal ──────────────────────────────────────────────────────
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -522,6 +690,9 @@ export default function Dashboard() {
 
       {/* ── Radar de áreas ── */}
       <RadarTopicos />
+
+      {/* ── Agenda de estudos ── */}
+      <AgendaCard navigate={navigate} />
 
       {/* ── Missão cumprida ── */}
       <MissaoCumprida />
