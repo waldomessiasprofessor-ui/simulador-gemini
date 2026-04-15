@@ -53,23 +53,41 @@ function parseLatexQuestion(raw: string): Partial<typeof emptyForm> | null {
 }
 
 const FORMATO_EXEMPLO = `ENUNCIADO:
-Um capital de R$\\, 1.000,00 é aplicado a juros compostos de 10\\% ao mês. Após 2 meses, o montante será:
+Um capital de R$ 1.000,00 é aplicado a juros compostos de 10\\% ao mês. Após 2 meses, o montante será:
 
-A) R$\\, 1.100,00
-B) R$\\, 1.200,00
-C) R$\\, 1.210,00
-D) R$\\, 1.220,00
-E) R$\\, 1.250,00
+A) R$ 1.100,00
+B) R$ 1.200,00
+C) R$ 1.210,00
+D) R$ 1.220,00
+E) R$ 1.250,00
 
 GABARITO: C
 
 RESOLUÇÃO:
-$M = C \\cdot (1+i)^t = 1000 \\cdot (1{,}1)^2 = 1000 \\cdot 1{,}21 = 1210$
+O montante em juros compostos é dado por $M = C \\cdot (1+i)^t$, onde:
+- $C = 1000$ (capital inicial)
+- $i = 0{,}10$ (taxa de 10\\% ao mês)
+- $t = 2$ (meses)
+
+Substituindo:
+$$M = 1000 \\cdot (1{,}1)^2 = 1000 \\cdot 1{,}21 = 1210$$
+
+Portanto, o montante após 2 meses é R$ 1.210,00. Alternativa C.
 
 CONTEUDO: Matemática Financeira
 DIFICULDADE: Média
 ANO: 2023
-TAGS: Matemática Financeira, Funções de 1º e 2º Grau`;
+TAGS: Matemática Financeira, Funções de 1º e 2º Grau
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS DE LATEX NA PLATAFORMA:
+• Inline:  $x^2 + 3x - 4 = 0$   ou   $\\frac{1}{2}$
+• Bloco:   $$P(A) = \\frac{n(A)}{n(S)}$$
+• % dentro de fórmula:  $10\\%$
+• Moeda: escreva R$ 1.000,00 em texto puro (sem LaTeX)
+• Segmento: $\\overline{AB}$
+• Ângulo:   $\\angle ABC = 90^\\circ$
+• Conjunto: $x \\in \\mathbb{N}$  ou  $x \\in \\mathbb{R}$`;
 
 function LatexImportModal({ onImport, onClose }: {
   onImport: (data: Partial<typeof emptyForm>) => void;
@@ -137,7 +155,7 @@ function LatexImportModal({ onImport, onClose }: {
                 rows={12}
                 value={text}
                 onChange={(e) => { setText(e.target.value); setPreview(null); }}
-                placeholder={`Cole o texto da questão aqui...\n\nO formato mínimo necessário é:\nENUNCIADO: ...\nA) ...\nB) ...\nC) ...\nD) ...\nE) ...\nGABARITO: X`}
+                placeholder={`Cole o texto da questão aqui...\n\nFormato mínimo necessário:\n\nENUNCIADO:\n...\n\nA) ...\nB) ...\nC) ...\nD) ...\nE) ...\n\nGABARITO: X\n\nRESOLUÇÃO:\nTexto com LaTeX: $\\frac{a}{b}$ para inline, $$fórmula$$ para bloco\n\n(Clique em "Ver formato esperado" para um exemplo completo)`}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
                 style={{ border: "1.5px solid #E2D9EE", resize: "vertical", color: "#1A1A2E" }}
               />
@@ -159,6 +177,14 @@ function LatexImportModal({ onImport, onClose }: {
                   <p className="mt-2"><b>Enunciado:</b></p>
                   <p className="pl-2 italic line-clamp-3" style={{ color: "#374151" }}>{preview.enunciado?.slice(0, 200)}{(preview.enunciado?.length ?? 0) > 200 ? "..." : ""}</p>
                   <p className="mt-1"><b>Alternativas detectadas:</b> {Object.entries(preview.alternativas ?? {}).filter(([,v]) => v).map(([k]) => k).join(", ")}</p>
+                  {preview.comentario_resolucao && (
+                    <>
+                      <p className="mt-2"><b>Resolução:</b></p>
+                      <p className="pl-2 italic line-clamp-3" style={{ color: "#374151" }}>
+                        {preview.comentario_resolucao.slice(0, 200)}{preview.comentario_resolucao.length > 200 ? "..." : ""}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
