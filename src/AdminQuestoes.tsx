@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
@@ -972,6 +972,7 @@ function getAltFile(val: any): string | null {
 
 export default function AdminQuestoes() {
   const [page, setPage] = useState(1);
+  const [pageGoTo, setPageGoTo] = useState("1");
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("Todas");
   const [showForm, setShowForm] = useState(false);
@@ -1023,6 +1024,9 @@ export default function AdminQuestoes() {
     },
     onError: (e) => toast.error(e.message),
   });
+
+  // Sincroniza o input de página quando `page` muda por outro meio
+  useEffect(() => { setPageGoTo(String(page)); }, [page]);
 
   function handleLatexImport(data: Partial<typeof emptyForm>) {
     setForm({ ...emptyForm, ...data });
@@ -1631,14 +1635,76 @@ export default function AdminQuestoes() {
 
       {/* Paginação */}
       {data && data.pagination.totalPages > 1 && filterTag === "Todas" && (
-        <div className="flex items-center justify-center gap-2">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-            className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
-            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>Anterior</button>
-          <span className="text-sm" style={{ color: "#64748B" }}>{page} / {data.pagination.totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))} disabled={page === data.pagination.totalPages}
-            className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
-            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>Próxima</button>
+        <div className="flex items-center justify-center gap-1.5 flex-wrap py-1">
+
+          {/* Primeira */}
+          <button
+            onClick={() => setPage(1)}
+            disabled={page === 1}
+            title="Primeira página"
+            className="px-2.5 py-2 rounded-xl text-sm font-bold disabled:opacity-40 transition-opacity"
+            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            «
+          </button>
+
+          {/* Anterior */}
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity"
+            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            Anterior
+          </button>
+
+          {/* Input de página */}
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number"
+              min={1}
+              max={data.pagination.totalPages}
+              value={pageGoTo}
+              onChange={(e) => setPageGoTo(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const n = parseInt(pageGoTo);
+                  if (!isNaN(n)) setPage(Math.max(1, Math.min(data.pagination.totalPages, n)));
+                }
+              }}
+              onBlur={() => {
+                const n = parseInt(pageGoTo);
+                if (!isNaN(n) && n >= 1 && n <= data.pagination.totalPages) {
+                  setPage(n);
+                } else {
+                  setPageGoTo(String(page));
+                }
+              }}
+              className="w-14 text-center py-2 rounded-xl text-sm font-semibold outline-none"
+              style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
+            />
+            <span className="text-sm" style={{ color: "#64748B" }}>
+              / {data.pagination.totalPages}
+            </span>
+          </div>
+
+          {/* Próxima */}
+          <button
+            onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))}
+            disabled={page === data.pagination.totalPages}
+            className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity"
+            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            Próxima
+          </button>
+
+          {/* Última */}
+          <button
+            onClick={() => setPage(data.pagination.totalPages)}
+            disabled={page === data.pagination.totalPages}
+            title="Última página"
+            className="px-2.5 py-2 rounded-xl text-sm font-bold disabled:opacity-40 transition-opacity"
+            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            »
+          </button>
+
         </div>
       )}
 
