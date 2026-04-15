@@ -8,8 +8,9 @@ import { Plus, Pencil, Trash2, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, Sea
 
 function parseLatexQuestion(raw: string): Partial<typeof emptyForm> | null {
   try {
+    const SEP = "(?=\\n(?:GABARITO|RESOLU[ÇC][ÃA]O|CONTE[ÚU]DO|T[ÓO]PICO|DIFICULDADE|ANO|TAGS)\\s*:|$)";
     const get = (label: string) => {
-      const regex = new RegExp(`${label}[:\\s]+([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ_]{2,}[:\\s]|$)`, "i");
+      const regex = new RegExp(`${label}[:\\s]+([\\s\\S]*?)${SEP}`, "i");
       return raw.match(regex)?.[1]?.trim() ?? "";
     };
 

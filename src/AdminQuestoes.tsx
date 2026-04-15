@@ -9,8 +9,10 @@ import { VideoButton } from "@/YoutubeEmbed";
 
 function parseLatexQuestion(raw: string): Partial<typeof emptyForm> | null {
   try {
+    // Parar APENAS nos rótulos conhecidos, nunca em palavras maiúsculas aleatórias do texto
+    const SEP = "(?=\\n(?:GABARITO|RESOLU[ÇC][ÃA]O|CONTE[ÚU]DO|T[ÓO]PICO|DIFICULDADE|ANO|TAGS)\\s*:|$)";
     const get = (label: string) => {
-      const regex = new RegExp(`${label}[:\\s]+([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ_]{2,}[:\\s]|$)`, "i");
+      const regex = new RegExp(`${label}[:\\s]+([\\s\\S]*?)${SEP}`, "i");
       return raw.match(regex)?.[1]?.trim() ?? "";
     };
 
@@ -54,23 +56,41 @@ function parseLatexQuestion(raw: string): Partial<typeof emptyForm> | null {
 }
 
 const FORMATO_EXEMPLO = `ENUNCIADO:
-Um capital de R$\\, 1.000,00 é aplicado a juros compostos de 10\\% ao mês. Após 2 meses, o montante será:
+Um capital de R$ 1.000,00 é aplicado a juros compostos de 10\\% ao mês. Após 2 meses, o montante será:
 
-A) R$\\, 1.100,00
-B) R$\\, 1.200,00
-C) R$\\, 1.210,00
-D) R$\\, 1.220,00
-E) R$\\, 1.250,00
+A) R$ 1.100,00
+B) R$ 1.200,00
+C) R$ 1.210,00
+D) R$ 1.220,00
+E) R$ 1.250,00
 
 GABARITO: C
 
 RESOLUÇÃO:
-$M = C \\cdot (1+i)^t = 1000 \\cdot (1{,}1)^2 = 1000 \\cdot 1{,}21 = 1210$
+O montante em juros compostos é dado por $M = C \\cdot (1+i)^t$, onde:
+- $C = 1000$ (capital inicial)
+- $i = 0{,}10$ (taxa de 10\\% ao mês)
+- $t = 2$ (meses)
+
+Substituindo:
+$$M = 1000 \\cdot (1{,}1)^2 = 1000 \\cdot 1{,}21 = 1210$$
+
+Portanto, o montante após 2 meses é R$ 1.210,00. Alternativa C.
 
 CONTEUDO: Matemática Financeira
 DIFICULDADE: Média
 ANO: 2023
-TAGS: Matemática Financeira, Funções de 1º e 2º Grau`;
+TAGS: Matemática Financeira, Funções de 1º e 2º Grau
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS DE LATEX NA PLATAFORMA:
+• Inline:  $x^2 + 3x - 4 = 0$   ou   $\\frac{1}{2}$
+• Bloco:   $$P(A) = \\frac{n(A)}{n(S)}$$
+• % dentro de fórmula:  $10\\%$
+• Moeda: escreva R$ 1.000,00 em texto puro (sem LaTeX)
+• Segmento: $\\overline{AB}$
+• Ângulo:   $\\angle ABC = 90^\\circ$
+• Conjunto: $x \\in \\mathbb{N}$  ou  $x \\in \\mathbb{R}$`;
 
 function LatexImportModal({ onImport, onClose }: {
   onImport: (data: Partial<typeof emptyForm>) => void;
@@ -160,6 +180,14 @@ function LatexImportModal({ onImport, onClose }: {
                   <p className="mt-2"><b>Enunciado:</b></p>
                   <p className="pl-2 italic line-clamp-3" style={{ color: "#374151" }}>{preview.enunciado?.slice(0, 200)}{(preview.enunciado?.length ?? 0) > 200 ? "..." : ""}</p>
                   <p className="mt-1"><b>Alternativas detectadas:</b> {Object.entries(preview.alternativas ?? {}).filter(([,v]) => v).map(([k]) => k).join(", ")}</p>
+                  {preview.comentario_resolucao && (
+                    <>
+                      <p className="mt-2"><b>Resolução:</b></p>
+                      <p className="pl-2 italic line-clamp-3" style={{ color: "#374151" }}>
+                        {preview.comentario_resolucao.slice(0, 200)}{preview.comentario_resolucao.length > 200 ? "..." : ""}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -1048,6 +1076,8 @@ export default function AdminQuestoes() {
     }
   }
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const DELETE_PASSWORD = "ExcluirWaldo16@";
@@ -1296,7 +1326,7 @@ export default function AdminQuestoes() {
                 requestAnimationFrame(() => { ta.focus(); ta.selectionStart = ta.selectionEnd = start + tag.length; });
               }} />
             </div>
-            <textarea ref={enunciadoRef} className={inputClass} style={{ ...inputStyle, resize: "vertical" }} rows={5}
+            <textarea ref={enunciadoRef} className={inputClass} style={{ ...inputStyle, resize: "vertical" }} rows={8}
               value={form.enunciado}
               onChange={(e) => setForm({ ...form, enunciado: e.target.value })}
               placeholder="Texto do enunciado... Use o botão 'Inserir imagem' para colocar imagens onde quiser."
@@ -1391,7 +1421,7 @@ export default function AdminQuestoes() {
           {/* Resolução */}
           <div>
             <label style={labelStyle}>Resolução comentada (opcional — suporta LaTeX)</label>
-            <textarea className={inputClass} style={{ ...inputStyle, resize: "vertical" }} rows={3}
+            <textarea className={inputClass} style={{ ...inputStyle, resize: "vertical" }} rows={6}
               value={form.comentario_resolucao}
               onChange={(e) => setForm({ ...form, comentario_resolucao: e.target.value })}
               placeholder="Passo a passo da resolução..."
@@ -1528,10 +1558,28 @@ export default function AdminQuestoes() {
                         ? <EyeOff className="h-3.5 w-3.5" style={{ color: "#F57F17" }} />
                         : <Eye className="h-3.5 w-3.5" style={{ color: "#00897B" }} />}
                     </button>
-                    <button onClick={() => { if (confirm("Excluir permanentemente?")) deleteMutation.mutate({ id: q.id }); }}
-                      className="p-1.5 rounded-lg hover:bg-gray-100" title="Excluir">
-                      <Trash2 className="h-3.5 w-3.5" style={{ color: "#E53935" }} />
-                    </button>
+                    {deleteConfirmId === q.id ? (
+                      <div className="flex items-center gap-1 ml-1">
+                        <span className="text-xs font-bold" style={{ color: "#E53935" }}>Excluir?</span>
+                        <button
+                          onClick={() => { deleteMutation.mutate({ id: q.id }); setDeleteConfirmId(null); }}
+                          className="px-2 py-0.5 rounded-lg text-xs font-bold text-white"
+                          style={{ background: "#E53935" }}>
+                          Sim
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="px-2 py-0.5 rounded-lg text-xs font-bold"
+                          style={{ background: "#F1F5F9", color: "#64748B" }}>
+                          Não
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setDeleteConfirmId(q.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50" title="Excluir">
+                        <Trash2 className="h-3.5 w-3.5" style={{ color: "#E53935" }} />
+                      </button>
+                    )}
                   </div>
                 </div>
 

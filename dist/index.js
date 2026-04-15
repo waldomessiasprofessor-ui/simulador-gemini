@@ -34,6 +34,7 @@ __export(schema_exports, {
   simulationAnswersRelations: () => simulationAnswersRelations,
   simulations: () => simulations,
   simulationsRelations: () => simulationsRelations,
+  studySchedule: () => studySchedule,
   users: () => users,
   usersRelations: () => usersRelations
 });
@@ -84,6 +85,7 @@ var questions = mysqlTable(
     alternativas: json("alternativas").$type().notNull(),
     gabarito: varchar("gabarito", { length: 1 }).notNull(),
     comentario_resolucao: text("comentario_resolucao"),
+    url_video: varchar("url_video", { length: 512 }),
     active: boolean("active").notNull().default(true),
     auditada: boolean("auditada").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -216,6 +218,19 @@ var formulas = mysqlTable("formulas", {
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
+var studySchedule = mysqlTable("study_schedule", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  dayOfWeek: int("day_of_week").notNull(),
+  // 1=Seg … 6=Sáb
+  startTime: varchar("start_time", { length: 5 }).notNull(),
+  // "08:00"
+  endTime: varchar("end_time", { length: 5 }).notNull(),
+  // "10:00"
+  topic: text("topic").notNull(),
+  // JSON array de strings: ["Funções","Geometria Plana"]
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
 
 // server/db.ts
 if (!process.env.DATABASE_URL) {
@@ -288,7 +303,8 @@ var QuestionBaseSchema = z.object({
   url_imagem: z.string().url().nullable().optional(),
   alternativas: z.record(z.string().min(1).max(5), z.any()),
   gabarito: z.string().length(1),
-  comentario_resolucao: z.string().optional()
+  comentario_resolucao: z.string().optional(),
+  url_video: z.string().url().nullable().optional()
 });
 var questionsRouter = createTRPCRouter({
   list: protectedProcedure.input(z.object({
@@ -331,6 +347,7 @@ var questionsRouter = createTRPCRouter({
       ...input,
       gabarito: input.gabarito.toUpperCase(),
       url_imagem: input.url_imagem ?? null,
+      url_video: input.url_video ?? null,
       active: true
     });
     return { id: Number(result.insertId), success: true };
@@ -340,6 +357,7 @@ var questionsRouter = createTRPCRouter({
     const updateData = { ...data };
     if (data.gabarito) updateData.gabarito = data.gabarito.toUpperCase();
     if (data.url_imagem !== void 0) updateData.url_imagem = data.url_imagem ?? null;
+    if (data.url_video !== void 0) updateData.url_video = data.url_video ?? null;
     await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
     return { success: true };
   }),
@@ -986,6 +1004,7 @@ var simulationsRouter = createTRPCRouter({
       alternativas: questions.alternativas,
       gabarito: questions.gabarito,
       comentario_resolucao: questions.comentario_resolucao,
+      url_video: questions.url_video,
       conteudo_principal: questions.conteudo_principal,
       nivel_dificuldade: questions.nivel_dificuldade,
       tags: questions.tags,
@@ -1186,12 +1205,19 @@ var simulationsRouter = createTRPCRouter({
       acertos: acc.acertos + d.acertos
     }), { questoes: 0, acertos: 0 });
     const weeklyAccuracy = weeklyData.questoes > 0 ? Math.round(weeklyData.acertos / weeklyData.questoes * 100) : 0;
+    const allEntries = Array.from(dayMap.values());
+    const totalQuestions = allEntries.reduce((s, d) => s + d.questoes, 0);
+    const totalCorrect = allEntries.reduce((s, d) => s + d.acertos, 0);
+    const totalAccuracy = totalQuestions > 0 ? Math.round(totalCorrect / totalQuestions * 100) : 0;
     return {
       streak,
       weeklyQuestions: weeklyData.questoes,
       weeklyAccuracy,
       totalSimulations: completedSims.length,
-      dailyData
+      dailyData,
+      // Gerais
+      totalQuestions,
+      totalAccuracy
     };
   }),
   // ---------------------------------------------------------------------------
@@ -1300,6 +1326,7 @@ var simulationsRouter = createTRPCRouter({
       id: questions.id,
       enunciado: questions.enunciado,
       url_imagem: questions.url_imagem,
+      url_video: questions.url_video,
       alternativas: questions.alternativas,
       gabarito: questions.gabarito,
       comentario_resolucao: questions.comentario_resolucao,
@@ -1381,6 +1408,7 @@ var simulationsRouter = createTRPCRouter({
         id: questions.id,
         enunciado: questions.enunciado,
         url_imagem: questions.url_imagem,
+        url_video: questions.url_video,
         alternativas: questions.alternativas,
         gabarito: questions.gabarito,
         comentario_resolucao: questions.comentario_resolucao,
@@ -1403,6 +1431,7 @@ var simulationsRouter = createTRPCRouter({
       id: questions.id,
       enunciado: questions.enunciado,
       url_imagem: questions.url_imagem,
+      url_video: questions.url_video,
       alternativas: questions.alternativas,
       gabarito: questions.gabarito,
       comentario_resolucao: questions.comentario_resolucao,
@@ -1471,6 +1500,7 @@ var simulationsRouter = createTRPCRouter({
       id: questions.id,
       enunciado: questions.enunciado,
       url_imagem: questions.url_imagem,
+      url_video: questions.url_video,
       alternativas: questions.alternativas,
       gabarito: questions.gabarito,
       comentario_resolucao: questions.comentario_resolucao,
@@ -1524,6 +1554,7 @@ var simulationsRouter = createTRPCRouter({
       answeredAt: simulationAnswers.answeredAt,
       enunciado: questions.enunciado,
       url_imagem: questions.url_imagem,
+      url_video: questions.url_video,
       alternativas: questions.alternativas,
       gabarito: questions.gabarito,
       comentario_resolucao: questions.comentario_resolucao,
@@ -1979,6 +2010,101 @@ var formulasRouter = createTRPCRouter({
   })
 });
 
+// server/agenda.router.ts
+import { eq as eq7, sql as sql4, and as and4 } from "drizzle-orm";
+import { z as z7 } from "zod";
+var ENEM_TOPICS = [
+  { topic: "Grandezas Proporcionais", weight: 0.25 },
+  { topic: "Geometria Espacial", weight: 0.11 },
+  { topic: "Fun\xE7\xF5es", weight: 0.09 },
+  { topic: "Estat\xEDstica", weight: 0.09 },
+  { topic: "Geometria Plana", weight: 0.08 },
+  { topic: "Probabilidades", weight: 0.06 },
+  { topic: "Aritm\xE9tica", weight: 0.05 },
+  { topic: "An\xE1lise Combinat\xF3ria", weight: 0.04 },
+  { topic: "M\xE9dias", weight: 0.04 },
+  { topic: "Trigonometria", weight: 0.03 },
+  { topic: "No\xE7\xF5es de L\xF3gica Matem\xE1tica", weight: 0.02 },
+  { topic: "Geometria Anal\xEDtica", weight: 0.02 },
+  { topic: "Logar\xEDtmos", weight: 0.02 },
+  { topic: "Conjuntos Num\xE9ricos", weight: 0.02 },
+  { topic: "Progress\xE3o Aritm\xE9tica", weight: 0.02 },
+  { topic: "Progress\xE3o Geom\xE9trica", weight: 0.02 },
+  { topic: "Equa\xE7\xF5es", weight: 0.01 },
+  { topic: "Constru\xE7\xF5es Geom\xE9tricas", weight: 0.01 },
+  { topic: "Inequa\xE7\xF5es", weight: 0.01 },
+  { topic: "Matrizes", weight: 0.01 },
+  { topic: "Potencia\xE7\xE3o", weight: 0.01 },
+  { topic: "Sistemas Lineares", weight: 0.01 },
+  { topic: "Conjuntos", weight: 5e-3 },
+  { topic: "Equa\xE7\xF5es polinomiais", weight: 5e-3 },
+  { topic: "Matem\xE1tica Financeira", weight: 5e-3 }
+];
+function parseTopics(raw) {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [raw];
+  } catch {
+    return raw ? [raw] : [];
+  }
+}
+var agendaRouter = createTRPCRouter({
+  // ── Cronograma salvo pelo aluno ───────────────────────────────────────────
+  // Helpers para parse/stringify de topics (suporta legado string simples)
+  getMySchedule: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db.select().from(studySchedule).where(eq7(studySchedule.userId, ctx.user.id)).orderBy(studySchedule.dayOfWeek, studySchedule.startTime);
+    return rows.map((r) => ({
+      ...r,
+      topics: parseTopics(r.topic)
+    }));
+  }),
+  addSlot: protectedProcedure.input(z7.object({
+    dayOfWeek: z7.number().int().min(1).max(6),
+    startTime: z7.string().regex(/^\d{2}:\d{2}$/),
+    endTime: z7.string().regex(/^\d{2}:\d{2}$/),
+    topics: z7.array(z7.string().min(1).max(100)).min(1)
+  })).mutation(async ({ ctx, input }) => {
+    await ctx.db.insert(studySchedule).values({
+      userId: ctx.user.id,
+      dayOfWeek: input.dayOfWeek,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      topic: JSON.stringify(input.topics)
+    });
+    return { success: true };
+  }),
+  removeSlot: protectedProcedure.input(z7.object({ id: z7.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(studySchedule).where(
+      and4(eq7(studySchedule.id, input.id), eq7(studySchedule.userId, ctx.user.id))
+    );
+    return { success: true };
+  }),
+  // ── Desempenho por tópico (para sugestões) ───────────────────────────────
+  getTopicStats: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db.select({
+      topic: questions.conteudo_principal,
+      total: sql4`COUNT(*)`,
+      correct: sql4`SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END)`
+    }).from(simulationAnswers).innerJoin(simulations, eq7(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq7(simulationAnswers.questionId, questions.id)).where(eq7(simulations.userId, ctx.user.id)).groupBy(questions.conteudo_principal);
+    const accuracy = {};
+    for (const r of rows) {
+      const total = Number(r.total);
+      if (total > 0) accuracy[r.topic] = Number(r.correct) / total;
+    }
+    return ENEM_TOPICS.map((t2) => {
+      const acc = accuracy[t2.topic] ?? null;
+      const hasData = t2.topic in accuracy;
+      let status = !hasData ? "sem_dados" : acc < 0.4 ? "fraco" : acc < 0.7 ? "regular" : "forte";
+      return {
+        topic: t2.topic,
+        enemPct: Math.round(t2.weight * 100),
+        userAccuracy: hasData ? Math.round(acc * 100) : null,
+        status
+      };
+    });
+  })
+});
+
 // server/router.ts
 var appRouter = createTRPCRouter({
   auth: authRouter,
@@ -1986,11 +2112,12 @@ var appRouter = createTRPCRouter({
   simulations: simulationsRouter,
   users: usersRouter,
   review: reviewRouter,
-  formulas: formulasRouter
+  formulas: formulasRouter,
+  agenda: agendaRouter
 });
 
 // server/index.ts
-import { eq as eq7, sql as drizzleSql } from "drizzle-orm";
+import { eq as eq8 } from "drizzle-orm";
 var app = express();
 var PORT = process.env.PORT ? Number(process.env.PORT) : 3e3;
 var isProd = process.env.NODE_ENV === "production";
@@ -2020,7 +2147,7 @@ app.get("/admin/make-admin", async (req, res) => {
   if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
   if (!email) return res.status(400).send("Forne\xE7a ?email=teu@email.com");
   try {
-    await db.update(users).set({ role: "admin" }).where(eq7(users.email, email.toLowerCase().trim()));
+    await db.update(users).set({ role: "admin" }).where(eq8(users.email, email.toLowerCase().trim()));
     res.send(`\u2705 ${email} \xE9 agora admin. Fa\xE7a logout e login novamente no site.`);
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);
@@ -2199,19 +2326,37 @@ if (isProd) {
   app.get("*", (_req, res) => res.sendFile(path.join(distPath, "index.html")));
 }
 async function runMigrations() {
+  let conn;
   try {
-    await db.execute(drizzleSql`
-      ALTER TABLE questions
-      ADD COLUMN IF NOT EXISTS url_video VARCHAR(512) NULL
-      AFTER comentario_resolucao
+    conn = await pool.getConnection();
+    const [colRows] = await conn.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'questions' AND COLUMN_NAME = 'url_video'
     `);
-    console.log("\u2705 Migration: url_video OK");
-  } catch (err) {
-    if (err?.errno === 1060 || String(err).includes("Duplicate column")) {
+    if (Array.isArray(colRows) && colRows.length > 0) {
       console.log("\u2705 Migration: url_video j\xE1 existe.");
     } else {
-      console.warn("\u26A0\uFE0F  Migration url_video falhou:", err);
+      await conn.query(`ALTER TABLE questions ADD COLUMN url_video VARCHAR(512) NULL AFTER comentario_resolucao`);
+      console.log("\u2705 Migration: url_video adicionada.");
     }
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS study_schedule (
+        id          INT PRIMARY KEY AUTO_INCREMENT,
+        user_id     INT NOT NULL,
+        day_of_week TINYINT NOT NULL,
+        start_time  VARCHAR(5) NOT NULL,
+        end_time    VARCHAR(5) NOT NULL,
+        topic       TEXT NOT NULL,
+        created_at  TIMESTAMP DEFAULT NOW() NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    await conn.query(`ALTER TABLE study_schedule MODIFY COLUMN topic TEXT NOT NULL`);
+    console.log("\u2705 Migration: study_schedule OK.");
+  } catch (err) {
+    console.error("\u274C Migration falhou:", err?.message ?? err);
+  } finally {
+    if (conn) conn.release();
   }
 }
 runMigrations().then(() => {
