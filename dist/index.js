@@ -2382,128 +2382,135 @@ app.get("/admin/make-admin", async (req, res) => {
   }
 });
 var GEOMETRY_CARDS = [
-  // ── Geometria Plana (avançada) ───────────────────────────────────────────
+  // ── Triângulos — relações e trigonometria ────────────────────────────────
   {
-    front: "F\xF3rmula de Heron\n\nQual \xE9 a \xE1rea de um tri\xE2ngulo em fun\xE7\xE3o dos tr\xEAs lados $a$, $b$ e $c$?",
-    back: "$$A = \\sqrt{s(s-a)(s-b)(s-c)}$$\n\n$s = \\dfrac{a+b+c}{2}$ \xE9 o semiper\xEDmetro do tri\xE2ngulo."
+    front: "Rela\xE7\xF5es m\xE9tricas no tri\xE2ngulo ret\xE2ngulo\n\nCatetos $a$, $b$, hipotenusa $c$, altura $h$ relativa \xE0 hipotenusa (proje\xE7\xF5es $m$ e $n$).",
+    back: "$$h^2 = m \\cdot n \\qquad a^2 = m \\cdot c \\qquad b^2 = n \\cdot c$$\n$$h \\cdot c = a \\cdot b$$\n\n$m$ = proje\xE7\xE3o de $a$ sobre $c$; $n$ = proje\xE7\xE3o de $b$ sobre $c$."
   },
   {
-    front: "\xC1rea do tri\xE2ngulo \u2014 f\xF3rmula trigonom\xE9trica\n\nComo calcular a \xE1rea usando dois lados e o \xE2ngulo entre eles?",
-    back: "$$A = \\frac{a \\cdot b \\cdot \\operatorname{sen}(C)}{2}$$\n\n$C$ \xE9 o \xE2ngulo formado pelos lados $a$ e $b$."
+    front: "\xC1rea do tri\xE2ngulo \u2014 f\xF3rmula com seno\n\nDois lados $a$ e $b$ formam entre si o \xE2ngulo $C$. Qual \xE9 a \xE1rea?",
+    back: "$$A = \\frac{a \\cdot b \\cdot \\operatorname{sen}(C)}{2}$$"
   },
   {
-    front: "Lei dos Cossenos\n\nRelacione o lado $c$ com os lados $a$, $b$ e o \xE2ngulo $C$ (\xE2ngulo oposto a $c$).",
-    back: "$$c^2 = a^2 + b^2 - 2ab\\cos C$$\n\nGeneraliza\xE7\xE3o do Teorema de Pit\xE1goras. Quando $C = 90\xB0$, temos $c^2 = a^2 + b^2$."
+    front: "Lei dos Senos\n\nRelacione os lados e os \xE2ngulos opostos de qualquer tri\xE2ngulo.",
+    back: "$$\\frac{a}{\\operatorname{sen} A} = \\frac{b}{\\operatorname{sen} B} = \\frac{c}{\\operatorname{sen} C} = 2R$$\n\n$R$ = raio da circunfer\xEAncia circunscrita."
   },
   {
-    front: "Lei dos Senos\n\nQual \xE9 a rela\xE7\xE3o entre lados e \xE2ngulos opostos em qualquer tri\xE2ngulo?",
-    back: "$$\\frac{a}{\\operatorname{sen} A} = \\frac{b}{\\operatorname{sen} B} = \\frac{c}{\\operatorname{sen} C} = 2R$$\n\n$R$ \xE9 o raio da circunfer\xEAncia circunscrita ao tri\xE2ngulo."
+    front: "Lei dos Cossenos\n\nRelacione o lado $c$ com $a$, $b$ e o \xE2ngulo $C$ oposto a $c$.",
+    back: "$$c^2 = a^2 + b^2 - 2ab\\cos C$$\n\nGeneraliza Pit\xE1goras: quando $C = 90\xB0$, resulta $c^2 = a^2 + b^2$."
   },
   {
-    front: "Tri\xE2ngulo equil\xE1tero \u2014 \xE1rea\n\nSe o lado mede $l$, qual \xE9 a \xE1rea?",
-    back: "$$A = \\frac{l^2\\sqrt{3}}{4}$$\n\nDerivado de Heron com $a = b = c = l$, ou de $A = \\frac{b \\cdot h}{2}$ com $h = \\frac{l\\sqrt{3}}{2}$."
+    front: "Tri\xE2ngulo equil\xE1tero \u2014 altura e \xE1rea\n\nLado $l$.",
+    back: "$$h = \\frac{l\\sqrt{3}}{2} \\qquad A = \\frac{l^2\\sqrt{3}}{4}$$\n\nPit\xE1goras: $h^2 + \\left(\\dfrac{l}{2}\\right)^2 = l^2$."
   },
   {
-    front: "Tri\xE2ngulo equil\xE1tero \u2014 altura\n\nSe o lado mede $l$, qual \xE9 a altura $h$?",
-    back: "$$h = \\frac{l\\sqrt{3}}{2}$$\n\nPit\xE1goras no tri\xE2ngulo ret\xE2ngulo formado pela metade da base: $h^2 + \\left(\\frac{l}{2}\\right)^2 = l^2$."
+    front: "Raio da circunfer\xEAncia inscrita no tri\xE2ngulo\n\n\xC1rea $A$, semiper\xEDmetro $s$.",
+    back: "$$r = \\frac{A}{s}, \\qquad s = \\frac{a+b+c}{2}$$"
   },
   {
-    front: "Setor circular \u2014 \xE1rea\n\nRaio $r$ e \xE2ngulo central $\\theta$ em graus.",
-    back: "$$A = \\frac{\\theta}{360\xB0} \\cdot \\pi r^2$$\n\nEm radianos: $A = \\dfrac{\\theta \\, r^2}{2}$"
+    front: "Raio da circunfer\xEAncia circunscrita no tri\xE2ngulo\n\nLados $a$, $b$, $c$, \xE1rea $A$.",
+    back: "$$R = \\frac{abc}{4A}$$\n\nTamb\xE9m (Lei dos Senos): $R = \\dfrac{a}{2\\operatorname{sen} A}$."
   },
   {
-    front: "Comprimento do arco\n\nRaio $r$ e \xE2ngulo central $\\theta$ em graus.",
-    back: "$$\\ell = \\frac{\\theta}{360\xB0} \\cdot 2\\pi r$$\n\nEm radianos: $\\ell = r\\theta$"
+    front: "Teorema da bissetriz interna\n\nA bissetriz do \xE2ngulo $A$ divide o lado oposto $BC$ nos segmentos $m$ (junto a $b$) e $n$ (junto a $c$).",
+    back: "$$\\frac{m}{n} = \\frac{b}{c}$$\n\nA bissetriz interna divide o lado oposto proporcionalmente aos lados adjacentes."
   },
   {
-    front: "Raio da circunfer\xEAncia inscrita num tri\xE2ngulo\n\nExpresse $r$ em fun\xE7\xE3o da \xE1rea $A$ e do semiper\xEDmetro $s$.",
-    back: "$$r = \\frac{A}{s}$$\n\n$s = \\dfrac{a+b+c}{2}$, $A$ = \xE1rea do tri\xE2ngulo."
+    front: "Baricentro \u2014 propriedade da mediana\n\nComo o baricentro $G$ divide cada mediana do tri\xE2ngulo?",
+    back: "O baricentro divide cada mediana na raz\xE3o $\\mathbf{2:1}$ a partir do v\xE9rtice.\n\n$$AG = \\frac{2}{3}\\,m_a$$\n\n$m_a$ = comprimento da mediana relativa ao v\xE9rtice $A$."
   },
   {
-    front: "Raio da circunfer\xEAncia circunscrita num tri\xE2ngulo\n\nExpresse $R$ em fun\xE7\xE3o dos lados $a$, $b$, $c$ e da \xE1rea $A$.",
-    back: "$$R = \\frac{abc}{4A}$$\n\nTamb\xE9m: $R = \\dfrac{a}{2\\operatorname{sen} A}$ (Lei dos Senos)."
+    front: "Triplas pitag\xF3ricas\n\nCite as triplas mais cobradas em vestibulares e suas varia\xE7\xF5es.",
+    back: "$(3,\\,4,\\,5)$ \u2192 m\xFAltiplos: $(6,8,10)$, $(9,12,15)$\u2026\n\n$(5,\\,12,\\,13)$\n\n$(8,\\,15,\\,17)$\n\n$(7,\\,24,\\,25)$\n\nVerifique sempre: $a^2 + b^2 = c^2$."
   },
-  // ── Geometria Espacial ──────────────────────────────────────────────────
+  // ── Trigonometria no plano ───────────────────────────────────────────────
   {
-    front: "Cubo \u2014 diagonal do espa\xE7o\n\nSe a aresta mede $a$, qual \xE9 a diagonal do s\xF3lido?",
-    back: "$$d = a\\sqrt{3}$$\n\nAplicando Pit\xE1goras duas vezes: $d^2 = a^2 + a^2 + a^2 = 3a^2$."
-  },
-  {
-    front: "Paralelep\xEDpedo \u2014 diagonal do espa\xE7o\n\nExpresse $d$ em fun\xE7\xE3o das dimens\xF5es $a$, $b$ e $c$.",
-    back: "$$d = \\sqrt{a^2 + b^2 + c^2}$$\n\nGeneraliza\xE7\xE3o tridimensional do Teorema de Pit\xE1goras."
+    front: "Rela\xE7\xF5es trigonom\xE9tricas no tri\xE2ngulo ret\xE2ngulo\n\nExpresse $\\operatorname{sen}$, $\\cos$ e $\\operatorname{tg}$ em termos dos lados.",
+    back: "$$\\operatorname{sen}\\theta = \\frac{\\text{oposto}}{\\text{hipotenusa}} \\qquad \\cos\\theta = \\frac{\\text{adjacente}}{\\text{hipotenusa}} \\qquad \\operatorname{tg}\\theta = \\frac{\\text{oposto}}{\\text{adjacente}}$$"
   },
   {
-    front: "Cilindro \u2014 \xE1rea total\n\nRaio $r$, altura $h$.",
-    back: "$$A_T = 2\\pi r(r + h)$$\n\n\xC1rea lateral $= 2\\pi r h$, mais duas bases circulares $= 2\\pi r^2$."
+    front: "Valores trigonom\xE9tricos not\xE1veis\n\n$\\operatorname{sen}$, $\\cos$ e $\\operatorname{tg}$ de $30\xB0$, $45\xB0$ e $60\xB0$.",
+    back: "$$\\operatorname{sen}30\xB0 = \\tfrac{1}{2},\\quad \\cos30\xB0 = \\tfrac{\\sqrt{3}}{2},\\quad \\operatorname{tg}30\xB0 = \\tfrac{\\sqrt{3}}{3}$$\n$$\\operatorname{sen}45\xB0 = \\cos45\xB0 = \\tfrac{\\sqrt{2}}{2},\\quad \\operatorname{tg}45\xB0 = 1$$\n$$\\operatorname{sen}60\xB0 = \\tfrac{\\sqrt{3}}{2},\\quad \\cos60\xB0 = \\tfrac{1}{2},\\quad \\operatorname{tg}60\xB0 = \\sqrt{3}$$"
   },
   {
-    front: "Cone \u2014 geratriz\n\nRela\xE7\xE3o entre raio $r$, altura $h$ e geratriz $g$.",
-    back: "$$g = \\sqrt{r^2 + h^2}$$\n\nPit\xE1goras no tri\xE2ngulo ret\xE2ngulo axial do cone."
+    front: "Identidade fundamental da trigonometria",
+    back: "$$\\operatorname{sen}^2\\theta + \\cos^2\\theta = 1$$\n\nDerivada do Teorema de Pit\xE1goras no c\xEDrculo unit\xE1rio de raio 1."
   },
   {
-    front: "Cone \u2014 \xE1rea total\n\nRaio $r$, geratriz $g$.",
-    back: "$$A_T = \\pi r(r + g)$$\n\n\xC1rea lateral $= \\pi r g$, base $= \\pi r^2$."
+    front: "Rela\xE7\xE3o entre $\\operatorname{tg}$, $\\operatorname{sen}$ e $\\cos$",
+    back: "$$\\operatorname{tg}\\theta = \\frac{\\operatorname{sen}\\theta}{\\cos\\theta}$$\n\nDa identidade fundamental: $1 + \\operatorname{tg}^2\\theta = \\sec^2\\theta$."
+  },
+  // ── Semelhança ──────────────────────────────────────────────────────────
+  {
+    front: "Semelhan\xE7a de tri\xE2ngulos \u2014 crit\xE9rios\n\nCite os tr\xEAs crit\xE9rios que garantem semelhan\xE7a.",
+    back: "AA \u2014 dois \xE2ngulos iguais\n\nLAL \u2014 dois lados proporcionais e o \xE2ngulo entre eles igual\n\nLLL \u2014 os tr\xEAs pares de lados proporcionais\n\nTri\xE2ngulos semelhantes t\xEAm lados correspondentes proporcionais e \xE2ngulos iguais."
   },
   {
-    front: "Esfera \u2014 volume\n\nRaio $r$.",
-    back: "$$V = \\frac{4\\pi r^3}{3}$$"
+    front: "Semelhan\xE7a \u2014 raz\xE3o entre per\xEDmetros e \xE1reas\n\nSe a raz\xE3o de semelhan\xE7a \xE9 $k$, qual \xE9 a raz\xE3o entre per\xEDmetros? E entre \xE1reas?",
+    back: "$$\\frac{P_1}{P_2} = k \\qquad \\frac{A_1}{A_2} = k^2$$\n\nPer\xEDmetros na raz\xE3o $k$; \xE1reas na raz\xE3o $k^2$."
+  },
+  // ── Quadriláteros ────────────────────────────────────────────────────────
+  {
+    front: "Quadrado \u2014 diagonal\n\nLado $l$.",
+    back: "$$d = l\\sqrt{2}$$\n\nPit\xE1goras: $d^2 = l^2 + l^2 = 2l^2$."
   },
   {
-    front: "Esfera \u2014 \xE1rea da superf\xEDcie\n\nRaio $r$.",
-    back: "$$A = 4\\pi r^2$$"
+    front: "Ret\xE2ngulo \u2014 diagonal\n\nLados $a$ e $b$.",
+    back: "$$d = \\sqrt{a^2 + b^2}$$"
   },
   {
-    front: "Tronco de cone \u2014 volume\n\nRaios $R$ (base maior) e $r$ (base menor), altura $h$.",
-    back: "$$V = \\frac{\\pi h}{3}\\left(R^2 + Rr + r^2\\right)$$"
+    front: "Losango \u2014 rela\xE7\xE3o entre diagonais e lado\n\nDiagonais $d_1$ e $d_2$, lado $l$.",
+    back: "$$l = \\sqrt{\\left(\\frac{d_1}{2}\\right)^2 + \\left(\\frac{d_2}{2}\\right)^2}$$\n\nAs diagonais do losango s\xE3o perpendiculares e bissetoras entre si."
   },
   {
-    front: "Prisma \u2014 volume\n\nF\xF3rmula geral para qualquer prisma.",
-    back: "$$V = A_b \\cdot h$$\n\n$A_b$ = \xE1rea da base, $h$ = altura. Vale para prismas triangular, quadrangular, hexagonal\u2026"
+    front: "Trap\xE9zio \u2014 base m\xE9dia\n\nQual \xE9 o comprimento do segmento m\xE9dio que une os pontos m\xE9dios dos lados n\xE3o paralelos?",
+    back: "$$m = \\frac{B + b}{2}$$\n\n$B$ = base maior, $b$ = base menor. O segmento m\xE9dio \xE9 paralelo \xE0s bases."
+  },
+  // ── Polígonos regulares ──────────────────────────────────────────────────
+  {
+    front: "Pol\xEDgono regular \u2014 \xE2ngulo interno\n\n$n$ lados.",
+    back: "$$\\theta_{\\text{int}} = \\frac{(n-2)\\cdot 180\xB0}{n}$$\n\nExemplos: tri\xE2ngulo $60\xB0$, quadrado $90\xB0$, hex\xE1gono $120\xB0$."
   },
   {
-    front: "Pir\xE2mide \u2014 volume\n\nF\xF3rmula geral.",
-    back: "$$V = \\frac{A_b \\cdot h}{3}$$\n\n$A_b$ = \xE1rea da base, $h$ = altura. Um ter\xE7o do prisma de mesma base e altura."
-  },
-  // ── Geometria Analítica ─────────────────────────────────────────────────
-  {
-    front: "Dist\xE2ncia entre dois pontos\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
-    back: "$$d = \\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$"
+    front: "Pol\xEDgono regular \u2014 \xE2ngulo externo\n\n$n$ lados.",
+    back: "$$\\theta_{\\text{ext}} = \\frac{360\xB0}{n}$$\n\nA soma de todos os \xE2ngulos externos de qualquer pol\xEDgono convexo \xE9 sempre $360\xB0$."
   },
   {
-    front: "Ponto m\xE9dio de um segmento\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
-    back: "$$M = \\left(\\frac{x_1 + x_2}{2},\\; \\frac{y_1 + y_2}{2}\\right)$$"
+    front: "Pol\xEDgono regular \u2014 n\xFAmero de diagonais\n\n$n$ lados.",
+    back: "$$D = \\frac{n(n-3)}{2}$$\n\nEscolhe-se 2 v\xE9rtices ($\\binom{n}{2}$ pares) e subtraem-se os $n$ lados."
   },
   {
-    front: "Equa\xE7\xE3o reduzida da reta\n\nDescreva a forma geral e o significado dos coeficientes.",
-    back: "$$y = mx + n$$\n\n$m$ = coeficiente angular (inclina\xE7\xE3o), $n$ = coeficiente linear (intercepto com eixo $y$)."
+    front: "Pol\xEDgono regular \u2014 \xE1rea\n\nLado $l$, ap\xF3tema $a$, $n$ lados.",
+    back: "$$A = \\frac{n \\cdot l \\cdot a}{2} = \\frac{\\text{Per\xEDmetro} \\cdot a}{2}$$"
+  },
+  // ── Circunferência e círculo ─────────────────────────────────────────────
+  {
+    front: "\xC2ngulo inscrito em semic\xEDrculo\n\nUm tri\xE2ngulo tem como lado o di\xE2metro de uma circunfer\xEAncia. O que se pode afirmar do \xE2ngulo oposto?",
+    back: "O \xE2ngulo inscrito que intercepta um semic\xEDrculo mede sempre $90\xB0$.\n\nConsequ\xEAncia: todo tri\xE2ngulo inscrito em um semic\xEDrculo \xE9 ret\xE2ngulo."
   },
   {
-    front: "Coeficiente angular entre dois pontos\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
-    back: "$$m = \\frac{y_2 - y_1}{x_2 - x_1} = \\operatorname{tg}\\,\\alpha$$\n\n$\\alpha$ \xE9 o \xE2ngulo que a reta faz com o eixo $x$ positivo."
+    front: "Pot\xEAncia de um ponto \u2014 duas cordas\n\nDuas cordas $AB$ e $CD$ se cruzam no ponto $P$ interno \xE0 circunfer\xEAncia.",
+    back: "$$PA \\cdot PB = PC \\cdot PD$$\n\nO produto dos segmentos de uma corda \xE9 igual ao produto dos segmentos da outra."
   },
   {
-    front: "Dist\xE2ncia de um ponto a uma reta\n\nPonto $P(x_0, y_0)$, reta $ax + by + c = 0$",
-    back: "$$d = \\frac{|ax_0 + by_0 + c|}{\\sqrt{a^2 + b^2}}$$"
+    front: "Pot\xEAncia de um ponto \u2014 tangente e secante\n\nDo ponto externo $P$: tangente $PT$ e secante $PAB$.",
+    back: "$$PT^2 = PA \\cdot PB$$\n\n$T$ = ponto de tang\xEAncia; $A$ e $B$ = interse\xE7\xF5es da secante com a circunfer\xEAncia."
   },
   {
-    front: "Equa\xE7\xE3o da circunfer\xEAncia\n\nCentro $C(a, b)$, raio $r$.",
-    back: "$$(x - a)^2 + (y - b)^2 = r^2$$\n\nForma geral: $x^2 + y^2 + Dx + Ey + F = 0$"
+    front: "Corda e dist\xE2ncia ao centro\n\nCorda de comprimento $2c$ a dist\xE2ncia $d$ do centro. Raio $r$.",
+    back: "$$r^2 = d^2 + c^2$$\n\nO segmento do centro ao ponto m\xE9dio da corda \xE9 perpendicular \xE0 corda."
   },
   {
-    front: "Paralelismo de retas\n\n$r_1: y = m_1 x + n_1$ e $r_2: y = m_2 x + n_2$. Quando s\xE3o paralelas?",
-    back: "$$r_1 \\parallel r_2 \\iff m_1 = m_2 \\text{ e } n_1 \\neq n_2$$\n\nMesmo coeficiente angular, interceptos diferentes."
+    front: "Comprimento da corda \u2014 \xE2ngulo central\n\nCorda que subtende \xE2ngulo central $\\theta$ em circunfer\xEAncia de raio $r$.",
+    back: "$$\\ell = 2r\\operatorname{sen}\\!\\left(\\frac{\\theta}{2}\\right)$$"
   },
   {
-    front: "Perpendicularidade de retas\n\nQuando $r_1$ e $r_2$ s\xE3o perpendiculares?",
-    back: "$$r_1 \\perp r_2 \\iff m_1 \\cdot m_2 = -1$$\n\nOs coeficientes angulares s\xE3o inversos e com sinais opostos."
+    front: "\xC2ngulo entre duas cordas que se cruzam\n\nDuas cordas se intersectam dentro da circunfer\xEAncia. Os arcos opostos medem $\\alpha$ e $\\beta$.",
+    back: "$$\\theta = \\frac{\\alpha + \\beta}{2}$$\n\nO \xE2ngulo no ponto de cruzamento \xE9 a m\xE9dia aritm\xE9tica dos arcos interceptados."
   },
   {
-    front: "\xC1rea de tri\xE2ngulo por coordenadas\n\n$A(x_1,y_1)$, $B(x_2,y_2)$, $C(x_3,y_3)$",
-    back: "$$A = \\frac{1}{2}\\left|x_1(y_2 - y_3) + x_2(y_3 - y_1) + x_3(y_1 - y_2)\\right|$$\n\nF\xF3rmula do determinante (regra de Sarrus)."
-  },
-  {
-    front: "Dist\xE2ncia entre retas paralelas\n\n$r_1: ax + by + c_1 = 0$ e $r_2: ax + by + c_2 = 0$",
-    back: "$$d = \\frac{|c_1 - c_2|}{\\sqrt{a^2 + b^2}}$$"
+    front: "Posi\xE7\xE3o relativa de dois c\xEDrculos\n\nRaios $R \\geq r$, dist\xE2ncia entre centros $d$.",
+    back: "$d > R+r$ \u2192 externos\n$d = R+r$ \u2192 tangentes externos\n$|R-r| < d < R+r$ \u2192 secantes\n$d = R-r$ \u2192 tangentes internos\n$d < R-r$ \u2192 internos\n$d = 0$ \u2192 conc\xEAntricos"
   }
 ];
 app.get("/admin/seed-flashcards", async (req, res) => {

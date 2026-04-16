@@ -65,128 +65,135 @@ app.get("/admin/make-admin", async (req, res) => {
 // =============================================================================
 
 const GEOMETRY_CARDS = [
-  // ── Geometria Plana (avançada) ───────────────────────────────────────────
+  // ── Triângulos — relações e trigonometria ────────────────────────────────
   {
-    front: "Fórmula de Heron\n\nQual é a área de um triângulo em função dos três lados $a$, $b$ e $c$?",
-    back:  "$$A = \\sqrt{s(s-a)(s-b)(s-c)}$$\n\n$s = \\dfrac{a+b+c}{2}$ é o semiperímetro do triângulo.",
+    front: "Relações métricas no triângulo retângulo\n\nCatetos $a$, $b$, hipotenusa $c$, altura $h$ relativa à hipotenusa (projeções $m$ e $n$).",
+    back:  "$$h^2 = m \\cdot n \\qquad a^2 = m \\cdot c \\qquad b^2 = n \\cdot c$$\n$$h \\cdot c = a \\cdot b$$\n\n$m$ = projeção de $a$ sobre $c$; $n$ = projeção de $b$ sobre $c$.",
   },
   {
-    front: "Área do triângulo — fórmula trigonométrica\n\nComo calcular a área usando dois lados e o ângulo entre eles?",
-    back:  "$$A = \\frac{a \\cdot b \\cdot \\operatorname{sen}(C)}{2}$$\n\n$C$ é o ângulo formado pelos lados $a$ e $b$.",
+    front: "Área do triângulo — fórmula com seno\n\nDois lados $a$ e $b$ formam entre si o ângulo $C$. Qual é a área?",
+    back:  "$$A = \\frac{a \\cdot b \\cdot \\operatorname{sen}(C)}{2}$$",
   },
   {
-    front: "Lei dos Cossenos\n\nRelacione o lado $c$ com os lados $a$, $b$ e o ângulo $C$ (ângulo oposto a $c$).",
-    back:  "$$c^2 = a^2 + b^2 - 2ab\\cos C$$\n\nGeneralização do Teorema de Pitágoras. Quando $C = 90°$, temos $c^2 = a^2 + b^2$.",
+    front: "Lei dos Senos\n\nRelacione os lados e os ângulos opostos de qualquer triângulo.",
+    back:  "$$\\frac{a}{\\operatorname{sen} A} = \\frac{b}{\\operatorname{sen} B} = \\frac{c}{\\operatorname{sen} C} = 2R$$\n\n$R$ = raio da circunferência circunscrita.",
   },
   {
-    front: "Lei dos Senos\n\nQual é a relação entre lados e ângulos opostos em qualquer triângulo?",
-    back:  "$$\\frac{a}{\\operatorname{sen} A} = \\frac{b}{\\operatorname{sen} B} = \\frac{c}{\\operatorname{sen} C} = 2R$$\n\n$R$ é o raio da circunferência circunscrita ao triângulo.",
+    front: "Lei dos Cossenos\n\nRelacione o lado $c$ com $a$, $b$ e o ângulo $C$ oposto a $c$.",
+    back:  "$$c^2 = a^2 + b^2 - 2ab\\cos C$$\n\nGeneraliza Pitágoras: quando $C = 90°$, resulta $c^2 = a^2 + b^2$.",
   },
   {
-    front: "Triângulo equilátero — área\n\nSe o lado mede $l$, qual é a área?",
-    back:  "$$A = \\frac{l^2\\sqrt{3}}{4}$$\n\nDerivado de Heron com $a = b = c = l$, ou de $A = \\frac{b \\cdot h}{2}$ com $h = \\frac{l\\sqrt{3}}{2}$.",
+    front: "Triângulo equilátero — altura e área\n\nLado $l$.",
+    back:  "$$h = \\frac{l\\sqrt{3}}{2} \\qquad A = \\frac{l^2\\sqrt{3}}{4}$$\n\nPitágoras: $h^2 + \\left(\\dfrac{l}{2}\\right)^2 = l^2$.",
   },
   {
-    front: "Triângulo equilátero — altura\n\nSe o lado mede $l$, qual é a altura $h$?",
-    back:  "$$h = \\frac{l\\sqrt{3}}{2}$$\n\nPitágoras no triângulo retângulo formado pela metade da base: $h^2 + \\left(\\frac{l}{2}\\right)^2 = l^2$.",
+    front: "Raio da circunferência inscrita no triângulo\n\nÁrea $A$, semiperímetro $s$.",
+    back:  "$$r = \\frac{A}{s}, \\qquad s = \\frac{a+b+c}{2}$$",
   },
   {
-    front: "Setor circular — área\n\nRaio $r$ e ângulo central $\\theta$ em graus.",
-    back:  "$$A = \\frac{\\theta}{360°} \\cdot \\pi r^2$$\n\nEm radianos: $A = \\dfrac{\\theta \\, r^2}{2}$",
+    front: "Raio da circunferência circunscrita no triângulo\n\nLados $a$, $b$, $c$, área $A$.",
+    back:  "$$R = \\frac{abc}{4A}$$\n\nTambém (Lei dos Senos): $R = \\dfrac{a}{2\\operatorname{sen} A}$.",
   },
   {
-    front: "Comprimento do arco\n\nRaio $r$ e ângulo central $\\theta$ em graus.",
-    back:  "$$\\ell = \\frac{\\theta}{360°} \\cdot 2\\pi r$$\n\nEm radianos: $\\ell = r\\theta$",
+    front: "Teorema da bissetriz interna\n\nA bissetriz do ângulo $A$ divide o lado oposto $BC$ nos segmentos $m$ (junto a $b$) e $n$ (junto a $c$).",
+    back:  "$$\\frac{m}{n} = \\frac{b}{c}$$\n\nA bissetriz interna divide o lado oposto proporcionalmente aos lados adjacentes.",
   },
   {
-    front: "Raio da circunferência inscrita num triângulo\n\nExpresse $r$ em função da área $A$ e do semiperímetro $s$.",
-    back:  "$$r = \\frac{A}{s}$$\n\n$s = \\dfrac{a+b+c}{2}$, $A$ = área do triângulo.",
+    front: "Baricentro — propriedade da mediana\n\nComo o baricentro $G$ divide cada mediana do triângulo?",
+    back:  "O baricentro divide cada mediana na razão $\\mathbf{2:1}$ a partir do vértice.\n\n$$AG = \\frac{2}{3}\\,m_a$$\n\n$m_a$ = comprimento da mediana relativa ao vértice $A$.",
   },
   {
-    front: "Raio da circunferência circunscrita num triângulo\n\nExpresse $R$ em função dos lados $a$, $b$, $c$ e da área $A$.",
-    back:  "$$R = \\frac{abc}{4A}$$\n\nTambém: $R = \\dfrac{a}{2\\operatorname{sen} A}$ (Lei dos Senos).",
+    front: "Triplas pitagóricas\n\nCite as triplas mais cobradas em vestibulares e suas variações.",
+    back:  "$(3,\\,4,\\,5)$ → múltiplos: $(6,8,10)$, $(9,12,15)$…\n\n$(5,\\,12,\\,13)$\n\n$(8,\\,15,\\,17)$\n\n$(7,\\,24,\\,25)$\n\nVerifique sempre: $a^2 + b^2 = c^2$.",
   },
-  // ── Geometria Espacial ──────────────────────────────────────────────────
+  // ── Trigonometria no plano ───────────────────────────────────────────────
   {
-    front: "Cubo — diagonal do espaço\n\nSe a aresta mede $a$, qual é a diagonal do sólido?",
-    back:  "$$d = a\\sqrt{3}$$\n\nAplicando Pitágoras duas vezes: $d^2 = a^2 + a^2 + a^2 = 3a^2$.",
-  },
-  {
-    front: "Paralelepípedo — diagonal do espaço\n\nExpresse $d$ em função das dimensões $a$, $b$ e $c$.",
-    back:  "$$d = \\sqrt{a^2 + b^2 + c^2}$$\n\nGeneralização tridimensional do Teorema de Pitágoras.",
+    front: "Relações trigonométricas no triângulo retângulo\n\nExpresse $\\operatorname{sen}$, $\\cos$ e $\\operatorname{tg}$ em termos dos lados.",
+    back:  "$$\\operatorname{sen}\\theta = \\frac{\\text{oposto}}{\\text{hipotenusa}} \\qquad \\cos\\theta = \\frac{\\text{adjacente}}{\\text{hipotenusa}} \\qquad \\operatorname{tg}\\theta = \\frac{\\text{oposto}}{\\text{adjacente}}$$",
   },
   {
-    front: "Cilindro — área total\n\nRaio $r$, altura $h$.",
-    back:  "$$A_T = 2\\pi r(r + h)$$\n\nÁrea lateral $= 2\\pi r h$, mais duas bases circulares $= 2\\pi r^2$.",
+    front: "Valores trigonométricos notáveis\n\n$\\operatorname{sen}$, $\\cos$ e $\\operatorname{tg}$ de $30°$, $45°$ e $60°$.",
+    back:  "$$\\operatorname{sen}30° = \\tfrac{1}{2},\\quad \\cos30° = \\tfrac{\\sqrt{3}}{2},\\quad \\operatorname{tg}30° = \\tfrac{\\sqrt{3}}{3}$$\n$$\\operatorname{sen}45° = \\cos45° = \\tfrac{\\sqrt{2}}{2},\\quad \\operatorname{tg}45° = 1$$\n$$\\operatorname{sen}60° = \\tfrac{\\sqrt{3}}{2},\\quad \\cos60° = \\tfrac{1}{2},\\quad \\operatorname{tg}60° = \\sqrt{3}$$",
   },
   {
-    front: "Cone — geratriz\n\nRelação entre raio $r$, altura $h$ e geratriz $g$.",
-    back:  "$$g = \\sqrt{r^2 + h^2}$$\n\nPitágoras no triângulo retângulo axial do cone.",
+    front: "Identidade fundamental da trigonometria",
+    back:  "$$\\operatorname{sen}^2\\theta + \\cos^2\\theta = 1$$\n\nDerivada do Teorema de Pitágoras no círculo unitário de raio 1.",
   },
   {
-    front: "Cone — área total\n\nRaio $r$, geratriz $g$.",
-    back:  "$$A_T = \\pi r(r + g)$$\n\nÁrea lateral $= \\pi r g$, base $= \\pi r^2$.",
+    front: "Relação entre $\\operatorname{tg}$, $\\operatorname{sen}$ e $\\cos$",
+    back:  "$$\\operatorname{tg}\\theta = \\frac{\\operatorname{sen}\\theta}{\\cos\\theta}$$\n\nDa identidade fundamental: $1 + \\operatorname{tg}^2\\theta = \\sec^2\\theta$.",
+  },
+  // ── Semelhança ──────────────────────────────────────────────────────────
+  {
+    front: "Semelhança de triângulos — critérios\n\nCite os três critérios que garantem semelhança.",
+    back:  "AA — dois ângulos iguais\n\nLAL — dois lados proporcionais e o ângulo entre eles igual\n\nLLL — os três pares de lados proporcionais\n\nTriângulos semelhantes têm lados correspondentes proporcionais e ângulos iguais.",
   },
   {
-    front: "Esfera — volume\n\nRaio $r$.",
-    back:  "$$V = \\frac{4\\pi r^3}{3}$$",
+    front: "Semelhança — razão entre perímetros e áreas\n\nSe a razão de semelhança é $k$, qual é a razão entre perímetros? E entre áreas?",
+    back:  "$$\\frac{P_1}{P_2} = k \\qquad \\frac{A_1}{A_2} = k^2$$\n\nPerímetros na razão $k$; áreas na razão $k^2$.",
+  },
+  // ── Quadriláteros ────────────────────────────────────────────────────────
+  {
+    front: "Quadrado — diagonal\n\nLado $l$.",
+    back:  "$$d = l\\sqrt{2}$$\n\nPitágoras: $d^2 = l^2 + l^2 = 2l^2$.",
   },
   {
-    front: "Esfera — área da superfície\n\nRaio $r$.",
-    back:  "$$A = 4\\pi r^2$$",
+    front: "Retângulo — diagonal\n\nLados $a$ e $b$.",
+    back:  "$$d = \\sqrt{a^2 + b^2}$$",
   },
   {
-    front: "Tronco de cone — volume\n\nRaios $R$ (base maior) e $r$ (base menor), altura $h$.",
-    back:  "$$V = \\frac{\\pi h}{3}\\left(R^2 + Rr + r^2\\right)$$",
+    front: "Losango — relação entre diagonais e lado\n\nDiagonais $d_1$ e $d_2$, lado $l$.",
+    back:  "$$l = \\sqrt{\\left(\\frac{d_1}{2}\\right)^2 + \\left(\\frac{d_2}{2}\\right)^2}$$\n\nAs diagonais do losango são perpendiculares e bissetoras entre si.",
   },
   {
-    front: "Prisma — volume\n\nFórmula geral para qualquer prisma.",
-    back:  "$$V = A_b \\cdot h$$\n\n$A_b$ = área da base, $h$ = altura. Vale para prismas triangular, quadrangular, hexagonal…",
+    front: "Trapézio — base média\n\nQual é o comprimento do segmento médio que une os pontos médios dos lados não paralelos?",
+    back:  "$$m = \\frac{B + b}{2}$$\n\n$B$ = base maior, $b$ = base menor. O segmento médio é paralelo às bases.",
+  },
+  // ── Polígonos regulares ──────────────────────────────────────────────────
+  {
+    front: "Polígono regular — ângulo interno\n\n$n$ lados.",
+    back:  "$$\\theta_{\\text{int}} = \\frac{(n-2)\\cdot 180°}{n}$$\n\nExemplos: triângulo $60°$, quadrado $90°$, hexágono $120°$.",
   },
   {
-    front: "Pirâmide — volume\n\nFórmula geral.",
-    back:  "$$V = \\frac{A_b \\cdot h}{3}$$\n\n$A_b$ = área da base, $h$ = altura. Um terço do prisma de mesma base e altura.",
-  },
-  // ── Geometria Analítica ─────────────────────────────────────────────────
-  {
-    front: "Distância entre dois pontos\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
-    back:  "$$d = \\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$",
+    front: "Polígono regular — ângulo externo\n\n$n$ lados.",
+    back:  "$$\\theta_{\\text{ext}} = \\frac{360°}{n}$$\n\nA soma de todos os ângulos externos de qualquer polígono convexo é sempre $360°$.",
   },
   {
-    front: "Ponto médio de um segmento\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
-    back:  "$$M = \\left(\\frac{x_1 + x_2}{2},\\; \\frac{y_1 + y_2}{2}\\right)$$",
+    front: "Polígono regular — número de diagonais\n\n$n$ lados.",
+    back:  "$$D = \\frac{n(n-3)}{2}$$\n\nEscolhe-se 2 vértices ($\\binom{n}{2}$ pares) e subtraem-se os $n$ lados.",
   },
   {
-    front: "Equação reduzida da reta\n\nDescreva a forma geral e o significado dos coeficientes.",
-    back:  "$$y = mx + n$$\n\n$m$ = coeficiente angular (inclinação), $n$ = coeficiente linear (intercepto com eixo $y$).",
+    front: "Polígono regular — área\n\nLado $l$, apótema $a$, $n$ lados.",
+    back:  "$$A = \\frac{n \\cdot l \\cdot a}{2} = \\frac{\\text{Perímetro} \\cdot a}{2}$$",
+  },
+  // ── Circunferência e círculo ─────────────────────────────────────────────
+  {
+    front: "Ângulo inscrito em semicírculo\n\nUm triângulo tem como lado o diâmetro de uma circunferência. O que se pode afirmar do ângulo oposto?",
+    back:  "O ângulo inscrito que intercepta um semicírculo mede sempre $90°$.\n\nConsequência: todo triângulo inscrito em um semicírculo é retângulo.",
   },
   {
-    front: "Coeficiente angular entre dois pontos\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
-    back:  "$$m = \\frac{y_2 - y_1}{x_2 - x_1} = \\operatorname{tg}\\,\\alpha$$\n\n$\\alpha$ é o ângulo que a reta faz com o eixo $x$ positivo.",
+    front: "Potência de um ponto — duas cordas\n\nDuas cordas $AB$ e $CD$ se cruzam no ponto $P$ interno à circunferência.",
+    back:  "$$PA \\cdot PB = PC \\cdot PD$$\n\nO produto dos segmentos de uma corda é igual ao produto dos segmentos da outra.",
   },
   {
-    front: "Distância de um ponto a uma reta\n\nPonto $P(x_0, y_0)$, reta $ax + by + c = 0$",
-    back:  "$$d = \\frac{|ax_0 + by_0 + c|}{\\sqrt{a^2 + b^2}}$$",
+    front: "Potência de um ponto — tangente e secante\n\nDo ponto externo $P$: tangente $PT$ e secante $PAB$.",
+    back:  "$$PT^2 = PA \\cdot PB$$\n\n$T$ = ponto de tangência; $A$ e $B$ = interseções da secante com a circunferência.",
   },
   {
-    front: "Equação da circunferência\n\nCentro $C(a, b)$, raio $r$.",
-    back:  "$$(x - a)^2 + (y - b)^2 = r^2$$\n\nForma geral: $x^2 + y^2 + Dx + Ey + F = 0$",
+    front: "Corda e distância ao centro\n\nCorda de comprimento $2c$ a distância $d$ do centro. Raio $r$.",
+    back:  "$$r^2 = d^2 + c^2$$\n\nO segmento do centro ao ponto médio da corda é perpendicular à corda.",
   },
   {
-    front: "Paralelismo de retas\n\n$r_1: y = m_1 x + n_1$ e $r_2: y = m_2 x + n_2$. Quando são paralelas?",
-    back:  "$$r_1 \\parallel r_2 \\iff m_1 = m_2 \\text{ e } n_1 \\neq n_2$$\n\nMesmo coeficiente angular, interceptos diferentes.",
+    front: "Comprimento da corda — ângulo central\n\nCorda que subtende ângulo central $\\theta$ em circunferência de raio $r$.",
+    back:  "$$\\ell = 2r\\operatorname{sen}\\!\\left(\\frac{\\theta}{2}\\right)$$",
   },
   {
-    front: "Perpendicularidade de retas\n\nQuando $r_1$ e $r_2$ são perpendiculares?",
-    back:  "$$r_1 \\perp r_2 \\iff m_1 \\cdot m_2 = -1$$\n\nOs coeficientes angulares são inversos e com sinais opostos.",
+    front: "Ângulo entre duas cordas que se cruzam\n\nDuas cordas se intersectam dentro da circunferência. Os arcos opostos medem $\\alpha$ e $\\beta$.",
+    back:  "$$\\theta = \\frac{\\alpha + \\beta}{2}$$\n\nO ângulo no ponto de cruzamento é a média aritmética dos arcos interceptados.",
   },
   {
-    front: "Área de triângulo por coordenadas\n\n$A(x_1,y_1)$, $B(x_2,y_2)$, $C(x_3,y_3)$",
-    back:  "$$A = \\frac{1}{2}\\left|x_1(y_2 - y_3) + x_2(y_3 - y_1) + x_3(y_1 - y_2)\\right|$$\n\nFórmula do determinante (regra de Sarrus).",
-  },
-  {
-    front: "Distância entre retas paralelas\n\n$r_1: ax + by + c_1 = 0$ e $r_2: ax + by + c_2 = 0$",
-    back:  "$$d = \\frac{|c_1 - c_2|}{\\sqrt{a^2 + b^2}}$$",
+    front: "Posição relativa de dois círculos\n\nRaios $R \\geq r$, distância entre centros $d$.",
+    back:  "$d > R+r$ → externos\n$d = R+r$ → tangentes externos\n$|R-r| < d < R+r$ → secantes\n$d = R-r$ → tangentes internos\n$d < R-r$ → internos\n$d = 0$ → concêntricos",
   },
 ];
 
