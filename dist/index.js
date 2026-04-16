@@ -2513,6 +2513,185 @@ var GEOMETRY_CARDS = [
     back: "$d > R+r$ \u2192 externos\n$d = R+r$ \u2192 tangentes externos\n$|R-r| < d < R+r$ \u2192 secantes\n$d = R-r$ \u2192 tangentes internos\n$d < R-r$ \u2192 internos\n$d = 0$ \u2192 conc\xEAntricos"
   }
 ];
+var PROBABILIDADE_ARTICLE = {
+  titulo: "Probabilidade \u2014 Conceitos B\xE1sicos e Opera\xE7\xF5es",
+  topico: "Probabilidade e Estat\xEDstica",
+  active: true,
+  url_pdf: null,
+  conteudo: `## 1. Espa\xE7o Amostral e Evento
+
+O **espa\xE7o amostral** ($\\Omega$) \xE9 o conjunto de todos os resultados poss\xEDveis de um experimento aleat\xF3rio. Um **evento** ($A$) \xE9 qualquer subconjunto do espa\xE7o amostral.
+
+**Exemplo:** No lan\xE7amento de um dado, $\\Omega = \\{1, 2, 3, 4, 5, 6\\}$. O evento "sair n\xFAmero par" \xE9 $A = \\{2, 4, 6\\}$.
+
+---
+
+## 2. Defini\xE7\xE3o Cl\xE1ssica de Probabilidade
+
+Se todos os resultados s\xE3o **equiprov\xE1veis** (igualmente prov\xE1veis):
+
+$$P(A) = \\frac{n(A)}{n(\\Omega)}$$
+
+onde $n(A)$ \xE9 o n\xFAmero de casos **favor\xE1veis** e $n(\\Omega)$ \xE9 o total de casos poss\xEDveis.
+
+**Propriedades fundamentais:**
+\u2022 $0 \\leq P(A) \\leq 1$
+\u2022 $P(\\Omega) = 1$ (evento certo)
+\u2022 $P(\\emptyset) = 0$ (evento imposs\xEDvel)
+
+---
+
+## 3. Probabilidade do Complementar
+
+O complementar de $A$ (escrito $\\bar{A}$ ou $A^c$) \xE9 o evento "A **n\xE3o** ocorre":
+
+$$P(\\bar{A}) = 1 - P(A)$$
+
+**Dica importante:** quando o enunciado pede "pelo menos um", costuma ser mais f\xE1cil calcular $P(\\text{nenhum})$ e subtrair de 1.
+
+**Exemplo:** A probabilidade de tirar pelo menos uma cara em dois lan\xE7amentos de moeda:
+
+$$P(\\text{pelo menos uma cara}) = 1 - P(\\text{nenhuma cara}) = 1 - \\frac{1}{4} = \\frac{3}{4}$$
+
+---
+
+## 4. Regra da Adi\xE7\xE3o \u2014 Uni\xE3o de Eventos
+
+Para quaisquer eventos $A$ e $B$:
+
+$$P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$$
+
+O termo $P(A \\cap B)$ \xE9 subtra\xEDdo para **n\xE3o contar duas vezes** os resultados em comum.
+
+**Eventos mutuamente exclusivos** ($A \\cap B = \\emptyset$): n\xE3o podem ocorrer ao mesmo tempo, logo:
+
+$$P(A \\cup B) = P(A) + P(B)$$
+
+**Exemplo:** Num baralho de 52 cartas, a probabilidade de sortear um \xE1s **ou** uma carta de copas:
+
+$$P(\\text{\xE1s} \\cup \\text{copas}) = \\frac{4}{52} + \\frac{13}{52} - \\frac{1}{52} = \\frac{16}{52} = \\frac{4}{13}$$
+
+---
+
+## 5. Probabilidade Condicional
+
+A probabilidade de $A$ ocorrer **dado que** $B$ j\xE1 ocorreu \xE9:
+
+$$P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}, \\quad P(B) > 0$$
+
+**Exemplo:** Numa urna com 3 bolas vermelhas e 2 azuis, qual \xE9 a probabilidade de a segunda bola ser vermelha, dado que a primeira foi vermelha (sem reposi\xE7\xE3o)?
+
+$$P(V_2 \\mid V_1) = \\frac{2}{4} = \\frac{1}{2}$$
+
+---
+
+## 6. Regra do Produto \u2014 Interse\xE7\xE3o de Eventos
+
+Da defini\xE7\xE3o de probabilidade condicional, deduz-se:
+
+$$P(A \\cap B) = P(A) \\cdot P(B \\mid A) = P(B) \\cdot P(A \\mid B)$$
+
+**Eventos independentes:** $A$ e $B$ s\xE3o independentes quando a ocorr\xEAncia de um **n\xE3o afeta** a probabilidade do outro:
+
+$$P(A \\mid B) = P(A) \\implies P(A \\cap B) = P(A) \\cdot P(B)$$
+
+**Exemplo:** Lan\xE7ando dois dados, a probabilidade de obter 6 no primeiro **e** 6 no segundo:
+
+$$P(6 \\cap 6) = \\frac{1}{6} \\cdot \\frac{1}{6} = \\frac{1}{36}$$
+
+---
+
+## 7. Distribui\xE7\xE3o Binomial
+
+Quando um experimento com probabilidade de sucesso $p$ \xE9 repetido $n$ vezes de forma **independente**, a probabilidade de exatamente $k$ sucessos \xE9:
+
+$$P(X = k) = \\binom{n}{k}\\, p^k\\,(1-p)^{n-k}$$
+
+onde $\\displaystyle\\binom{n}{k} = \\frac{n!}{k!\\,(n-k)!}$ \xE9 o coeficiente binomial.
+
+**Exemplo:** Jogando uma moeda honesta 4 vezes, a probabilidade de exatamente 3 caras:
+
+$$P(X = 3) = \\binom{4}{3}\\left(\\frac{1}{2}\\right)^3\\left(\\frac{1}{2}\\right)^1 = 4 \\cdot \\frac{1}{8} \\cdot \\frac{1}{2} = \\frac{1}{4}$$
+
+---
+
+## Resumo das F\xF3rmulas
+
+| Opera\xE7\xE3o | F\xF3rmula |
+|---|---|
+| Probabilidade cl\xE1ssica | $P(A) = \\dfrac{n(A)}{n(\\Omega)}$ |
+| Complementar | $P(\\bar{A}) = 1 - P(A)$ |
+| Uni\xE3o (geral) | $P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$ |
+| Uni\xE3o (exclusivos) | $P(A \\cup B) = P(A) + P(B)$ |
+| Condicional | $P(A \\mid B) = \\dfrac{P(A \\cap B)}{P(B)}$ |
+| Interse\xE7\xE3o (geral) | $P(A \\cap B) = P(A) \\cdot P(B \\mid A)$ |
+| Interse\xE7\xE3o (independentes) | $P(A \\cap B) = P(A) \\cdot P(B)$ |
+| Binomial | $P(X=k) = \\binom{n}{k} p^k (1-p)^{n-k}$ |`,
+  questoes: [
+    {
+      enunciado: "Num baralho com 52 cartas, qual \xE9 a probabilidade de sortear um \xE1s ou uma carta de copas?",
+      opcoes: [
+        "1/4",
+        "4/13",
+        "17/52",
+        "1/13"
+      ],
+      correta: 1
+    },
+    {
+      enunciado: "Dois eventos A e B s\xE3o independentes, com P(A) = 1/3 e P(B) = 1/2. A probabilidade de que pelo menos um deles ocorra \xE9:",
+      opcoes: [
+        "1/6",
+        "5/6",
+        "2/3",
+        "1/2"
+      ],
+      correta: 2
+    },
+    {
+      enunciado: "Numa turma de 30 alunos, 18 estudam Matem\xE1tica, 12 estudam F\xEDsica e 6 estudam ambas. A probabilidade de um aluno sorteado estudar apenas Matem\xE1tica \xE9:",
+      opcoes: [
+        "3/5",
+        "1/2",
+        "2/5",
+        "1/5"
+      ],
+      correta: 2
+    }
+  ]
+};
+app.get("/admin/seed-review-probabilidade", async (req, res) => {
+  const secret = req.query.secret;
+  const IMPORT_SECRET = process.env.IMPORT_SECRET ?? "IMPORTAR2024";
+  if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const [existing] = await conn.query(
+      "SELECT id FROM review_contents WHERE titulo = ? LIMIT 1",
+      [PROBABILIDADE_ARTICLE.titulo]
+    );
+    if (existing.length > 0) {
+      return res.send(`\u26A0\uFE0F Artigo j\xE1 existe (id=${existing[0].id}). Nada inserido.`);
+    }
+    await conn.query(
+      `INSERT INTO review_contents (titulo, topico, conteudo, url_pdf, questoes, active, created_at)
+       VALUES (?, ?, ?, ?, ?, 1, NOW())`,
+      [
+        PROBABILIDADE_ARTICLE.titulo,
+        PROBABILIDADE_ARTICLE.topico,
+        PROBABILIDADE_ARTICLE.conteudo,
+        null,
+        JSON.stringify(PROBABILIDADE_ARTICLE.questoes)
+      ]
+    );
+    res.send(`\u2705 Artigo "${PROBABILIDADE_ARTICLE.titulo}" inserido com sucesso!`);
+  } catch (err) {
+    res.status(500).send(`Erro: ${err.message}`);
+  } finally {
+    if (conn) conn.release();
+  }
+});
 app.get("/admin/seed-flashcards", async (req, res) => {
   const secret = req.query.secret;
   const IMPORT_SECRET = process.env.IMPORT_SECRET ?? "IMPORTAR2024";
