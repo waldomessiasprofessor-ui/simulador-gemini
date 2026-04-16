@@ -175,22 +175,77 @@ function parseSegments(rawText: string): Segment[] {
   return segments;
 }
 
+// Renderiza inline: **bold**, *italic*, e texto puro
+function renderInline(line: string, keyPrefix: string): React.ReactNode[] {
+  const parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, partIdx) => {
+    const k = `${keyPrefix}-${partIdx}`;
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={k} className="font-semibold">{part.slice(2, -2)}</strong>;
+    if (part.startsWith("*") && part.endsWith("*"))
+      return <em key={k}>{part.slice(1, -1)}</em>;
+    return part ? <React.Fragment key={k}>{part}</React.Fragment> : null;
+  }).filter(Boolean) as React.ReactNode[];
+}
+
 function renderTextSegment(text: string): React.ReactNode[] {
   const lines = text.split("\n");
   const nodes: React.ReactNode[] = [];
+
   lines.forEach((line, lineIdx) => {
-    if (lineIdx > 0) nodes.push(<br key={`br-${lineIdx}`} />);
-    const parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
-    parts.forEach((part, partIdx) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        nodes.push(<strong key={`b-${lineIdx}-${partIdx}`} className="font-semibold">{part.slice(2, -2)}</strong>);
-      } else if (part.startsWith("*") && part.endsWith("*")) {
-        nodes.push(<em key={`i-${lineIdx}-${partIdx}`}>{part.slice(1, -1)}</em>);
-      } else if (part) {
-        nodes.push(<React.Fragment key={`t-${lineIdx}-${partIdx}`}>{part}</React.Fragment>);
+    const k = `l-${lineIdx}`;
+
+    // Separador horizontal: --- ou ===
+    if (/^\s*(-{3,}|={3,})\s*$/.test(line)) {
+      nodes.push(<hr key={k} className="my-3" style={{ borderColor: "var(--border)" }} />);
+      return;
+    }
+
+    // Headings: ## Título  /  ### Subtítulo  /  # Título grande
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const content = headingMatch[2];
+      const inline = renderInline(content, k);
+      if (level === 1)
+        nodes.push(<h2 key={k} className="text-lg font-bold mt-4 mb-1" style={{ color: "var(--foreground)" }}>{inline}</h2>);
+      else if (level === 2)
+        nodes.push(<h3 key={k} className="text-base font-bold mt-3 mb-1" style={{ color: "var(--foreground)" }}>{inline}</h3>);
+      else
+        nodes.push(<h4 key={k} className="text-sm font-bold mt-2 mb-0.5" style={{ color: "var(--foreground)" }}>{inline}</h4>);
+      return;
+    }
+
+    // Bullet com •  ou  - item
+    const bulletMatch = line.match(/^[•\-]\s+(.+)$/);
+    if (bulletMatch) {
+      nodes.push(
+        <div key={k} className="flex gap-2 items-start">
+          <span className="mt-0.5 flex-shrink-0" style={{ color: "var(--muted-foreground)" }}>•</span>
+          <span>{renderInline(bulletMatch[1], k)}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Linha vazia → pequeno espaço (não um <br> que empilha)
+    if (line.trim() === "") {
+      nodes.push(<div key={k} className="h-1" />);
+      return;
+    }
+
+    // Texto comum — adiciona <br> antes (exceto na primeira linha)
+    if (lineIdx > 0 && nodes.length > 0) {
+      const last = nodes[nodes.length - 1] as any;
+      // Não adiciona <br> após heading / hr / bullet / espaçador
+      const lastType = last?.type;
+      if (lastType !== "hr" && lastType !== "h2" && lastType !== "h3" && lastType !== "h4" && lastType !== "div") {
+        nodes.push(<br key={`br-${lineIdx}`} />);
       }
-    });
+    }
+    nodes.push(...renderInline(line, k));
   });
+
   return nodes;
 }
 
