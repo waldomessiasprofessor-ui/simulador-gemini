@@ -33,6 +33,7 @@ export const questionsRouter = createTRPCRouter({
       pageSize: z.number().int().min(1).max(100).default(20),
       conteudo: z.string().optional(),
       fonte: z.string().optional(),
+      tag: z.string().optional(),
       nivel_dificuldade: NivelDificuldadeEnum.optional(),
       activeOnly: z.boolean().default(true),
       orderBy: z.enum(["id", "ano", "conteudo_principal", "nivel_dificuldade", "createdAt"]).default("ano"),
@@ -47,6 +48,7 @@ export const questionsRouter = createTRPCRouter({
       if (input.conteudo) filters.push(sql`${questions.conteudo_principal} LIKE ${'%' + input.conteudo + '%'}`);
       if (input.fonte) filters.push(eq(questions.fonte, input.fonte));
       if (input.nivel_dificuldade) filters.push(eq(questions.nivel_dificuldade, input.nivel_dificuldade));
+      if (input.tag) filters.push(sql`JSON_CONTAINS(${questions.tags}, ${JSON.stringify(input.tag)})`);
 
       const where = filters.length > 0 ? and(...filters) : undefined;
       const orderColumn = orderBy === "conteudo_principal" ? questions.conteudo_principal

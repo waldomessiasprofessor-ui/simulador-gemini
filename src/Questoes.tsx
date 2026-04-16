@@ -101,17 +101,13 @@ export default function Questoes({ fonte }: { fonte?: string }) {
     pageSize: 20,
     conteudo: search || undefined,
     fonte: fonte || undefined,
+    tag: filterTag !== "Todas" ? filterTag : undefined,
     activeOnly: true,
     orderBy: "conteudo_principal",
     orderDir: "asc",
   });
 
-  const allQuestions = data?.questions ?? [];
-
-  // Filtra por tag no frontend
-  const filtered = filterTag === "Todas"
-    ? allQuestions
-    : allQuestions.filter((q) => Array.isArray(q.tags) && q.tags.includes(filterTag));
+  const filtered = data?.questions ?? [];
 
   return (
     <div className="space-y-6 py-2">
@@ -140,8 +136,8 @@ export default function Questoes({ fonte }: { fonte?: string }) {
 
       {/* Contador */}
       <p className="text-sm" style={{ color: "#64748B" }}>
-        {filtered.length} questão(ões){filterTag !== "Todas" ? ` em "${filterTag}"` : ""}
-        {data && data.pagination.totalPages > 1 && filterTag === "Todas" ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
+        {data?.pagination.total ?? filtered.length} questão(ões){filterTag !== "Todas" ? ` em "${filterTag}"` : ""}
+        {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
       </p>
 
       {/* Lista */}
@@ -282,7 +278,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
       )}
 
       {/* Paginação */}
-      {data && data.pagination.totalPages > 1 && filterTag === "Todas" && (
+      {data && data.pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-2">
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
             className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40"
