@@ -59,6 +59,217 @@ app.get("/admin/make-admin", async (req, res) => {
 });
 
 // =============================================================================
+// Rota: seed de flashcards de geometria
+// GET /admin/seed-flashcards?secret=IMPORTAR2024&action=list
+// GET /admin/seed-flashcards?secret=IMPORTAR2024&action=insert&deckId=N
+// =============================================================================
+
+const GEOMETRY_CARDS = [
+  // ── Geometria Plana (avançada) ───────────────────────────────────────────
+  {
+    front: "Fórmula de Heron\n\nQual é a área de um triângulo em função dos três lados $a$, $b$ e $c$?",
+    back:  "$$A = \\sqrt{s(s-a)(s-b)(s-c)}$$\n\n$s = \\dfrac{a+b+c}{2}$ é o semiperímetro do triângulo.",
+  },
+  {
+    front: "Área do triângulo — fórmula trigonométrica\n\nComo calcular a área usando dois lados e o ângulo entre eles?",
+    back:  "$$A = \\frac{a \\cdot b \\cdot \\operatorname{sen}(C)}{2}$$\n\n$C$ é o ângulo formado pelos lados $a$ e $b$.",
+  },
+  {
+    front: "Lei dos Cossenos\n\nRelacione o lado $c$ com os lados $a$, $b$ e o ângulo $C$ (ângulo oposto a $c$).",
+    back:  "$$c^2 = a^2 + b^2 - 2ab\\cos C$$\n\nGeneralização do Teorema de Pitágoras. Quando $C = 90°$, temos $c^2 = a^2 + b^2$.",
+  },
+  {
+    front: "Lei dos Senos\n\nQual é a relação entre lados e ângulos opostos em qualquer triângulo?",
+    back:  "$$\\frac{a}{\\operatorname{sen} A} = \\frac{b}{\\operatorname{sen} B} = \\frac{c}{\\operatorname{sen} C} = 2R$$\n\n$R$ é o raio da circunferência circunscrita ao triângulo.",
+  },
+  {
+    front: "Triângulo equilátero — área\n\nSe o lado mede $l$, qual é a área?",
+    back:  "$$A = \\frac{l^2\\sqrt{3}}{4}$$\n\nDerivado de Heron com $a = b = c = l$, ou de $A = \\frac{b \\cdot h}{2}$ com $h = \\frac{l\\sqrt{3}}{2}$.",
+  },
+  {
+    front: "Triângulo equilátero — altura\n\nSe o lado mede $l$, qual é a altura $h$?",
+    back:  "$$h = \\frac{l\\sqrt{3}}{2}$$\n\nPitágoras no triângulo retângulo formado pela metade da base: $h^2 + \\left(\\frac{l}{2}\\right)^2 = l^2$.",
+  },
+  {
+    front: "Setor circular — área\n\nRaio $r$ e ângulo central $\\theta$ em graus.",
+    back:  "$$A = \\frac{\\theta}{360°} \\cdot \\pi r^2$$\n\nEm radianos: $A = \\dfrac{\\theta \\, r^2}{2}$",
+  },
+  {
+    front: "Comprimento do arco\n\nRaio $r$ e ângulo central $\\theta$ em graus.",
+    back:  "$$\\ell = \\frac{\\theta}{360°} \\cdot 2\\pi r$$\n\nEm radianos: $\\ell = r\\theta$",
+  },
+  {
+    front: "Raio da circunferência inscrita num triângulo\n\nExpresse $r$ em função da área $A$ e do semiperímetro $s$.",
+    back:  "$$r = \\frac{A}{s}$$\n\n$s = \\dfrac{a+b+c}{2}$, $A$ = área do triângulo.",
+  },
+  {
+    front: "Raio da circunferência circunscrita num triângulo\n\nExpresse $R$ em função dos lados $a$, $b$, $c$ e da área $A$.",
+    back:  "$$R = \\frac{abc}{4A}$$\n\nTambém: $R = \\dfrac{a}{2\\operatorname{sen} A}$ (Lei dos Senos).",
+  },
+  // ── Geometria Espacial ──────────────────────────────────────────────────
+  {
+    front: "Cubo — diagonal do espaço\n\nSe a aresta mede $a$, qual é a diagonal do sólido?",
+    back:  "$$d = a\\sqrt{3}$$\n\nAplicando Pitágoras duas vezes: $d^2 = a^2 + a^2 + a^2 = 3a^2$.",
+  },
+  {
+    front: "Paralelepípedo — diagonal do espaço\n\nExpresse $d$ em função das dimensões $a$, $b$ e $c$.",
+    back:  "$$d = \\sqrt{a^2 + b^2 + c^2}$$\n\nGeneralização tridimensional do Teorema de Pitágoras.",
+  },
+  {
+    front: "Cilindro — área total\n\nRaio $r$, altura $h$.",
+    back:  "$$A_T = 2\\pi r(r + h)$$\n\nÁrea lateral $= 2\\pi r h$, mais duas bases circulares $= 2\\pi r^2$.",
+  },
+  {
+    front: "Cone — geratriz\n\nRelação entre raio $r$, altura $h$ e geratriz $g$.",
+    back:  "$$g = \\sqrt{r^2 + h^2}$$\n\nPitágoras no triângulo retângulo axial do cone.",
+  },
+  {
+    front: "Cone — área total\n\nRaio $r$, geratriz $g$.",
+    back:  "$$A_T = \\pi r(r + g)$$\n\nÁrea lateral $= \\pi r g$, base $= \\pi r^2$.",
+  },
+  {
+    front: "Esfera — volume\n\nRaio $r$.",
+    back:  "$$V = \\frac{4\\pi r^3}{3}$$",
+  },
+  {
+    front: "Esfera — área da superfície\n\nRaio $r$.",
+    back:  "$$A = 4\\pi r^2$$",
+  },
+  {
+    front: "Tronco de cone — volume\n\nRaios $R$ (base maior) e $r$ (base menor), altura $h$.",
+    back:  "$$V = \\frac{\\pi h}{3}\\left(R^2 + Rr + r^2\\right)$$",
+  },
+  {
+    front: "Prisma — volume\n\nFórmula geral para qualquer prisma.",
+    back:  "$$V = A_b \\cdot h$$\n\n$A_b$ = área da base, $h$ = altura. Vale para prismas triangular, quadrangular, hexagonal…",
+  },
+  {
+    front: "Pirâmide — volume\n\nFórmula geral.",
+    back:  "$$V = \\frac{A_b \\cdot h}{3}$$\n\n$A_b$ = área da base, $h$ = altura. Um terço do prisma de mesma base e altura.",
+  },
+  // ── Geometria Analítica ─────────────────────────────────────────────────
+  {
+    front: "Distância entre dois pontos\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
+    back:  "$$d = \\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$",
+  },
+  {
+    front: "Ponto médio de um segmento\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
+    back:  "$$M = \\left(\\frac{x_1 + x_2}{2},\\; \\frac{y_1 + y_2}{2}\\right)$$",
+  },
+  {
+    front: "Equação reduzida da reta\n\nDescreva a forma geral e o significado dos coeficientes.",
+    back:  "$$y = mx + n$$\n\n$m$ = coeficiente angular (inclinação), $n$ = coeficiente linear (intercepto com eixo $y$).",
+  },
+  {
+    front: "Coeficiente angular entre dois pontos\n\n$A(x_1, y_1)$ e $B(x_2, y_2)$",
+    back:  "$$m = \\frac{y_2 - y_1}{x_2 - x_1} = \\operatorname{tg}\\,\\alpha$$\n\n$\\alpha$ é o ângulo que a reta faz com o eixo $x$ positivo.",
+  },
+  {
+    front: "Distância de um ponto a uma reta\n\nPonto $P(x_0, y_0)$, reta $ax + by + c = 0$",
+    back:  "$$d = \\frac{|ax_0 + by_0 + c|}{\\sqrt{a^2 + b^2}}$$",
+  },
+  {
+    front: "Equação da circunferência\n\nCentro $C(a, b)$, raio $r$.",
+    back:  "$$(x - a)^2 + (y - b)^2 = r^2$$\n\nForma geral: $x^2 + y^2 + Dx + Ey + F = 0$",
+  },
+  {
+    front: "Paralelismo de retas\n\n$r_1: y = m_1 x + n_1$ e $r_2: y = m_2 x + n_2$. Quando são paralelas?",
+    back:  "$$r_1 \\parallel r_2 \\iff m_1 = m_2 \\text{ e } n_1 \\neq n_2$$\n\nMesmo coeficiente angular, interceptos diferentes.",
+  },
+  {
+    front: "Perpendicularidade de retas\n\nQuando $r_1$ e $r_2$ são perpendiculares?",
+    back:  "$$r_1 \\perp r_2 \\iff m_1 \\cdot m_2 = -1$$\n\nOs coeficientes angulares são inversos e com sinais opostos.",
+  },
+  {
+    front: "Área de triângulo por coordenadas\n\n$A(x_1,y_1)$, $B(x_2,y_2)$, $C(x_3,y_3)$",
+    back:  "$$A = \\frac{1}{2}\\left|x_1(y_2 - y_3) + x_2(y_3 - y_1) + x_3(y_1 - y_2)\\right|$$\n\nFórmula do determinante (regra de Sarrus).",
+  },
+  {
+    front: "Distância entre retas paralelas\n\n$r_1: ax + by + c_1 = 0$ e $r_2: ax + by + c_2 = 0$",
+    back:  "$$d = \\frac{|c_1 - c_2|}{\\sqrt{a^2 + b^2}}$$",
+  },
+];
+
+app.get("/admin/seed-flashcards", async (req: any, res: any) => {
+  const secret = req.query.secret as string;
+  const IMPORT_SECRET = process.env.IMPORT_SECRET ?? "IMPORTAR2024";
+  if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
+
+  const action = (req.query.action as string) ?? "list";
+  let conn: any;
+
+  try {
+    conn = await pool.getConnection();
+
+    if (action === "list") {
+      // Mostra decks e cards existentes
+      const [decks]: any[] = await conn.query("SELECT id, title, active FROM flashcard_decks ORDER BY id");
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.write("=== BARALHOS ===\n");
+      for (const d of decks) {
+        const [cards]: any[] = await conn.query(
+          "SELECT id, LEFT(front, 100) as front FROM flashcards WHERE deck_id = ? ORDER BY order_index, id",
+          [d.id]
+        );
+        res.write(`\n[${d.id}] ${d.title} (${cards.length} cards, active=${d.active})\n`);
+        for (const c of cards) res.write(`  #${c.id}: ${c.front.replace(/\n/g, " ↵ ")}\n`);
+      }
+      res.write("\n\nUse ?action=insert&deckId=N para inserir os 30 novos cards.\n");
+      return res.end();
+    }
+
+    if (action === "insert") {
+      const deckId = Number(req.query.deckId);
+      if (!deckId) return res.status(400).send("Forneça ?deckId=N (veja os IDs com ?action=list).");
+
+      const [deckRows]: any[] = await conn.query("SELECT id, title FROM flashcard_decks WHERE id = ?", [deckId]);
+      if (!deckRows.length) return res.status(404).send(`Deck ${deckId} não encontrado.`);
+
+      res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+      const log = (m: string) => { console.log(m); res.write(m + "\n"); };
+      log(`Inserindo cards no baralho "${deckRows[0].title}" (id=${deckId})...\n`);
+
+      // Busca cards existentes para evitar duplicatas (compara pelo front)
+      const [existing]: any[] = await conn.query(
+        "SELECT LEFT(front, 200) as front FROM flashcards WHERE deck_id = ?", [deckId]
+      );
+      const existingFronts = new Set(existing.map((r: any) => r.front.trim().slice(0, 80)));
+
+      // Calcula próximo order_index
+      const [lastIdx]: any[] = await conn.query(
+        "SELECT COALESCE(MAX(order_index), -1) as maxIdx FROM flashcards WHERE deck_id = ?", [deckId]
+      );
+      let orderIndex = (lastIdx[0]?.maxIdx ?? -1) + 1;
+
+      let inseridos = 0, pulados = 0;
+      for (const card of GEOMETRY_CARDS) {
+        const frontKey = card.front.trim().slice(0, 80);
+        if (existingFronts.has(frontKey)) {
+          log(`  [skip] ${frontKey.replace(/\n/g, " ↵ ").slice(0, 60)}`);
+          pulados++;
+          continue;
+        }
+        await conn.query(
+          "INSERT INTO flashcards (deck_id, front, back, order_index, active, created_at) VALUES (?, ?, ?, ?, 1, NOW())",
+          [deckId, card.front, card.back, orderIndex++]
+        );
+        log(`  ✅ ${frontKey.replace(/\n/g, " ↵ ").slice(0, 70)}`);
+        inseridos++;
+      }
+
+      log(`\nConcluído: ${inseridos} inseridos, ${pulados} ignorados (já existiam).`);
+      return res.end();
+    }
+
+    res.status(400).send("action deve ser 'list' ou 'insert'.");
+  } catch (err: any) {
+    res.status(500).send(`Erro: ${err.message}`);
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+// =============================================================================
 // Rota: importar questões do ENEM
 // URL: /admin/import?secret=IMPORTAR2024&year=2023
 // =============================================================================
