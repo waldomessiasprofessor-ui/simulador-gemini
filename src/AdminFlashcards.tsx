@@ -93,7 +93,7 @@ function LatexPreview({ content, label, color }: { content: string; label: strin
   return (
     <div className="rounded-xl p-3 space-y-1" style={{ background: "#F8FAFC", border: "1.5px solid #E2E8F0" }}>
       <p className="text-xs font-bold uppercase tracking-wide" style={{ color }}>{label}</p>
-      <LatexRenderer fontSize="sm">{content}</LatexRenderer>
+      <LatexRenderer fontSize="sm" compact>{content}</LatexRenderer>
     </div>
   );
 }
@@ -329,12 +329,12 @@ function CardsPanel({ deckId, deckColor, onBack }: { deckId: number; deckColor: 
                     style={{ borderTop: `1px solid ${deckColor}22` }}>
                     <div>
                       <p className="text-xs font-bold mb-1" style={{ color: deckColor }}>FRENTE</p>
-                      <LatexRenderer fontSize="sm">{card.front}</LatexRenderer>
+                      <LatexRenderer fontSize="sm" compact>{card.front}</LatexRenderer>
                       {card.frontImage && <img src={card.frontImage} alt="" className="max-w-full max-h-32 rounded-lg mt-2 object-contain" />}
                     </div>
                     <div>
                       <p className="text-xs font-bold mb-1" style={{ color: deckColor }}>VERSO</p>
-                      <LatexRenderer fontSize="sm">{card.back}</LatexRenderer>
+                      <LatexRenderer fontSize="sm" compact>{card.back}</LatexRenderer>
                       {card.backImage && <img src={card.backImage} alt="" className="max-w-full max-h-32 rounded-lg mt-2 object-contain" />}
                     </div>
                   </div>

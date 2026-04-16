@@ -7,6 +7,7 @@ interface LatexRendererProps {
   className?: string;
   fontSize?: "sm" | "base" | "lg" | "xl";
   inline?: boolean;
+  compact?: boolean; // reduz margens dos blocos $$...$$ (uso em flashcards)
 }
 
 type Segment =
@@ -255,7 +256,7 @@ function renderMarkdownTable(headers: string[], rows: string[][], key: string): 
   );
 }
 
-function renderKatex(latex: string, displayMode: boolean, key: string): React.ReactNode {
+function renderKatex(latex: string, displayMode: boolean, key: string, compact = false): React.ReactNode {
   // Pre-processamento: normaliza comandos comuns do LaTeX brasileiro / ENEM
   const normalized = latex
     .replace(/\\sen\b/g, "\\sin")
@@ -329,12 +330,13 @@ function renderKatex(latex: string, displayMode: boolean, key: string): React.Re
       },
     });
 
+    const blockClass = compact ? "block my-1 overflow-x-auto text-center" : "block my-3 overflow-x-auto text-center";
     if (displayMode) {
       return (
         <span
           key={key}
-          className="block my-3 overflow-x-auto text-center"
-          style={{ lineHeight: 2 }}
+          className={blockClass}
+          style={{ lineHeight: compact ? 1.5 : 2 }}
           dangerouslySetInnerHTML={{ __html: html }}
         />
       );
@@ -355,8 +357,9 @@ function renderKatex(latex: string, displayMode: boolean, key: string): React.Re
         strict: "ignore",
         trust: true,
       });
+      const blockClass = compact ? "block my-1 overflow-x-auto text-center" : "block my-3 overflow-x-auto text-center";
       if (displayMode) {
-        return <span key={key} className="block my-3 overflow-x-auto text-center" dangerouslySetInnerHTML={{ __html: fallbackHtml }} />;
+        return <span key={key} className={blockClass} dangerouslySetInnerHTML={{ __html: fallbackHtml }} />;
       }
       return <span key={key} className="inline-block align-middle" dangerouslySetInnerHTML={{ __html: fallbackHtml }} />;
     } catch {
@@ -375,14 +378,14 @@ function renderKatex(latex: string, displayMode: boolean, key: string): React.Re
 
 const fontSizeMap = { sm: "text-sm", base: "text-base", lg: "text-lg", xl: "text-xl" };
 
-export function LatexRenderer({ children, className, fontSize = "base", inline = false }: LatexRendererProps) {
+export function LatexRenderer({ children, className, fontSize = "base", inline = false, compact = false }: LatexRendererProps) {
   const rendered = useMemo(() => {
     if (!children) return null;
     return parseSegments(children).map((seg, idx) => {
       const key = `seg-${idx}`;
       switch (seg.type) {
-        case "latex-display": return renderKatex(seg.content, true, key);
-        case "latex-inline": return renderKatex(seg.content, false, key);
+        case "latex-display": return renderKatex(seg.content, true, key, compact);
+        case "latex-inline": return renderKatex(seg.content, false, key, compact);
         case "image": return (
           <img key={key} src={seg.url} alt="Imagem da questão"
             className="max-w-full rounded-lg my-2 mx-auto block"
@@ -393,10 +396,10 @@ export function LatexRenderer({ children, className, fontSize = "base", inline =
         case "text": return <React.Fragment key={key}>{renderTextSegment(seg.content)}</React.Fragment>;
       }
     });
-  }, [children]);
+  }, [children, compact]);
 
   if (inline) return <span className={cn(fontSizeMap[fontSize], "leading-relaxed", className)} style={{ color: "var(--text-question)" }}>{rendered}</span>;
-  return <div className={cn("leading-relaxed space-y-1", fontSizeMap[fontSize], className)} style={{ color: "var(--text-question)" }}>{rendered}</div>;
+  return <div className={cn("leading-relaxed", compact ? "space-y-0" : "space-y-1", fontSizeMap[fontSize], className)} style={{ color: "var(--text-question)" }}>{rendered}</div>;
 }
 
 // =============================================================================

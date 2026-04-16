@@ -211,7 +211,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
             <span className="text-xs font-bold uppercase tracking-widest mb-1"
               style={{ color: deckColor, opacity: 0.7 }}>Frente</span>
             <div className="w-full text-center">
-              <LatexRenderer fontSize="base">{card.front}</LatexRenderer>
+              <LatexRenderer fontSize="base" compact>{card.front}</LatexRenderer>
             </div>
             {card.frontImage && (
               <img src={card.frontImage} alt="" className="max-w-full max-h-40 rounded-xl object-contain"
@@ -227,7 +227,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
             <span className="text-xs font-bold uppercase tracking-widest mb-1"
               style={{ color: deckColor, opacity: 0.7 }}>Resposta</span>
             <div className="w-full text-center">
-              <LatexRenderer fontSize="base">{card.back}</LatexRenderer>
+              <LatexRenderer fontSize="base" compact>{card.back}</LatexRenderer>
             </div>
             {card.backImage && (
               <img src={card.backImage} alt="" className="max-w-full max-h-40 rounded-xl object-contain"
