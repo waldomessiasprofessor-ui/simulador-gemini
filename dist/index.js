@@ -1307,7 +1307,8 @@ var simulationsRouter = createTRPCRouter({
     ));
     const map = /* @__PURE__ */ new Map();
     for (const r of simRows) {
-      const key = r.conteudo;
+      const key = r.conteudo?.trim();
+      if (!key) continue;
       const entry = map.get(key) ?? { total: 0, correct: 0 };
       entry.total++;
       if (r.isCorrect) entry.correct++;
@@ -1328,10 +1329,12 @@ var simulationsRouter = createTRPCRouter({
           for (const [qIdStr, selected] of Object.entries(answers)) {
             const q = qMap.get(parseInt(qIdStr));
             if (!q) continue;
-            const entry = map.get(q.conteudo) ?? { total: 0, correct: 0 };
+            const key = q.conteudo?.trim();
+            if (!key) continue;
+            const entry = map.get(key) ?? { total: 0, correct: 0 };
             entry.total++;
             if (selected === q.gabarito) entry.correct++;
-            map.set(q.conteudo, entry);
+            map.set(key, entry);
           }
         }
       }
@@ -1351,7 +1354,7 @@ var simulationsRouter = createTRPCRouter({
       total: v.total,
       correct: v.correct,
       pct: Math.round(v.correct / v.total * 100)
-    })).sort((a, b) => b.total - a.total);
+    })).sort((a, b) => a.conteudo.localeCompare(b.conteudo, "pt-BR"));
   }),
   // ---------------------------------------------------------------------------
   // TREINO LIVRE — sorteia N questões de um tópico com gabarito imediato

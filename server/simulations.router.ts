@@ -828,7 +828,8 @@ export const simulationsRouter = createTRPCRouter({
     const map = new Map<string, { total: number; correct: number }>();
 
     for (const r of simRows) {
-      const key = r.conteudo;
+      const key = r.conteudo?.trim();
+      if (!key) continue; // ignora questões sem conteúdo_principal
       const entry = map.get(key) ?? { total: 0, correct: 0 };
       entry.total++;
       if (r.isCorrect) entry.correct++;
@@ -859,10 +860,12 @@ export const simulationsRouter = createTRPCRouter({
           for (const [qIdStr, selected] of Object.entries(answers)) {
             const q = qMap.get(parseInt(qIdStr));
             if (!q) continue;
-            const entry = map.get(q.conteudo) ?? { total: 0, correct: 0 };
+            const key = q.conteudo?.trim();
+            if (!key) continue; // ignora questões sem conteúdo_principal
+            const entry = map.get(key) ?? { total: 0, correct: 0 };
             entry.total++;
             if (selected === q.gabarito) entry.correct++;
-            map.set(q.conteudo, entry);
+            map.set(key, entry);
           }
         }
       }
@@ -882,6 +885,7 @@ export const simulationsRouter = createTRPCRouter({
     ]);
 
     // Converte para array com % de acerto (0–100), mínimo 1 questão para aparecer
+    // Ordenação alfabética fixa → eixos do radar sempre na mesma posição
     return Array.from(map.entries())
       .filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo))
       .map(([conteudo, v]) => ({
@@ -890,7 +894,7 @@ export const simulationsRouter = createTRPCRouter({
         correct: v.correct,
         pct: Math.round((v.correct / v.total) * 100),
       }))
-      .sort((a, b) => b.total - a.total);
+      .sort((a, b) => a.conteudo.localeCompare(b.conteudo, "pt-BR"));
   }),
 
   // ---------------------------------------------------------------------------
