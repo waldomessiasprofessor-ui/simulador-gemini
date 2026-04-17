@@ -356,6 +356,10 @@ var questionsRouter = createTRPCRouter({
     conteudo: z.string().optional(),
     fonte: z.string().optional(),
     tag: z.string().optional(),
+    // topic = busca combinada em conteudo_principal (LIKE) OU tags (exato).
+    // Usado por links vindos do Planner/Dashboard onde o vocabulário do
+    // ENEM_TOPICS pode não bater exatamente com nenhum dos dois campos.
+    topic: z.string().optional(),
     nivel_dificuldade: NivelDificuldadeEnum.optional(),
     activeOnly: z.boolean().default(true),
     orderBy: z.enum(["id", "ano", "conteudo_principal", "nivel_dificuldade", "createdAt"]).default("ano"),
@@ -369,6 +373,12 @@ var questionsRouter = createTRPCRouter({
     if (input.fonte) filters.push(eq(questions.fonte, input.fonte));
     if (input.nivel_dificuldade) filters.push(eq(questions.nivel_dificuldade, input.nivel_dificuldade));
     if (input.tag) filters.push(sql`JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.tag}))`);
+    if (input.topic) {
+      filters.push(sql`(
+          ${questions.conteudo_principal} LIKE ${"%" + input.topic + "%"}
+          OR JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.topic}))
+        )`);
+    }
     const where = filters.length > 0 ? and(...filters) : void 0;
     const orderColumn = orderBy === "conteudo_principal" ? questions.conteudo_principal : orderBy === "nivel_dificuldade" ? questions.nivel_dificuldade : orderBy === "createdAt" ? questions.createdAt : orderBy === "ano" ? questions.ano : questions.id;
     const orderFn = orderDir === "asc" ? asc : desc;

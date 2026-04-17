@@ -190,7 +190,7 @@ export default function Agenda() {
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {slot.topics.map((t) => (
                         <button key={t}
-                          onClick={() => navigate(`/questoes?c=${encodeURIComponent(t)}`)}
+                          onClick={() => navigate(`/questoes?topic=${encodeURIComponent(t)}`)}
                           className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg text-white transition-all"
                           style={{ background: colors.text }}>
                           <Dumbbell className="h-3 w-3" />

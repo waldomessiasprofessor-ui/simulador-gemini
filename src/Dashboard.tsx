@@ -586,7 +586,7 @@ function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
                         <div className="flex flex-wrap gap-1 pt-0.5">
                           {topics.map((t) => (
                             <button key={t}
-                              onClick={() => navigate(`/questoes?c=${encodeURIComponent(t)}`)}
+                              onClick={() => navigate(`/questoes?topic=${encodeURIComponent(t)}`)}
                               className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg text-white"
                               style={{ background: colors.text }}>
                               <Dumbbell className="h-3 w-3" />

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
-import { ChevronDown, ChevronUp, Search, Loader2, BookOpen } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, Loader2, BookOpen, Dumbbell } from "lucide-react";
 import { VideoButton } from "@/YoutubeEmbed";
 
 const TAGS_CONTEUDO = [
@@ -83,12 +83,23 @@ const FONTE_INFO: Record<string, { titulo: string; subtitulo: string }> = {
 };
 
 export default function Questoes({ fonte }: { fonte?: string }) {
-  // Suporte a ?c=TopicName vindo da Agenda (Planner de Estudos)
-  const [search, setSearch] = useState(() => {
+  // Parâmetros vindos da Agenda / Dashboard:
+  //   ?topic=X → busca combinada em conteudo_principal OU tags (usado pelo planner)
+  //   ?tag=X   → filtro estrito por tag
+  //   ?c=X     → compatibilidade com URLs antigas (busca em conteudo_principal)
+  const initialParams = (() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("c") ?? "";
-  });
-  const [filterTag, setFilterTag] = useState("Todas");
+    return {
+      topic: params.get("topic") ?? "",
+      tag: params.get("tag") ?? "",
+      c: params.get("c") ?? "",
+    };
+  })();
+  const [search, setSearch] = useState(initialParams.c);
+  const [filterTag, setFilterTag] = useState(
+    initialParams.tag && TAGS_CONTEUDO.includes(initialParams.tag) ? initialParams.tag : "Todas"
+  );
+  const [topicFilter, setTopicFilter] = useState(initialParams.topic);
   const [page, setPage] = useState(1);
   const [openId, setOpenId] = useState<number | null>(null);
   const [openResolution, setOpenResolution] = useState<number | null>(null);
@@ -102,6 +113,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
     conteudo: search || undefined,
     fonte: fonte || undefined,
     tag: filterTag !== "Todas" ? filterTag : undefined,
+    topic: topicFilter || undefined,
     activeOnly: true,
     orderBy: "conteudo_principal",
     orderDir: "asc",
@@ -123,7 +135,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: "#94A3B8" }} />
         <input type="text" value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); setFilterTag("Todas"); }}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); setFilterTag("Todas"); setTopicFilter(""); }}
           placeholder="Buscar por conteúdo..."
           className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
           style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
@@ -132,11 +144,28 @@ export default function Questoes({ fonte }: { fonte?: string }) {
       </div>
 
       {/* Filtro por tag — colapsável */}
-      <FilterDropdown filterTag={filterTag} setFilterTag={(t) => { setFilterTag(t); setPage(1); }} />
+      <FilterDropdown filterTag={filterTag} setFilterTag={(t) => { setFilterTag(t); setPage(1); setTopicFilter(""); }} />
+
+      {/* Banner do filtro por tópico vindo do Planner / Dashboard */}
+      {topicFilter && (
+        <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: "#E0F2F1", border: "1.5px solid #009688" }}>
+          <Dumbbell className="h-4 w-4 flex-shrink-0" style={{ color: "#00695C" }} />
+          <p className="text-sm font-semibold flex-1" style={{ color: "#00695C" }}>
+            Praticando: <span style={{ color: "#004D40" }}>{topicFilter}</span>
+          </p>
+          <button
+            onClick={() => { setTopicFilter(""); setPage(1); }}
+            className="text-xs font-bold px-2 py-1 rounded-lg transition-opacity hover:opacity-80"
+            style={{ background: "#009688", color: "#fff" }}>
+            Ver todas
+          </button>
+        </div>
+      )}
 
       {/* Contador */}
       <p className="text-sm" style={{ color: "#64748B" }}>
         {data?.pagination.total ?? filtered.length} questão(ões){filterTag !== "Todas" ? ` em "${filterTag}"` : ""}
+        {topicFilter ? ` sobre "${topicFilter}"` : ""}
         {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
       </p>
 
