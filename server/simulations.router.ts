@@ -30,6 +30,7 @@ import {
   probabilityCorrect,
 } from "./tri";
 import type { QuestionResult } from "./tri";
+import { resolveArea, MACRO_AREAS } from "./macro-areas";
 
 // =============================================================================
 // Constantes de configuração das etapas
@@ -804,59 +805,17 @@ export const simulationsRouter = createTRPCRouter({
   }),
 
   // ---------------------------------------------------------------------------
-  // DESEMPENHO POR TÓPICO — para o gráfico radar da dashboard
-  // Combina simulationAnswers + dailyChallenges para dar % de acerto por área
+  // DESEMPENHO POR ÁREA MACRO — para o gráfico radar da dashboard
+  // Agrupa as ~34 áreas granulares em 8 áreas macro (Matemática Básica, Álgebra,
+  // Funções, Geometria Plana, Geometria Espacial, Trigonometria, Probabilidade e
+  // Estatística, Análise Combinatória). Cada questão credita a UMA área só, com
+  // prioridade em conteudo_principal e fallback em tags — ver server/macro-areas.ts.
+  // Combina simulationAnswers + dailyChallenges.
   // ---------------------------------------------------------------------------
   getTopicStats: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
 
-    // Grandes áreas genéricas — não são conteúdos específicos, excluir do radar
-    // (aceita variações com S maiúsculo ou minúsculo em "suas/Suas")
-    const AREAS_GERAIS = new Set([
-      "Matemática e suas Tecnologias",
-      "Matemática e Suas Tecnologias",
-      "Linguagens, Códigos e suas Tecnologias",
-      "Linguagens, Códigos e Suas Tecnologias",
-      "Ciências Humanas e suas Tecnologias",
-      "Ciências Humanas e Suas Tecnologias",
-      "Ciências da Natureza e suas Tecnologias",
-      "Ciências da Natureza e Suas Tecnologias",
-    ]);
-
-    // Tags genéricas que não representam conteúdo específico (ENEM, anos, áreas)
-    const TAGS_GENERICAS = new Set(["ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET", "Matemática"]);
-    function isGenericTag(t: string): boolean {
-      const s = t.trim();
-      if (!s) return true;
-      if (TAGS_GENERICAS.has(s)) return true;
-      if (AREAS_GERAIS.has(s)) return true;
-      if (/^\d{4}$/.test(s)) return true;                  // ano cru: "2023"
-      if (/^ENEM\s+\d{4}$/i.test(s)) return true;          // "ENEM 2023"
-      if (/^(UNICAMP|FUVEST|UNESP|REPVET)\s+\d{4}$/i.test(s)) return true;
-      return false;
-    }
-
-    // Retorna a lista de "tópicos" a creditar por uma questão: conteudo_principal
-    // + cada tag que seja um conteúdo específico (não genérico). Usa Set para
-    // deduplicar caso a tag repita o conteudo_principal.
-    function topicsFor(conteudo: string | null, tags: unknown): string[] {
-      const set = new Set<string>();
-      if (conteudo) {
-        const key = conteudo.trim();
-        if (key && !AREAS_GERAIS.has(key)) set.add(key);
-      }
-      if (Array.isArray(tags)) {
-        for (const t of tags) {
-          if (typeof t !== "string") continue;
-          if (isGenericTag(t)) continue;
-          set.add(t.trim());
-        }
-      }
-      return [...set];
-    }
-
     // Fonte 1: simulationAnswers (simulados + treino livre salvo)
-    // Traz também as tags para creditar o acerto em todos os tópicos relevantes
     const simRows = await ctx.db
       .select({
         conteudo: questions.conteudo_principal,
@@ -872,22 +831,21 @@ export const simulationsRouter = createTRPCRouter({
         sql`${simulationAnswers.isCorrect} IS NOT NULL`,
       ));
 
-    // Agrupa por tópico (cada questão pode render para vários tópicos)
+    // Agrupa por ÁREA MACRO (cada questão credita a uma única área)
     type Agg = { total: number; correct: number; timeSum: number; timeCount: number };
     const map = new Map<string, Agg>();
 
     for (const r of simRows) {
-      const keys = topicsFor(r.conteudo, r.tags);
-      for (const key of keys) {
-        const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-        entry.total++;
-        if (r.isCorrect) entry.correct++;
-        if (r.timeSpent != null && r.timeSpent > 0) {
-          entry.timeSum += r.timeSpent;
-          entry.timeCount++;
-        }
-        map.set(key, entry);
+      const area = resolveArea(r.conteudo, r.tags);
+      if (!area) continue; // questão sem mapeamento é ignorada
+      const entry = map.get(area) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+      entry.total++;
+      if (r.isCorrect) entry.correct++;
+      if (r.timeSpent != null && r.timeSpent > 0) {
+        entry.timeSum += r.timeSpent;
+        entry.timeCount++;
       }
+      map.set(area, entry);
     }
 
     // Fonte 2: dailyChallenges completos (sem dados de tempo)
@@ -919,35 +877,33 @@ export const simulationsRouter = createTRPCRouter({
           for (const [qIdStr, selected] of Object.entries(answers)) {
             const q = qMap.get(parseInt(qIdStr));
             if (!q) continue;
-            const keys = topicsFor(q.conteudo, q.tags);
+            const area = resolveArea(q.conteudo, q.tags);
+            if (!area) continue;
             const hit = selected === q.gabarito;
-            for (const key of keys) {
-              const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-              entry.total++;
-              if (hit) entry.correct++;
-              map.set(key, entry);
-            }
+            const entry = map.get(area) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+            entry.total++;
+            if (hit) entry.correct++;
+            map.set(area, entry);
           }
         }
       }
     }
 
-    // Converte para array com % de acerto (0–100), mínimo 1 questão para aparecer
-    // Ordenação alfabética fixa → eixos do radar sempre na mesma posição
-    return Array.from(map.entries())
-      .filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo))
-      .map(([conteudo, v]) => {
-        const pct = Math.round((v.correct / v.total) * 100);
-        return {
-          conteudo,
-          total: v.total,
-          correct: v.correct,
-          pct,
-          accuracy: pct, // alias (página Desempenho usa "accuracy")
-          avgTime: v.timeCount > 0 ? Math.round(v.timeSum / v.timeCount) : null,
-        };
-      })
-      .sort((a, b) => a.conteudo.localeCompare(b.conteudo, "pt-BR"));
+    // Ordem fixa das 8 áreas (eixos do radar não "pulam" entre renders).
+    // Inclui áreas com 0 respostas também — mostra o contorno completo das
+    // 8 áreas no radar; sem isso, o radar mudaria de forma a cada simulado.
+    return MACRO_AREAS.map((area) => {
+      const v = map.get(area) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+      const pct = v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0;
+      return {
+        conteudo: area,
+        total: v.total,
+        correct: v.correct,
+        pct,
+        accuracy: pct, // alias (página Desempenho usa "accuracy")
+        avgTime: v.timeCount > 0 ? Math.round(v.timeSum / v.timeCount) : null,
+      };
+    });
   }),
 
   // ---------------------------------------------------------------------------

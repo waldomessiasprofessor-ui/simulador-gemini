@@ -775,6 +775,219 @@ function checkStagePass(stage, correctCount) {
   return { passed, required, message };
 }
 
+// server/macro-areas.ts
+var MACRO_AREAS = [
+  "Matem\xE1tica B\xE1sica",
+  "\xC1lgebra",
+  "Fun\xE7\xF5es",
+  "Geometria Plana",
+  "Geometria Espacial",
+  "Trigonometria",
+  "Probabilidade e Estat\xEDstica",
+  "An\xE1lise Combinat\xF3ria"
+];
+var TOPIC_TO_AREA = {
+  // ─── Matemática Básica ────────────────────────────────────────────────────
+  "Aritm\xE9tica": "Matem\xE1tica B\xE1sica",
+  "Opera\xE7\xF5es com fra\xE7\xF5es": "Matem\xE1tica B\xE1sica",
+  "Opera\xE7\xF5es com Fra\xE7\xF5es": "Matem\xE1tica B\xE1sica",
+  "Fra\xE7\xF5es": "Matem\xE1tica B\xE1sica",
+  "Porcentagem": "Matem\xE1tica B\xE1sica",
+  "Raz\xE3o e propor\xE7\xE3o": "Matem\xE1tica B\xE1sica",
+  "Raz\xE3o e Propor\xE7\xE3o": "Matem\xE1tica B\xE1sica",
+  "Raz\xE3o, propor\xE7\xE3o e regra de tr\xEAs": "Matem\xE1tica B\xE1sica",
+  "Regra de tr\xEAs": "Matem\xE1tica B\xE1sica",
+  "Regra de Tr\xEAs": "Matem\xE1tica B\xE1sica",
+  "Propor\xE7\xF5es": "Matem\xE1tica B\xE1sica",
+  "Divis\xE3o em partes proporcionais": "Matem\xE1tica B\xE1sica",
+  "Divis\xE3o em Partes Proporcionais": "Matem\xE1tica B\xE1sica",
+  "Juros simples": "Matem\xE1tica B\xE1sica",
+  "Juros compostos": "Matem\xE1tica B\xE1sica",
+  "Juros": "Matem\xE1tica B\xE1sica",
+  "Matem\xE1tica financeira": "Matem\xE1tica B\xE1sica",
+  "Matem\xE1tica Financeira": "Matem\xE1tica B\xE1sica",
+  "Conjuntos num\xE9ricos": "Matem\xE1tica B\xE1sica",
+  "Conjuntos Num\xE9ricos": "Matem\xE1tica B\xE1sica",
+  "Conjuntos": "Matem\xE1tica B\xE1sica",
+  "Grandezas e medidas": "Matem\xE1tica B\xE1sica",
+  "Grandezas e Medidas": "Matem\xE1tica B\xE1sica",
+  "Sistema de medidas": "Matem\xE1tica B\xE1sica",
+  "Nota\xE7\xE3o cient\xEDfica": "Matem\xE1tica B\xE1sica",
+  "Pot\xEAncias e ra\xEDzes": "Matem\xE1tica B\xE1sica",
+  "Opera\xE7\xF5es": "Matem\xE1tica B\xE1sica",
+  // ─── Álgebra ──────────────────────────────────────────────────────────────
+  "\xC1lgebra": "\xC1lgebra",
+  "Equa\xE7\xF5es do 1\xBA grau": "\xC1lgebra",
+  "Equa\xE7\xF5es do 2\xBA grau": "\xC1lgebra",
+  "Equa\xE7\xF5es polinomiais": "\xC1lgebra",
+  "Equa\xE7\xF5es exponenciais": "\xC1lgebra",
+  "Equa\xE7\xF5es logar\xEDtmicas": "\xC1lgebra",
+  "Equa\xE7\xF5es": "\xC1lgebra",
+  "Inequa\xE7\xF5es": "\xC1lgebra",
+  "Sistemas lineares": "\xC1lgebra",
+  "Sistemas de equa\xE7\xF5es": "\xC1lgebra",
+  "Matrizes": "\xC1lgebra",
+  "Determinantes": "\xC1lgebra",
+  "Matrizes e determinantes": "\xC1lgebra",
+  "N\xFAmeros complexos": "\xC1lgebra",
+  "Logaritmo": "\xC1lgebra",
+  "Logaritmos": "\xC1lgebra",
+  "Progress\xE3o aritm\xE9tica": "\xC1lgebra",
+  "Progress\xE3o Aritm\xE9tica": "\xC1lgebra",
+  "Progress\xE3o geom\xE9trica": "\xC1lgebra",
+  "Progress\xE3o Geom\xE9trica": "\xC1lgebra",
+  "Progress\xF5es": "\xC1lgebra",
+  "PA": "\xC1lgebra",
+  "PG": "\xC1lgebra",
+  "Polin\xF4mios": "\xC1lgebra",
+  // ─── Funções ──────────────────────────────────────────────────────────────
+  "Fun\xE7\xF5es": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o afim": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o Afim": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o linear": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o do 1\xBA grau": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o do 1\xB0 grau": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o quadr\xE1tica": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o Quadr\xE1tica": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o do 2\xBA grau": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o do 2\xB0 grau": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o exponencial": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o Exponencial": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o logar\xEDtmica": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o Logar\xEDtmica": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o modular": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o Modular": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o composta": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o Composta": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o inversa": "Fun\xE7\xF5es",
+  "Fun\xE7\xE3o Inversa": "Fun\xE7\xF5es",
+  "Dom\xEDnio e imagem": "Fun\xE7\xF5es",
+  "Gr\xE1ficos de fun\xE7\xF5es": "Fun\xE7\xF5es",
+  // ─── Geometria Plana (inclui Analítica) ───────────────────────────────────
+  "Geometria Plana": "Geometria Plana",
+  "\xC1reas": "Geometria Plana",
+  "\xC1reas de figuras planas": "Geometria Plana",
+  "Per\xEDmetro": "Geometria Plana",
+  "Per\xEDmetros": "Geometria Plana",
+  "Teorema de Pit\xE1goras": "Geometria Plana",
+  "Teorema de Tales": "Geometria Plana",
+  "Semelhan\xE7a": "Geometria Plana",
+  "Semelhan\xE7a de tri\xE2ngulos": "Geometria Plana",
+  "Congru\xEAncia": "Geometria Plana",
+  "Pol\xEDgonos": "Geometria Plana",
+  "Pol\xEDgonos regulares": "Geometria Plana",
+  "Tri\xE2ngulos": "Geometria Plana",
+  "Quadril\xE1teros": "Geometria Plana",
+  "C\xEDrculo": "Geometria Plana",
+  "Circunfer\xEAncia": "Geometria Plana",
+  "Rela\xE7\xF5es m\xE9tricas": "Geometria Plana",
+  // Analítica — por pedido do Prof. Waldo entra em Plana
+  "Geometria Anal\xEDtica": "Geometria Plana",
+  "Geo. Anal\xEDtica": "Geometria Plana",
+  "Geometria anal\xEDtica": "Geometria Plana",
+  "Dist\xE2ncia entre pontos": "Geometria Plana",
+  "Equa\xE7\xE3o da reta": "Geometria Plana",
+  "Retas": "Geometria Plana",
+  "C\xF4nicas": "Geometria Plana",
+  "Elipse": "Geometria Plana",
+  "Hip\xE9rbole": "Geometria Plana",
+  "Par\xE1bola": "Geometria Plana",
+  // ─── Geometria Espacial ───────────────────────────────────────────────────
+  "Geometria Espacial": "Geometria Espacial",
+  "Prismas": "Geometria Espacial",
+  "Prisma": "Geometria Espacial",
+  "Paralelep\xEDpedo": "Geometria Espacial",
+  "Cubo": "Geometria Espacial",
+  "Cilindros": "Geometria Espacial",
+  "Cilindro": "Geometria Espacial",
+  "Cones": "Geometria Espacial",
+  "Cone": "Geometria Espacial",
+  "Pir\xE2mides": "Geometria Espacial",
+  "Pir\xE2mide": "Geometria Espacial",
+  "Esferas": "Geometria Espacial",
+  "Esfera": "Geometria Espacial",
+  "Poliedros": "Geometria Espacial",
+  "Volumes": "Geometria Espacial",
+  "S\xF3lidos": "Geometria Espacial",
+  "S\xF3lidos de revolu\xE7\xE3o": "Geometria Espacial",
+  // ─── Trigonometria ────────────────────────────────────────────────────────
+  "Trigonometria": "Trigonometria",
+  "Trigonometria no tri\xE2ngulo ret\xE2ngulo": "Trigonometria",
+  "Raz\xF5es trigonom\xE9tricas": "Trigonometria",
+  "C\xEDrculo trigonom\xE9trico": "Trigonometria",
+  "Identidades trigonom\xE9tricas": "Trigonometria",
+  "Lei dos senos": "Trigonometria",
+  "Lei dos cossenos": "Trigonometria",
+  "Fun\xE7\xF5es trigonom\xE9tricas": "Trigonometria",
+  // ─── Probabilidade e Estatística ──────────────────────────────────────────
+  "Probabilidade": "Probabilidade e Estat\xEDstica",
+  "Probabilidade e estat\xEDstica": "Probabilidade e Estat\xEDstica",
+  "Probabilidade e Estat\xEDstica": "Probabilidade e Estat\xEDstica",
+  "Probabilidade condicional": "Probabilidade e Estat\xEDstica",
+  "Distribui\xE7\xE3o binomial": "Probabilidade e Estat\xEDstica",
+  "Estat\xEDstica": "Probabilidade e Estat\xEDstica",
+  "M\xE9dia": "Probabilidade e Estat\xEDstica",
+  "Mediana": "Probabilidade e Estat\xEDstica",
+  "Moda": "Probabilidade e Estat\xEDstica",
+  "Medidas de tend\xEAncia central": "Probabilidade e Estat\xEDstica",
+  "Medidas de Tend\xEAncia Central": "Probabilidade e Estat\xEDstica",
+  "Desvio padr\xE3o": "Probabilidade e Estat\xEDstica",
+  "Vari\xE2ncia": "Probabilidade e Estat\xEDstica",
+  "Gr\xE1ficos e tabelas": "Probabilidade e Estat\xEDstica",
+  // ─── Análise Combinatória ─────────────────────────────────────────────────
+  "An\xE1lise Combinat\xF3ria": "An\xE1lise Combinat\xF3ria",
+  "An\xE1lise combinat\xF3ria": "An\xE1lise Combinat\xF3ria",
+  "Princ\xEDpio Fundamental da Contagem": "An\xE1lise Combinat\xF3ria",
+  "Princ\xEDpio fundamental da contagem": "An\xE1lise Combinat\xF3ria",
+  "PFC": "An\xE1lise Combinat\xF3ria",
+  "Arranjo": "An\xE1lise Combinat\xF3ria",
+  "Arranjos": "An\xE1lise Combinat\xF3ria",
+  "Combina\xE7\xE3o": "An\xE1lise Combinat\xF3ria",
+  "Combina\xE7\xF5es": "An\xE1lise Combinat\xF3ria",
+  "Permuta\xE7\xE3o": "An\xE1lise Combinat\xF3ria",
+  "Permuta\xE7\xF5es": "An\xE1lise Combinat\xF3ria",
+  "Fatorial": "An\xE1lise Combinat\xF3ria"
+};
+function keywordFallback(raw) {
+  const t2 = raw.toLowerCase();
+  if (/\bfun[çc][aã]o\b/.test(t2)) return "Fun\xE7\xF5es";
+  if (/trigonom|\bseno\b|\bcosseno\b|\btangente\b|\bcotangente\b/.test(t2)) return "Trigonometria";
+  if (/prism|cilind|\bcone\b|pir[aâ]mid|esfera|poliedro|s[oó]lido|volume|tronco/.test(t2)) return "Geometria Espacial";
+  if (/anal[íi]tica|\brat[aa]\b|\bretas\b|c[oô]nica|elipse|hip[eé]rbole|par[aá]bola/.test(t2)) return "Geometria Plana";
+  if (/tri[aâ]ngulo|quadril[aá]t|c[ií]rculo|circunfer[eê]ncia|pol[ií]gono|pit[aá]goras|tales|semelhan[çc]a|congru[eê]ncia|[aá]reas?|per[íi]metro/.test(t2)) return "Geometria Plana";
+  if (/probabilidade|estat[íi]stica|m[eé]dia|mediana|moda|desvio|vari[aâ]ncia/.test(t2)) return "Probabilidade e Estat\xEDstica";
+  if (/combinat[oó]r|combina[çc][aã]o|arranjo|permuta[çc][aã]o|fatorial|contagem|pfc/.test(t2)) return "An\xE1lise Combinat\xF3ria";
+  if (/logaritm|progress[aã]o\b|\bpa\b|\bpg\b|matriz|determinante|sistema|polin[oô]m|equa[çc][aã]o|inequa[çc][aã]o|complexo/.test(t2)) return "\xC1lgebra";
+  if (/fra[çc][aã]o|porcentagem|propor[çc][aã]o|raz[aã]o|regra de tr[eê]s|juros|financeira|aritm[eé]tica|grandeza|\bmedida/.test(t2)) return "Matem\xE1tica B\xE1sica";
+  return null;
+}
+function resolveArea(conteudo, tags) {
+  if (conteudo) {
+    const k = conteudo.trim();
+    if (k) {
+      const explicit = TOPIC_TO_AREA[k];
+      if (explicit) return explicit;
+      const fb = keywordFallback(k);
+      if (fb) return fb;
+    }
+  }
+  if (Array.isArray(tags)) {
+    for (const t2 of tags) {
+      if (typeof t2 !== "string") continue;
+      const k = t2.trim();
+      if (!k) continue;
+      const explicit = TOPIC_TO_AREA[k];
+      if (explicit) return explicit;
+    }
+    for (const t2 of tags) {
+      if (typeof t2 !== "string") continue;
+      const fb = keywordFallback(t2.trim());
+      if (fb) return fb;
+    }
+  }
+  return null;
+}
+
 // server/simulations.router.ts
 var STAGE_CONFIG = {
   1: { total: 45, minPass: 0, timeLimitPerQuestion: 3 * 60 },
@@ -1305,47 +1518,15 @@ var simulationsRouter = createTRPCRouter({
     return ranking;
   }),
   // ---------------------------------------------------------------------------
-  // DESEMPENHO POR TÓPICO — para o gráfico radar da dashboard
-  // Combina simulationAnswers + dailyChallenges para dar % de acerto por área
+  // DESEMPENHO POR ÁREA MACRO — para o gráfico radar da dashboard
+  // Agrupa as ~34 áreas granulares em 8 áreas macro (Matemática Básica, Álgebra,
+  // Funções, Geometria Plana, Geometria Espacial, Trigonometria, Probabilidade e
+  // Estatística, Análise Combinatória). Cada questão credita a UMA área só, com
+  // prioridade em conteudo_principal e fallback em tags — ver server/macro-areas.ts.
+  // Combina simulationAnswers + dailyChallenges.
   // ---------------------------------------------------------------------------
   getTopicStats: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
-    const AREAS_GERAIS = /* @__PURE__ */ new Set([
-      "Matem\xE1tica e suas Tecnologias",
-      "Matem\xE1tica e Suas Tecnologias",
-      "Linguagens, C\xF3digos e suas Tecnologias",
-      "Linguagens, C\xF3digos e Suas Tecnologias",
-      "Ci\xEAncias Humanas e suas Tecnologias",
-      "Ci\xEAncias Humanas e Suas Tecnologias",
-      "Ci\xEAncias da Natureza e suas Tecnologias",
-      "Ci\xEAncias da Natureza e Suas Tecnologias"
-    ]);
-    const TAGS_GENERICAS = /* @__PURE__ */ new Set(["ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET", "Matem\xE1tica"]);
-    function isGenericTag(t2) {
-      const s = t2.trim();
-      if (!s) return true;
-      if (TAGS_GENERICAS.has(s)) return true;
-      if (AREAS_GERAIS.has(s)) return true;
-      if (/^\d{4}$/.test(s)) return true;
-      if (/^ENEM\s+\d{4}$/i.test(s)) return true;
-      if (/^(UNICAMP|FUVEST|UNESP|REPVET)\s+\d{4}$/i.test(s)) return true;
-      return false;
-    }
-    function topicsFor(conteudo, tags) {
-      const set = /* @__PURE__ */ new Set();
-      if (conteudo) {
-        const key = conteudo.trim();
-        if (key && !AREAS_GERAIS.has(key)) set.add(key);
-      }
-      if (Array.isArray(tags)) {
-        for (const t2 of tags) {
-          if (typeof t2 !== "string") continue;
-          if (isGenericTag(t2)) continue;
-          set.add(t2.trim());
-        }
-      }
-      return [...set];
-    }
     const simRows = await ctx.db.select({
       conteudo: questions.conteudo_principal,
       tags: questions.tags,
@@ -1357,17 +1538,16 @@ var simulationsRouter = createTRPCRouter({
     ));
     const map = /* @__PURE__ */ new Map();
     for (const r of simRows) {
-      const keys = topicsFor(r.conteudo, r.tags);
-      for (const key of keys) {
-        const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-        entry.total++;
-        if (r.isCorrect) entry.correct++;
-        if (r.timeSpent != null && r.timeSpent > 0) {
-          entry.timeSum += r.timeSpent;
-          entry.timeCount++;
-        }
-        map.set(key, entry);
+      const area = resolveArea(r.conteudo, r.tags);
+      if (!area) continue;
+      const entry = map.get(area) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+      entry.total++;
+      if (r.isCorrect) entry.correct++;
+      if (r.timeSpent != null && r.timeSpent > 0) {
+        entry.timeSum += r.timeSpent;
+        entry.timeCount++;
       }
+      map.set(area, entry);
     }
     const challenges = await ctx.db.select({
       answers: dailyChallenges.answers,
@@ -1389,22 +1569,22 @@ var simulationsRouter = createTRPCRouter({
           for (const [qIdStr, selected] of Object.entries(answers)) {
             const q = qMap.get(parseInt(qIdStr));
             if (!q) continue;
-            const keys = topicsFor(q.conteudo, q.tags);
+            const area = resolveArea(q.conteudo, q.tags);
+            if (!area) continue;
             const hit = selected === q.gabarito;
-            for (const key of keys) {
-              const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-              entry.total++;
-              if (hit) entry.correct++;
-              map.set(key, entry);
-            }
+            const entry = map.get(area) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+            entry.total++;
+            if (hit) entry.correct++;
+            map.set(area, entry);
           }
         }
       }
     }
-    return Array.from(map.entries()).filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo)).map(([conteudo, v]) => {
-      const pct = Math.round(v.correct / v.total * 100);
+    return MACRO_AREAS.map((area) => {
+      const v = map.get(area) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+      const pct = v.total > 0 ? Math.round(v.correct / v.total * 100) : 0;
       return {
-        conteudo,
+        conteudo: area,
         total: v.total,
         correct: v.correct,
         pct,
@@ -1412,7 +1592,7 @@ var simulationsRouter = createTRPCRouter({
         // alias (página Desempenho usa "accuracy")
         avgTime: v.timeCount > 0 ? Math.round(v.timeSum / v.timeCount) : null
       };
-    }).sort((a, b) => a.conteudo.localeCompare(b.conteudo, "pt-BR"));
+    });
   }),
   // ---------------------------------------------------------------------------
   // TREINO LIVRE — sorteia N questões de um tópico com gabarito imediato
