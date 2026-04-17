@@ -992,6 +992,7 @@ export default function AdminQuestoes() {
   const { data, isLoading } = trpc.questions.list.useQuery({
     page, pageSize: 20,
     conteudo: search || undefined,
+    tag: filterTag !== "Todas" ? filterTag : undefined,
     activeOnly: false,
     orderBy: "ano",
     orderDir: "asc",
@@ -1098,11 +1099,7 @@ export default function AdminQuestoes() {
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  // Filtra por tag no frontend
-  const allQuestions = data?.questions ?? [];
-  const filtered = filterTag === "Todas"
-    ? allQuestions
-    : allQuestions.filter((q) => Array.isArray(q.tags) && q.tags.includes(filterTag));
+  const filtered = data?.questions ?? [];
 
   const inputClass = "w-full px-3 py-2 rounded-lg text-sm outline-none";
   const inputStyle = { border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" };
@@ -1479,7 +1476,7 @@ export default function AdminQuestoes() {
           </p>
           <div className="flex flex-wrap gap-1.5">
             {["Todas", ...TAGS_CONTEUDO].map((tag) => (
-              <button key={tag} onClick={() => setFilterTag(tag)}
+              <button key={tag} onClick={() => { setFilterTag(tag); setPage(1); }}
                 className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
                 style={filterTag === tag
                   ? { background: "#01738d", color: "#fff" }
@@ -1493,8 +1490,9 @@ export default function AdminQuestoes() {
 
       {/* Contador */}
       <p className="text-sm" style={{ color: "#64748B" }}>
-        {filtered.length} questão(ões)
+        {data?.pagination.total ?? filtered.length} questão(ões)
         {filterTag !== "Todas" ? ` com tag "${filterTag}"` : ""}
+        {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
       </p>
 
       {/* Lista */}
@@ -1634,7 +1632,7 @@ export default function AdminQuestoes() {
       )}
 
       {/* Paginação */}
-      {data && data.pagination.totalPages > 1 && filterTag === "Todas" && (
+      {data && data.pagination.totalPages > 1 && (
         <div className="flex items-center justify-center gap-1.5 flex-wrap py-1">
 
           {/* Primeira */}

@@ -368,7 +368,7 @@ var questionsRouter = createTRPCRouter({
     if (input.conteudo) filters.push(sql`${questions.conteudo_principal} LIKE ${"%" + input.conteudo + "%"}`);
     if (input.fonte) filters.push(eq(questions.fonte, input.fonte));
     if (input.nivel_dificuldade) filters.push(eq(questions.nivel_dificuldade, input.nivel_dificuldade));
-    if (input.tag) filters.push(sql`JSON_CONTAINS(${questions.tags}, ${JSON.stringify(input.tag)})`);
+    if (input.tag) filters.push(sql`JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.tag}))`);
     const where = filters.length > 0 ? and(...filters) : void 0;
     const orderColumn = orderBy === "conteudo_principal" ? questions.conteudo_principal : orderBy === "nivel_dificuldade" ? questions.nivel_dificuldade : orderBy === "createdAt" ? questions.createdAt : orderBy === "ano" ? questions.ano : questions.id;
     const orderFn = orderDir === "asc" ? asc : desc;
