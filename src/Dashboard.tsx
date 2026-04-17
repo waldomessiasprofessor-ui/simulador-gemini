@@ -318,9 +318,15 @@ function RadarTopicos() {
   const [animatedData, setAnimatedData] = useState<{ area: string; pct: number; total: number }[]>([]);
   const rafRef = useRef<number | null>(null);
 
+  // Radar só vira polígono decente com 3+ eixos E 3+ tópicos com pct > 0 —
+  // um radar com zeros colapsados no centro vira visualmente uma "reta" do
+  // centro até o único ponto com valor, o que confunde o usuário.
+  const nonZeroCount = (data ?? []).filter((d) => d.pct > 0).length;
+  const canRenderRadar = Boolean(data && data.length >= 3 && nonZeroCount >= 3);
+
   // Animação manual: interpola de 0 até os valores reais com ease-out cúbico
   useEffect(() => {
-    if (!data || data.length < 3) return;
+    if (!data || !canRenderRadar) return;
     const target = data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const DURATION = 1100;
@@ -343,18 +349,23 @@ function RadarTopicos() {
     </div>
   );
 
-  if (!data || data.length < 3) {
-    // Radar só faz sentido com 3+ eixos — senão vira uma linha.
-    // Com 1-2 tópicos, mostra um card informativo em vez do gráfico.
+  if (!canRenderRadar) {
+    // Sem dados suficientes para um radar legível (precisa de 3+ tópicos com
+    // pelo menos 3 deles com pct > 0). Mostra lista ranqueada — mais útil do
+    // que um gráfico degenerado em forma de reta.
     if (!data || data.length === 0) return null;
+    const sorted = [...data].sort((a, b) => b.pct - a.pct);
+    const faltam = Math.max(0, 3 - nonZeroCount);
     return (
       <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
         <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Desempenho por Área</p>
         <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-          Responda questões de pelo menos 3 áreas diferentes para liberar o gráfico radar.
+          {faltam > 0
+            ? `Acerte ao menos uma questão em mais ${faltam} ${faltam === 1 ? "área" : "áreas"} para liberar o gráfico radar.`
+            : "Responda questões de pelo menos 3 áreas diferentes para liberar o gráfico radar."}
         </p>
         <div className="space-y-1 pt-1">
-          {data.map((d) => (
+          {sorted.map((d) => (
             <div key={d.conteudo} className="flex items-center gap-2">
               <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "var(--foreground)" }}>
                 {shortLabel(d.conteudo)}

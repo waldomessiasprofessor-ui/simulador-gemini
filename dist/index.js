@@ -1389,7 +1389,10 @@ var simulationsRouter = createTRPCRouter({
     const userId = ctx.user.id;
     const filters = [eq2(questions.active, true)];
     if (input.conteudo) {
-      filters.push(sql2`${questions.conteudo_principal} = ${input.conteudo}`);
+      filters.push(sql2`(
+          ${questions.conteudo_principal} = ${input.conteudo}
+          OR JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.conteudo}))
+        )`);
     }
     const rows = await ctx.db.select({
       id: questions.id,
@@ -1458,12 +1461,35 @@ var simulationsRouter = createTRPCRouter({
     return { success: true };
   }),
   // Tópicos disponíveis para treino livre
+  // Para cada tópico T (valor distinto de conteudo_principal), o total é o número
+  // de questões em que conteudo_principal = T **ou** T aparece em tags — assim uma
+  // questão cadastrada como "Aritmética" com tag "Razão, proporção e regra de
+  // três" conta no tópico "Razão, proporção e regra de três" (e não só em
+  // "Aritmética"). Usa COUNT(DISTINCT id) para evitar dupla contagem.
   getTopics: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db.select({
-      conteudo: questions.conteudo_principal,
-      total: sql2`COUNT(*)`
-    }).from(questions).where(eq2(questions.active, true)).groupBy(questions.conteudo_principal).orderBy(questions.conteudo_principal);
-    return rows;
+    const rows = await ctx.db.execute(sql2`
+      SELECT t.conteudo AS conteudo,
+             (
+               SELECT COUNT(DISTINCT q.id)
+                 FROM questions q
+                WHERE q.active = 1
+                  AND (
+                    q.conteudo_principal = t.conteudo
+                    OR JSON_CONTAINS(q.tags, JSON_QUOTE(t.conteudo))
+                  )
+             ) AS total
+        FROM (
+          SELECT DISTINCT conteudo_principal AS conteudo
+            FROM questions
+           WHERE active = 1
+        ) t
+       ORDER BY t.conteudo
+    `);
+    const list = Array.isArray(rows) && Array.isArray(rows[0]) ? rows[0] : rows;
+    return list.map((r) => ({
+      conteudo: r.conteudo,
+      total: Number(r.total)
+    }));
   }),
   // ---------------------------------------------------------------------------
   // DESAFIO DIÁRIO — 3 questões randômicas sem repetição

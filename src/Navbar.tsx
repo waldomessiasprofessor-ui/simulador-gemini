@@ -219,7 +219,7 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-30"
-        style={{ backgroundColor: "#009688", boxShadow: "0 2px 8px rgba(0,150,136,0.3)" }}>
+        style={{ backgroundColor: "#263238", boxShadow: "0 2px 8px rgba(38,50,56,0.35)" }}>
         <div className="container mx-auto px-4 max-w-5xl flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)}
