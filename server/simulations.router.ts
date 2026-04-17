@@ -815,6 +815,7 @@ export const simulationsRouter = createTRPCRouter({
       .select({
         conteudo: questions.conteudo_principal,
         isCorrect: simulationAnswers.isCorrect,
+        timeSpent: simulationAnswers.timeSpentSeconds,
       })
       .from(simulationAnswers)
       .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
@@ -825,18 +826,23 @@ export const simulationsRouter = createTRPCRouter({
       ));
 
     // Agrupa por conteúdo
-    const map = new Map<string, { total: number; correct: number }>();
+    type Agg = { total: number; correct: number; timeSum: number; timeCount: number };
+    const map = new Map<string, Agg>();
 
     for (const r of simRows) {
       const key = r.conteudo?.trim();
       if (!key) continue; // ignora questões sem conteúdo_principal
-      const entry = map.get(key) ?? { total: 0, correct: 0 };
+      const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
       entry.total++;
       if (r.isCorrect) entry.correct++;
+      if (r.timeSpent != null && r.timeSpent > 0) {
+        entry.timeSum += r.timeSpent;
+        entry.timeCount++;
+      }
       map.set(key, entry);
     }
 
-    // Fonte 2: dailyChallenges completos
+    // Fonte 2: dailyChallenges completos (sem dados de tempo)
     const challenges = await ctx.db
       .select({
         answers: dailyChallenges.answers,
@@ -862,7 +868,7 @@ export const simulationsRouter = createTRPCRouter({
             if (!q) continue;
             const key = q.conteudo?.trim();
             if (!key) continue; // ignora questões sem conteúdo_principal
-            const entry = map.get(key) ?? { total: 0, correct: 0 };
+            const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
             entry.total++;
             if (selected === q.gabarito) entry.correct++;
             map.set(key, entry);
@@ -888,12 +894,17 @@ export const simulationsRouter = createTRPCRouter({
     // Ordenação alfabética fixa → eixos do radar sempre na mesma posição
     return Array.from(map.entries())
       .filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo))
-      .map(([conteudo, v]) => ({
-        conteudo,
-        total: v.total,
-        correct: v.correct,
-        pct: Math.round((v.correct / v.total) * 100),
-      }))
+      .map(([conteudo, v]) => {
+        const pct = Math.round((v.correct / v.total) * 100);
+        return {
+          conteudo,
+          total: v.total,
+          correct: v.correct,
+          pct,
+          accuracy: pct, // alias (página Desempenho usa "accuracy")
+          avgTime: v.timeCount > 0 ? Math.round(v.timeSum / v.timeCount) : null,
+        };
+      })
       .sort((a, b) => a.conteudo.localeCompare(b.conteudo, "pt-BR"));
   }),
 

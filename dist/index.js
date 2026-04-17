@@ -1302,7 +1302,8 @@ var simulationsRouter = createTRPCRouter({
     const userId = ctx.user.id;
     const simRows = await ctx.db.select({
       conteudo: questions.conteudo_principal,
-      isCorrect: simulationAnswers.isCorrect
+      isCorrect: simulationAnswers.isCorrect,
+      timeSpent: simulationAnswers.timeSpentSeconds
     }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq2(simulationAnswers.questionId, questions.id)).where(and2(
       eq2(simulations.userId, userId),
       sql2`${simulationAnswers.isCorrect} IS NOT NULL`
@@ -1311,9 +1312,13 @@ var simulationsRouter = createTRPCRouter({
     for (const r of simRows) {
       const key = r.conteudo?.trim();
       if (!key) continue;
-      const entry = map.get(key) ?? { total: 0, correct: 0 };
+      const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
       entry.total++;
       if (r.isCorrect) entry.correct++;
+      if (r.timeSpent != null && r.timeSpent > 0) {
+        entry.timeSum += r.timeSpent;
+        entry.timeCount++;
+      }
       map.set(key, entry);
     }
     const challenges = await ctx.db.select({
@@ -1333,7 +1338,7 @@ var simulationsRouter = createTRPCRouter({
             if (!q) continue;
             const key = q.conteudo?.trim();
             if (!key) continue;
-            const entry = map.get(key) ?? { total: 0, correct: 0 };
+            const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
             entry.total++;
             if (selected === q.gabarito) entry.correct++;
             map.set(key, entry);
@@ -1351,12 +1356,18 @@ var simulationsRouter = createTRPCRouter({
       "Ci\xEAncias da Natureza e suas Tecnologias",
       "Ci\xEAncias da Natureza e Suas Tecnologias"
     ]);
-    return Array.from(map.entries()).filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo)).map(([conteudo, v]) => ({
-      conteudo,
-      total: v.total,
-      correct: v.correct,
-      pct: Math.round(v.correct / v.total * 100)
-    })).sort((a, b) => a.conteudo.localeCompare(b.conteudo, "pt-BR"));
+    return Array.from(map.entries()).filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo)).map(([conteudo, v]) => {
+      const pct = Math.round(v.correct / v.total * 100);
+      return {
+        conteudo,
+        total: v.total,
+        correct: v.correct,
+        pct,
+        accuracy: pct,
+        // alias (página Desempenho usa "accuracy")
+        avgTime: v.timeCount > 0 ? Math.round(v.timeSum / v.timeCount) : null
+      };
+    }).sort((a, b) => a.conteudo.localeCompare(b.conteudo, "pt-BR"));
   }),
   // ---------------------------------------------------------------------------
   // TREINO LIVRE — sorteia N questões de um tópico com gabarito imediato

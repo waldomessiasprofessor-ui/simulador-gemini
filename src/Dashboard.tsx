@@ -320,7 +320,7 @@ function RadarTopicos() {
 
   // Animação manual: interpola de 0 até os valores reais com ease-out cúbico
   useEffect(() => {
-    if (!data || data.length < 2) return;
+    if (!data || data.length < 3) return;
     const target = data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const DURATION = 1100;
@@ -343,12 +343,45 @@ function RadarTopicos() {
     </div>
   );
 
-  if (!data || data.length < 2) return null;
+  if (!data || data.length < 3) {
+    // Radar só faz sentido com 3+ eixos — senão vira uma linha.
+    // Com 1-2 tópicos, mostra um card informativo em vez do gráfico.
+    if (!data || data.length === 0) return null;
+    return (
+      <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+        <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Desempenho por Área</p>
+        <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+          Responda questões de pelo menos 3 áreas diferentes para liberar o gráfico radar.
+        </p>
+        <div className="space-y-1 pt-1">
+          {data.map((d) => (
+            <div key={d.conteudo} className="flex items-center gap-2">
+              <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "var(--foreground)" }}>
+                {shortLabel(d.conteudo)}
+              </span>
+              <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                {d.correct}/{d.total}
+              </span>
+              <span className="text-xs font-black w-10 text-right" style={{ color: d.pct >= 70 ? "#15803D" : d.pct >= 40 ? "#D97706" : "#DC2626" }}>
+                {d.pct}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const chartData = animatedData.length ? animatedData : data.map(d => ({ area: shortLabel(d.conteudo), pct: d.pct, total: d.total }));
 
   const best = [...data].sort((a, b) => b.pct - a.pct)[0];
-  const worst = [...data].sort((a, b) => a.pct - b.pct)[0];
+
+  // Lista de áreas fracas: prioriza as com pct < 70% (até 5); se não houver nenhuma
+  // abaixo disso, mostra as 3 piores de qualquer jeito, para sempre haver orientação.
+  const belowThreshold = [...data].filter(d => d.pct < 70).sort((a, b) => a.pct - b.pct);
+  const weakList = belowThreshold.length > 0
+    ? belowThreshold.slice(0, 5)
+    : [...data].sort((a, b) => a.pct - b.pct).slice(0, 3);
 
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
@@ -410,16 +443,40 @@ function RadarTopicos() {
       </ResponsiveContainer>
 
       {/* Destaques */}
-      <div className="grid grid-cols-2 gap-2 pt-1">
-        <div className="rounded-xl px-3 py-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
-          <p className="text-xs font-semibold" style={{ color: "#15803D" }}>Melhor área</p>
-          <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#166534" }}>{shortLabel(best.conteudo)}</p>
-          <p className="text-xs" style={{ color: "#15803D" }}>{best.pct}% de acerto</p>
+      <div className="space-y-2 pt-1">
+        {/* Melhor área */}
+        <div className="rounded-xl px-3 py-2 flex items-center gap-3" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold" style={{ color: "#15803D" }}>Melhor área</p>
+            <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#166534" }}>{shortLabel(best.conteudo)}</p>
+          </div>
+          <span className="text-sm font-black flex-shrink-0" style={{ color: "#15803D" }}>{best.pct}%</span>
         </div>
+
+        {/* Pontos a melhorar — lista das áreas mais fracas */}
         <div className="rounded-xl px-3 py-2" style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}>
-          <p className="text-xs font-semibold" style={{ color: "#DC2626" }}>Área a reforçar</p>
-          <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#991B1B" }}>{shortLabel(worst.conteudo)}</p>
-          <p className="text-xs" style={{ color: "#DC2626" }}>{worst.pct}% de acerto</p>
+          <p className="text-xs font-semibold mb-1.5" style={{ color: "#DC2626" }}>
+            {belowThreshold.length > 0 ? "Pontos a melhorar" : "Áreas com menor acerto"}
+          </p>
+          {weakList.length === 0 ? (
+            <p className="text-xs" style={{ color: "#991B1B" }}>Sem dados suficientes.</p>
+          ) : (
+            <div className="space-y-1">
+              {weakList.map((w) => (
+                <div key={w.conteudo} className="flex items-center gap-2">
+                  <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "#991B1B" }}>
+                    {shortLabel(w.conteudo)}
+                  </span>
+                  <span className="text-xs flex-shrink-0" style={{ color: "#991B1B", opacity: 0.7 }}>
+                    {w.correct}/{w.total}
+                  </span>
+                  <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#DC2626" }}>
+                    {w.pct}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
