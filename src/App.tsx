@@ -1,4 +1,5 @@
-import { Switch, Route, Redirect } from "wouter";
+import { useEffect } from "react";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import Navbar from "@/Navbar";
 import Footer from "@/Footer";
@@ -22,6 +23,17 @@ import DesafioPage from "@/DesafioPage";
 import Agenda from "@/Agenda";
 import Login from "@/Login";
 import { Loader2, AlertTriangle } from "lucide-react";
+
+// Sobe a página para o topo sempre que a rota muda (navegação SPA).
+// Sem isso, o wouter mantém o scroll da página anterior — usuário vai
+// para uma nova rota e aparece no meio/rodapé dela.
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+  }, [location]);
+  return null;
+}
 
 function SubscriptionBanner({ session }: { session: any }) {
   if (session.role === "admin") return null;
@@ -71,6 +83,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
+      <ScrollToTop />
       <Navbar />
       <SubscriptionBanner session={session} />
       <main className="flex-1 container mx-auto px-4 py-6 max-w-4xl">
