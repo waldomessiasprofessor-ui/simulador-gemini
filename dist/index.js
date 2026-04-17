@@ -2372,6 +2372,926 @@ var appRouter = createTRPCRouter({
 
 // server/index.ts
 import { eq as eq9 } from "drizzle-orm";
+
+// server/seed-matematica-content.ts
+var FRACOES_ARTICLE = {
+  titulo: "Opera\xE7\xF5es com Fra\xE7\xF5es",
+  topico: "Aritm\xE9tica",
+  conteudo: `## 1. O que \xE9 uma fra\xE7\xE3o?
+
+Uma **fra\xE7\xE3o** representa uma parte de um todo dividido em partes iguais. Na nota\xE7\xE3o $\\dfrac{a}{b}$, com $b \\neq 0$:
+
+\u2022 $a$ \xE9 o **numerador** (quantas partes tomamos)
+\u2022 $b$ \xE9 o **denominador** (em quantas partes o todo foi dividido)
+
+**Tipos de fra\xE7\xF5es:**
+\u2022 **Pr\xF3pria:** $|a| < |b|$ \u2014 representa menos que um inteiro. Ex.: $\\tfrac{3}{5}$
+\u2022 **Impr\xF3pria:** $|a| \\geq |b|$ \u2014 representa um inteiro ou mais. Ex.: $\\tfrac{7}{3}$
+\u2022 **Aparente:** quando \xE9 equivalente a um inteiro. Ex.: $\\tfrac{8}{4} = 2$
+\u2022 **Mista:** um inteiro mais uma fra\xE7\xE3o. Ex.: $2\\tfrac{1}{3} = \\tfrac{7}{3}$
+
+---
+
+## 2. Fra\xE7\xF5es equivalentes e simplifica\xE7\xE3o
+
+Duas fra\xE7\xF5es s\xE3o **equivalentes** quando representam a mesma quantidade. Multiplicar (ou dividir) numerador e denominador pelo mesmo n\xFAmero diferente de zero gera uma fra\xE7\xE3o equivalente:
+
+$$\\frac{a}{b} = \\frac{a \\cdot k}{b \\cdot k} \\quad (k \\neq 0)$$
+
+**Simplificar** uma fra\xE7\xE3o \xE9 dividir numerador e denominador pelo seu m\xE1ximo divisor comum (MDC), obtendo a **forma irredut\xEDvel**.
+
+**Exemplo:**
+
+$$\\frac{24}{36} = \\frac{24 \\div 12}{36 \\div 12} = \\frac{2}{3}$$
+
+---
+
+## 3. Adi\xE7\xE3o e subtra\xE7\xE3o
+
+**Caso 1 \u2014 Mesmo denominador:** soma-se (ou subtrai-se) os numeradores e conserva-se o denominador.
+
+$$\\frac{a}{c} + \\frac{b}{c} = \\frac{a+b}{c}$$
+
+**Caso 2 \u2014 Denominadores diferentes:** calcula-se o **MMC** dos denominadores e reduzem-se as fra\xE7\xF5es a esse denominador comum antes de somar.
+
+**Exemplo:**
+
+$$\\frac{1}{6} + \\frac{3}{4} = \\frac{2}{12} + \\frac{9}{12} = \\frac{11}{12}$$
+
+(MMC(6,4) = 12; depois: $12 \\div 6 \\cdot 1 = 2$ e $12 \\div 4 \\cdot 3 = 9$.)
+
+**Atalho (soma cruzada)** \u2014 \xFAtil para duas fra\xE7\xF5es:
+
+$$\\frac{a}{b} + \\frac{c}{d} = \\frac{a\\,d + b\\,c}{b\\,d}$$
+
+\u26A0\uFE0F Gera um denominador maior; simplifique ao final.
+
+---
+
+## 4. Multiplica\xE7\xE3o
+
+Multiplica-se numerador com numerador e denominador com denominador:
+
+$$\\frac{a}{b} \\cdot \\frac{c}{d} = \\frac{a \\cdot c}{b \\cdot d}$$
+
+**Dica:** simplifique antes de multiplicar (cancelamento cruzado) \u2014 evita n\xFAmeros grandes.
+
+**Exemplo:**
+
+$$\\frac{4}{9} \\cdot \\frac{3}{8} = \\frac{\\cancel{4}^{\\,1}}{9} \\cdot \\frac{\\cancel{3}^{\\,1}}{\\cancel{8}^{\\,2}} \\cdot \\frac{1}{\\cancel{9}^{\\,3}} = \\frac{1}{6}$$
+
+---
+
+## 5. Divis\xE3o
+
+Dividir por uma fra\xE7\xE3o \xE9 multiplicar pelo seu **inverso** (tamb\xE9m chamado rec\xEDproco):
+
+$$\\frac{a}{b} \\div \\frac{c}{d} = \\frac{a}{b} \\cdot \\frac{d}{c} = \\frac{a \\cdot d}{b \\cdot c}$$
+
+**Exemplo:**
+
+$$\\frac{5}{6} \\div \\frac{2}{3} = \\frac{5}{6} \\cdot \\frac{3}{2} = \\frac{15}{12} = \\frac{5}{4}$$
+
+---
+
+## 6. Potencia\xE7\xE3o e radicia\xE7\xE3o
+
+**Pot\xEAncia:** eleva-se separadamente numerador e denominador:
+
+$$\\left(\\frac{a}{b}\\right)^n = \\frac{a^n}{b^n}$$
+
+**Expoente negativo** inverte a fra\xE7\xE3o:
+
+$$\\left(\\frac{a}{b}\\right)^{-n} = \\left(\\frac{b}{a}\\right)^n$$
+
+**Raiz:** extrai-se a raiz do numerador e do denominador:
+
+$$\\sqrt[n]{\\frac{a}{b}} = \\frac{\\sqrt[n]{a}}{\\sqrt[n]{b}}$$
+
+---
+
+## 7. Fra\xE7\xE3o de uma quantidade
+
+"Fra\xE7\xE3o de" em problemas significa **multiplica\xE7\xE3o**:
+
+$$\\frac{a}{b} \\text{ de } N = \\frac{a}{b} \\cdot N$$
+
+**Exemplo:** $\\tfrac{3}{4}$ de 200 reais $= \\tfrac{3}{4} \\cdot 200 = 150$ reais.
+
+---
+
+## 8. Erros mais comuns
+
+\u274C Somar numeradores e denominadores separadamente: $\\tfrac{1}{2} + \\tfrac{1}{3} \\neq \\tfrac{2}{5}$.
+
+\u2705 O correto \xE9: $\\tfrac{1}{2} + \\tfrac{1}{3} = \\tfrac{3}{6} + \\tfrac{2}{6} = \\tfrac{5}{6}$.
+
+\u274C Inverter a fra\xE7\xE3o errada na divis\xE3o: na divis\xE3o $\\tfrac{a}{b} \\div \\tfrac{c}{d}$ inverte-se **apenas** a segunda.
+
+\u274C Esquecer de simplificar ao final: respostas como $\\tfrac{6}{8}$ devem virar $\\tfrac{3}{4}$.
+
+---
+
+## Resumo das opera\xE7\xF5es
+
+| Opera\xE7\xE3o | Regra |
+|---|---|
+| Soma/Subtra\xE7\xE3o (mesmo denom.) | $\\dfrac{a}{c} \\pm \\dfrac{b}{c} = \\dfrac{a \\pm b}{c}$ |
+| Soma/Subtra\xE7\xE3o (denom. diferentes) | Reduzir ao MMC |
+| Multiplica\xE7\xE3o | $\\dfrac{a}{b} \\cdot \\dfrac{c}{d} = \\dfrac{ac}{bd}$ |
+| Divis\xE3o | $\\dfrac{a}{b} \\div \\dfrac{c}{d} = \\dfrac{a}{b} \\cdot \\dfrac{d}{c}$ |
+| Pot\xEAncia | $\\left(\\dfrac{a}{b}\\right)^n = \\dfrac{a^n}{b^n}$ |
+| Fra\xE7\xE3o de N | $\\dfrac{a}{b} \\cdot N$ |`,
+  questoes: [
+    {
+      enunciado: "Calcule: $\\dfrac{2}{3} + \\dfrac{1}{4} - \\dfrac{1}{6}$.",
+      opcoes: [
+        "$\\dfrac{3}{4}$",
+        "$\\dfrac{5}{6}$",
+        "$\\dfrac{7}{12}$",
+        "$\\dfrac{11}{12}$"
+      ],
+      correta: 0
+    },
+    {
+      enunciado: "Uma torneira enche $\\dfrac{3}{5}$ de um tanque em uma hora. Em quantas horas o tanque fica cheio?",
+      opcoes: [
+        "$\\dfrac{3}{5}$ h",
+        "$\\dfrac{5}{3}$ h",
+        "$\\dfrac{8}{5}$ h",
+        "$2$ h"
+      ],
+      correta: 1
+    },
+    {
+      enunciado: "Simplifique a express\xE3o $\\dfrac{\\tfrac{2}{3}}{\\tfrac{4}{9}}$.",
+      opcoes: [
+        "$\\dfrac{8}{27}$",
+        "$\\dfrac{1}{3}$",
+        "$\\dfrac{3}{2}$",
+        "$\\dfrac{2}{3}$"
+      ],
+      correta: 2
+    }
+  ]
+};
+var RAZAO_PROPORCAO_ARTICLE = {
+  titulo: "Raz\xE3o e Propor\xE7\xE3o",
+  topico: "Aritm\xE9tica",
+  conteudo: `## 1. O que \xE9 uma raz\xE3o?
+
+**Raz\xE3o** entre dois n\xFAmeros $a$ e $b$ (com $b \\neq 0$) \xE9 o quociente $\\dfrac{a}{b}$, lido "$a$ est\xE1 para $b$". Tamb\xE9m escrito $a : b$.
+
+\u2022 $a$ \xE9 o **antecedente**
+\u2022 $b$ \xE9 o **consequente**
+
+**Importante:** para fazer sentido como raz\xE3o, as duas grandezas devem estar na **mesma unidade** (ou ser adimensionais, como em escalas e densidades).
+
+**Exemplos:**
+\u2022 Escala: $1 : 50\\,000$ \u2014 cada 1 cm no mapa equivale a 50.000 cm no real.
+\u2022 Densidade: $\\rho = \\dfrac{m}{V}$ (kg/m\xB3).
+\u2022 Velocidade m\xE9dia: $v = \\dfrac{\\Delta s}{\\Delta t}$ (km/h).
+
+---
+
+## 2. Raz\xF5es equivalentes
+
+Duas raz\xF5es s\xE3o **equivalentes** quando representam o mesmo quociente:
+
+$$\\frac{2}{3} = \\frac{4}{6} = \\frac{10}{15}$$
+
+---
+
+## 3. O que \xE9 uma propor\xE7\xE3o?
+
+**Propor\xE7\xE3o** \xE9 uma igualdade entre duas raz\xF5es:
+
+$$\\frac{a}{b} = \\frac{c}{d}$$
+
+L\xEA-se "$a$ est\xE1 para $b$ assim como $c$ est\xE1 para $d$".
+
+\u2022 $a$ e $d$ s\xE3o os **extremos**
+\u2022 $b$ e $c$ s\xE3o os **meios**
+
+---
+
+## 4. Propriedade Fundamental
+
+> **Em toda propor\xE7\xE3o, o produto dos meios \xE9 igual ao produto dos extremos.**
+
+$$\\frac{a}{b} = \\frac{c}{d} \\iff a \\cdot d = b \\cdot c$$
+
+Esta \xE9 a famosa **regra do "cruzamento"** (ou multiplica\xE7\xE3o em cruz), muito usada para resolver equa\xE7\xF5es.
+
+**Exemplo:** encontrar $x$ em $\\dfrac{x}{12} = \\dfrac{3}{4}$.
+
+$$4x = 12 \\cdot 3 \\implies x = \\frac{36}{4} = 9$$
+
+---
+
+## 5. Propriedades \xFAteis
+
+**5.1 Soma/subtra\xE7\xE3o de antecedentes e consequentes:**
+
+$$\\frac{a}{b} = \\frac{c}{d} \\implies \\frac{a+c}{b+d} = \\frac{a-c}{b-d} = \\frac{a}{b}$$
+
+**5.2 Invers\xE3o:**
+
+$$\\frac{a}{b} = \\frac{c}{d} \\iff \\frac{b}{a} = \\frac{d}{c}$$
+
+**5.3 Alternar:**
+
+$$\\frac{a}{b} = \\frac{c}{d} \\iff \\frac{a}{c} = \\frac{b}{d}$$
+
+---
+
+## 6. Grandezas Diretamente Proporcionais
+
+Duas grandezas $x$ e $y$ s\xE3o **diretamente proporcionais** quando seu **quociente** \xE9 constante:
+
+$$\\frac{y}{x} = k \\implies y = k \\cdot x$$
+
+Quando uma **dobra**, a outra **dobra**; quando uma **triplica**, a outra **triplica**.
+
+**Exemplo:** pre\xE7o total \xD7 quantidade de produto (com pre\xE7o unit\xE1rio constante).
+
+---
+
+## 7. Grandezas Inversamente Proporcionais
+
+Duas grandezas $x$ e $y$ s\xE3o **inversamente proporcionais** quando seu **produto** \xE9 constante:
+
+$$x \\cdot y = k \\implies y = \\frac{k}{x}$$
+
+Quando uma **dobra**, a outra \xE9 **reduzida \xE0 metade**.
+
+**Exemplo:** velocidade \xD7 tempo de viagem (para dist\xE2ncia fixa); n\xFAmero de oper\xE1rios \xD7 tempo de obra (para a mesma tarefa).
+
+---
+
+## 8. Regra de Tr\xEAs Simples
+
+**Direta** (grandezas diretamente proporcionais):
+
+$$\\frac{a}{b} = \\frac{x}{y}$$
+
+**Inversa** (grandezas inversamente proporcionais): invertem-se os termos do lado n\xE3o conhecido:
+
+$$\\frac{a}{b} = \\frac{y}{x}$$
+
+**Exemplo direta:** 5 kg de arroz custam R\\$ 25; quanto custam 12 kg?
+
+$$\\frac{5}{25} = \\frac{12}{x} \\implies x = \\frac{12 \\cdot 25}{5} = 60 \\text{ reais}$$
+
+**Exemplo inversa:** 6 oper\xE1rios constroem um muro em 12 dias. Em quantos dias 9 oper\xE1rios constroem o mesmo muro?
+
+$$\\frac{6}{9} = \\frac{x}{12} \\implies x = \\frac{6 \\cdot 12}{9} = 8 \\text{ dias}$$
+
+---
+
+## 9. Regra de Tr\xEAs Composta
+
+Envolve **tr\xEAs ou mais grandezas**. Passos:
+
+1. Monte uma tabela relacionando as grandezas com a inc\xF3gnita $x$.
+2. Analise se cada grandeza \xE9 **direta** ou **inversa** em rela\xE7\xE3o a $x$ (marque com setas).
+3. Grandezas **diretas**: mant\xEAm a fra\xE7\xE3o como est\xE1.
+4. Grandezas **inversas**: invertem a fra\xE7\xE3o correspondente.
+5. Isole $x$.
+
+**Exemplo:** 4 m\xE1quinas produzem 800 pe\xE7as em 5 dias. Quantas pe\xE7as 6 m\xE1quinas produzem em 8 dias?
+
+| M\xE1quinas | Pe\xE7as | Dias |
+|---|---|---|
+| 4 | 800 | 5 |
+| 6 | $x$ | 8 |
+
+\u2022 M\xE1quinas \xD7 pe\xE7as: quanto mais m\xE1quinas, mais pe\xE7as \u2192 **direta**.
+\u2022 Dias \xD7 pe\xE7as: quanto mais dias, mais pe\xE7as \u2192 **direta**.
+
+$$\\frac{800}{x} = \\frac{4}{6} \\cdot \\frac{5}{8} = \\frac{20}{48} = \\frac{5}{12}$$
+
+$$x = \\frac{800 \\cdot 12}{5} = 1920 \\text{ pe\xE7as}$$
+
+---
+
+## Resumo
+
+| Conceito | F\xF3rmula / Regra |
+|---|---|
+| Raz\xE3o | $\\dfrac{a}{b}$, com $b \\neq 0$ |
+| Propor\xE7\xE3o | $\\dfrac{a}{b} = \\dfrac{c}{d}$ |
+| Prop. fundamental | $a \\cdot d = b \\cdot c$ |
+| Diretamente prop. | $y = k \\cdot x$ |
+| Inversamente prop. | $x \\cdot y = k$ |
+| Regra de 3 simples | $\\dfrac{a}{b} = \\dfrac{x}{y}$ (direta) ou $\\dfrac{a}{b} = \\dfrac{y}{x}$ (inversa) |`,
+  questoes: [
+    {
+      enunciado: "Se 8 oper\xE1rios constroem um muro em 15 dias, em quantos dias 12 oper\xE1rios construir\xE3o o mesmo muro, trabalhando no mesmo ritmo?",
+      opcoes: [
+        "8 dias",
+        "10 dias",
+        "12 dias",
+        "22,5 dias"
+      ],
+      correta: 1
+    },
+    {
+      enunciado: "Em um mapa, a dist\xE2ncia entre duas cidades \xE9 de 6 cm. Se a escala do mapa \xE9 1 : 500.000, a dist\xE2ncia real entre as cidades \xE9:",
+      opcoes: [
+        "3 km",
+        "30 km",
+        "60 km",
+        "300 km"
+      ],
+      correta: 1
+    },
+    {
+      enunciado: "Duas grandezas $x$ e $y$ s\xE3o inversamente proporcionais. Se $x = 6$ quando $y = 20$, qual \xE9 o valor de $y$ quando $x = 15$?",
+      opcoes: [
+        "4",
+        "8",
+        "12",
+        "50"
+      ],
+      correta: 1
+    }
+  ]
+};
+var DIVISAO_PROPORCIONAL_ARTICLE = {
+  titulo: "Divis\xE3o em Partes Proporcionais",
+  topico: "Aritm\xE9tica",
+  conteudo: `## 1. Introdu\xE7\xE3o
+
+Dividir uma quantidade **em partes proporcionais** significa repartir essa quantidade de modo que **cada parte seja proporcional** a um n\xFAmero dado. \xC9 uma aplica\xE7\xE3o direta de propor\xE7\xE3o \u2014 muito cobrada em quest\xF5es de sociedade, heran\xE7a, premia\xE7\xE3o e divis\xE3o de lucros.
+
+---
+
+## 2. Divis\xE3o em Partes Diretamente Proporcionais
+
+**Problema-padr\xE3o:** dividir o n\xFAmero $N$ em partes $x$, $y$, $z$ **diretamente proporcionais** a $a$, $b$, $c$.
+
+Condi\xE7\xF5es:
+
+$$\\frac{x}{a} = \\frac{y}{b} = \\frac{z}{c} = k \\qquad \\text{e} \\qquad x + y + z = N$$
+
+**M\xE9todo da constante $k$:**
+
+$$k = \\frac{N}{a + b + c}$$
+
+Depois, $x = k \\cdot a$, $y = k \\cdot b$, $z = k \\cdot c$.
+
+**Exemplo:** dividir R\\$ 1.800 entre tr\xEAs s\xF3cios, em partes diretamente proporcionais a 2, 3 e 4.
+
+$$k = \\frac{1800}{2+3+4} = \\frac{1800}{9} = 200$$
+
+Logo: $x = 400$, $y = 600$, $z = 800$. (Confere: $400+600+800 = 1800$ \u2713)
+
+---
+
+## 3. Divis\xE3o em Partes Inversamente Proporcionais
+
+**Problema-padr\xE3o:** dividir $N$ em partes **inversamente proporcionais** a $a$, $b$, $c$.
+
+Quando uma parte \xE9 inversamente proporcional a $a$, \xE9 **diretamente proporcional a $\\dfrac{1}{a}$**. Ent\xE3o:
+
+$$\\frac{x}{1/a} = \\frac{y}{1/b} = \\frac{z}{1/c} = k$$
+
+Logo: $x = \\dfrac{k}{a}$, $y = \\dfrac{k}{b}$, $z = \\dfrac{k}{c}$, com:
+
+$$k = \\frac{N}{\\tfrac{1}{a} + \\tfrac{1}{b} + \\tfrac{1}{c}}$$
+
+**Dica pr\xE1tica:** some $\\tfrac{1}{a} + \\tfrac{1}{b} + \\tfrac{1}{c}$ reduzindo ao MMC e divida $N$ pelo resultado.
+
+**Exemplo:** dividir R\\$ 1.300 em partes inversamente proporcionais a 2, 3 e 4.
+
+Inverter: $\\tfrac{1}{2}, \\tfrac{1}{3}, \\tfrac{1}{4}$. MMC(2,3,4) = 12.
+
+$$\\frac{1}{2} + \\frac{1}{3} + \\frac{1}{4} = \\frac{6+4+3}{12} = \\frac{13}{12}$$
+
+$$k = \\frac{1300}{13/12} = 1300 \\cdot \\frac{12}{13} = 1200$$
+
+Logo: $x = \\tfrac{1200}{2} = 600$, $y = \\tfrac{1200}{3} = 400$, $z = \\tfrac{1200}{4} = 300$. (Confere: $600+400+300 = 1300$ \u2713)
+
+---
+
+## 4. Divis\xE3o Composta
+
+Dividir $N$ em partes **simultaneamente proporcionais** a mais de um crit\xE9rio.
+
+**Exemplo:** dividir R\\$ 9.500 entre dois funcion\xE1rios A e B:
+\u2022 Diretamente proporcional aos anos de servi\xE7o: 8 e 12
+\u2022 Diretamente proporcional \xE0s horas trabalhadas: 40 e 50
+
+Para cada funcion\xE1rio, multiplicam-se os fatores:
+
+$$A : B = (8 \\cdot 40) : (12 \\cdot 50) = 320 : 600 = 8 : 15$$
+
+$$k = \\frac{9500}{8+15} = \\frac{9500}{23}$$
+
+Como $9500 / 23 \\approx 413{,}04$, vem: $A \\approx 3304{,}35$ e $B \\approx 6195{,}65$.
+
+**Regra geral \u2014 grandezas diretas multiplicam, inversas dividem (ou usam o rec\xEDproco).**
+
+---
+
+## 5. Situa\xE7\xF5es t\xEDpicas em vestibular
+
+### 5.1 Sociedade / Capital
+
+> Tr\xEAs s\xF3cios investiram R\\$ 20.000, R\\$ 30.000 e R\\$ 50.000. Como dividir um lucro de R\\$ 20.000?
+
+Diretamente proporcional ao capital: raz\xF5es $2 : 3 : 5$, $k = 20000/10 = 2000$.
+
+\u2192 R\\$ 4.000, R\\$ 6.000, R\\$ 10.000.
+
+### 5.2 Sociedade com tempos diferentes
+
+> A entrou com R\\$ 10.000 por 6 meses; B entrou com R\\$ 15.000 por 4 meses.
+
+Multiplicar capital \xD7 tempo: $A : B = 60000 : 60000 = 1 : 1$ \u2014 lucro igual.
+
+### 5.3 Heran\xE7a
+
+> Tr\xEAs herdeiros recebem em partes **inversamente** proporcionais \xE0s suas idades (18, 24, 36 anos) \u2014 o mais novo recebe mais.
+
+---
+
+## 6. Estrat\xE9gia para resolver qualquer exerc\xEDcio
+
+1. **Identifique** se \xE9 direta ou inversa (releia o enunciado).
+2. **Monte** as raz\xF5es $x/a = y/b = \\ldots = k$.
+3. **Use** a equa\xE7\xE3o de soma $x + y + \\ldots = N$ para achar $k$.
+4. **Multiplique** (direta) ou **divida por** (inversa) cada n\xFAmero de propor\xE7\xE3o.
+5. **Confira:** a soma dos valores deve dar o total $N$.
+
+---
+
+## Resumo
+
+| Tipo | F\xF3rmula de $k$ | Cada parte |
+|---|---|---|
+| Direta | $k = \\dfrac{N}{a+b+c}$ | $x = k \\cdot a$ |
+| Inversa | $k = \\dfrac{N}{\\tfrac{1}{a}+\\tfrac{1}{b}+\\tfrac{1}{c}}$ | $x = \\dfrac{k}{a}$ |
+| Composta | Multiplica diretas, inverte inversas, depois aplica direta. | \u2014 |`,
+  questoes: [
+    {
+      enunciado: "Divida R\\$ 4.200 entre tr\xEAs pessoas em partes diretamente proporcionais a 2, 5 e 7. Quanto recebe a pessoa com propor\xE7\xE3o 5?",
+      opcoes: [
+        "R\\$ 600",
+        "R\\$ 1.050",
+        "R\\$ 1.500",
+        "R\\$ 2.100"
+      ],
+      correta: 2
+    },
+    {
+      enunciado: "Uma quantia de R\\$ 2.600 \xE9 dividida entre dois irm\xE3os em partes inversamente proporcionais \xE0s idades 10 e 15. O irm\xE3o mais velho recebe:",
+      opcoes: [
+        "R\\$ 1.040",
+        "R\\$ 1.300",
+        "R\\$ 1.560",
+        "R\\$ 1.800"
+      ],
+      correta: 0
+    },
+    {
+      enunciado: "Tr\xEAs s\xF3cios, A, B e C, montaram uma empresa com os capitais R\\$ 10.000, R\\$ 20.000 e R\\$ 30.000, respectivamente. Ao fim do ano, o lucro de R\\$ 18.000 foi distribu\xEDdo em partes diretamente proporcionais ao capital investido. A parte de B \xE9:",
+      opcoes: [
+        "R\\$ 3.000",
+        "R\\$ 6.000",
+        "R\\$ 9.000",
+        "R\\$ 12.000"
+      ],
+      correta: 1
+    }
+  ]
+};
+var CONTAGEM_FATORIAL_ARTICLE = {
+  titulo: "Princ\xEDpio Fundamental da Contagem e Fatorial",
+  topico: "An\xE1lise Combinat\xF3ria",
+  conteudo: `## 1. O que \xE9 contar sem contar?
+
+Imagine que voc\xEA precise saber de quantas maneiras algo pode acontecer \u2014 **sem ter paci\xEAncia de listar todas**. A **An\xE1lise Combinat\xF3ria** entrega f\xF3rmulas e princ\xEDpios que resolvem esse tipo de problema.
+
+O ponto de partida de tudo \xE9 o **Princ\xEDpio Fundamental da Contagem (PFC)**, tamb\xE9m chamado de **princ\xEDpio multiplicativo**.
+
+---
+
+## 2. Princ\xEDpio Fundamental da Contagem
+
+> Se uma decis\xE3o $D_1$ pode ser tomada de $n_1$ maneiras, e, em seguida, uma decis\xE3o $D_2$ pode ser tomada de $n_2$ maneiras, ent\xE3o o n\xFAmero total de maneiras de tomar as duas decis\xF5es **sucessivamente** \xE9:
+>
+> $$n_1 \\cdot n_2$$
+
+O princ\xEDpio se estende a **qualquer quantidade de etapas**:
+
+$$N = n_1 \\cdot n_2 \\cdot n_3 \\cdot \\ldots \\cdot n_k$$
+
+**Ideia-chave:** cada "decis\xE3o" \xE9 uma escolha independente entre alternativas. Quando est\xE3o encadeadas ("e depois"), multiplicamos; quando est\xE3o em paralelo ("ou"), somamos.
+
+---
+
+## 3. Exemplos pr\xE1ticos
+
+### 3.1 Placas de carro (combinat\xF3ria b\xE1sica)
+
+> Uma placa tem 3 letras (A\u2013Z, 26 letras) seguidas de 4 algarismos (0\u20139). Quantas placas diferentes existem?
+
+$$N = 26 \\cdot 26 \\cdot 26 \\cdot 10 \\cdot 10 \\cdot 10 \\cdot 10 = 26^3 \\cdot 10^4 = 175\\,760\\,000$$
+
+### 3.2 Card\xE1pio
+
+> Um restaurante oferece 4 entradas, 6 pratos principais e 3 sobremesas. Quantos menus completos (entrada + prato + sobremesa) podem ser montados?
+
+$$4 \\cdot 6 \\cdot 3 = 72 \\text{ menus}$$
+
+### 3.3 Senha com letras distintas
+
+> Quantas senhas de 4 letras distintas podem ser formadas com as 26 letras do alfabeto?
+
+Primeira letra: 26 op\xE7\xF5es. Segunda: 25 (n\xE3o repete). Terceira: 24. Quarta: 23.
+
+$$26 \\cdot 25 \\cdot 24 \\cdot 23 = 358\\,800$$
+
+### 3.4 Senha com d\xEDgitos, sem restri\xE7\xE3o
+
+> Quantas senhas de 4 d\xEDgitos existem se os d\xEDgitos podem se repetir?
+
+$$10 \\cdot 10 \\cdot 10 \\cdot 10 = 10\\,000$$
+
+### 3.5 Caminho em um tabuleiro
+
+> De quantas formas ir de A at\xE9 B num grid 3\xD72 andando sempre para a direita ou para cima?
+
+Cada caminho \xE9 uma sequ\xEAncia de 3 "direitas" (D) e 2 "cimas" (C), em alguma ordem. S\xE3o 5 passos dos quais 2 s\xE3o "C":
+
+$$\\binom{5}{2} = 10 \\text{ caminhos}$$
+
+(Aqui j\xE1 aparece o coeficiente binomial, que se apoia no PFC + fatorial.)
+
+---
+
+## 4. E quando algo **n\xE3o pode** acontecer? Use o complementar.
+
+> Quantas senhas de 4 algarismos existem em que **pelo menos um** d\xEDgito \xE9 \xEDmpar?
+
+Em vez de contar casos complicados, conte o **complementar**:
+
+$$N_{\\text{total}} = 10^4 = 10\\,000$$
+
+$$N_{\\text{nenhum \xEDmpar}} = 5^4 = 625 \\quad (\\text{s\xF3 d\xEDgitos pares: } 0,2,4,6,8)$$
+
+$$N_{\\text{pelo menos um \xEDmpar}} = 10\\,000 - 625 = 9\\,375$$
+
+---
+
+## 5. Fatorial \u2014 a ferramenta que multiplica descendentes
+
+### 5.1 Defini\xE7\xE3o
+
+O **fatorial** de um n\xFAmero natural $n$ \xE9 o produto de todos os inteiros positivos de 1 at\xE9 $n$:
+
+$$n! = n \\cdot (n-1) \\cdot (n-2) \\cdot \\ldots \\cdot 2 \\cdot 1$$
+
+**Defini\xE7\xF5es especiais:** $\\;0! = 1\\;$ e $\\;1! = 1$.
+
+### 5.2 Tabela dos primeiros fatoriais
+
+| $n$ | $n!$ |
+|---|---|
+| 0 | 1 |
+| 1 | 1 |
+| 2 | 2 |
+| 3 | 6 |
+| 4 | 24 |
+| 5 | 120 |
+| 6 | 720 |
+| 7 | 5 040 |
+| 8 | 40 320 |
+| 9 | 362 880 |
+| 10 | 3 628 800 |
+
+Perceba como $n!$ cresce **muito depressa**: $20! \\approx 2{,}4 \\cdot 10^{18}$.
+
+### 5.3 Propriedade recursiva
+
+$$n! = n \\cdot (n-1)!$$
+
+Consequ\xEAncia \xFAtil em quest\xF5es com fatoriais no numerador e denominador:
+
+$$\\frac{10!}{8!} = \\frac{10 \\cdot 9 \\cdot 8!}{8!} = 10 \\cdot 9 = 90$$
+
+$$\\frac{(n+1)!}{(n-1)!} = (n+1) \\cdot n$$
+
+---
+
+## 6. Por que $0! = 1$?
+
+Duas raz\xF5es justificam:
+
+**Raz\xE3o alg\xE9brica** \u2014 para que $n! = n \\cdot (n-1)!$ funcione em $n=1$: $1! = 1 \\cdot 0! \\implies 0! = 1$.
+
+**Raz\xE3o combinat\xF3ria** \u2014 existe **exatamente 1 maneira** de ordenar 0 objetos (a sequ\xEAncia vazia). Portanto o total de permuta\xE7\xF5es de zero elementos \xE9 1.
+
+---
+
+## 7. Ligando PFC e fatorial: permuta\xE7\xF5es
+
+**Permuta\xE7\xF5es** s\xE3o arranjos ordenados de **todos** os $n$ elementos de um conjunto. Aplicando o PFC:
+
+$$P_n = n \\cdot (n-1) \\cdot (n-2) \\cdot \\ldots \\cdot 1 = n!$$
+
+**Exemplo:** de quantas maneiras 5 livros diferentes podem ser arranjados em uma prateleira?
+
+$$P_5 = 5! = 120$$
+
+E se quisermos arranjos de $p$ elementos em $n$ (sem repeti\xE7\xE3o)?
+
+$$A_{n,p} = n \\cdot (n-1) \\cdot \\ldots \\cdot (n-p+1) = \\frac{n!}{(n-p)!}$$
+
+(Isto \xE9 o **arranjo simples** \u2014 quando a ordem importa.)
+
+Para **combina\xE7\xE3o simples** (quando a ordem **n\xE3o** importa):
+
+$$C_{n,p} = \\binom{n}{p} = \\frac{n!}{p!\\,(n-p)!}$$
+
+---
+
+## 8. Dicas para a prova
+
+\u2022 **Leia devagar**: "e" geralmente significa multiplica\xE7\xE3o (PFC); "ou" em casos disjuntos significa soma.
+\u2022 **Ordem importa?** Se sim \u2192 arranjo (ou PFC direto). Se n\xE3o \u2192 combina\xE7\xE3o.
+\u2022 **Pode repetir?** Elementos repetidos mudam o problema (permuta\xE7\xF5es com repeti\xE7\xE3o).
+\u2022 **"Pelo menos um"** \u2014 pense no complementar.
+\u2022 **Simplifique fatoriais** antes de calcular: em $\\tfrac{n!}{(n-2)!}$, n\xE3o calcule $n!$ cheio.
+
+---
+
+## Resumo
+
+| Conceito | F\xF3rmula |
+|---|---|
+| PFC | $N = n_1 \\cdot n_2 \\cdot \\ldots \\cdot n_k$ |
+| Fatorial | $n! = n \\cdot (n-1) \\cdot \\ldots \\cdot 1$ |
+| Conven\xE7\xE3o | $0! = 1$ |
+| Recurs\xE3o | $n! = n \\cdot (n-1)!$ |
+| Permuta\xE7\xE3o simples | $P_n = n!$ |
+| Arranjo simples | $A_{n,p} = \\dfrac{n!}{(n-p)!}$ |
+| Combina\xE7\xE3o simples | $C_{n,p} = \\dfrac{n!}{p!\\,(n-p)!}$ |`,
+  questoes: [
+    {
+      enunciado: "De quantas maneiras diferentes 6 amigos podem se sentar em 6 cadeiras em fila?",
+      opcoes: [
+        "36",
+        "120",
+        "360",
+        "720"
+      ],
+      correta: 3
+    },
+    {
+      enunciado: "Simplifique a express\xE3o $\\dfrac{(n+2)!}{n!}$.",
+      opcoes: [
+        "$n + 2$",
+        "$(n+1)(n+2)$",
+        "$n(n+1)(n+2)$",
+        "$\\dfrac{n+2}{n}$"
+      ],
+      correta: 1
+    },
+    {
+      enunciado: "Quantas senhas de 4 d\xEDgitos podem ser formadas usando apenas os algarismos de 0 a 9, permitindo repeti\xE7\xE3o, mas que tenham pelo menos um d\xEDgito par?",
+      opcoes: [
+        "625",
+        "5 000",
+        "9 375",
+        "10 000"
+      ],
+      correta: 2
+    }
+  ]
+};
+var MATEMATICA_BASICA_ARTICLES = [
+  FRACOES_ARTICLE,
+  RAZAO_PROPORCAO_ARTICLE,
+  DIVISAO_PROPORCIONAL_ARTICLE,
+  CONTAGEM_FATORIAL_ARTICLE
+];
+var GEO_ESPACIAL_CARDS = [
+  // ── Conceitos iniciais ──────────────────────────────────────────────────
+  {
+    front: "O que \xE9 um poliedro?",
+    back: "S\xF3lido geom\xE9trico limitado por um **n\xFAmero finito de pol\xEDgonos planos**, chamados **faces**. As intersec\xE7\xF5es das faces formam as **arestas**, e os pontos de encontro das arestas formam os **v\xE9rtices**."
+  },
+  {
+    front: "Rela\xE7\xE3o de Euler\n\nV\xE1lida em todo poliedro convexo, relaciona v\xE9rtices ($V$), arestas ($A$) e faces ($F$).",
+    back: '$$V - A + F = 2$$\n\nVale tamb\xE9m para muitos poliedros n\xE3o convexos de g\xEAnero 0 (sem "furos").'
+  },
+  {
+    front: "Poliedros de Plat\xE3o \u2014 quantos s\xE3o?\n\nCite-os.",
+    back: "S\xE3o **5**: tetraedro regular, cubo (hexaedro), octaedro, dodecaedro e icosaedro.\n\nTodos t\xEAm faces regulares congruentes e o mesmo n\xFAmero de arestas em cada v\xE9rtice."
+  },
+  {
+    front: "Poliedros de Plat\xE3o \u2014 faces, v\xE9rtices e arestas\n\nComplete a tabela.",
+    back: "| Poliedro | $F$ | $V$ | $A$ |\n|---|---|---|---|\n| Tetraedro | 4 | 4 | 6 |\n| Cubo | 6 | 8 | 12 |\n| Octaedro | 8 | 6 | 12 |\n| Dodecaedro | 12 | 20 | 30 |\n| Icosaedro | 20 | 12 | 30 |"
+  },
+  {
+    front: "Rela\xE7\xE3o entre arestas e faces em um poliedro\n\nSe $F_n$ = n\xFAmero de faces de $n$ lados, qual \xE9 a soma que d\xE1 $2A$?",
+    back: "$$2A = \\sum_{n \\geq 3} n \\cdot F_n = 3F_3 + 4F_4 + 5F_5 + \\ldots$$\n\nCada aresta \xE9 compartilhada por exatamente 2 faces."
+  },
+  {
+    front: "Teorema de Cavalieri\n\nEnuncie.",
+    back: "Dois s\xF3lidos com **mesma altura** e cujas **sec\xE7\xF5es planas paralelas \xE0 base t\xEAm sempre \xE1reas iguais** possuem o **mesmo volume**.\n\nEste \xE9 o princ\xEDpio que justifica as f\xF3rmulas de volume de s\xF3lidos obl\xEDquos a partir dos retos."
+  },
+  // ── Prismas ─────────────────────────────────────────────────────────────
+  {
+    front: "Prisma \u2014 defini\xE7\xE3o",
+    back: "S\xF3lido com **duas bases poligonais congruentes e paralelas**, ligadas por paralelogramos (faces laterais).\n\nReto: arestas laterais \u22A5 \xE0 base. Obl\xEDquo: n\xE3o perpendicular."
+  },
+  {
+    front: "Volume do prisma\n\n\xC1rea da base $A_b$ e altura $h$.",
+    back: "$$V = A_b \\cdot h$$\n\nVale para prismas **retos ou obl\xEDquos** (consequ\xEAncia de Cavalieri)."
+  },
+  {
+    front: "\xC1rea total do prisma reto\n\n\xC1rea da base $A_b$ e \xE1rea lateral $A_l$.",
+    back: "$$A_t = 2 \\cdot A_b + A_l$$\n\n$A_l = \\text{per\xEDmetro da base} \\cdot h$."
+  },
+  {
+    front: "Paralelep\xEDpedo ret\xE2ngulo \u2014 diagonal\n\nArestas $a$, $b$, $c$.",
+    back: "$$d = \\sqrt{a^2 + b^2 + c^2}$$\n\nAplica\xE7\xE3o dupla de Pit\xE1goras: primeiro na base ($d_b = \\sqrt{a^2+b^2}$), depois com a altura."
+  },
+  {
+    front: "Paralelep\xEDpedo ret\xE2ngulo \u2014 volume e \xE1rea\n\nArestas $a$, $b$, $c$.",
+    back: "$$V = a \\cdot b \\cdot c \\qquad A_t = 2(ab + ac + bc)$$"
+  },
+  {
+    front: "Cubo \u2014 diagonal, volume e \xE1rea\n\nAresta $a$.",
+    back: "$$d = a\\sqrt{3} \\qquad V = a^3 \\qquad A_t = 6a^2$$\n\nDiagonal de face: $d_f = a\\sqrt{2}$."
+  },
+  // ── Cilindro ───────────────────────────────────────────────────────────
+  {
+    front: "Cilindro \u2014 volume\n\nRaio da base $r$, altura $h$.",
+    back: "$$V = \\pi r^2 \\cdot h$$\n\nVale para cilindros retos ou obl\xEDquos."
+  },
+  {
+    front: "Cilindro reto \u2014 \xE1rea lateral, base e total\n\nRaio $r$, altura $h$.",
+    back: "$$A_l = 2\\pi r h \\qquad A_b = \\pi r^2$$\n$$A_t = 2\\pi r h + 2\\pi r^2 = 2\\pi r (h + r)$$"
+  },
+  {
+    front: "Cilindro equil\xE1tero",
+    back: "Cilindro cuja **altura \xE9 igual ao di\xE2metro da base**: $h = 2r$.\n\nA sec\xE7\xE3o meridiana \xE9 um **quadrado** de lado $2r$."
+  },
+  {
+    front: "Cilindro \u2014 superf\xEDcie lateral planificada",
+    back: "A lateral de um cilindro reto, quando planificada, \xE9 um **ret\xE2ngulo** com:\n\n\u2022 Base = $2\\pi r$ (comprimento da circunfer\xEAncia)\n\u2022 Altura = $h$"
+  },
+  // ── Cone ───────────────────────────────────────────────────────────────
+  {
+    front: "Cone \u2014 volume\n\nRaio da base $r$, altura $h$.",
+    back: "$$V = \\frac{1}{3}\\,\\pi r^2 \\cdot h$$\n\nTr\xEAs cones inscritos num cilindro de mesma base e altura enchem exatamente o cilindro."
+  },
+  {
+    front: "Cone reto \u2014 geratriz\n\nRaio $r$, altura $h$.",
+    back: "$$g = \\sqrt{r^2 + h^2}$$\n\nPit\xE1goras no tri\xE2ngulo ret\xE2ngulo formado pela altura, pelo raio e pela geratriz."
+  },
+  {
+    front: "Cone reto \u2014 \xE1reas\n\nRaio $r$, geratriz $g$.",
+    back: "$$A_l = \\pi r g \\qquad A_b = \\pi r^2 \\qquad A_t = \\pi r (g + r)$$"
+  },
+  {
+    front: "Cone equil\xE1tero",
+    back: "Cone cuja **geratriz \xE9 igual ao di\xE2metro da base**: $g = 2r$.\n\nA sec\xE7\xE3o meridiana \xE9 um **tri\xE2ngulo equil\xE1tero** de lado $2r$, portanto a altura vale $h = r\\sqrt{3}$."
+  },
+  {
+    front: "Superf\xEDcie lateral do cone planificada \u2014 qual \xE9 o \xE2ngulo do setor?",
+    back: "A lateral planificada \xE9 um **setor circular** de raio $g$. Seu \xE2ngulo central (em radianos) \xE9:\n\n$$\\theta = \\frac{2\\pi r}{g}$$\n\nEm graus: $\\theta = \\dfrac{360\xB0 \\cdot r}{g}$."
+  },
+  // ── Pirâmide ───────────────────────────────────────────────────────────
+  {
+    front: "Pir\xE2mide \u2014 volume\n\n\xC1rea da base $A_b$, altura $h$.",
+    back: "$$V = \\frac{1}{3} A_b \\cdot h$$\n\nTr\xEAs pir\xE2mides de mesma base e altura iguais a um prisma enchem esse prisma."
+  },
+  {
+    front: "Pir\xE2mide regular \u2014 ap\xF3tema da pir\xE2mide\n\nAp\xF3tema da base $a_b$, altura $h$.",
+    back: "$$a_p = \\sqrt{a_b^2 + h^2}$$\n\nA ap\xF3tema da pir\xE2mide \xE9 a altura da face lateral (tri\xE2ngulo is\xF3sceles). Tamb\xE9m \xE9 a geratriz da face."
+  },
+  {
+    front: "Pir\xE2mide regular \u2014 \xE1rea lateral",
+    back: "$$A_l = \\frac{\\text{per\xEDmetro da base} \\cdot a_p}{2}$$\n\nTodas as faces laterais s\xE3o tri\xE2ngulos is\xF3sceles congruentes."
+  },
+  {
+    front: "Tetraedro regular \u2014 altura\n\nAresta $a$.",
+    back: "$$h = \\frac{a\\sqrt{6}}{3}$$\n\nObtido por Pit\xE1goras entre a aresta $a$ e a dist\xE2ncia do centro da base (baricentro) a um v\xE9rtice: $\\tfrac{a\\sqrt{3}}{3}$."
+  },
+  {
+    front: "Tetraedro regular \u2014 volume\n\nAresta $a$.",
+    back: "$$V = \\frac{a^3 \\sqrt{2}}{12}$$"
+  },
+  {
+    front: "Tetraedro regular \u2014 \xE1rea total\n\nAresta $a$.",
+    back: "$$A_t = a^2 \\sqrt{3}$$\n\n\xC9 a \xE1rea de 4 tri\xE2ngulos equil\xE1teros de lado $a$: $4 \\cdot \\dfrac{a^2\\sqrt{3}}{4}$."
+  },
+  // ── Esfera ─────────────────────────────────────────────────────────────
+  {
+    front: "Esfera \u2014 volume\n\nRaio $R$.",
+    back: "$$V = \\frac{4}{3}\\pi R^3$$"
+  },
+  {
+    front: "Esfera \u2014 \xE1rea da superf\xEDcie\n\nRaio $R$.",
+    back: "$$S = 4 \\pi R^2$$\n\nEquivale \xE0 \xE1rea de 4 c\xEDrculos m\xE1ximos."
+  },
+  {
+    front: "Sec\xE7\xE3o de uma esfera por um plano\n\nRaio $R$, dist\xE2ncia $d$ do centro ao plano ($d < R$).",
+    back: "A intersec\xE7\xE3o \xE9 um **c\xEDrculo** de raio:\n\n$$r = \\sqrt{R^2 - d^2}$$"
+  },
+  {
+    front: "Calota esf\xE9rica \u2014 \xE1rea",
+    back: "$$A_{\\text{calota}} = 2\\pi R h$$\n\n$R$ = raio da esfera, $h$ = altura da calota. N\xE3o depende de onde ela seja retirada, apenas da altura."
+  },
+  {
+    front: "Calota esf\xE9rica \u2014 volume",
+    back: "$$V = \\frac{\\pi h^2 (3R - h)}{3}$$\n\n$R$ = raio da esfera, $h$ = altura da calota."
+  },
+  {
+    front: "Fuso e cunha esf\xE9rica \u2014 \xE1reas e volumes\n\n\xC2ngulo $\\alpha$ (em graus).",
+    back: "Fuso (parte da superf\xEDcie):\n$$A_{\\text{fuso}} = \\frac{\\alpha}{360\xB0} \\cdot 4\\pi R^2 = \\frac{\\pi R^2 \\alpha}{90\xB0}$$\n\nCunha (parte do volume):\n$$V_{\\text{cunha}} = \\frac{\\alpha}{360\xB0} \\cdot \\frac{4}{3}\\pi R^3 = \\frac{\\pi R^3 \\alpha}{270\xB0}$$"
+  },
+  // ── Troncos ────────────────────────────────────────────────────────────
+  {
+    front: "Tronco de cone \u2014 volume\n\nRaios $R$ (maior) e $r$ (menor), altura $h$.",
+    back: "$$V = \\frac{\\pi h}{3}\\,\\bigl(R^2 + R\\,r + r^2\\bigr)$$"
+  },
+  {
+    front: "Tronco de cone \u2014 \xE1rea lateral\n\nRaios $R$ e $r$, geratriz $g$.",
+    back: "$$A_l = \\pi (R + r)\\,g$$\n\n\xC1rea total: $A_t = \\pi (R + r) g + \\pi R^2 + \\pi r^2$."
+  },
+  {
+    front: "Tronco de pir\xE2mide \u2014 volume\n\n\xC1reas das bases $A_1$ (maior) e $A_2$ (menor), altura $h$.",
+    back: "$$V = \\frac{h}{3}\\,\\bigl(A_1 + \\sqrt{A_1 A_2} + A_2\\bigr)$$"
+  },
+  // ── Sólidos de revolução ───────────────────────────────────────────────
+  {
+    front: "S\xF3lido de revolu\xE7\xE3o",
+    back: "S\xF3lido gerado pela **rota\xE7\xE3o de uma figura plana em torno de um eixo** pertencente ao plano da figura.\n\nExemplos: rota\xE7\xE3o de um ret\xE2ngulo \u2192 cilindro; de um tri\xE2ngulo ret\xE2ngulo (um cateto no eixo) \u2192 cone; de um semic\xEDrculo (di\xE2metro no eixo) \u2192 esfera."
+  },
+  {
+    front: "Qual s\xF3lido resulta de girar um ret\xE2ngulo em torno de um de seus lados?",
+    back: "Um **cilindro reto** cujo raio \xE9 o lado **perpendicular** ao eixo e cuja altura \xE9 o lado **paralelo** ao eixo."
+  },
+  {
+    front: "Qual s\xF3lido resulta de girar um tri\xE2ngulo ret\xE2ngulo em torno de um de seus catetos?",
+    back: "Um **cone reto** cuja altura \xE9 o cateto no eixo e cujo raio \xE9 o outro cateto. A hipotenusa passa a ser a geratriz."
+  },
+  {
+    front: "Qual s\xF3lido resulta de girar um semic\xEDrculo em torno de seu di\xE2metro?",
+    back: "Uma **esfera** cujo raio \xE9 o raio do semic\xEDrculo."
+  },
+  // ── Relações métricas e diagonais ─────────────────────────────────────
+  {
+    front: "Diagonal de uma face do cubo \xD7 diagonal do cubo\n\nAresta $a$.",
+    back: "Diagonal da face: $d_f = a\\sqrt{2}$.\n\nDiagonal do cubo: $d = a\\sqrt{3}$.\n\nRaz\xE3o: $\\dfrac{d}{d_f} = \\sqrt{\\dfrac{3}{2}}$."
+  },
+  {
+    front: "Cilindro inscrito em um cubo\n\nAresta do cubo $a$. Qual \xE9 o volume do cilindro inscrito?",
+    back: "O cilindro tem raio $r = a/2$ e altura $h = a$:\n\n$$V = \\pi \\left(\\tfrac{a}{2}\\right)^2 a = \\frac{\\pi a^3}{4}$$"
+  },
+  {
+    front: "Esfera inscrita em um cubo\n\nAresta $a$.",
+    back: "Raio $R = a/2$ (metade da aresta).\n\nVolume da esfera: $V = \\dfrac{4}{3}\\pi \\left(\\dfrac{a}{2}\\right)^3 = \\dfrac{\\pi a^3}{6}$."
+  },
+  {
+    front: "Esfera circunscrita a um cubo\n\nAresta $a$.",
+    back: "A esfera passa pelos 8 v\xE9rtices; seu di\xE2metro \xE9 a **diagonal do cubo**:\n\n$$2R = a\\sqrt{3} \\implies R = \\frac{a\\sqrt{3}}{2}$$"
+  },
+  {
+    front: "Cone inscrito em um cilindro\n\nMesmo raio $r$ e mesma altura $h$. Raz\xE3o entre volumes?",
+    back: "$$\\frac{V_{\\text{cone}}}{V_{\\text{cilindro}}} = \\frac{\\tfrac{1}{3}\\pi r^2 h}{\\pi r^2 h} = \\frac{1}{3}$$\n\nO cone ocupa 1/3 do cilindro de mesma base e altura."
+  },
+  // ── Princípios de contagem espacial / observações ─────────────────────
+  {
+    front: "Prisma hexagonal regular \u2014 quantas diagonais?\n\nConte s\xF3 diagonais do s\xF3lido.",
+    back: "Total de diagonais do s\xF3lido de $n$ lados na base:\n\n$$D = n(n - 3)$$\n\nPara $n = 6$: $D = 6 \\cdot 3 = 18$ diagonais espaciais."
+  },
+  {
+    front: "Prisma \u2014 qual \xE9 o total de arestas em fun\xE7\xE3o da base?\n\nBase com $n$ lados.",
+    back: "$$A = 3n$$\n\n$n$ arestas na base superior, $n$ na inferior, $n$ laterais."
+  },
+  {
+    front: "Pir\xE2mide \u2014 quantos v\xE9rtices, faces e arestas?\n\nBase com $n$ lados.",
+    back: "V\xE9rtices: $V = n + 1$ (todos os da base mais o \xE1pice).\nFaces: $F = n + 1$ (a base + $n$ faces triangulares laterais).\nArestas: $A = 2n$ ($n$ da base + $n$ laterais).\n\nVerifique Euler: $(n+1) - 2n + (n+1) = 2$ \u2713."
+  },
+  {
+    front: "Octaedro regular \u2014 volume\n\nAresta $a$.",
+    back: "$$V = \\frac{a^3 \\sqrt{2}}{3}$$\n\nO octaedro pode ser visto como duas pir\xE2mides de base quadrada unidas pela base."
+  },
+  {
+    front: "Volume do s\xF3lido formado girando um ret\xE2ngulo de lados $a$ e $b$ em torno do lado $a$",
+    back: "Cilindro reto com raio $b$ e altura $a$:\n\n$$V = \\pi b^2 \\cdot a$$\n\nCompare: se o eixo for o lado $b$, o resultado seria $\\pi a^2 \\cdot b$ \u2014 diferente!"
+  }
+];
+
+// server/index.ts
 var app = express();
 var PORT = process.env.PORT ? Number(process.env.PORT) : 3e3;
 var isProd = process.env.NODE_ENV === "production";
@@ -2786,6 +3706,125 @@ Conclu\xEDdo: ${inseridos} inseridos, ${pulados} ignorados (j\xE1 existiam).`);
       return res.end();
     }
     res.status(400).send("action deve ser 'list' ou 'insert'.");
+  } catch (err) {
+    res.status(500).send(`Erro: ${err.message}`);
+  } finally {
+    if (conn) conn.release();
+  }
+});
+app.get("/admin/seed-review-matematica-basica", async (req, res) => {
+  const secret = req.query.secret;
+  const IMPORT_SECRET = process.env.IMPORT_SECRET ?? "IMPORTAR2024";
+  if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.write("Aplicando seed/upsert dos 4 artigos de Matem\xE1tica B\xE1sica...\n\n");
+    let inseridos = 0;
+    let atualizados = 0;
+    for (const art of MATEMATICA_BASICA_ARTICLES) {
+      const [existing] = await conn.query(
+        "SELECT id FROM review_contents WHERE titulo = ? LIMIT 1",
+        [art.titulo]
+      );
+      if (existing.length > 0) {
+        await conn.query(
+          `UPDATE review_contents
+             SET topico = ?, conteudo = ?, questoes = ?, active = 1
+           WHERE id = ?`,
+          [art.topico, art.conteudo, JSON.stringify(art.questoes), existing[0].id]
+        );
+        res.write(`  \u{1F504} Atualizado: "${art.titulo}" (id=${existing[0].id})
+`);
+        atualizados++;
+      } else {
+        await conn.query(
+          `INSERT INTO review_contents (titulo, topico, conteudo, url_pdf, questoes, active, created_at)
+           VALUES (?, ?, ?, ?, ?, 1, NOW())`,
+          [art.titulo, art.topico, art.conteudo, null, JSON.stringify(art.questoes)]
+        );
+        res.write(`  \u2705 Inserido: "${art.titulo}"
+`);
+        inseridos++;
+      }
+    }
+    res.write(`
+Conclu\xEDdo: ${inseridos} inseridos, ${atualizados} atualizados.
+`);
+    res.end();
+  } catch (err) {
+    res.status(500).send(`Erro: ${err.message}`);
+  } finally {
+    if (conn) conn.release();
+  }
+});
+app.get("/admin/seed-flashcards-geoespacial", async (req, res) => {
+  const secret = req.query.secret;
+  const IMPORT_SECRET = process.env.IMPORT_SECRET ?? "IMPORTAR2024";
+  if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.write("Iniciando seed de flashcards de Geometria Espacial...\n\n");
+    const DECK_TITLE = "Geometria Espacial";
+    let [decks] = await conn.query(
+      "SELECT id FROM flashcard_decks WHERE title = ? LIMIT 1",
+      [DECK_TITLE]
+    );
+    let deckId;
+    if (decks.length > 0) {
+      deckId = decks[0].id;
+      res.write(`Baralho "${DECK_TITLE}" j\xE1 existia (id=${deckId}).
+`);
+    } else {
+      const [insertRes] = await conn.query(
+        `INSERT INTO flashcard_decks (title, description, color, active, created_at)
+         VALUES (?, ?, ?, 1, NOW())`,
+        [
+          DECK_TITLE,
+          "F\xF3rmulas e conceitos de s\xF3lidos: prismas, cilindros, cones, pir\xE2mides, esferas, troncos, Cavalieri, poliedros de Plat\xE3o e Euler.",
+          "#00796B"
+        ]
+      );
+      deckId = insertRes.insertId;
+      res.write(`\u2705 Baralho "${DECK_TITLE}" criado (id=${deckId}).
+`);
+    }
+    const [existing] = await conn.query(
+      "SELECT LEFT(front, 200) as front FROM flashcards WHERE deck_id = ?",
+      [deckId]
+    );
+    const existingFronts = new Set(existing.map((r) => r.front.trim().slice(0, 80)));
+    const [lastIdx] = await conn.query(
+      "SELECT COALESCE(MAX(order_index), -1) as maxIdx FROM flashcards WHERE deck_id = ?",
+      [deckId]
+    );
+    let orderIndex = (lastIdx[0]?.maxIdx ?? -1) + 1;
+    let inseridos = 0;
+    let pulados = 0;
+    for (const card of GEO_ESPACIAL_CARDS) {
+      const frontKey = card.front.trim().slice(0, 80);
+      if (existingFronts.has(frontKey)) {
+        res.write(`  [skip] ${frontKey.replace(/\n/g, " \u21B5 ").slice(0, 60)}
+`);
+        pulados++;
+        continue;
+      }
+      await conn.query(
+        `INSERT INTO flashcards (deck_id, front, back, order_index, active, created_at)
+         VALUES (?, ?, ?, ?, 1, NOW())`,
+        [deckId, card.front, card.back, orderIndex++]
+      );
+      res.write(`  \u2705 ${frontKey.replace(/\n/g, " \u21B5 ").slice(0, 70)}
+`);
+      inseridos++;
+    }
+    res.write(`
+Conclu\xEDdo: ${inseridos} cards inseridos, ${pulados} ignorados (j\xE1 existiam).
+`);
+    res.end();
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);
   } finally {

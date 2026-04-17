@@ -10,6 +10,10 @@ import { authMiddleware } from "./auth";
 import { db, pool } from "./db";
 import { questions, users } from "./schema";
 import { eq } from "drizzle-orm";
+import {
+  MATEMATICA_BASICA_ARTICLES,
+  GEO_ESPACIAL_CARDS,
+} from "./seed-matematica-content";
 
 const app = express();
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -460,6 +464,145 @@ app.get("/admin/seed-flashcards", async (req: any, res: any) => {
     }
 
     res.status(400).send("action deve ser 'list' ou 'insert'.");
+  } catch (err: any) {
+    res.status(500).send(`Erro: ${err.message}`);
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+// =============================================================================
+// Rota: seed/upsert dos 4 artigos de Matemática Básica no Revise
+// (Operações com Frações, Razão e Proporção, Divisão em Partes Proporcionais,
+//  Princípio Fundamental da Contagem e Fatorial)
+// GET /admin/seed-review-matematica-basica?secret=IMPORTAR2024
+// Usa UPDATE se o título já existe; INSERT caso contrário.
+// =============================================================================
+
+app.get("/admin/seed-review-matematica-basica", async (req: any, res: any) => {
+  const secret = req.query.secret as string;
+  const IMPORT_SECRET = process.env.IMPORT_SECRET ?? "IMPORTAR2024";
+  if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
+
+  let conn: any;
+  try {
+    conn = await pool.getConnection();
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.write("Aplicando seed/upsert dos 4 artigos de Matemática Básica...\n\n");
+
+    let inseridos = 0;
+    let atualizados = 0;
+
+    for (const art of MATEMATICA_BASICA_ARTICLES) {
+      const [existing]: any[] = await conn.query(
+        "SELECT id FROM review_contents WHERE titulo = ? LIMIT 1",
+        [art.titulo]
+      );
+
+      if (existing.length > 0) {
+        await conn.query(
+          `UPDATE review_contents
+             SET topico = ?, conteudo = ?, questoes = ?, active = 1
+           WHERE id = ?`,
+          [art.topico, art.conteudo, JSON.stringify(art.questoes), existing[0].id]
+        );
+        res.write(`  🔄 Atualizado: "${art.titulo}" (id=${existing[0].id})\n`);
+        atualizados++;
+      } else {
+        await conn.query(
+          `INSERT INTO review_contents (titulo, topico, conteudo, url_pdf, questoes, active, created_at)
+           VALUES (?, ?, ?, ?, ?, 1, NOW())`,
+          [art.titulo, art.topico, art.conteudo, null, JSON.stringify(art.questoes)]
+        );
+        res.write(`  ✅ Inserido: "${art.titulo}"\n`);
+        inseridos++;
+      }
+    }
+
+    res.write(`\nConcluído: ${inseridos} inseridos, ${atualizados} atualizados.\n`);
+    res.end();
+  } catch (err: any) {
+    res.status(500).send(`Erro: ${err.message}`);
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+// =============================================================================
+// Rota: seed dos 50 flashcards de Geometria Espacial
+// Cria o baralho "Geometria Espacial" se ainda não existir e insere os cards.
+// GET /admin/seed-flashcards-geoespacial?secret=IMPORTAR2024
+// =============================================================================
+
+app.get("/admin/seed-flashcards-geoespacial", async (req: any, res: any) => {
+  const secret = req.query.secret as string;
+  const IMPORT_SECRET = process.env.IMPORT_SECRET ?? "IMPORTAR2024";
+  if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
+
+  let conn: any;
+  try {
+    conn = await pool.getConnection();
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.write("Iniciando seed de flashcards de Geometria Espacial...\n\n");
+
+    const DECK_TITLE = "Geometria Espacial";
+
+    // 1. Busca ou cria o deck
+    let [decks]: any[] = await conn.query(
+      "SELECT id FROM flashcard_decks WHERE title = ? LIMIT 1",
+      [DECK_TITLE]
+    );
+    let deckId: number;
+    if (decks.length > 0) {
+      deckId = decks[0].id;
+      res.write(`Baralho "${DECK_TITLE}" já existia (id=${deckId}).\n`);
+    } else {
+      const [insertRes]: any = await conn.query(
+        `INSERT INTO flashcard_decks (title, description, color, active, created_at)
+         VALUES (?, ?, ?, 1, NOW())`,
+        [
+          DECK_TITLE,
+          "Fórmulas e conceitos de sólidos: prismas, cilindros, cones, pirâmides, esferas, troncos, Cavalieri, poliedros de Platão e Euler.",
+          "#00796B",
+        ]
+      );
+      deckId = insertRes.insertId;
+      res.write(`✅ Baralho "${DECK_TITLE}" criado (id=${deckId}).\n`);
+    }
+
+    // 2. Busca cards existentes para evitar duplicatas
+    const [existing]: any[] = await conn.query(
+      "SELECT LEFT(front, 200) as front FROM flashcards WHERE deck_id = ?",
+      [deckId]
+    );
+    const existingFronts = new Set(existing.map((r: any) => r.front.trim().slice(0, 80)));
+
+    const [lastIdx]: any[] = await conn.query(
+      "SELECT COALESCE(MAX(order_index), -1) as maxIdx FROM flashcards WHERE deck_id = ?",
+      [deckId]
+    );
+    let orderIndex = (lastIdx[0]?.maxIdx ?? -1) + 1;
+
+    let inseridos = 0;
+    let pulados = 0;
+    for (const card of GEO_ESPACIAL_CARDS) {
+      const frontKey = card.front.trim().slice(0, 80);
+      if (existingFronts.has(frontKey)) {
+        res.write(`  [skip] ${frontKey.replace(/\n/g, " ↵ ").slice(0, 60)}\n`);
+        pulados++;
+        continue;
+      }
+      await conn.query(
+        `INSERT INTO flashcards (deck_id, front, back, order_index, active, created_at)
+         VALUES (?, ?, ?, ?, 1, NOW())`,
+        [deckId, card.front, card.back, orderIndex++]
+      );
+      res.write(`  ✅ ${frontKey.replace(/\n/g, " ↵ ").slice(0, 70)}\n`);
+      inseridos++;
+    }
+
+    res.write(`\nConcluído: ${inseridos} cards inseridos, ${pulados} ignorados (já existiam).\n`);
+    res.end();
   } catch (err: any) {
     res.status(500).send(`Erro: ${err.message}`);
   } finally {
