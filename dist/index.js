@@ -159,6 +159,8 @@ var dailyChallenges = mysqlTable(
     answers: json("answers").$type().notNull().default({}),
     completed: boolean("completed").notNull().default(false),
     correctCount: int("correct_count"),
+    totalTimeSeconds: int("total_time_seconds"),
+    // tempo total gasto no desafio (p/ radar de performance)
     completedAt: timestamp("completed_at"),
     createdAt: timestamp("created_at").defaultNow().notNull()
   },
@@ -199,6 +201,8 @@ var dailyReviews = mysqlTable(
     answers: json("answers").$type().notNull().default({}),
     completed: boolean("completed").notNull().default(false),
     correctCount: int("correct_count"),
+    totalTimeSeconds: int("total_time_seconds"),
+    // tempo total gasto no Revise (p/ radar de performance)
     completedAt: timestamp("completed_at"),
     createdAt: timestamp("created_at").defaultNow().notNull()
   },
@@ -267,6 +271,8 @@ var flashcardProgress = mysqlTable(
     nextReview: timestamp("next_review"),
     // null = card novo, nunca visto
     lastReviewed: timestamp("last_reviewed"),
+    timeSpentSeconds: int("time_spent_seconds"),
+    // tempo gasto na última revisão (p/ radar)
     createdAt: timestamp("created_at").defaultNow().notNull()
   },
   (t2) => ({
@@ -1595,6 +1601,85 @@ var simulationsRouter = createTRPCRouter({
     });
   }),
   // ---------------------------------------------------------------------------
+  // DESEMPENHO POR PERFORMANCE — 5 eixos normalizados 0–100
+  // Complementa o radar por área. Mede HÁBITO/VOLUME, não acurácia:
+  //   • Velocidade  → tempo médio por questão (invertido: menos = mais pontos)
+  //   • Questões    → total de questões respondidas (simulado + desafio)
+  //   • Estudos     → conteúdos do Revise visitados
+  //   • Fixação     → flashcards revisados com boa avaliação (qualidade ≥ 3)
+  //   • Dedicação   → tempo total na plataforma (soma de todas as fontes)
+  // Escala 0–100 baseada em metas fixas (ajuste as constantes abaixo).
+  // ---------------------------------------------------------------------------
+  getPerformanceStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    const META_VELOCIDADE_MIN = 150;
+    const META_VELOCIDADE_MAX = 360;
+    const META_QUESTOES = 1e3;
+    const META_ESTUDOS = 50;
+    const META_FIXACAO = 500;
+    const META_DEDICACAO_HORAS = 50;
+    function clamp01(x) {
+      if (!isFinite(x)) return 0;
+      return Math.max(0, Math.min(1, x));
+    }
+    const pct = (x) => Math.round(clamp01(x) * 100);
+    const simAgg = await ctx.db.select({
+      answeredCount: sql2`COUNT(*)`,
+      totalTime: sql2`COALESCE(SUM(${simulationAnswers.timeSpentSeconds}), 0)`,
+      timedCount: sql2`SUM(CASE WHEN ${simulationAnswers.timeSpentSeconds} > 0 THEN 1 ELSE 0 END)`
+    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).where(and2(
+      eq2(simulations.userId, userId),
+      sql2`${simulationAnswers.isCorrect} IS NOT NULL`
+    ));
+    const simAnswered = Number(simAgg[0]?.answeredCount ?? 0);
+    const simTimeSum = Number(simAgg[0]?.totalTime ?? 0);
+    const simTimed = Number(simAgg[0]?.timedCount ?? 0);
+    const simSessionAgg = await ctx.db.select({ total: sql2`COALESCE(SUM(${simulations.totalTimeSeconds}), 0)` }).from(simulations).where(and2(eq2(simulations.userId, userId), eq2(simulations.status, "completed")));
+    const simSessionTime = Number(simSessionAgg[0]?.total ?? 0);
+    const dcAgg = await ctx.db.select({
+      qSum: sql2`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`,
+      timeSum: sql2`COALESCE(SUM(${dailyChallenges.totalTimeSeconds}), 0)`
+    }).from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
+    const dcQuestions = Number(dcAgg[0]?.qSum ?? 0);
+    const dcTime = Number(dcAgg[0]?.timeSum ?? 0);
+    const drAgg = await ctx.db.select({
+      count: sql2`COUNT(*)`,
+      timeSum: sql2`COALESCE(SUM(${dailyReviews.totalTimeSeconds}), 0)`
+    }).from(dailyReviews).where(eq2(dailyReviews.userId, userId));
+    const drCount = Number(drAgg[0]?.count ?? 0);
+    const drTime = Number(drAgg[0]?.timeSum ?? 0);
+    const fcAgg = await ctx.db.select({
+      goodCount: sql2`SUM(CASE WHEN ${flashcardProgress.repetitions} >= 1 THEN 1 ELSE 0 END)`,
+      timeSum: sql2`COALESCE(SUM(${flashcardProgress.timeSpentSeconds}), 0)`
+    }).from(flashcardProgress).where(eq2(flashcardProgress.userId, userId));
+    const fcGood = Number(fcAgg[0]?.goodCount ?? 0);
+    const fcTime = Number(fcAgg[0]?.timeSum ?? 0);
+    const avgSecPerQuestion = simTimed > 0 ? simTimeSum / simTimed : null;
+    let velocidade = 0;
+    if (avgSecPerQuestion !== null) {
+      if (avgSecPerQuestion <= META_VELOCIDADE_MIN) velocidade = 100;
+      else if (avgSecPerQuestion >= META_VELOCIDADE_MAX) velocidade = 0;
+      else {
+        const frac = 1 - (avgSecPerQuestion - META_VELOCIDADE_MIN) / (META_VELOCIDADE_MAX - META_VELOCIDADE_MIN);
+        velocidade = Math.round(clamp01(frac) * 100);
+      }
+    }
+    const questoesTotal = simAnswered + dcQuestions;
+    const questoes = pct(questoesTotal / META_QUESTOES);
+    const estudos = pct(drCount / META_ESTUDOS);
+    const fixacao = pct(fcGood / META_FIXACAO);
+    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime;
+    const dedicacaoHoras = totalTimeSeconds / 3600;
+    const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
+    return [
+      { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/quest\xE3o" },
+      { eixo: "Quest\xF5es", pct: questoes, raw: questoesTotal, meta: META_QUESTOES, unidade: "quest\xF5es" },
+      { eixo: "Estudos", pct: estudos, raw: drCount, meta: META_ESTUDOS, unidade: "textos" },
+      { eixo: "Fixa\xE7\xE3o", pct: fixacao, raw: fcGood, meta: META_FIXACAO, unidade: "cards" },
+      { eixo: "Dedica\xE7\xE3o", pct: dedicacao, raw: Math.round(dedicacaoHoras * 10) / 10, meta: META_DEDICACAO_HORAS, unidade: "horas" }
+    ];
+  }),
+  // ---------------------------------------------------------------------------
   // TREINO LIVRE — sorteia N questões de um tópico com gabarito imediato
   // ---------------------------------------------------------------------------
   startFreeTraining: protectedProcedure.input(z2.object({
@@ -1788,14 +1873,23 @@ var simulationsRouter = createTRPCRouter({
     }).where(eq2(dailyChallenges.id, input.challengeId));
     return { ok: true, isCorrect: input.selectedAnswer.toUpperCase() === q?.gabarito };
   }),
-  finishDailyChallenge: protectedProcedure.input(z2.object({ challengeId: z2.number().int().positive() })).mutation(async ({ ctx, input }) => {
+  finishDailyChallenge: protectedProcedure.input(z2.object({
+    challengeId: z2.number().int().positive(),
+    // Opcional p/ compat com clientes antigos. Cap em 2h (evita aba aberta).
+    totalTimeSeconds: z2.number().int().min(0).max(7200).optional()
+  })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const [challenge] = await ctx.db.select().from(dailyChallenges).where(and2(eq2(dailyChallenges.id, input.challengeId), eq2(dailyChallenges.userId, userId))).limit(1);
     if (!challenge) return { ok: false };
     const answers = challenge.answers;
     const qs = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito }).from(questions).where(inArray2(questions.id, challenge.questionIds));
     const correctCount = qs.filter((q) => answers[q.id] === q.gabarito).length;
-    await ctx.db.update(dailyChallenges).set({ completed: true, correctCount, completedAt: /* @__PURE__ */ new Date() }).where(eq2(dailyChallenges.id, input.challengeId));
+    await ctx.db.update(dailyChallenges).set({
+      completed: true,
+      correctCount,
+      completedAt: /* @__PURE__ */ new Date(),
+      ...input.totalTimeSeconds !== void 0 ? { totalTimeSeconds: input.totalTimeSeconds } : {}
+    }).where(eq2(dailyChallenges.id, input.challengeId));
     return { ok: true, correctCount, total: challenge.questionIds.length };
   }),
   // ---------------------------------------------------------------------------
@@ -2253,6 +2347,20 @@ var reviewRouter = createTRPCRouter({
     }).where(eq5(dailyReviews.id, input.reviewId));
     return { ok: true, allDone, correctCount };
   }),
+  // ── Aluno: registra tempo de leitura de um Revise diário ────────────────
+  // Acumula: se já havia tempo salvo, soma (aluno voltou a ler mais tarde).
+  saveReadTime: protectedProcedure.input(z5.object({
+    reviewId: z5.number().int().positive(),
+    seconds: z5.number().int().min(0).max(7200)
+    // teto de 2h por leitura
+  })).mutation(async ({ ctx, input }) => {
+    const userId = ctx.user.id;
+    const [review] = await ctx.db.select({ id: dailyReviews.id, current: dailyReviews.totalTimeSeconds }).from(dailyReviews).where(and3(eq5(dailyReviews.id, input.reviewId), eq5(dailyReviews.userId, userId))).limit(1);
+    if (!review) return { ok: false };
+    const nextTotal = (review.current ?? 0) + input.seconds;
+    await ctx.db.update(dailyReviews).set({ totalTimeSeconds: nextTotal }).where(eq5(dailyReviews.id, input.reviewId));
+    return { ok: true, total: nextTotal };
+  }),
   // ── Aluno: histórico de revisões ──────────────────────────────────────────
   getHistory: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db.select({
@@ -2574,16 +2682,26 @@ var flashcardsRouter = createTRPCRouter({
   // ── Registar revisão (SM-2) ───────────────────────────────────────────────
   recordReview: protectedProcedure.input(z8.object({
     cardId: z8.number(),
-    quality: z8.union([z8.literal(1), z8.literal(3), z8.literal(5)])
+    quality: z8.union([z8.literal(1), z8.literal(3), z8.literal(5)]),
+    // Tempo gasto nesta revisão (card exibido → usuário avaliou).
+    // Opcional p/ compatibilidade, cap em 10min (evita outlier de aba aberta).
+    timeSpentSeconds: z8.number().int().min(0).max(600).optional()
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
-    const { cardId, quality } = input;
+    const { cardId, quality, timeSpentSeconds } = input;
     const [existing] = await db.select().from(flashcardProgress).where(and5(eq8(flashcardProgress.userId, userId), eq8(flashcardProgress.cardId, cardId)));
     const prev = existing ? { easinessFactor: existing.easinessFactor, interval: existing.interval, repetitions: existing.repetitions } : { easinessFactor: 2.5, interval: 0, repetitions: 0 };
     const { easinessFactor, interval, repetitions, nextReview } = applySM2(quality, prev);
     const now = /* @__PURE__ */ new Date();
     if (existing) {
-      await db.update(flashcardProgress).set({ easinessFactor, interval, repetitions, nextReview, lastReviewed: now }).where(eq8(flashcardProgress.id, existing.id));
+      await db.update(flashcardProgress).set({
+        easinessFactor,
+        interval,
+        repetitions,
+        nextReview,
+        lastReviewed: now,
+        ...timeSpentSeconds !== void 0 ? { timeSpentSeconds } : {}
+      }).where(eq8(flashcardProgress.id, existing.id));
     } else {
       await db.insert(flashcardProgress).values({
         userId,
@@ -2592,7 +2710,8 @@ var flashcardsRouter = createTRPCRouter({
         interval,
         repetitions,
         nextReview,
-        lastReviewed: now
+        lastReviewed: now,
+        ...timeSpentSeconds !== void 0 ? { timeSpentSeconds } : {}
       });
     }
     return { interval, repetitions, nextReview };
@@ -4315,6 +4434,21 @@ async function runMigrations() {
       )
     `);
     console.log("\u2705 Migration: flashcard_progress OK.");
+    async function ensureColumn(table, column, definition) {
+      const [rows] = await conn.query(`
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?
+      `, [table, column]);
+      if (Array.isArray(rows) && rows.length > 0) {
+        console.log(`\u2705 Migration: ${table}.${column} j\xE1 existe.`);
+      } else {
+        await conn.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+        console.log(`\u2705 Migration: ${table}.${column} adicionada.`);
+      }
+    }
+    await ensureColumn("daily_challenges", "total_time_seconds", "INT NULL");
+    await ensureColumn("daily_reviews", "total_time_seconds", "INT NULL");
+    await ensureColumn("flashcard_progress", "time_spent_seconds", "INT NULL");
   } catch (err) {
     console.error("\u274C Migration falhou:", err?.message ?? err);
   } finally {

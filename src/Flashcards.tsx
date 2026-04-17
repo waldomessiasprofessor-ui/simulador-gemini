@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
@@ -66,6 +66,10 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
   const [results, setResults]   = useState<{ quality: 1 | 3 | 5 }[]>([]);
   const [done, setDone]   = useState(false);
   const [animDir, setAnimDir] = useState<"in" | "out">("in");
+
+  // Cronômetro por card: marca quando o card aparece, mede até a avaliação.
+  const cardStartRef = useRef<number>(Date.now());
+  useEffect(() => { cardStartRef.current = Date.now(); }, [idx, data?.cards?.[0]?.id]);
 
   if (isLoading) {
     return (
@@ -165,7 +169,8 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
   const progress = ((idx) / cards.length) * 100;
 
   function handleRate(quality: 1 | 3 | 5) {
-    recordReview.mutate({ cardId: card.id, quality });
+    const elapsed = Math.min(600, Math.max(0, Math.round((Date.now() - cardStartRef.current) / 1000)));
+    recordReview.mutate({ cardId: card.id, quality, timeSpentSeconds: elapsed });
     setResults(r => [...r, { quality }]);
 
     if (idx + 1 >= cards.length) {

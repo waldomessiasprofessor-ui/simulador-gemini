@@ -311,6 +311,166 @@ function WrapTick({ x, y, payload, textAnchor }: any) {
   );
 }
 
+// ─── Toggle Radar de Áreas ⇄ Radar de Performance ───────────────────────────
+function RadarTabs() {
+  const [tab, setTab] = useState<"area" | "performance">("area");
+  return (
+    <div className="space-y-2">
+      {/* Alternador estilo segmented control */}
+      <div className="rounded-xl p-1 flex gap-1"
+        style={{ background: "var(--muted)", border: "1.5px solid var(--border)" }}>
+        {[
+          { key: "area",        label: "Por Área" },
+          { key: "performance", label: "Performance" },
+        ].map((t) => {
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key as "area" | "performance")}
+              className="flex-1 py-1.5 rounded-lg font-bold text-xs transition-all"
+              style={{
+                background: active ? "#009688" : "transparent",
+                color: active ? "#fff" : "var(--muted-foreground)",
+                boxShadow: active ? "0 1px 4px rgba(0,150,136,0.35)" : "none",
+              }}>
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+      {tab === "area" ? <RadarTopicos /> : <RadarPerformance />}
+    </div>
+  );
+}
+
+// ─── Radar de Performance ─────────────────────────────────────────────────────
+// 5 eixos: Velocidade, Questões, Estudos, Fixação, Dedicação — cada um 0–100%.
+// Diferente do radar por área (que mede acerto), este mede hábito/volume.
+function RadarPerformance() {
+  const { data, isLoading, dataUpdatedAt } = trpc.simulations.getPerformanceStats.useQuery(undefined, {
+    staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true, refetchInterval: 60_000,
+  });
+
+  const [animated, setAnimated] = useState<{ eixo: string; pct: number }[]>([]);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!data) return;
+    const target = data.map(d => ({ eixo: d.eixo, pct: d.pct }));
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const DURATION = 1100;
+    const startTs = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min((now - startTs) / DURATION, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setAnimated(target.map(d => ({ ...d, pct: Math.round(d.pct * eased) })));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    setAnimated(target.map(d => ({ ...d, pct: 0 })));
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [dataUpdatedAt]);
+
+  if (isLoading || !data) {
+    return (
+      <div className="rounded-2xl p-4 flex justify-center items-center"
+        style={{ height: 200, background: "var(--card)", border: "1.5px solid var(--border)" }}>
+        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
+      </div>
+    );
+  }
+
+  const chartData = animated.length ? animated : data.map(d => ({ eixo: d.eixo, pct: d.pct }));
+
+  type PerfAxis = { eixo: string; pct: number; raw: number | null; meta: number; unidade: string };
+
+  // Formata o valor "raw" para tooltip/legenda humana
+  function formatRaw(d: PerfAxis): string {
+    if (d.eixo === "Velocidade") {
+      if (d.raw == null) return "sem questões cronometradas";
+      const min = Math.floor((d.raw as number) / 60);
+      const sec = (d.raw as number) % 60;
+      return `${min}min${sec > 0 ? ` ${sec}s` : ""}/questão`;
+    }
+    if (d.eixo === "Dedicação") return `${d.raw}h de ${d.meta}h`;
+    return `${d.raw} de ${d.meta} ${d.unidade}`;
+  }
+
+  const best = [...data].sort((a, b) => b.pct - a.pct)[0];
+  const weak = [...data].sort((a, b) => a.pct - b.pct)[0];
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3"
+      style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+      <div className="flex items-center justify-between">
+        <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Performance</p>
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+          style={{ background: "#E0F2F1", color: "#00695C" }}>5 eixos</span>
+      </div>
+
+      <ResponsiveContainer width="100%" height={260}>
+        <RadarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+          <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
+          <PolarAngleAxis dataKey="eixo"
+            tick={{ fontSize: 11, fill: "var(--muted-foreground)", fontWeight: 600 }} />
+          <PolarRadiusAxis angle={30} domain={[0, 100]}
+            tick={{ fontSize: 9, fill: "var(--muted-foreground)" }}
+            tickCount={4} axisLine={false} />
+          <Radar dataKey="pct" stroke="#7B3FA0" fill="#7B3FA0" fillOpacity={0.35}
+            strokeWidth={2} dot={{ r: 3, fill: "#7B3FA0" }} />
+          <Tooltip
+            contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+            formatter={(v: number, _name: string, props: any) => {
+              const eixo = props?.payload?.eixo;
+              const match = data.find(d => d.eixo === eixo);
+              return [`${v}%${match ? ` (${formatRaw(match)})` : ""}`, eixo];
+            }} />
+        </RadarChart>
+      </ResponsiveContainer>
+
+      {/* Legenda com os valores brutos de cada eixo */}
+      <div className="grid grid-cols-2 gap-1.5 pt-1">
+        {data.map((d) => (
+          <div key={d.eixo} className="rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2"
+            style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+            <span className="text-xs font-semibold truncate" style={{ color: "var(--foreground)" }}>{d.eixo}</span>
+            <span className="text-xs font-black flex-shrink-0"
+              style={{ color: d.pct >= 70 ? "#15803D" : d.pct >= 40 ? "#D97706" : "#DC2626" }}>{d.pct}%</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Destaques */}
+      {(best.pct > 0 || weak.pct < 100) && (
+        <div className="space-y-2 pt-1">
+          {best.pct > 0 && (
+            <div className="rounded-xl px-3 py-2 flex items-center gap-3"
+              style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold" style={{ color: "#15803D" }}>Destaque</p>
+                <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#166534" }}>
+                  {best.eixo} — {formatRaw(best)}
+                </p>
+              </div>
+              <span className="text-sm font-black flex-shrink-0" style={{ color: "#15803D" }}>{best.pct}%</span>
+            </div>
+          )}
+          {weak.pct < 70 && (
+            <div className="rounded-xl px-3 py-2"
+              style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}>
+              <p className="text-xs font-semibold mb-0.5" style={{ color: "#DC2626" }}>A melhorar</p>
+              <p className="text-sm font-bold truncate" style={{ color: "#991B1B" }}>
+                {weak.eixo} — {formatRaw(weak)}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RadarTopicos() {
   // ── Todos os hooks ANTES de qualquer return condicional ──────────────
   const { data, isLoading, dataUpdatedAt } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true, refetchInterval: 60_000 });
@@ -761,8 +921,8 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* ── Radar de áreas ── */}
-      <RadarTopicos />
+      {/* ── Radares (Por Área ⇄ Performance) ── */}
+      <RadarTabs />
 
       {/* ── Agenda de estudos ── */}
       <AgendaCard navigate={navigate} />

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
@@ -22,6 +23,35 @@ export default function Revise({ id }: { id?: number }) {
 
   const isLoading = id !== undefined ? byId.isLoading : daily.isLoading;
   const content   = id !== undefined ? byId.data      : daily.data?.content;
+
+  // — Cronômetro de leitura (só para modo "daily", que tem reviewId persistido)
+  // Salva o delta ao desmontar OU ao esconder a aba (beforeunload/pagehide).
+  // Descarta leituras < 5s (abertura acidental).
+  const saveReadTime = trpc.review.saveReadTime.useMutation();
+  const startTsRef = useRef<number>(Date.now());
+  const reviewId = id === undefined ? daily.data?.review?.id : null;
+  useEffect(() => {
+    if (!reviewId) return;
+    startTsRef.current = Date.now();
+
+    function flush() {
+      const elapsed = Math.round((Date.now() - startTsRef.current) / 1000);
+      if (elapsed < 5 || !reviewId) return;
+      // sendBeacon seria ideal, mas tRPC fetch já é rápido o bastante.
+      saveReadTime.mutate({ reviewId, seconds: Math.min(elapsed, 7200) });
+      // reinicia para não duplicar caso o usuário volte à aba
+      startTsRef.current = Date.now();
+    }
+
+    const onHide = () => flush();
+    window.addEventListener("pagehide", onHide);
+    window.addEventListener("beforeunload", onHide);
+    return () => {
+      flush();
+      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("beforeunload", onHide);
+    };
+  }, [reviewId]);
 
   if (isLoading) return (
     <div className="flex justify-center py-20">

@@ -145,6 +145,7 @@ export const dailyChallenges = mysqlTable(
     answers: json("answers").$type<Record<string, string>>().notNull().default({}),
     completed: boolean("completed").notNull().default(false),
     correctCount: int("correct_count"),
+    totalTimeSeconds: int("total_time_seconds"), // tempo total gasto no desafio (p/ radar de performance)
     completedAt: timestamp("completed_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
@@ -201,6 +202,7 @@ export const dailyReviews = mysqlTable(
     answers: json("answers").$type<Record<string, number>>().notNull().default({}),
     completed: boolean("completed").notNull().default(false),
     correctCount: int("correct_count"),
+    totalTimeSeconds: int("total_time_seconds"), // tempo total gasto no Revise (p/ radar de performance)
     completedAt: timestamp("completed_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
@@ -312,6 +314,7 @@ export const flashcardProgress = mysqlTable(
     repetitions:    int("repetitions").notNull().default(0),   // revisões bem-sucedidas consecutivas
     nextReview:     timestamp("next_review"),                  // null = card novo, nunca visto
     lastReviewed:   timestamp("last_reviewed"),
+    timeSpentSeconds: int("time_spent_seconds"),               // tempo gasto na última revisão (p/ radar)
     createdAt:      timestamp("created_at").defaultNow().notNull(),
   },
   (t) => ({

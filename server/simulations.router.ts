@@ -21,7 +21,7 @@ import { z } from "zod";
 import { eq, and, desc, sql, inArray, gte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "./trpc";
-import { questions, simulations, simulationAnswers, users, dailyChallenges } from "./schema";
+import { questions, simulations, simulationAnswers, users, dailyChallenges, dailyReviews, flashcardProgress } from "./schema";
 import type { NewSimulation, NewSimulationAnswer, NewDailyChallenge } from "./schema";
 import {
   estimateTheta,
@@ -907,6 +907,128 @@ export const simulationsRouter = createTRPCRouter({
   }),
 
   // ---------------------------------------------------------------------------
+  // DESEMPENHO POR PERFORMANCE — 5 eixos normalizados 0–100
+  // Complementa o radar por área. Mede HÁBITO/VOLUME, não acurácia:
+  //   • Velocidade  → tempo médio por questão (invertido: menos = mais pontos)
+  //   • Questões    → total de questões respondidas (simulado + desafio)
+  //   • Estudos     → conteúdos do Revise visitados
+  //   • Fixação     → flashcards revisados com boa avaliação (qualidade ≥ 3)
+  //   • Dedicação   → tempo total na plataforma (soma de todas as fontes)
+  // Escala 0–100 baseada em metas fixas (ajuste as constantes abaixo).
+  // ---------------------------------------------------------------------------
+  getPerformanceStats: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+
+    // ── Metas (aluno ENEM dedicado atinge em ~8 meses) ────────────────────────
+    const META_VELOCIDADE_MIN = 150; // ≤2,5 min/questão → 100%
+    const META_VELOCIDADE_MAX = 360; // ≥6 min/questão → 0%
+    const META_QUESTOES   = 1000;    // 1000 questões → 100%
+    const META_ESTUDOS    = 50;      // 50 textos lidos → 100%
+    const META_FIXACAO    = 500;     // 500 flashcards c/ boa avaliação → 100%
+    const META_DEDICACAO_HORAS = 50; // 50h cumulativas na plataforma → 100%
+
+    function clamp01(x: number): number {
+      if (!isFinite(x)) return 0;
+      return Math.max(0, Math.min(1, x));
+    }
+    const pct = (x: number) => Math.round(clamp01(x) * 100);
+
+    // ── Fonte 1: respostas em simulationAnswers ───────────────────────────────
+    const simAgg = await ctx.db
+      .select({
+        answeredCount: sql<number>`COUNT(*)`,
+        totalTime:     sql<number>`COALESCE(SUM(${simulationAnswers.timeSpentSeconds}), 0)`,
+        timedCount:    sql<number>`SUM(CASE WHEN ${simulationAnswers.timeSpentSeconds} > 0 THEN 1 ELSE 0 END)`,
+      })
+      .from(simulationAnswers)
+      .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
+      .where(and(
+        eq(simulations.userId, userId),
+        sql`${simulationAnswers.isCorrect} IS NOT NULL`,
+      ));
+
+    const simAnswered = Number(simAgg[0]?.answeredCount ?? 0);
+    const simTimeSum  = Number(simAgg[0]?.totalTime ?? 0);
+    const simTimed    = Number(simAgg[0]?.timedCount ?? 0);
+
+    // Tempo total das sessões completas (inclui ócio entre questões — proxy
+    // melhor para "dedicação" do que a soma das questões cronometradas).
+    const simSessionAgg = await ctx.db
+      .select({ total: sql<number>`COALESCE(SUM(${simulations.totalTimeSeconds}), 0)` })
+      .from(simulations)
+      .where(and(eq(simulations.userId, userId), eq(simulations.status, "completed")));
+    const simSessionTime = Number(simSessionAgg[0]?.total ?? 0);
+
+    // ── Fonte 2: desafios diários completos ──────────────────────────────────
+    const dcAgg = await ctx.db
+      .select({
+        qSum:    sql<number>`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`,
+        timeSum: sql<number>`COALESCE(SUM(${dailyChallenges.totalTimeSeconds}), 0)`,
+      })
+      .from(dailyChallenges)
+      .where(and(eq(dailyChallenges.userId, userId), eq(dailyChallenges.completed, true)));
+
+    const dcQuestions = Number(dcAgg[0]?.qSum ?? 0);
+    const dcTime      = Number(dcAgg[0]?.timeSum ?? 0);
+
+    // ── Fonte 3: Revise — quantidade de textos + tempo de leitura ────────────
+    const drAgg = await ctx.db
+      .select({
+        count:   sql<number>`COUNT(*)`,
+        timeSum: sql<number>`COALESCE(SUM(${dailyReviews.totalTimeSeconds}), 0)`,
+      })
+      .from(dailyReviews)
+      .where(eq(dailyReviews.userId, userId));
+
+    const drCount = Number(drAgg[0]?.count ?? 0);
+    const drTime  = Number(drAgg[0]?.timeSum ?? 0);
+
+    // ── Fonte 4: Flashcards — revisões bem-sucedidas + tempo ─────────────────
+    // "Boa avaliação" = SM-2 com repetitions ≥ 1 (quality=1 zera repetições).
+    const fcAgg = await ctx.db
+      .select({
+        goodCount: sql<number>`SUM(CASE WHEN ${flashcardProgress.repetitions} >= 1 THEN 1 ELSE 0 END)`,
+        timeSum:   sql<number>`COALESCE(SUM(${flashcardProgress.timeSpentSeconds}), 0)`,
+      })
+      .from(flashcardProgress)
+      .where(eq(flashcardProgress.userId, userId));
+
+    const fcGood = Number(fcAgg[0]?.goodCount ?? 0);
+    const fcTime = Number(fcAgg[0]?.timeSum ?? 0);
+
+    // ── Cálculo dos 5 eixos ──────────────────────────────────────────────────
+
+    const avgSecPerQuestion = simTimed > 0 ? simTimeSum / simTimed : null;
+    let velocidade = 0;
+    if (avgSecPerQuestion !== null) {
+      if (avgSecPerQuestion <= META_VELOCIDADE_MIN) velocidade = 100;
+      else if (avgSecPerQuestion >= META_VELOCIDADE_MAX) velocidade = 0;
+      else {
+        const frac = 1 - (avgSecPerQuestion - META_VELOCIDADE_MIN) /
+                         (META_VELOCIDADE_MAX - META_VELOCIDADE_MIN);
+        velocidade = Math.round(clamp01(frac) * 100);
+      }
+    }
+
+    const questoesTotal = simAnswered + dcQuestions;
+    const questoes = pct(questoesTotal / META_QUESTOES);
+    const estudos  = pct(drCount / META_ESTUDOS);
+    const fixacao  = pct(fcGood / META_FIXACAO);
+
+    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime;
+    const dedicacaoHoras   = totalTimeSeconds / 3600;
+    const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
+
+    return [
+      { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/questão" },
+      { eixo: "Questões",   pct: questoes,   raw: questoesTotal,                         meta: META_QUESTOES,           unidade: "questões" },
+      { eixo: "Estudos",    pct: estudos,    raw: drCount,                               meta: META_ESTUDOS,            unidade: "textos" },
+      { eixo: "Fixação",    pct: fixacao,    raw: fcGood,                                meta: META_FIXACAO,            unidade: "cards" },
+      { eixo: "Dedicação",  pct: dedicacao,  raw: Math.round(dedicacaoHoras * 10) / 10,  meta: META_DEDICACAO_HORAS,    unidade: "horas" },
+    ];
+  }),
+
+  // ---------------------------------------------------------------------------
   // TREINO LIVRE — sorteia N questões de um tópico com gabarito imediato
   // ---------------------------------------------------------------------------
   startFreeTraining: protectedProcedure
@@ -1201,7 +1323,11 @@ export const simulationsRouter = createTRPCRouter({
     }),
 
   finishDailyChallenge: protectedProcedure
-    .input(z.object({ challengeId: z.number().int().positive() }))
+    .input(z.object({
+      challengeId: z.number().int().positive(),
+      // Opcional p/ compat com clientes antigos. Cap em 2h (evita aba aberta).
+      totalTimeSeconds: z.number().int().min(0).max(7200).optional(),
+    }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
 
@@ -1225,7 +1351,12 @@ export const simulationsRouter = createTRPCRouter({
 
       await ctx.db
         .update(dailyChallenges)
-        .set({ completed: true, correctCount, completedAt: new Date() })
+        .set({
+          completed: true,
+          correctCount,
+          completedAt: new Date(),
+          ...(input.totalTimeSeconds !== undefined ? { totalTimeSeconds: input.totalTimeSeconds } : {}),
+        })
         .where(eq(dailyChallenges.id, input.challengeId));
 
       return { ok: true, correctCount, total: challenge.questionIds.length };

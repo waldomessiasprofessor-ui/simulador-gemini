@@ -913,6 +913,25 @@ async function runMigrations() {
     `);
     console.log("✅ Migration: flashcard_progress OK.");
 
+    // ── Colunas de tempo para o radar de performance ──────────────────────────
+    // Helper idempotente: adiciona coluna se ainda não existir.
+    async function ensureColumn(table: string, column: string, definition: string) {
+      const [rows]: any[] = await conn.query(`
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?
+      `, [table, column]);
+      if (Array.isArray(rows) && rows.length > 0) {
+        console.log(`✅ Migration: ${table}.${column} já existe.`);
+      } else {
+        await conn.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+        console.log(`✅ Migration: ${table}.${column} adicionada.`);
+      }
+    }
+
+    await ensureColumn("daily_challenges",  "total_time_seconds", "INT NULL");
+    await ensureColumn("daily_reviews",     "total_time_seconds", "INT NULL");
+    await ensureColumn("flashcard_progress","time_spent_seconds", "INT NULL");
+
   } catch (err: any) {
     console.error("❌ Migration falhou:", err?.message ?? err);
   } finally {

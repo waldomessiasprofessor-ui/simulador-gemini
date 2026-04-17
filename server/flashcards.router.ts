@@ -264,10 +264,13 @@ export const flashcardsRouter = createTRPCRouter({
     .input(z.object({
       cardId:  z.number(),
       quality: z.union([z.literal(1), z.literal(3), z.literal(5)]),
+      // Tempo gasto nesta revisão (card exibido → usuário avaliou).
+      // Opcional p/ compatibilidade, cap em 10min (evita outlier de aba aberta).
+      timeSpentSeconds: z.number().int().min(0).max(600).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
-      const { cardId, quality } = input;
+      const { cardId, quality, timeSpentSeconds } = input;
 
       const [existing] = await db
         .select()
@@ -283,11 +286,15 @@ export const flashcardsRouter = createTRPCRouter({
 
       if (existing) {
         await db.update(flashcardProgress)
-          .set({ easinessFactor, interval, repetitions, nextReview, lastReviewed: now })
+          .set({
+            easinessFactor, interval, repetitions, nextReview, lastReviewed: now,
+            ...(timeSpentSeconds !== undefined ? { timeSpentSeconds } : {}),
+          })
           .where(eq(flashcardProgress.id, existing.id));
       } else {
         await db.insert(flashcardProgress).values({
           userId, cardId, easinessFactor, interval, repetitions, nextReview, lastReviewed: now,
+          ...(timeSpentSeconds !== undefined ? { timeSpentSeconds } : {}),
         });
       }
 

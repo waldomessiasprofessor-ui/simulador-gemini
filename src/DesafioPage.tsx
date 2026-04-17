@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
@@ -48,6 +48,13 @@ export default function DesafioPage() {
   const [idx, setIdx] = useState(0);
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
   useEffect(() => { if (daily) window.scrollTo({ top: 0, behavior: "instant" }); }, [daily?.id]);
+
+  // Cronômetro — marca o início da sessão (ao abrir o desafio). Se o aluno
+  // fechar e voltar, reinicia; contamos só o tempo ativo desta sessão.
+  const startTsRef = useRef<number>(Date.now());
+  useEffect(() => {
+    if (daily && !daily.completed) startTsRef.current = Date.now();
+  }, [daily?.challengeId, daily?.completed]);
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
@@ -246,7 +253,10 @@ export default function DesafioPage() {
             Próxima <ChevronRight className="h-4 w-4" />
           </button>
         ) : allAnswered ? (
-          <button onClick={() => finishDaily.mutateAsync({ challengeId: daily.challengeId })}
+          <button onClick={() => finishDaily.mutateAsync({
+              challengeId: daily.challengeId,
+              totalTimeSeconds: Math.max(0, Math.round((Date.now() - startTsRef.current) / 1000)),
+            })}
             disabled={finishDaily.isPending}
             className="btn-primary flex items-center gap-1">
             {finishDaily.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}

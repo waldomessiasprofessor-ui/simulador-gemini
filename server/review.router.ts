@@ -182,6 +182,32 @@ export const reviewRouter = createTRPCRouter({
       return { ok: true, allDone, correctCount };
     }),
 
+  // ── Aluno: registra tempo de leitura de um Revise diário ────────────────
+  // Acumula: se já havia tempo salvo, soma (aluno voltou a ler mais tarde).
+  saveReadTime: protectedProcedure
+    .input(z.object({
+      reviewId: z.number().int().positive(),
+      seconds: z.number().int().min(0).max(7200), // teto de 2h por leitura
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const [review] = await ctx.db
+        .select({ id: dailyReviews.id, current: dailyReviews.totalTimeSeconds })
+        .from(dailyReviews)
+        .where(and(eq(dailyReviews.id, input.reviewId), eq(dailyReviews.userId, userId)))
+        .limit(1);
+
+      if (!review) return { ok: false };
+
+      const nextTotal = (review.current ?? 0) + input.seconds;
+      await ctx.db
+        .update(dailyReviews)
+        .set({ totalTimeSeconds: nextTotal })
+        .where(eq(dailyReviews.id, input.reviewId));
+
+      return { ok: true, total: nextTotal };
+    }),
+
   // ── Aluno: histórico de revisões ──────────────────────────────────────────
   getHistory: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db
