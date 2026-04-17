@@ -810,10 +810,57 @@ export const simulationsRouter = createTRPCRouter({
   getTopicStats: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
 
+    // Grandes áreas genéricas — não são conteúdos específicos, excluir do radar
+    // (aceita variações com S maiúsculo ou minúsculo em "suas/Suas")
+    const AREAS_GERAIS = new Set([
+      "Matemática e suas Tecnologias",
+      "Matemática e Suas Tecnologias",
+      "Linguagens, Códigos e suas Tecnologias",
+      "Linguagens, Códigos e Suas Tecnologias",
+      "Ciências Humanas e suas Tecnologias",
+      "Ciências Humanas e Suas Tecnologias",
+      "Ciências da Natureza e suas Tecnologias",
+      "Ciências da Natureza e Suas Tecnologias",
+    ]);
+
+    // Tags genéricas que não representam conteúdo específico (ENEM, anos, áreas)
+    const TAGS_GENERICAS = new Set(["ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET", "Matemática"]);
+    function isGenericTag(t: string): boolean {
+      const s = t.trim();
+      if (!s) return true;
+      if (TAGS_GENERICAS.has(s)) return true;
+      if (AREAS_GERAIS.has(s)) return true;
+      if (/^\d{4}$/.test(s)) return true;                  // ano cru: "2023"
+      if (/^ENEM\s+\d{4}$/i.test(s)) return true;          // "ENEM 2023"
+      if (/^(UNICAMP|FUVEST|UNESP|REPVET)\s+\d{4}$/i.test(s)) return true;
+      return false;
+    }
+
+    // Retorna a lista de "tópicos" a creditar por uma questão: conteudo_principal
+    // + cada tag que seja um conteúdo específico (não genérico). Usa Set para
+    // deduplicar caso a tag repita o conteudo_principal.
+    function topicsFor(conteudo: string | null, tags: unknown): string[] {
+      const set = new Set<string>();
+      if (conteudo) {
+        const key = conteudo.trim();
+        if (key && !AREAS_GERAIS.has(key)) set.add(key);
+      }
+      if (Array.isArray(tags)) {
+        for (const t of tags) {
+          if (typeof t !== "string") continue;
+          if (isGenericTag(t)) continue;
+          set.add(t.trim());
+        }
+      }
+      return [...set];
+    }
+
     // Fonte 1: simulationAnswers (simulados + treino livre salvo)
+    // Traz também as tags para creditar o acerto em todos os tópicos relevantes
     const simRows = await ctx.db
       .select({
         conteudo: questions.conteudo_principal,
+        tags: questions.tags,
         isCorrect: simulationAnswers.isCorrect,
         timeSpent: simulationAnswers.timeSpentSeconds,
       })
@@ -825,21 +872,22 @@ export const simulationsRouter = createTRPCRouter({
         sql`${simulationAnswers.isCorrect} IS NOT NULL`,
       ));
 
-    // Agrupa por conteúdo
+    // Agrupa por tópico (cada questão pode render para vários tópicos)
     type Agg = { total: number; correct: number; timeSum: number; timeCount: number };
     const map = new Map<string, Agg>();
 
     for (const r of simRows) {
-      const key = r.conteudo?.trim();
-      if (!key) continue; // ignora questões sem conteúdo_principal
-      const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-      entry.total++;
-      if (r.isCorrect) entry.correct++;
-      if (r.timeSpent != null && r.timeSpent > 0) {
-        entry.timeSum += r.timeSpent;
-        entry.timeCount++;
+      const keys = topicsFor(r.conteudo, r.tags);
+      for (const key of keys) {
+        const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+        entry.total++;
+        if (r.isCorrect) entry.correct++;
+        if (r.timeSpent != null && r.timeSpent > 0) {
+          entry.timeSum += r.timeSpent;
+          entry.timeCount++;
+        }
+        map.set(key, entry);
       }
-      map.set(key, entry);
     }
 
     // Fonte 2: dailyChallenges completos (sem dados de tempo)
@@ -856,7 +904,12 @@ export const simulationsRouter = createTRPCRouter({
       const allQIds = [...new Set(challenges.flatMap(c => c.questionIds as number[]))];
       if (allQIds.length > 0) {
         const qDetails = await ctx.db
-          .select({ id: questions.id, conteudo: questions.conteudo_principal, gabarito: questions.gabarito })
+          .select({
+            id: questions.id,
+            conteudo: questions.conteudo_principal,
+            tags: questions.tags,
+            gabarito: questions.gabarito,
+          })
           .from(questions)
           .where(inArray(questions.id, allQIds));
         const qMap = new Map(qDetails.map(q => [q.id, q]));
@@ -866,29 +919,18 @@ export const simulationsRouter = createTRPCRouter({
           for (const [qIdStr, selected] of Object.entries(answers)) {
             const q = qMap.get(parseInt(qIdStr));
             if (!q) continue;
-            const key = q.conteudo?.trim();
-            if (!key) continue; // ignora questões sem conteúdo_principal
-            const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-            entry.total++;
-            if (selected === q.gabarito) entry.correct++;
-            map.set(key, entry);
+            const keys = topicsFor(q.conteudo, q.tags);
+            const hit = selected === q.gabarito;
+            for (const key of keys) {
+              const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+              entry.total++;
+              if (hit) entry.correct++;
+              map.set(key, entry);
+            }
           }
         }
       }
     }
-
-    // Grandes áreas genéricas — não são conteúdos específicos, excluir do radar
-    // (aceita variações com S maiúsculo ou minúsculo em "suas/Suas")
-    const AREAS_GERAIS = new Set([
-      "Matemática e suas Tecnologias",
-      "Matemática e Suas Tecnologias",
-      "Linguagens, Códigos e suas Tecnologias",
-      "Linguagens, Códigos e Suas Tecnologias",
-      "Ciências Humanas e suas Tecnologias",
-      "Ciências Humanas e Suas Tecnologias",
-      "Ciências da Natureza e suas Tecnologias",
-      "Ciências da Natureza e Suas Tecnologias",
-    ]);
 
     // Converte para array com % de acerto (0–100), mínimo 1 questão para aparecer
     // Ordenação alfabética fixa → eixos do radar sempre na mesma posição

@@ -1310,52 +1310,6 @@ var simulationsRouter = createTRPCRouter({
   // ---------------------------------------------------------------------------
   getTopicStats: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
-    const simRows = await ctx.db.select({
-      conteudo: questions.conteudo_principal,
-      isCorrect: simulationAnswers.isCorrect,
-      timeSpent: simulationAnswers.timeSpentSeconds
-    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq2(simulationAnswers.questionId, questions.id)).where(and2(
-      eq2(simulations.userId, userId),
-      sql2`${simulationAnswers.isCorrect} IS NOT NULL`
-    ));
-    const map = /* @__PURE__ */ new Map();
-    for (const r of simRows) {
-      const key = r.conteudo?.trim();
-      if (!key) continue;
-      const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-      entry.total++;
-      if (r.isCorrect) entry.correct++;
-      if (r.timeSpent != null && r.timeSpent > 0) {
-        entry.timeSum += r.timeSpent;
-        entry.timeCount++;
-      }
-      map.set(key, entry);
-    }
-    const challenges = await ctx.db.select({
-      answers: dailyChallenges.answers,
-      questionIds: dailyChallenges.questionIds,
-      completed: dailyChallenges.completed
-    }).from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
-    if (challenges.length > 0) {
-      const allQIds = [...new Set(challenges.flatMap((c) => c.questionIds))];
-      if (allQIds.length > 0) {
-        const qDetails = await ctx.db.select({ id: questions.id, conteudo: questions.conteudo_principal, gabarito: questions.gabarito }).from(questions).where(inArray2(questions.id, allQIds));
-        const qMap = new Map(qDetails.map((q) => [q.id, q]));
-        for (const ch of challenges) {
-          const answers = ch.answers;
-          for (const [qIdStr, selected] of Object.entries(answers)) {
-            const q = qMap.get(parseInt(qIdStr));
-            if (!q) continue;
-            const key = q.conteudo?.trim();
-            if (!key) continue;
-            const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
-            entry.total++;
-            if (selected === q.gabarito) entry.correct++;
-            map.set(key, entry);
-          }
-        }
-      }
-    }
     const AREAS_GERAIS = /* @__PURE__ */ new Set([
       "Matem\xE1tica e suas Tecnologias",
       "Matem\xE1tica e Suas Tecnologias",
@@ -1366,6 +1320,87 @@ var simulationsRouter = createTRPCRouter({
       "Ci\xEAncias da Natureza e suas Tecnologias",
       "Ci\xEAncias da Natureza e Suas Tecnologias"
     ]);
+    const TAGS_GENERICAS = /* @__PURE__ */ new Set(["ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET", "Matem\xE1tica"]);
+    function isGenericTag(t2) {
+      const s = t2.trim();
+      if (!s) return true;
+      if (TAGS_GENERICAS.has(s)) return true;
+      if (AREAS_GERAIS.has(s)) return true;
+      if (/^\d{4}$/.test(s)) return true;
+      if (/^ENEM\s+\d{4}$/i.test(s)) return true;
+      if (/^(UNICAMP|FUVEST|UNESP|REPVET)\s+\d{4}$/i.test(s)) return true;
+      return false;
+    }
+    function topicsFor(conteudo, tags) {
+      const set = /* @__PURE__ */ new Set();
+      if (conteudo) {
+        const key = conteudo.trim();
+        if (key && !AREAS_GERAIS.has(key)) set.add(key);
+      }
+      if (Array.isArray(tags)) {
+        for (const t2 of tags) {
+          if (typeof t2 !== "string") continue;
+          if (isGenericTag(t2)) continue;
+          set.add(t2.trim());
+        }
+      }
+      return [...set];
+    }
+    const simRows = await ctx.db.select({
+      conteudo: questions.conteudo_principal,
+      tags: questions.tags,
+      isCorrect: simulationAnswers.isCorrect,
+      timeSpent: simulationAnswers.timeSpentSeconds
+    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq2(simulationAnswers.questionId, questions.id)).where(and2(
+      eq2(simulations.userId, userId),
+      sql2`${simulationAnswers.isCorrect} IS NOT NULL`
+    ));
+    const map = /* @__PURE__ */ new Map();
+    for (const r of simRows) {
+      const keys = topicsFor(r.conteudo, r.tags);
+      for (const key of keys) {
+        const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+        entry.total++;
+        if (r.isCorrect) entry.correct++;
+        if (r.timeSpent != null && r.timeSpent > 0) {
+          entry.timeSum += r.timeSpent;
+          entry.timeCount++;
+        }
+        map.set(key, entry);
+      }
+    }
+    const challenges = await ctx.db.select({
+      answers: dailyChallenges.answers,
+      questionIds: dailyChallenges.questionIds,
+      completed: dailyChallenges.completed
+    }).from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
+    if (challenges.length > 0) {
+      const allQIds = [...new Set(challenges.flatMap((c) => c.questionIds))];
+      if (allQIds.length > 0) {
+        const qDetails = await ctx.db.select({
+          id: questions.id,
+          conteudo: questions.conteudo_principal,
+          tags: questions.tags,
+          gabarito: questions.gabarito
+        }).from(questions).where(inArray2(questions.id, allQIds));
+        const qMap = new Map(qDetails.map((q) => [q.id, q]));
+        for (const ch of challenges) {
+          const answers = ch.answers;
+          for (const [qIdStr, selected] of Object.entries(answers)) {
+            const q = qMap.get(parseInt(qIdStr));
+            if (!q) continue;
+            const keys = topicsFor(q.conteudo, q.tags);
+            const hit = selected === q.gabarito;
+            for (const key of keys) {
+              const entry = map.get(key) ?? { total: 0, correct: 0, timeSum: 0, timeCount: 0 };
+              entry.total++;
+              if (hit) entry.correct++;
+              map.set(key, entry);
+            }
+          }
+        }
+      }
+    }
     return Array.from(map.entries()).filter(([conteudo, v]) => v.total >= 1 && !AREAS_GERAIS.has(conteudo)).map(([conteudo, v]) => {
       const pct = Math.round(v.correct / v.total * 100);
       return {
