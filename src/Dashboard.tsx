@@ -417,8 +417,8 @@ function RadarPerformance() {
           <PolarRadiusAxis angle={30} domain={[0, 100]}
             tick={{ fontSize: 9, fill: "var(--muted-foreground)" }}
             tickCount={4} axisLine={false} />
-          <Radar dataKey="pct" stroke="#7B3FA0" fill="#7B3FA0" fillOpacity={0.35}
-            strokeWidth={2} dot={{ r: 3, fill: "#7B3FA0" }} />
+          <Radar dataKey="pct" stroke="#009688" fill="#009688" fillOpacity={0.35}
+            strokeWidth={2} dot={{ r: 3, fill: "#009688" }} />
           <Tooltip
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
             formatter={(v: number, _name: string, props: any) => {

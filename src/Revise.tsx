@@ -55,13 +55,13 @@ export default function Revise({ id }: { id?: number }) {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#7B3FA0" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
     </div>
   );
 
   if (!content) return (
     <div className="text-center py-20 space-y-3">
-      <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "#7B3FA0" }} />
+      <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "var(--pr-teal)" }} />
       <p className="font-semibold" style={{ color: "var(--foreground)" }}>Nenhum conteúdo disponível</p>
       <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
         O administrador ainda não cadastrou textos para revisão.
@@ -85,10 +85,10 @@ export default function Revise({ id }: { id?: number }) {
 
       {/* Badge */}
       <div className="rounded-xl px-4 py-3 flex items-center gap-3"
-        style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
-        <BookOpen className="h-4 w-4 flex-shrink-0" style={{ color: "#7B3FA0" }} />
+        style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
+        <BookOpen className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-teal)" }} />
         <div>
-          <p className="font-bold text-sm" style={{ color: "#7B3FA0" }}>
+          <p className="font-bold text-sm" style={{ color: "var(--pr-teal)" }}>
             {id !== undefined ? "Revisão" : "Vamos estudar?"}
           </p>
           <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
@@ -124,11 +124,11 @@ export default function Revise({ id }: { id?: number }) {
             {/* Fallback mobile */}
             <div className="sm:hidden rounded-xl p-5 text-center space-y-3"
               style={{ background: "var(--secondary)", border: "1.5px solid var(--border)" }}>
-              <FileText className="h-10 w-10 mx-auto" style={{ color: "#7B3FA0" }} />
+              <FileText className="h-10 w-10 mx-auto" style={{ color: "var(--pr-teal)" }} />
               <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>PDF disponível</p>
               <a href={c.url_pdf} target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-white text-sm"
-                style={{ background: "#7B3FA0" }}>
+                style={{ background: "var(--pr-teal)" }}>
                 <ExternalLink className="h-4 w-4" /> Abrir PDF
               </a>
             </div>
@@ -145,9 +145,9 @@ export default function Revise({ id }: { id?: number }) {
 
       {/* Mensagem de incentivo */}
       <div className="rounded-2xl p-5 text-center space-y-3"
-        style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
-        <Brain className="h-8 w-8 mx-auto" style={{ color: "#7B3FA0" }} />
-        <p className="font-bold text-sm" style={{ color: "#7B3FA0" }}>
+        style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
+        <Brain className="h-8 w-8 mx-auto" style={{ color: "var(--pr-teal)" }} />
+        <p className="font-bold text-sm" style={{ color: "var(--pr-teal)" }}>
           Quer continuar estudando?
         </p>
         <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
@@ -157,7 +157,7 @@ export default function Revise({ id }: { id?: number }) {
           <button
             onClick={() => navigate("/revisao")}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm text-white"
-            style={{ background: "#7B3FA0" }}>
+            style={{ background: "var(--pr-teal)" }}>
             Ir para Revisão <ChevronRight className="h-3.5 w-3.5" />
           </button>
           <button onClick={() => navigate("/")} className="btn-outline text-sm">

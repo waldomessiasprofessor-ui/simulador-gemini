@@ -129,7 +129,7 @@ export default function Treino() {
   if (questions.length === 0) {
     return (
       <div className="space-y-8 py-2">
-        <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "linear-gradient(135deg, #7B3FA0, #4A235A)" }}>
+        <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "var(--pr-grad-hero)" }}>
           <div className="flex items-center gap-2 mb-3">
             <BookOpen className="h-5 w-5" />
             <span className="text-sm font-semibold opacity-80">Treino livre</span>
@@ -139,7 +139,7 @@ export default function Treino() {
         </div>
 
         {loadingTopics ? (
-          <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "#7B3FA0" }} /></div>
+          <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} /></div>
         ) : (
           <div className="space-y-5">
             {/* Tópico */}
@@ -150,9 +150,9 @@ export default function Treino() {
                   onClick={() => setSelectedTopic(null)}
                   className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
                   style={{
-                    border: `1.5px solid ${selectedTopic === null ? "#7B3FA0" : "#E2D9EE"}`,
-                    background: selectedTopic === null ? "#F3EAF9" : "#fff",
-                    color: selectedTopic === null ? "#7B3FA0" : "#64748B",
+                    border: `1.5px solid ${selectedTopic === null ? "var(--pr-teal)" : "var(--pr-border)"}`,
+                    background: selectedTopic === null ? "var(--pr-teal-soft)" : "#fff",
+                    color: selectedTopic === null ? "var(--pr-teal)" : "#64748B",
                   }}
                 >
                   Todos os tópicos
@@ -163,9 +163,9 @@ export default function Treino() {
                     onClick={() => setSelectedTopic(t.conteudo)}
                     className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
                     style={{
-                      border: `1.5px solid ${selectedTopic === t.conteudo ? "#7B3FA0" : "#E2D9EE"}`,
-                      background: selectedTopic === t.conteudo ? "#F3EAF9" : "#fff",
-                      color: selectedTopic === t.conteudo ? "#7B3FA0" : "#64748B",
+                      border: `1.5px solid ${selectedTopic === t.conteudo ? "var(--pr-teal)" : "var(--pr-border)"}`,
+                      background: selectedTopic === t.conteudo ? "var(--pr-teal-soft)" : "#fff",
+                      color: selectedTopic === t.conteudo ? "var(--pr-teal)" : "#64748B",
                     }}
                   >
                     <span className="block">{t.conteudo}</span>
@@ -185,9 +185,9 @@ export default function Treino() {
                     onClick={() => setCount(n)}
                     className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
                     style={{
-                      border: `1.5px solid ${count === n ? "#7B3FA0" : "#E2D9EE"}`,
-                      background: count === n ? "#F3EAF9" : "#fff",
-                      color: count === n ? "#7B3FA0" : "#64748B",
+                      border: `1.5px solid ${count === n ? "var(--pr-teal)" : "var(--pr-border)"}`,
+                      background: count === n ? "var(--pr-teal-soft)" : "#fff",
+                      color: count === n ? "var(--pr-teal)" : "#64748B",
                     }}
                   >
                     {n}
@@ -200,7 +200,7 @@ export default function Treino() {
               onClick={handleStart}
               disabled={startTraining.isPending}
               className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-white font-bold"
-              style={{ background: "#7B3FA0" }}
+              style={{ background: "var(--pr-teal)" }}
             >
               {startTraining.isPending
                 ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -253,7 +253,7 @@ export default function Treino() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <button onClick={handleReset} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white" style={{ background: "#7B3FA0" }}>
+          <button onClick={handleReset} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white" style={{ background: "var(--pr-teal)" }}>
             <RotateCcw className="h-4 w-4" /> Novo treino
           </button>
           <button onClick={() => navigate("/")} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold" style={{ background: "var(--muted)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}>
@@ -271,10 +271,10 @@ export default function Treino() {
   return (
     <div className="space-y-5 py-2">
       {/* Header */}
-      <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3" style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
+      <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3" style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold" style={{ color: "#7B3FA0" }}>Treino livre</span>
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "#7B3FA022", color: "#7B3FA0" }}>{q.nivel_dificuldade}</span>
+          <span className="text-sm font-bold" style={{ color: "var(--pr-teal)" }}>Treino livre</span>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-darker)" }}>{q.nivel_dificuldade}</span>
         </div>
         <span className="text-sm font-mono" style={{ color: "#64748B" }}>{idx + 1}/{questions.length}</span>
       </div>

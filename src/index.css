@@ -1,87 +1,205 @@
 @import "katex/dist/katex.min.css";
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,700;0,8..60,800;0,8..60,900;1,8..60,500&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Aumentar fonte dos títulos em 3px ───────────────────────────────── */
+/* ── Escala tipográfica (mantida, +5px nos títulos) ──────────────────── */
 @theme {
-  --text-lg:   1.4375rem; /* 18px → 23px (+5px total) */
-  --text-xl:   1.5625rem; /* 20px → 25px (+5px total) */
-  --text-2xl:  1.8125rem; /* 24px → 29px (+5px total) */
-  --text-3xl:  2.1875rem; /* 30px → 35px (+5px total) */
-  --text-4xl:  2.5625rem; /* 36px → 41px (+5px total) */
-  --text-5xl:  3.3125rem; /* 48px → 53px (+5px total) */
+  --text-lg:   1.4375rem; /* 18 → 23 */
+  --text-xl:   1.5625rem; /* 20 → 25 */
+  --text-2xl:  1.8125rem; /* 24 → 29 */
+  --text-3xl:  2.1875rem; /* 30 → 35 */
+  --text-4xl:  2.5625rem; /* 36 → 41 */
+  --text-5xl:  3.3125rem; /* 48 → 53 */
 }
+
+/* =====================================================================
+   PROVA REAL — VETOR DESIGN SYSTEM (teal + carvão)
+   ---------------------------------------------------------------------
+   Tokens brutos (--pr-*) + aliases compatíveis (--foreground, --primary,
+   --secondary, --border, etc.) que o código existente já consome. Assim
+   dá pra trocar a paleta sem tocar em JSX.
+   Rollback: src/index.css.bak-preVetor
+   ===================================================================== */
 
 :root {
+  /* ── Brand — teal ─────────────────────────────────────────────── */
+  --pr-teal:         #009688;
+  --pr-teal-dark:    #00695C;
+  --pr-teal-darker:  #004D40;
+  --pr-teal-light:   #4DB6AC;
+  --pr-teal-soft:    #E0F2F1;
+  --pr-teal-border:  #B2DFDB;
+
+  /* ── Brand — carvão (autoridade, navbar, heróis) ─────────────── */
+  --pr-ink:          #263238;
+  --pr-ink-2:        #37474F;
+  --pr-ink-soft:     #ECEFF1;
+
+  /* ── Neutros ──────────────────────────────────────────────────── */
+  --pr-bg:           #F0F4F8;
+  --pr-bg-alt:       #F8FAFC;
+  --pr-card:         #FFFFFF;
+  --pr-border:       #E2E8F0;
+  --pr-border-strong:#CBD5E1;
+  --pr-muted:        #F1F5F9;
+
+  /* ── Foregrounds (ordenados do mais escuro p/ claro) ──────────── */
+  --pr-fg:            #0F1524;
+  --pr-fg-reading:    #1A2233;
+  --pr-muted-fg:      #334155;
+  --pr-meta-fg:       #475569;
+  --pr-muted-fg-2:    #64748B;
+
+  /* ── Semânticas ──────────────────────────────────────────────── */
+  --pr-success:       #00695C;
+  --pr-success-bg:    #F0FDF4;
+  --pr-success-border:#A7F3D0;
+
+  --pr-warn:          #B45309;
+  --pr-warn-bg:       #FFFBEB;
+  --pr-warn-border:   #FCD34D;
+
+  --pr-danger:        #B91C1C;
+  --pr-danger-bg:     #FEF2F2;
+  --pr-danger-border: #FECACA;
+
+  --pr-info:          #1D4ED8;
+  --pr-info-bg:       #EFF6FF;
+  --pr-info-border:   #BFDBFE;
+
+  --pr-accent-gold:   #B45309;
+  --pr-accent-blue:   #1565C0;
+
+  /* ── Radii / shadows ─────────────────────────────────────────── */
+  --pr-radius-sm:    0.5rem;
+  --pr-radius:       0.75rem;
+  --pr-radius-lg:    1rem;
+  --pr-radius-xl:    1.25rem;
+  --pr-radius-2xl:   1.5rem;
+
+  --pr-shadow-sm:    0 1px 3px rgba(11,18,32,0.08), 0 1px 2px rgba(11,18,32,0.05);
+  --pr-shadow:       0 4px 14px rgba(11,18,32,0.09), 0 2px 4px rgba(11,18,32,0.05);
+  --pr-shadow-lg:    0 12px 36px rgba(11,18,32,0.15);
+  --pr-shadow-teal:  0 2px 10px rgba(0,150,136,0.35);
+
+  /* ── Gradientes da marca ─────────────────────────────────────── */
+  --pr-grad-hero:     linear-gradient(135deg, #263238 0%, #009688 100%);
+  --pr-grad-btn:      linear-gradient(135deg, #009688, #00695C);
+  --pr-grad-progress: linear-gradient(90deg, #009688, #1565C0);
+
+  /* ── Famílias tipográficas ──────────────────────────────────── */
+  --pr-font-sans:    "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --pr-font-serif:   "Source Serif 4", "Source Serif Pro", Charter, Georgia, serif;
+  --pr-font-mono:    ui-monospace, "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+
+  /* ── Raio global (Tailwind / btn / card) ────────────────────── */
   --radius: 0.75rem;
 
-  /* ── Prova Real — Cores primárias ─────────────────── */
-  --pr-purple:        #4A148C;
-  --pr-purple-dark:   #38006b;
-  --pr-purple-light:  #6a1ea8;
-  --pr-purple-soft:   #F3E5F5;
+  /* =====================================================================
+     ALIASES — o que o JSX atual já usa.
+     Mapeados para os tokens do design system para migrar sem tocar no JSX.
+     ===================================================================== */
 
-  --pr-cyan:          #00BCD4;
-  --pr-cyan-dark:     #00838F;
-  --pr-cyan-light:    #4DD0E1;
-  --pr-cyan-soft:     #E0F7FA;
+  /* shadcn-like */
+  --background:          var(--pr-bg-alt);
+  --foreground:          var(--pr-fg);
+  --card:                var(--pr-card);
+  --card-foreground:     var(--pr-fg);
+  --muted:               var(--pr-muted);
+  --muted-foreground:    var(--pr-muted-fg);
+  --border:              var(--pr-border);
+  --primary:             var(--pr-teal);
+  --primary-foreground:  #FFFFFF;
+  --secondary:           var(--pr-teal-soft);
+  --secondary-foreground:var(--pr-teal-darker);
+  --accent:              var(--pr-ink-soft);
+  --accent-foreground:   var(--pr-ink);
+  --destructive:         var(--pr-danger);
+  --input:               var(--pr-border);
+  --ring:                var(--pr-teal);
 
-  /* ── Aliases (usados nos componentes) ─────────────── */
-  --purple:        var(--pr-purple);
-  --purple-dark:   var(--pr-purple-dark);
-  --purple-light:  var(--pr-purple-light);
-  --purple-soft:   var(--pr-purple-soft);
+  /* nomes legados usados em Dashboard/Treino/Revise/Revisao */
+  --purple:              var(--pr-teal);
+  --purple-dark:         var(--pr-teal-dark);
+  --purple-light:        var(--pr-teal);
+  --purple-soft:         var(--pr-teal-soft);
 
-  --teal:          var(--pr-cyan);
-  --teal-dark:     var(--pr-cyan-dark);
-  --teal-light:    var(--pr-cyan-light);
-  --teal-soft:     var(--pr-cyan-soft);
+  --teal:                var(--pr-teal);
+  --teal-dark:           var(--pr-teal-dark);
+  --teal-light:          var(--pr-teal-light);
+  --teal-soft:           var(--pr-teal-soft);
 
-  /* ── Tema claro ───────────────────────────────────── */
-  --background:         #FFFFFF;
-  --foreground:         #2C2C3A;
-  --card:               #FFFFFF;
-  --card-foreground:    #2C2C3A;
-  --muted:              #F5F3FA;
-  --muted-foreground:   #6B6880;
-  --border:             #E1D5F0;
-  --primary:            #4A148C;
-  --primary-foreground: #FFFFFF;
-  --secondary:          #E0F7FA;
-  --secondary-foreground: #00838F;
-  --accent:             #F3E5F5;
-  --accent-foreground:  #38006b;
-  --destructive:        #E53935;
-  --input:              #E1D5F0;
-  --ring:               #6a1ea8;
+  /* compatibilidade com --pr-purple* que existia antes (aponta ao novo teal) */
+  --pr-purple:           var(--pr-teal);
+  --pr-purple-dark:      var(--pr-teal-dark);
+  --pr-purple-light:     var(--pr-teal);
+  --pr-purple-soft:      var(--pr-teal-soft);
+  --pr-cyan:             var(--pr-accent-blue);
+  --pr-cyan-dark:        #0D47A1;
+  --pr-cyan-light:       #42A5F5;
+  --pr-cyan-soft:        #E3F2FD;
 }
 
+/* ── Dark theme ─────────────────────────────────────────────────────── */
 .dark {
-  --background:         #0E0818;
-  --foreground:         #EDE8F5;
-  --card:               #180F2A;
-  --card-foreground:    #EDE8F5;
-  --muted:              #231540;
-  --muted-foreground:   #9B8FB5;
-  --border:             #332050;
-  --primary:            #00BCD4;
-  --primary-foreground: #0E0818;
-  --secondary:          #0D2A2E;
-  --secondary-foreground: #4DD0E1;
-  --accent:             #231540;
-  --accent-foreground:  #D4B8F0;
-  --input:              #332050;
-  --ring:               #00BCD4;
+  --pr-bg:           #0B1220;
+  --pr-bg-alt:       #141C2E;
+  --pr-card:         #1A2233;
+  --pr-border:       #2A3448;
+  --pr-border-strong:#3D4A63;
+  --pr-muted:        #141C2E;
+
+  --pr-fg:           #F1F5F9;
+  --pr-fg-reading:   #E2E8F0;
+  --pr-muted-fg:     #CBD5E1;
+  --pr-meta-fg:      #94A3B8;
+  --pr-muted-fg-2:   #94A3B8;
+
+  --pr-teal:         #4DB6AC;
+  --pr-teal-dark:    #009688;
+  --pr-teal-darker:  #00695C;
+  --pr-teal-soft:    #0D2B27;
+  --pr-teal-border:  #134E4A;
+
+  --pr-success:      #4DB6AC;
+  --pr-success-bg:   #052E1A;
+  --pr-success-border:#065F46;
+
+  --pr-danger:       #F87171;
+  --pr-danger-bg:    #2D0A0A;
+  --pr-danger-border:#7F1D1D;
+
+  --pr-warn:         #FBBF24;
+  --pr-warn-bg:      #2D1A05;
+  --pr-warn-border:  #78350F;
+
+  --background:          var(--pr-bg);
+  --foreground:          var(--pr-fg);
+  --card:                var(--pr-card);
+  --card-foreground:     var(--pr-fg);
+  --muted:               var(--pr-muted);
+  --muted-foreground:    var(--pr-muted-fg);
+  --border:              var(--pr-border);
+  --primary:             var(--pr-teal);
+  --primary-foreground:  #0B1220;
+  --secondary:           var(--pr-teal-soft);
+  --secondary-foreground:var(--pr-teal);
+  --accent:              var(--pr-ink-2);
+  --accent-foreground:   var(--pr-fg);
+  --input:               var(--pr-border);
+  --ring:                var(--pr-teal);
 }
 
+/* ── Reset + tipografia base ────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; border-color: var(--border); }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  font-family: var(--pr-font-sans);
   font-size: 19px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -89,26 +207,48 @@ body {
   max-width: 100vw;
 }
 
+::selection { background: var(--pr-teal-soft); color: var(--pr-teal-darker); }
+
+/* A11y: foco visível por teclado */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--pr-teal);
+  border-radius: var(--pr-radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Botões ─────────────────────────────────────────────────────────── */
 .btn-primary {
   display: inline-flex; align-items: center; gap: 0.5rem;
   padding: 0.55rem 1.25rem; border-radius: var(--radius);
-  background-color: var(--pr-purple); color: #fff;
-  font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer;
-  transition: opacity 0.15s;
+  background: var(--pr-grad-btn); color: #fff;
+  font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: var(--pr-shadow-teal);
 }
-.btn-primary:hover { opacity: 0.85; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:hover { opacity: 0.92; }
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
 .btn-outline {
   display: inline-flex; align-items: center; gap: 0.5rem;
   padding: 0.55rem 1.25rem; border-radius: var(--radius);
-  background: transparent; color: var(--pr-purple);
-  font-weight: 600; font-size: 0.9rem;
-  border: 2px solid var(--pr-purple); cursor: pointer;
+  background: transparent; color: var(--pr-teal-darker);
+  font-weight: 700; font-size: 0.9rem;
+  border: 2px solid var(--pr-teal); cursor: pointer;
   transition: background 0.15s;
 }
-.btn-outline:hover { background-color: var(--pr-purple-soft); }
+.btn-outline:hover { background-color: var(--pr-teal-soft); }
 
+/* ── Card ───────────────────────────────────────────────────────────── */
 .card {
   background-color: var(--card);
   border: 1.5px solid var(--border);
@@ -116,22 +256,25 @@ body {
   padding: 1.25rem;
 }
 
+/* ── Timer ──────────────────────────────────────────────────────────── */
 .timer {
   display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 0.35rem 0.85rem; border-radius: 99px;
-  font-family: monospace; font-weight: 700; font-size: 0.95rem;
+  font-family: var(--pr-font-mono); font-weight: 700; font-size: 0.95rem;
   transition: background 0.3s, color 0.3s;
 }
-.timer.ok   { background: var(--pr-cyan-soft); color: var(--pr-cyan-dark); }
-.timer.warn { background: #FFEBEE; color: #C62828; }
+.timer.ok   { background: var(--pr-teal-soft); color: var(--pr-teal-darker); }
+.timer.warn { background: var(--pr-danger-bg); color: var(--pr-danger); }
 
+/* ── Progress bar ───────────────────────────────────────────────────── */
 .progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .progress-bar-fill {
   height: 100%; border-radius: 99px;
-  background: linear-gradient(90deg, var(--pr-cyan), var(--pr-purple-light));
+  background: var(--pr-grad-progress);
   transition: width 0.4s ease;
 }
 
+/* ── Alternativas de questão ────────────────────────────────────────── */
 .alternative {
   display: flex; align-items: flex-start; gap: 0.75rem;
   padding: 0.75rem 1rem; border-radius: var(--radius);
@@ -139,10 +282,10 @@ body {
   cursor: pointer; text-align: left; width: 100%;
   transition: border-color 0.15s, background 0.15s;
 }
-.alternative:hover:not(:disabled) { border-color: var(--pr-purple-light); background: var(--pr-purple-soft); }
-.alternative.selected { border-color: var(--pr-purple); background: var(--pr-purple-soft); }
-.alternative.correct  { border-color: var(--pr-cyan-dark); background: var(--pr-cyan-soft); }
-.alternative.wrong    { border-color: #E53935; background: #FFEBEE; }
+.alternative:hover:not(:disabled) { border-color: var(--pr-teal-light); background: var(--pr-teal-soft); }
+.alternative.selected { border-color: var(--pr-teal); background: var(--pr-teal-soft); }
+.alternative.correct  { border-color: var(--pr-success); background: var(--pr-success-bg); }
+.alternative.wrong    { border-color: var(--pr-danger); background: var(--pr-danger-bg); }
 
 .alt-badge {
   flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
@@ -150,7 +293,30 @@ body {
   justify-content: center; font-size: 0.78rem; font-weight: 700; margin-top: 1px;
 }
 
-/* ─── HTML content (tabelas e outros blocos HTML no conteúdo de revisão/resolução) ─── */
+/* ── Utilitários editoriais do design system (opt-in) ───────────────── */
+.pr-eyebrow {
+  display: inline-block;
+  font-family: var(--pr-font-sans);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pr-teal-dark);
+}
+.pr-h3--editorial {
+  font-family: var(--pr-font-serif);
+  font-weight: 800;
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+.pr-stat {
+  font-family: var(--pr-font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "ss01";
+  font-weight: 900;
+}
+
+/* ── HTML content (tabelas e blocos ricos no conteúdo) ──────────────── */
 .html-content table {
   border-collapse: collapse;
   width: 100%;
@@ -166,7 +332,7 @@ body {
 }
 .html-content th {
   background: var(--secondary);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--secondary-foreground);
 }
 .html-content tr:nth-child(even) td {
@@ -185,7 +351,7 @@ body {
   color: var(--foreground);
 }
 .html-content p { margin: 0.4rem 0; color: var(--foreground); }
-.html-content strong, .html-content b { font-weight: 600; }
+.html-content strong, .html-content b { font-weight: 700; }
 .html-content em, .html-content i { font-style: italic; }
 .html-content pre {
   background: var(--secondary);
@@ -196,7 +362,7 @@ body {
   font-size: 0.8rem;
 }
 .html-content blockquote {
-  border-left: 3px solid var(--border);
+  border-left: 3px solid var(--pr-teal);
   padding-left: 1rem;
   margin-left: 0;
   color: var(--muted-foreground);
