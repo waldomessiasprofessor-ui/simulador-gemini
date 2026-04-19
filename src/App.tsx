@@ -21,6 +21,7 @@ import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
 import DesafioPage from "@/DesafioPage";
 import Agenda from "@/Agenda";
+import Trilha from "@/Trilha";
 import Login from "@/Login";
 import { Loader2, AlertTriangle } from "lucide-react";
 
@@ -114,6 +115,12 @@ export default function App() {
           <Route path="/formulas"><Formulas /></Route>
           <Route path="/desafio"><DesafioPage /></Route>
           <Route path="/agenda"><Agenda /></Route>
+          <Route path="/trilha/:areaSlug/:licaoSlug">
+            {(params) => <Trilha areaSlug={params.areaSlug} licaoSlug={params.licaoSlug} />}
+          </Route>
+          <Route path="/trilha/:areaSlug">
+            {(params) => <Trilha areaSlug={params.areaSlug} />}
+          </Route>
           <Route path="/admin/questoes">
             {isAdmin ? <AdminQuestoes /> : <Redirect to="/" />}
           </Route>

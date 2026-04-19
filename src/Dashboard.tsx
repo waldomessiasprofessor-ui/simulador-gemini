@@ -6,9 +6,10 @@ import {
   Flame, Trophy, CheckCircle2, XCircle, ChevronRight,
   Loader2, Zap, Medal, BookOpen, Dumbbell,
   Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain, TrendingUp,
-  CalendarDays
+  CalendarDays, Sparkles
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
+import { getTrilhaByArea } from "@/trilhas";
 
 const VESTIBULARES = [
   { id: "ENEM",    label: "ENEM",        sub: "45 questões · TRI",        badge: "Nacional", color: "#009688", comingSoon: false },
@@ -473,6 +474,7 @@ function RadarPerformance() {
 
 function RadarTopicos() {
   // ── Todos os hooks ANTES de qualquer return condicional ──────────────
+  const [, navigate] = useLocation();
   const { data, isLoading, dataUpdatedAt } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true, refetchInterval: 60_000 });
   const [showInfo, setShowInfo] = useState(false);
   const [animatedData, setAnimatedData] = useState<{ area: string; pct: number; total: number }[]>([]);
@@ -637,20 +639,46 @@ function RadarTopicos() {
             <p className="text-xs" style={{ color: "#991B1B" }}>Sem dados suficientes.</p>
           ) : (
             <div className="space-y-1">
-              {weakList.map((w) => (
-                <div key={w.conteudo} className="flex items-center gap-2">
-                  <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "#991B1B" }}>
-                    {shortLabel(w.conteudo)}
-                  </span>
-                  <span className="text-xs flex-shrink-0" style={{ color: "#991B1B", opacity: 0.7 }}>
-                    {w.correct}/{w.total}
-                  </span>
-                  <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#DC2626" }}>
-                    {w.pct}%
-                  </span>
-                </div>
-              ))}
+              {weakList.map((w) => {
+                const trilha = getTrilhaByArea(w.conteudo);
+                const label = shortLabel(w.conteudo);
+                const meta = (
+                  <>
+                    <span className="text-xs font-semibold flex-1 min-w-0 truncate flex items-center gap-1" style={{ color: "#991B1B" }}>
+                      {label}
+                      {trilha && <Sparkles className="h-3 w-3 flex-shrink-0" style={{ color: "#DC2626" }} />}
+                    </span>
+                    <span className="text-xs flex-shrink-0" style={{ color: "#991B1B", opacity: 0.7 }}>
+                      {w.correct}/{w.total}
+                    </span>
+                    <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#DC2626" }}>
+                      {w.pct}%
+                    </span>
+                  </>
+                );
+                return trilha ? (
+                  <button
+                    key={w.conteudo}
+                    onClick={() => navigate(`/trilha/${trilha.slug}`)}
+                    className="w-full flex items-center gap-2 rounded-lg px-2 py-1 -mx-2 transition-colors hover:bg-white/50"
+                    title={`Abrir trilha: ${trilha.titulo}`}>
+                    {meta}
+                    <ChevronRight className="h-3 w-3 flex-shrink-0" style={{ color: "#DC2626" }} />
+                  </button>
+                ) : (
+                  <div key={w.conteudo} className="flex items-center gap-2">
+                    {meta}
+                  </div>
+                );
+              })}
             </div>
+          )}
+          {/* Dica quando há trilha */}
+          {weakList.some((w) => getTrilhaByArea(w.conteudo)) && (
+            <p className="text-xs mt-2 pt-2 border-t flex items-center gap-1"
+              style={{ color: "#991B1B", opacity: 0.8, borderColor: "#FECACA" }}>
+              <Sparkles className="h-3 w-3" /> Tem trilha disponível — clique para começar
+            </p>
           )}
         </div>
       </div>
