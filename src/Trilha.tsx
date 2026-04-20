@@ -13,18 +13,50 @@ import {
 // Botão de vídeo do YouTube — só aparece se o admin tiver cadastrado uma URL
 // para a lição em /admin/trilhas.
 // =============================================================================
+/** Extrai o ID de 11 chars de qualquer URL do YouTube. */
+function extractYoutubeId(url: string): string | null {
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  );
+  return m ? m[1] : null;
+}
+
 function VideoAulaBotao({ trilhaSlug, licaoSlug }: { trilhaSlug: string; licaoSlug: string }) {
+  const [aberto, setAberto] = useState(false);
   const { data } = trpc.trilhas.get.useQuery(
     { trilhaSlug, licaoSlug },
     { staleTime: 60_000 },
   );
   if (!data?.urlYoutube) return null;
+  const videoId = extractYoutubeId(data.urlYoutube);
+  if (!videoId) return null;
+
+  if (aberto) {
+    return (
+      <div className="rounded-xl overflow-hidden" style={{ border: "2px solid #DC2626" }}>
+        {/* Player inline */}
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+          className="w-full"
+          style={{ aspectRatio: "16/9", display: "block" }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+        <button
+          onClick={() => setAberto(false)}
+          className="w-full py-2 text-xs font-semibold"
+          style={{ background: "#FFF1F2", color: "#991B1B" }}
+        >
+          Fechar vídeo ↑
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <a
-      href={data.urlYoutube}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all hover:opacity-90"
+    <button
+      onClick={() => setAberto(true)}
+      className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all hover:opacity-90"
       style={{ background: "#FFF1F2", border: "1.5px solid #FECDD3" }}
     >
       <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -34,11 +66,11 @@ function VideoAulaBotao({ trilhaSlug, licaoSlug }: { trilhaSlug: string; licaoSl
       <div className="flex-1 min-w-0">
         <p className="font-bold text-sm" style={{ color: "#991B1B" }}>Videoaula</p>
         <p className="text-xs mt-0.5" style={{ color: "#9F1239" }}>
-          Assista no YouTube antes de praticar
+          Toque para assistir antes de praticar
         </p>
       </div>
       <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#991B1B" }} />
-    </a>
+    </button>
   );
 }
 

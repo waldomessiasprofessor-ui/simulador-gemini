@@ -41,7 +41,7 @@ function DailyCard() {
   if (daily.completed) {
     const correct = daily.correctCount ?? 0;
     return (
-      <div className="rounded-2xl p-4" style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
+      <div className="rounded-2xl p-4" style={{ background: "#E0F2F1", border: "2px solid #009688" }}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
@@ -70,7 +70,7 @@ function DailyCard() {
 
   return (
     <button onClick={() => navigate("/desafio")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
+      style={{ background: "#E0F2F1", border: "2px solid #009688" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
@@ -130,7 +130,7 @@ function StudyCard() {
 
   return (
     <button onClick={() => navigate("/revise")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "var(--pr-info-bg)", border: "1.5px solid var(--pr-info-border)" }}>
+      style={{ background: "#EFF6FF", border: "2px solid #1D4ED8" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -331,11 +331,12 @@ function RadarTabs() {
             <button
               key={t.key}
               onClick={() => setTab(t.key as "area" | "performance")}
-              className="flex-1 py-1.5 rounded-lg font-bold text-xs transition-all"
+              className="flex-1 py-2 rounded-lg font-bold text-sm transition-all"
               style={{
-                background: active ? "var(--pr-teal)" : "transparent",
+                background: active ? "#009688" : "transparent",
                 color: active ? "#fff" : "var(--muted-foreground)",
                 boxShadow: active ? "0 1px 4px rgba(0,150,136,0.35)" : "none",
+                minHeight: "44px",
               }}>
               {t.label}
             </button>
@@ -762,7 +763,7 @@ function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
 
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between"
-        style={{ background: "linear-gradient(135deg, var(--pr-teal-dark), var(--pr-teal-darker))" }}>
+        style={{ background: "linear-gradient(135deg, #00695C 0%, #004D40 100%)" }}>
         <div className="flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-white opacity-80" />
           <p className="font-bold text-sm text-white">Planner de Estudos</p>
