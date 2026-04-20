@@ -120,7 +120,7 @@ function LatexImportModal({ onImport, onClose }: {
     <>
       <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
-          style={{ background: "#fff" }}>
+          style={{ background: "var(--card)" }}>
 
           {/* Header */}
           <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
@@ -137,21 +137,21 @@ function LatexImportModal({ onImport, onClose }: {
             {/* Botão exemplo */}
             <button onClick={() => setShowExample(!showExample)}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5"
-              style={{ background: "#E0F7F4", color: "#01738d" }}>
+              style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>
               <ClipboardPaste className="h-3.5 w-3.5" />
               {showExample ? "Ocultar" : "Ver"} formato esperado
             </button>
 
             {showExample && (
               <div className="rounded-xl p-4 text-xs font-mono overflow-x-auto"
-                style={{ background: "#1A1A2E", color: "#A5F3FC", whiteSpace: "pre-wrap" }}>
+                style={{ background: "var(--pr-ink)", color: "#A5F3FC", whiteSpace: "pre-wrap" }}>
                 {FORMATO_EXEMPLO}
               </div>
             )}
 
             {/* Textarea de entrada */}
             <div>
-              <label className="text-sm font-bold block mb-2" style={{ color: "#1A1A2E" }}>
+              <label className="text-sm font-bold block mb-2" style={{ color: "var(--foreground)" }}>
                 Cole aqui a questão gerada pela IA:
               </label>
               <textarea
@@ -160,18 +160,18 @@ function LatexImportModal({ onImport, onClose }: {
                 onChange={(e) => { setText(e.target.value); setPreview(null); }}
                 placeholder={`Cole o texto da questão aqui...\n\nO formato mínimo necessário é:\nENUNCIADO: ...\nA) ...\nB) ...\nC) ...\nD) ...\nE) ...\nGABARITO: X`}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
-                style={{ border: "1.5px solid #E2D9EE", resize: "vertical", color: "#1A1A2E" }}
+                style={{ border: "1.5px solid var(--border)", resize: "vertical", color: "var(--foreground)", background: "var(--card)" }}
               />
             </div>
 
             {/* Preview */}
             {preview && (
               <div className="rounded-xl p-4 space-y-3"
-                style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
-                <div className="flex items-center gap-2 text-sm font-bold" style={{ color: "#166534" }}>
+                style={{ background: "var(--pr-success-bg)", border: "1.5px solid #86EFAC" }}>
+                <div className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--pr-success)" }}>
                   <CheckCircle2 className="h-4 w-4" /> Prévia detectada — confirme antes de importar
                 </div>
-                <div className="space-y-1 text-xs" style={{ color: "#1A1A2E" }}>
+                <div className="space-y-1 text-xs" style={{ color: "var(--foreground)" }}>
                   {preview.conteudo_principal && <p><b>Conteúdo:</b> {preview.conteudo_principal}</p>}
                   {preview.ano && <p><b>Ano:</b> {preview.ano}</p>}
                   {preview.nivel_dificuldade && <p><b>Dificuldade:</b> {preview.nivel_dificuldade}</p>}
@@ -194,7 +194,7 @@ function LatexImportModal({ onImport, onClose }: {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 flex gap-3 flex-shrink-0" style={{ borderTop: "1px solid #E2D9EE" }}>
+          <div className="px-6 py-4 flex gap-3 flex-shrink-0" style={{ borderTop: "1px solid var(--border)" }}>
             {!preview ? (
               <button onClick={handleParse} disabled={!text.trim()}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white disabled:opacity-40"
@@ -209,7 +209,7 @@ function LatexImportModal({ onImport, onClose }: {
               </button>
             )}
             <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-sm"
-              style={{ background: "#F1F5F9", color: "#64748B" }}>
+              style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
               Cancelar
             </button>
           </div>
@@ -330,7 +330,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
-        style={{ background: "#fff" }}>
+        style={{ background: "var(--card)" }}>
 
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
@@ -352,8 +352,8 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                 <Sparkles className="h-8 w-8 text-yellow-300" />
               </div>
               <div>
-                <p className="font-bold text-lg" style={{ color: "#1A1A2E" }}>Auditar com Gemini</p>
-                <p className="text-sm mt-1" style={{ color: "#64748B" }}>
+                <p className="font-bold text-lg" style={{ color: "var(--foreground)" }}>Auditar com Gemini</p>
+                <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
                   O Gemini vai analisar esta questão, identificar a disciplina e sugerir correções que você poderá revisar e aplicar com um clique.
                 </p>
               </div>
@@ -370,21 +370,21 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
           {auditMutation.isPending && (
             <div className="text-center py-10 space-y-3">
               <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#521F80" }} />
-              <p className="text-sm font-semibold" style={{ color: "#64748B" }}>Gemini analisando a questão...</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>Gemini analisando a questão...</p>
               <p className="text-xs" style={{ color: "#94A3B8" }}>Isso pode levar alguns segundos</p>
             </div>
           )}
 
           {/* Erro */}
           {auditMutation.error && (
-            <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
-              <div className="flex items-center gap-2 font-bold text-sm" style={{ color: "#991B1B" }}>
+            <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--pr-danger-bg)", border: "1.5px solid #FECACA" }}>
+              <div className="flex items-center gap-2 font-bold text-sm" style={{ color: "var(--pr-danger)" }}>
                 <AlertTriangle className="h-4 w-4" /> Erro na auditoria
               </div>
-              <p className="text-sm" style={{ color: "#991B1B" }}>{auditMutation.error.message}</p>
+              <p className="text-sm" style={{ color: "var(--pr-danger)" }}>{auditMutation.error.message}</p>
               <button onClick={() => auditMutation.mutate({ id: questionId }, { onSuccess: (d) => onAuditSuccess(d.audit as AuditResult) })}
                 className="text-xs font-bold px-3 py-1.5 rounded-lg mt-1"
-                style={{ background: "#FECACA", color: "#991B1B" }}>
+                style={{ background: "#FECACA", color: "var(--pr-danger)" }}>
                 Tentar novamente
               </button>
             </div>
@@ -408,7 +408,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     </span>
                     {!isMath && (
                       <span className="px-2 py-0.5 rounded-full text-xs font-bold"
-                        style={{ background: "#FEF2F2", color: "#991B1B", border: "1px solid #FECACA" }}>
+                        style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)", border: "1px solid #FECACA" }}>
                         ⚠️ Fora do escopo
                       </span>
                     )}
@@ -424,9 +424,9 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                 <div className="rounded-xl p-4 space-y-3"
                   style={{ background: "#FFF5F5", border: "2px solid #FFCDD2" }}>
                   <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "#C62828" }} />
+                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "var(--pr-danger)" }} />
                     <div>
-                      <p className="text-sm font-bold" style={{ color: "#C62828" }}>
+                      <p className="text-sm font-bold" style={{ color: "var(--pr-danger)" }}>
                         Esta questão não é de Matemática
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "#E57373" }}>
@@ -438,12 +438,12 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     <button
                       onClick={() => setConfirmDelete(true)}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
-                      style={{ background: "#FFCDD2", color: "#C62828", border: "1.5px solid #EF9A9A" }}>
+                      style={{ background: "#FFCDD2", color: "var(--pr-danger)", border: "1.5px solid #EF9A9A" }}>
                       <Trash2 className="h-4 w-4" /> Excluir esta questão
                     </button>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-xs font-bold text-center" style={{ color: "#C62828" }}>
+                      <p className="text-xs font-bold text-center" style={{ color: "var(--pr-danger)" }}>
                         Tem certeza? Esta ação é irreversível.
                       </p>
                       <div className="flex gap-2">
@@ -460,7 +460,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                         <button
                           onClick={() => setConfirmDelete(false)}
                           className="flex-1 py-2.5 rounded-xl text-sm font-bold"
-                          style={{ background: "#F1F5F9", color: "#64748B" }}>
+                          style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
                           Cancelar
                         </button>
                       </div>
@@ -471,14 +471,14 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
               {/* Nota + Parecer */}
               <div className="rounded-xl p-4 flex items-start gap-4"
-                style={{ background: "#F8FAFC", border: "1.5px solid #E2E8F0" }}>
+                style={{ background: "var(--muted)", border: "1.5px solid var(--border)" }}>
                 <div className="h-14 w-14 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl font-black"
                   style={{ background: nota_cor(audit.nota_qualidade), color: "#fff" }}>
                   {audit.nota_qualidade}
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase" style={{ color: "#94A3B8" }}>Nota de qualidade</p>
-                  <p className="text-sm mt-1" style={{ color: "#1A1A2E" }}>{audit.parecer}</p>
+                  <p className="text-sm mt-1" style={{ color: "var(--foreground)" }}>{audit.parecer}</p>
                 </div>
               </div>
 
@@ -489,14 +489,14 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                   border: `1.5px solid ${audit.gabarito_correto ? "#86EFAC" : "#FECACA"}`
                 }}>
                 {audit.gabarito_correto
-                  ? <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "#166534" }} />
-                  : <ThumbsDown className="h-5 w-5 flex-shrink-0" style={{ color: "#991B1B" }} />}
+                  ? <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-success)" }} />
+                  : <ThumbsDown className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-danger)" }} />}
                 <div>
                   <p className="text-sm font-bold" style={{ color: audit.gabarito_correto ? "#166534" : "#991B1B" }}>
                     {audit.gabarito_correto ? "Gabarito correto ✓" : "Gabarito possivelmente incorreto!"}
                   </p>
                   {!audit.gabarito_correto && audit.gabarito_sugerido && (
-                    <p className="text-xs mt-0.5" style={{ color: "#991B1B" }}>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--pr-danger)" }}>
                       Gabarito sugerido pelo Gemini: <b>{audit.gabarito_sugerido}</b>
                     </p>
                   )}
@@ -519,7 +519,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
               {/* Tags */}
               <div className="rounded-xl p-4"
                 style={{
-                  background: audit.tags_atuais_corretas ? "#F0FDF4" : "#EFF6FF",
+                  background: audit.tags_atuais_corretas ? "var(--pr-success-bg)" : "var(--pr-info-bg)",
                   border: `1.5px solid ${audit.tags_atuais_corretas ? "#86EFAC" : "#93C5FD"}`
                 }}>
                 <div className="flex items-center gap-2 mb-2">
@@ -532,7 +532,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                   <div className="flex flex-wrap gap-1.5">
                     {audit.tags_sugeridas.map((tag) => (
                       <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                        style={{ background: "#DBEAFE", color: "#1D4ED8", border: "1px solid #93C5FD" }}>
+                        style={{ background: "#DBEAFE", color: "var(--pr-info)", border: "1px solid #93C5FD" }}>
                         {tag}
                       </span>
                     ))}
@@ -542,8 +542,8 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
               {/* Problemas */}
               {audit.problemas?.length > 0 && (
-                <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
-                  <p className="text-xs font-bold uppercase" style={{ color: "#991B1B" }}>Problemas encontrados</p>
+                <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--pr-danger-bg)", border: "1.5px solid #FECACA" }}>
+                  <p className="text-xs font-bold uppercase" style={{ color: "var(--pr-danger)" }}>Problemas encontrados</p>
                   <ul className="space-y-1">
                     {audit.problemas.map((p, i) => (
                       <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#7F1D1D" }}>
@@ -556,8 +556,8 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
               {/* Sugestões */}
               {audit.sugestoes?.length > 0 && (
-                <div className="rounded-xl p-4 space-y-2" style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
-                  <p className="text-xs font-bold uppercase" style={{ color: "#166534" }}>Sugestões de melhoria</p>
+                <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--pr-success-bg)", border: "1.5px solid #86EFAC" }}>
+                  <p className="text-xs font-bold uppercase" style={{ color: "var(--pr-success)" }}>Sugestões de melhoria</p>
                   <ul className="space-y-1">
                     {audit.sugestoes.map((s, i) => (
                       <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#14532D" }}>
@@ -577,19 +577,19 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     <p className="text-sm font-bold text-white">Correções sugeridas — selecione o que aplicar</p>
                   </div>
 
-                  <div style={{ borderTop: "1px solid #E2D9EE" }}>
+                  <div style={{ borderTop: "1px solid var(--border)" }}>
                     {!audit.gabarito_correto && audit.gabarito_sugerido && (
-                      <div className="px-4 py-4" style={{ borderBottom: "1px solid #E2D9EE" }}>
+                      <div className="px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.gabarito}
                             onChange={(e) => setApply((a) => ({ ...a, gabarito: e.target.checked }))}
                             className="h-4 w-4 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <ThumbsDown className="h-4 w-4" style={{ color: "#991B1B" }} />
-                              <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Corrigir gabarito</p>
+                              <ThumbsDown className="h-4 w-4" style={{ color: "var(--pr-danger)" }} />
+                              <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Corrigir gabarito</p>
                             </div>
-                            <p className="text-xs mt-1" style={{ color: "#64748B" }}>
+                            <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
                               Sugerido: <b className="text-green-700">{audit.gabarito_sugerido}</b>
                             </p>
                           </div>
@@ -598,18 +598,18 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     )}
 
                     {!audit.dificuldade_compativel && (
-                      <div className="px-4 py-4" style={{ borderBottom: "1px solid #E2D9EE" }}>
+                      <div className="px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                         <label className="flex items-center gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.dificuldade}
                             onChange={(e) => setApply((a) => ({ ...a, dificuldade: e.target.checked }))}
                             className="h-4 w-4 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <Info className="h-4 w-4" style={{ color: "#92400E" }} />
-                              <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Ajustar dificuldade</p>
+                              <Info className="h-4 w-4" style={{ color: "var(--pr-warn)" }} />
+                              <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Ajustar dificuldade</p>
                             </div>
-                            <p className="text-xs mt-1" style={{ color: "#64748B" }}>
-                              Dificuldade real: <b style={{ color: "#92400E" }}>{audit.dificuldade_real}</b>
+                            <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
+                              Dificuldade real: <b style={{ color: "var(--pr-warn)" }}>{audit.dificuldade_real}</b>
                             </p>
                           </div>
                         </label>
@@ -617,23 +617,23 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     )}
 
                     {!audit.tags_atuais_corretas && audit.tags_sugeridas?.length > 0 && (
-                      <div className="px-4 py-4" style={{ borderBottom: "1px solid #E2D9EE" }}>
+                      <div className="px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
                         <label className="flex items-start gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.tags}
                             onChange={(e) => setApply((a) => ({ ...a, tags: e.target.checked }))}
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <Tag className="h-4 w-4" style={{ color: "#01738d" }} />
-                              <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Atualizar tags de conteúdo</p>
+                              <Tag className="h-4 w-4" style={{ color: "var(--pr-teal-dark)" }} />
+                              <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Atualizar tags de conteúdo</p>
                             </div>
-                            <p className="text-xs mt-0.5 mb-2" style={{ color: "#64748B" }}>
+                            <p className="text-xs mt-0.5 mb-2" style={{ color: "var(--muted-foreground)" }}>
                               Tags atuais estão incorretas ou incompletas. O Gemini sugere:
                             </p>
                             <div className="flex flex-wrap gap-1.5 mt-1">
                               {audit.tags_sugeridas.map((tag) => (
                                 <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                                  style={{ background: "#E0F7F4", color: "#01738d", border: "1px solid #01738d44" }}>
+                                  style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)", border: "1px solid #01738d44" }}>
                                   {tag}
                                 </span>
                               ))}
@@ -644,24 +644,24 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     )}
 
                     {audit.enunciado_reescrito && (
-                      <div className="px-4 py-4 space-y-3" style={{ borderBottom: "1px solid #E2D9EE" }}>
+                      <div className="px-4 py-4 space-y-3" style={{ borderBottom: "1px solid var(--border)" }}>
                         <label className="flex items-start gap-3 cursor-pointer">
                           <input type="checkbox" checked={apply.enunciado}
                             onChange={(e) => setApply((a) => ({ ...a, enunciado: e.target.checked }))}
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4" style={{ color: "#166534" }} />
-                              <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Aplicar enunciado melhorado</p>
+                              <CheckCircle2 className="h-4 w-4" style={{ color: "var(--pr-success)" }} />
+                              <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Aplicar enunciado melhorado</p>
                             </div>
-                            <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>Edite abaixo antes de aplicar se desejar</p>
+                            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Edite abaixo antes de aplicar se desejar</p>
                           </div>
                         </label>
                         {apply.enunciado && (
                           <textarea rows={5} value={enunciadoPreview}
                             onChange={(e) => setEnunciadoPreview(e.target.value)}
                             className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-vertical"
-                            style={{ border: "1.5px solid #521F8060", background: "#FAFAFA", color: "#1A1A2E" }} />
+                            style={{ border: "1.5px solid #521F8060", background: "var(--muted)", color: "var(--foreground)" }} />
                         )}
                       </div>
                     )}
@@ -674,23 +674,23 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4" style={{ color: "#166534" }} />
-                              <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>Aplicar resolução melhorada</p>
+                              <CheckCircle2 className="h-4 w-4" style={{ color: "var(--pr-success)" }} />
+                              <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Aplicar resolução melhorada</p>
                             </div>
-                            <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>Edite abaixo antes de aplicar se desejar</p>
+                            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Edite abaixo antes de aplicar se desejar</p>
                           </div>
                         </label>
                         {apply.resolucao && (
                           <textarea rows={4} value={resolucaoPreview}
                             onChange={(e) => setResolucaoPreview(e.target.value)}
                             className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-vertical"
-                            style={{ border: "1.5px solid #521F8060", background: "#FAFAFA", color: "#1A1A2E" }} />
+                            style={{ border: "1.5px solid #521F8060", background: "var(--muted)", color: "var(--foreground)" }} />
                         )}
                       </div>
                     )}
                   </div>
 
-                  <div className="px-4 py-4" style={{ background: "#F8F4FF", borderTop: "1px solid #E2D9EE" }}>
+                  <div className="px-4 py-4" style={{ background: "var(--muted)", borderTop: "1px solid var(--border)" }}>
                     <button onClick={handleApply} disabled={applyMutation.isPending}
                       className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white"
                       style={{ background: applyMutation.isPending ? "#9CA3AF" : "linear-gradient(135deg, #521F80, #01738d)", cursor: applyMutation.isPending ? "not-allowed" : "pointer" }}>
@@ -699,7 +699,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                         : <><Sparkles className="h-4 w-4" /> Aplicar correções selecionadas</>}
                     </button>
                     {applyMutation.isSuccess && (
-                      <p className="text-center text-xs mt-2 font-semibold" style={{ color: "#166534" }}>
+                      <p className="text-center text-xs mt-2 font-semibold" style={{ color: "var(--pr-success)" }}>
                         ✅ Correções aplicadas! A questão foi atualizada no banco.
                       </p>
                     )}
@@ -709,9 +709,9 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
               {!hasCorrections && isMath && (
                 <div className="rounded-xl p-4 flex items-center gap-3"
-                  style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
-                  <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "#166534" }} />
-                  <p className="text-sm font-bold" style={{ color: "#166534" }}>
+                  style={{ background: "var(--pr-success-bg)", border: "1.5px solid #86EFAC" }}>
+                  <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-success)" }} />
+                  <p className="text-sm font-bold" style={{ color: "var(--pr-success)" }}>
                     Questão aprovada! O Gemini não identificou correções necessárias.
                   </p>
                 </div>
@@ -720,16 +720,16 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
               {/* Auditar novamente */}
               <button onClick={() => { auditMutation.reset(); applyMutation.reset(); setConfirmDelete(false); }}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
-                style={{ background: "#F1F5F9", color: "#64748B" }}>
+                style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
                 <Sparkles className="h-4 w-4" /> Auditar novamente
               </button>
             </div>
           )}
         </div>
 
-        <div className="px-6 py-4 flex-shrink-0" style={{ borderTop: "1px solid #E2D9EE" }}>
+        <div className="px-6 py-4 flex-shrink-0" style={{ borderTop: "1px solid var(--border)" }}>
           <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold"
-            style={{ background: "#F1F5F9", color: "#64748B" }}>
+            style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
             Fechar
           </button>
         </div>
@@ -747,7 +747,7 @@ function InlineImageInsert({ onInsert }: { onInsert: (tag: string) => void }) {
       <button type="button" disabled={loading}
         onClick={() => ref.current?.click()}
         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
-        style={{ background: "#E0F7F4", color: "#01738d", border: "1.5px solid #01738d44" }}>
+        style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)", border: "1.5px solid #01738d44" }}>
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
         Inserir imagem
       </button>
@@ -775,7 +775,7 @@ function AltImageUpload({ currentUrl, onUpload }: { currentUrl: string | null; o
         onClick={() => ref.current?.click()}
         title={currentUrl ? "Trocar imagem" : "Adicionar imagem à alternativa"}
         className="flex-shrink-0 p-2 rounded-lg"
-        style={{ background: currentUrl ? "#E0F7F4" : "#F8FAFC", border: "1.5px solid #E2D9EE", color: "#01738d" }}>
+        style={{ background: currentUrl ? "#E0F7F4" : "#F8FAFC", border: "1.5px solid var(--border)", color: "var(--pr-teal-dark)" }}>
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
       </button>
       <input ref={ref} type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -917,7 +917,7 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (url: 
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold flex-shrink-0"
-          style={{ background: "var(--teal-soft)", color: "#01738d", border: "1.5px solid #01738d44" }}>
+          style={{ background: "var(--teal-soft)", color: "var(--pr-teal-dark)", border: "1.5px solid #01738d44" }}>
           {uploading
             ? <Loader2 className="h-4 w-4 animate-spin" />
             : <ImageUp className="h-4 w-4" />}
@@ -1102,8 +1102,8 @@ export default function AdminQuestoes() {
   const filtered = data?.questions ?? [];
 
   const inputClass = "w-full px-3 py-2 rounded-lg text-sm outline-none";
-  const inputStyle = { border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" };
-  const labelStyle: React.CSSProperties = { color: "#1A1A2E", fontSize: "0.8rem", fontWeight: 600, display: "block", marginBottom: 4 };
+  const inputStyle = { border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" };
+  const labelStyle: React.CSSProperties = { color: "var(--foreground)", fontSize: "0.8rem", fontWeight: 600, display: "block", marginBottom: 4 };
 
   return (
     <div className="space-y-6 py-2">
@@ -1165,7 +1165,7 @@ export default function AdminQuestoes() {
         {!confirmDelete ? (
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-sm font-bold" style={{ color: "#C62828" }}>Zona de perigo</p>
+              <p className="text-sm font-bold" style={{ color: "var(--pr-danger)" }}>Zona de perigo</p>
               <p className="text-xs mt-0.5" style={{ color: "#E57373" }}>
                 Excluir todas as questões é irreversível. Use para auditar o banco ano a ano.
               </p>
@@ -1173,7 +1173,7 @@ export default function AdminQuestoes() {
             <button
               onClick={() => setConfirmDelete(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
-              style={{ background: "#FFCDD2", color: "#C62828", border: "1.5px solid #EF9A9A" }}
+              style={{ background: "#FFCDD2", color: "var(--pr-danger)", border: "1.5px solid #EF9A9A" }}
             >
               <Trash2 className="h-4 w-4" />
               Excluir todas as questões
@@ -1181,7 +1181,7 @@ export default function AdminQuestoes() {
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm font-bold" style={{ color: "#C62828" }}>
+            <p className="text-sm font-bold" style={{ color: "var(--pr-danger)" }}>
               Confirme a senha para excluir todas as questões permanentemente.
             </p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -1191,7 +1191,7 @@ export default function AdminQuestoes() {
                 onChange={(e) => setDeletePassword(e.target.value)}
                 placeholder="Digite a senha de confirmação"
                 className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
-                style={{ border: "1.5px solid #EF9A9A", background: "#fff", color: "#1A1A2E", minWidth: 220 }}
+                style={{ border: "1.5px solid #EF9A9A", background: "var(--card)", color: "var(--foreground)", minWidth: 220 }}
                 onFocus={(e) => (e.target.style.borderColor = "#C62828")}
                 onBlur={(e) => (e.target.style.borderColor = "#EF9A9A")}
                 onKeyDown={(e) => {
@@ -1221,7 +1221,7 @@ export default function AdminQuestoes() {
               <button
                 onClick={() => { setConfirmDelete(false); setDeletePassword(""); }}
                 className="px-4 py-2 rounded-xl text-sm font-bold"
-                style={{ background: "#F1F5F9", color: "#64748B" }}
+                style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
               >
                 Cancelar
               </button>
@@ -1234,7 +1234,7 @@ export default function AdminQuestoes() {
       {showForm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
-            style={{ background: "#fff" }}>
+            style={{ background: "var(--card)" }}>
 
             {/* Header do modal */}
             <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
@@ -1264,15 +1264,15 @@ export default function AdminQuestoes() {
               <input className={inputClass} style={inputStyle} value={form.conteudo_principal}
                 onChange={(e) => setForm({ ...form, conteudo_principal: e.target.value })}
                 placeholder="Ex: Logaritmos"
-                onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-                onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+                onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
             </div>
             <div>
               <label style={labelStyle}>Ano</label>
               <input className={inputClass} style={inputStyle} type="number" value={form.ano}
                 onChange={(e) => setForm({ ...form, ano: Number(e.target.value) })}
-                onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-                onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+                onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
             </div>
             <div>
               <label style={labelStyle}>Dificuldade</label>
@@ -1286,7 +1286,7 @@ export default function AdminQuestoes() {
           {/* Tags de conteúdo */}
           <div>
             <label style={{ ...labelStyle, display: "flex", alignItems: "center", gap: 6 }}>
-              <Tag className="h-3.5 w-3.5" style={{ color: "#01738d" }} />
+              <Tag className="h-3.5 w-3.5" style={{ color: "var(--pr-teal-dark)" }} />
               Tags de conteúdo
               <span style={{ fontWeight: 400, color: "#94A3B8", fontSize: "0.75rem" }}>
                 — clique para selecionar (pode escolher várias)
@@ -1300,14 +1300,14 @@ export default function AdminQuestoes() {
                     className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                     style={selected
                       ? { background: "#01738d", color: "#fff", border: "1.5px solid #01738d" }
-                      : { background: "#fff", color: "#01738d", border: "1.5px solid #01738d" }}>
+                      : { background: "var(--card)", color: "var(--pr-teal-dark)", border: "1.5px solid #01738d" }}>
                     {selected ? "✓ " : ""}{tag}
                   </button>
                 );
               })}
             </div>
             {form.tags.length > 0 && (
-              <p className="text-xs mt-2" style={{ color: "#64748B" }}>
+              <p className="text-xs mt-2" style={{ color: "var(--muted-foreground)" }}>
                 Selecionadas: {form.tags.join(", ")}
               </p>
             )}
@@ -1331,8 +1331,8 @@ export default function AdminQuestoes() {
               value={form.enunciado}
               onChange={(e) => setForm({ ...form, enunciado: e.target.value })}
               placeholder="Texto do enunciado... Use o botão 'Inserir imagem' para colocar imagens onde quiser."
-              onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-              onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+              onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
             <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>
               Use <code style={{ fontSize: 11 }}>[Imagem: url]</code> para inserir imagens dentro do texto. O botão acima faz isso automaticamente.
             </p>
@@ -1356,7 +1356,7 @@ export default function AdminQuestoes() {
                 return (
                   <div key={letra} className="space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "#01738d" }}>{letra}</span>
+                      <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "var(--pr-teal-dark)" }}>{letra}</span>
                       <input className={inputClass} style={{ ...inputStyle, flex: 1 }}
                         value={getAltText(altVal)}
                         onChange={(e) => {
@@ -1364,8 +1364,8 @@ export default function AdminQuestoes() {
                           setForm(f => ({ ...f, alternativas: { ...f.alternativas, [letra]: file ? { text: e.target.value, file } : e.target.value } }));
                         }}
                         placeholder={`Alternativa ${letra} — texto opcional se tiver imagem`}
-                        onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-                        onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+                        onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                        onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
                       <AltImageUpload
                         currentUrl={altFile}
                         onUpload={(url) => {
@@ -1378,7 +1378,7 @@ export default function AdminQuestoes() {
                       <div className="ml-7 flex items-center gap-2">
                         <img src={altFile} alt={`Alternativa ${letra}`}
                           className="max-h-20 rounded-lg object-contain"
-                          style={{ border: "1px solid #E2D9EE" }} />
+                          style={{ border: "1px solid var(--border)" }} />
                         <button type="button" onClick={() => {
                           const text = getAltText(altVal);
                           setForm(f => ({ ...f, alternativas: { ...f.alternativas, [letra]: text } }));
@@ -1411,8 +1411,8 @@ export default function AdminQuestoes() {
                       value={form[p]}
                       onChange={(e) => setForm({ ...form, [p]: Number(e.target.value) })}
                       placeholder={["a", "b", "c"][i]}
-                      onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-                      onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+                      onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
                   </div>
                 ))}
               </div>
@@ -1426,8 +1426,8 @@ export default function AdminQuestoes() {
               value={form.comentario_resolucao}
               onChange={(e) => setForm({ ...form, comentario_resolucao: e.target.value })}
               placeholder="Passo a passo da resolução..."
-              onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-              onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+              onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
           </div>
 
           {/* Vídeo de resolução */}
@@ -1436,8 +1436,8 @@ export default function AdminQuestoes() {
             <input className={inputClass} style={inputStyle} value={form.url_video}
               onChange={(e) => setForm({ ...form, url_video: e.target.value })}
               placeholder="https://www.youtube.com/watch?v=..."
-              onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-              onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+              onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
           </div>
 
           <div className="flex gap-3 pt-1">
@@ -1448,7 +1448,7 @@ export default function AdminQuestoes() {
                 {editId ? "Salvar alterações" : "Criar questão"}
               </button>
               <button onClick={resetForm} className="px-5 py-2.5 rounded-xl font-bold text-sm"
-                style={{ background: "#F1F5F9", color: "#64748B" }}>
+                style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
                 Cancelar
               </button>
             </div>
@@ -1464,14 +1464,14 @@ export default function AdminQuestoes() {
           <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Buscar por conteúdo..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
-            style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
-            onFocus={(e) => (e.target.style.borderColor = "#01738d")}
-            onBlur={(e) => (e.target.style.borderColor = "#E2D9EE")} />
+            style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
+            onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
         </div>
 
         {/* Filtro por tag */}
         <div>
-          <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "#64748B" }}>
+          <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
             <Tag className="h-3.5 w-3.5" /> Filtrar por tag:
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -1480,7 +1480,7 @@ export default function AdminQuestoes() {
                 className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
                 style={filterTag === tag
                   ? { background: "#01738d", color: "#fff" }
-                  : { background: "#E0F7F4", color: "#01738d" }}>
+                  : { background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>
                 {tag}
               </button>
             ))}
@@ -1489,7 +1489,7 @@ export default function AdminQuestoes() {
       </div>
 
       {/* Contador */}
-      <p className="text-sm" style={{ color: "#64748B" }}>
+      <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
         {data?.pagination.total ?? filtered.length} questão(ões)
         {filterTag !== "Todas" ? ` com tag "${filterTag}"` : ""}
         {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
@@ -1498,7 +1498,7 @@ export default function AdminQuestoes() {
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#01738d" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal-dark)" }} />
         </div>
       ) : (
         <div className="space-y-2">
@@ -1508,19 +1508,19 @@ export default function AdminQuestoes() {
 
             return (
               <div key={q.id} className="rounded-xl overflow-hidden"
-                style={{ border: "1.5px solid #E2D9EE", background: q.active ? "#fff" : "#F8FAFC", opacity: q.active ? 1 : 0.6 }}>
+                style={{ border: "1.5px solid var(--border)", background: q.active ? "#fff" : "#F8FAFC", opacity: q.active ? 1 : 0.6 }}>
 
                 <div className="flex items-center gap-3 px-4 py-3">
                   <button onClick={() => setOpenId(isOpen ? null : q.id)} className="flex-1 flex items-start gap-3 text-left">
                     <span className="text-xs font-bold w-8 flex-shrink-0 mt-0.5" style={{ color: "#94A3B8" }}>#{q.id}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: "#1A1A2E" }}>{q.conteudo_principal}</p>
+                      <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{q.conteudo_principal}</p>
                       <p className="text-xs" style={{ color: "#94A3B8" }}>{q.fonte} {q.ano} · {q.nivel_dificuldade} · Gabarito: {q.gabarito}</p>
                       {qTags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {qTags.map((tag: string) => (
                             <span key={tag} className="text-xs px-2 py-0.5 rounded-full font-medium"
-                              style={{ background: "#E0F7F4", color: "#00897B" }}>
+                              style={{ background: "var(--pr-teal-soft)", color: "#00897B" }}>
                               {tag}
                             </span>
                           ))}
@@ -1552,7 +1552,7 @@ export default function AdminQuestoes() {
                       <Sparkles className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                     </button>
                     <button onClick={() => startEdit(q)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
-                      <Pencil className="h-3.5 w-3.5" style={{ color: "#01738d" }} />
+                      <Pencil className="h-3.5 w-3.5" style={{ color: "var(--pr-teal-dark)" }} />
                     </button>
                     <button onClick={() => toggleMutation.mutate({ id: q.id, active: !q.active })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title={q.active ? "Desativar" : "Ativar"}>
@@ -1572,7 +1572,7 @@ export default function AdminQuestoes() {
                         <button
                           onClick={() => setDeleteConfirmId(null)}
                           className="px-2 py-0.5 rounded-lg text-xs font-bold"
-                          style={{ background: "#F1F5F9", color: "#64748B" }}>
+                          style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
                           Não
                         </button>
                       </div>
@@ -1586,12 +1586,12 @@ export default function AdminQuestoes() {
                 </div>
 
                 {isOpen && (
-                  <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid #E2D9EE" }}>
+                  <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
                     <div className="pt-3">
                       <LatexRenderer fontSize="sm">{q.enunciado}</LatexRenderer>
                     </div>
                     {q.url_imagem && (
-                      <img src={q.url_imagem} alt="" className="max-w-full rounded-lg" style={{ border: "1px solid #E2D9EE" }} />
+                      <img src={q.url_imagem} alt="" className="max-w-full rounded-lg" style={{ border: "1px solid var(--border)" }} />
                     )}
                     <div className="space-y-1">
                       {Object.entries(q.alternativas as Record<string, any>).sort().filter(([, value]) => value !== null && value !== "").map(([id, value]) => {
@@ -1610,8 +1610,8 @@ export default function AdminQuestoes() {
                       })}
                     </div>
                     {q.comentario_resolucao && (
-                      <div className="rounded-lg p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
-                        <p className="text-xs font-bold mb-1" style={{ color: "#1D4ED8" }}>Resolução</p>
+                      <div className="rounded-lg p-3" style={{ background: "var(--pr-info-bg)", border: "1px solid #BFDBFE" }}>
+                        <p className="text-xs font-bold mb-1" style={{ color: "var(--pr-info)" }}>Resolução</p>
                         <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                       </div>
                     )}
@@ -1641,7 +1641,7 @@ export default function AdminQuestoes() {
             disabled={page === 1}
             title="Primeira página"
             className="px-2.5 py-2 rounded-xl text-sm font-bold disabled:opacity-40 transition-opacity"
-            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            style={{ background: "var(--muted)", color: "var(--foreground)" }}>
             «
           </button>
 
@@ -1650,7 +1650,7 @@ export default function AdminQuestoes() {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity"
-            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            style={{ background: "var(--muted)", color: "var(--foreground)" }}>
             Anterior
           </button>
 
@@ -1677,9 +1677,9 @@ export default function AdminQuestoes() {
                 }
               }}
               className="w-14 text-center py-2 rounded-xl text-sm font-semibold outline-none"
-              style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
+              style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
             />
-            <span className="text-sm" style={{ color: "#64748B" }}>
+            <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>
               / {data.pagination.totalPages}
             </span>
           </div>
@@ -1689,7 +1689,7 @@ export default function AdminQuestoes() {
             onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))}
             disabled={page === data.pagination.totalPages}
             className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity"
-            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            style={{ background: "var(--muted)", color: "var(--foreground)" }}>
             Próxima
           </button>
 
@@ -1699,7 +1699,7 @@ export default function AdminQuestoes() {
             disabled={page === data.pagination.totalPages}
             title="Última página"
             className="px-2.5 py-2 rounded-xl text-sm font-bold disabled:opacity-40 transition-opacity"
-            style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+            style={{ background: "var(--muted)", color: "var(--foreground)" }}>
             »
           </button>
 

@@ -153,18 +153,18 @@ export default function AdminFormulas() {
           {/* Banner de edição */}
           {editId && (
             <div className="rounded-xl px-4 py-3 flex items-center gap-3"
-              style={{ background: "#FFF3E0", border: "1.5px solid #E65100" }}>
-              <Pencil className="h-4 w-4 flex-shrink-0" style={{ color: "#E65100" }} />
+              style={{ background: "var(--pr-warn-bg)", border: "1.5px solid var(--pr-warn-border)" }}>
+              <Pencil className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-warn)" }} />
               <div className="flex-1">
-                <p className="text-sm font-bold" style={{ color: "#E65100" }}>
+                <p className="text-sm font-bold" style={{ color: "var(--pr-warn)" }}>
                   Modo edição — fórmula #{editId}
                 </p>
-                <p className="text-xs" style={{ color: "#BF360C" }}>
+                <p className="text-xs" style={{ color: "var(--pr-warn)" }}>
                   Altere os campos abaixo e clique em "Salvar alterações"
                 </p>
               </div>
               <button onClick={resetForm} className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-                style={{ background: "#E65100", color: "#fff" }}>
+                style={{ background: "var(--pr-warn)", color: "#fff" }}>
                 Cancelar
               </button>
             </div>
@@ -239,7 +239,7 @@ export default function AdminFormulas() {
               <label style={labelStyle}>Fórmula (LaTeX — use $$...$$)</label>
               <button onClick={() => setPreview((v) => !v)}
                 className="text-xs font-semibold flex items-center gap-1"
-                style={{ color: "#009688" }}>
+                style={{ color: "var(--pr-teal)" }}>
                 <FlaskConical className="h-3.5 w-3.5" />
                 {preview ? "Editar" : "Pré-visualizar"}
               </button>
@@ -269,7 +269,7 @@ export default function AdminFormulas() {
           <div className="flex gap-3">
             <button onClick={handleSubmit} disabled={isPending}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white"
-              style={{ background: "#009688" }}>
+              style={{ background: "var(--pr-teal)" }}>
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {editId ? "Salvar alterações" : "Criar fórmula"}
             </button>
@@ -284,7 +284,7 @@ export default function AdminFormulas() {
       {/* Lista agrupada por seção */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
         </div>
       ) : Object.keys(grouped).length === 0 ? (
         <div className="text-center py-16" style={{ color: "var(--muted-foreground)" }}>
@@ -323,17 +323,17 @@ export default function AdminFormulas() {
 
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button onClick={() => startEdit(f)} className="p-1.5 rounded-lg hover:opacity-70" title="Editar">
-                            <Pencil className="h-3.5 w-3.5" style={{ color: "#009688" }} />
+                            <Pencil className="h-3.5 w-3.5" style={{ color: "var(--pr-teal)" }} />
                           </button>
                           <button onClick={() => toggleMutation.mutate({ id: f.id, active: !f.active })}
                             className="p-1.5 rounded-lg hover:opacity-70" title={f.active ? "Desativar" : "Ativar"}>
                             {f.active
-                              ? <EyeOff className="h-3.5 w-3.5" style={{ color: "#F57F17" }} />
-                              : <Eye className="h-3.5 w-3.5" style={{ color: "#00897B" }} />}
+                              ? <EyeOff className="h-3.5 w-3.5" style={{ color: "var(--pr-warn)" }} />
+                              : <Eye className="h-3.5 w-3.5" style={{ color: "var(--pr-success)" }} />}
                           </button>
                           <button onClick={() => { if (confirm("Excluir esta fórmula?")) deleteMutation.mutate({ id: f.id }); }}
                             className="p-1.5 rounded-lg hover:opacity-70" title="Excluir">
-                            <Trash2 className="h-3.5 w-3.5" style={{ color: "#E53935" }} />
+                            <Trash2 className="h-3.5 w-3.5" style={{ color: "var(--pr-danger)" }} />
                           </button>
                         </div>
                       </div>

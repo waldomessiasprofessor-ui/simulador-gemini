@@ -89,7 +89,7 @@ function FormModal({ initial, onSave, onClose }: {
             placeholder="Conteúdo em texto... (suporta LaTeX com $...$)" rows={8} />
           <button onClick={() => setPreview(p => !p)}
             className="flex items-center gap-2 text-xs font-semibold"
-            style={{ color: "#7B3FA0" }}>
+            style={{ color: "#A78BFA" }}>
             {preview ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
             {preview ? "Ocultar preview" : "Ver preview LaTeX"}
           </button>
@@ -109,8 +109,8 @@ function FormModal({ initial, onSave, onClose }: {
 
           {/* Instrução */}
           <div className="rounded-xl p-3 text-xs space-y-1"
-            style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA033" }}>
-            <p className="font-semibold" style={{ color: "#7B3FA0" }}>Como obter o link do PDF</p>
+            style={{ background: "color-mix(in srgb, #A78BFA 14%, var(--card))", border: "1.5px solid color-mix(in srgb, #A78BFA 35%, transparent)" }}>
+            <p className="font-semibold" style={{ color: "#A78BFA" }}>Como obter o link do PDF</p>
             <p style={{ color: "var(--muted-foreground)" }}>
               <strong>Google Drive:</strong> Compartilhar → "Qualquer pessoa" → copiar link → substituir <code>/view</code> por <code>/preview</code>
             </p>
@@ -131,11 +131,11 @@ function FormModal({ initial, onSave, onClose }: {
           {/* Preview do link */}
           {form.url_pdf && (
             <div className="rounded-xl p-3 flex items-center gap-3"
-              style={{ background: "#F3EAF9", border: "1.5px solid #7B3FA044" }}>
-              <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
-              <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>{form.url_pdf}</p>
+              style={{ background: "color-mix(in srgb, #A78BFA 14%, var(--card))", border: "1.5px solid color-mix(in srgb, #A78BFA 40%, transparent)" }}>
+              <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#A78BFA" }} />
+              <p className="text-xs flex-1 truncate" style={{ color: "#A78BFA" }}>{form.url_pdf}</p>
               <a href={form.url_pdf} target="_blank" rel="noopener noreferrer" title="Testar link">
-                <ExternalLink className="h-4 w-4" style={{ color: "#7B3FA0" }} />
+                <ExternalLink className="h-4 w-4" style={{ color: "#A78BFA" }} />
               </a>
               <button onClick={() => setForm(f => ({ ...f, url_pdf: null }))} title="Remover">
                 <X className="h-4 w-4" style={{ color: "var(--muted-foreground)" }} />
@@ -161,7 +161,7 @@ function FormModal({ initial, onSave, onClose }: {
               onSave({ ...form, id: initial?.id });
             }}
             className="flex-1 py-3 rounded-xl font-bold text-sm text-white"
-            style={{ background: "#7B3FA0" }}>
+            style={{ background: "#A78BFA" }}>
             {initial?.id ? "Salvar alterações" : "Criar conteúdo"}
           </button>
           <button onClick={onClose}
@@ -242,15 +242,15 @@ export default function AdminRevise() {
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#7B3FA0" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#A78BFA" }} />
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-16 space-y-3">
-          <BookOpen className="h-10 w-10 mx-auto opacity-30" style={{ color: "#7B3FA0" }} />
+          <BookOpen className="h-10 w-10 mx-auto opacity-30" style={{ color: "#A78BFA" }} />
           <p className="font-semibold" style={{ color: "var(--foreground)" }}>Nenhum conteúdo cadastrado ainda</p>
           <button onClick={() => setModalData(emptyForm())}
             className="px-4 py-2 rounded-xl font-bold text-sm text-white"
-            style={{ background: "#7B3FA0" }}>
+            style={{ background: "#A78BFA" }}>
             Criar primeiro conteúdo
           </button>
         </div>
@@ -267,8 +267,8 @@ export default function AdminRevise() {
                   <button onClick={() => setOpenId(isOpen ? null : item.id)}
                     className="flex-1 flex items-start gap-3 text-left">
                     <div className="flex gap-1 flex-shrink-0 mt-0.5">
-                      {hasText && <BookOpen className="h-4 w-4" style={{ color: "#009688" }} />}
-                      {hasPdf  && <FileText  className="h-4 w-4" style={{ color: "#7B3FA0" }} />}
+                      {hasText && <BookOpen className="h-4 w-4" style={{ color: "var(--pr-teal)" }} />}
+                      {hasPdf  && <FileText  className="h-4 w-4" style={{ color: "#A78BFA" }} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
@@ -287,17 +287,17 @@ export default function AdminRevise() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button onClick={() => setModalData({ ...item })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
-                      <Pencil className="h-3.5 w-3.5" style={{ color: "#009688" }} />
+                      <Pencil className="h-3.5 w-3.5" style={{ color: "var(--pr-teal)" }} />
                     </button>
                     <button onClick={() => toggleMutation.mutate({ id: item.id, active: !item.active })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title={item.active ? "Ocultar" : "Mostrar"}>
                       {item.active
-                        ? <EyeOff className="h-3.5 w-3.5" style={{ color: "#F57F17" }} />
-                        : <Eye  className="h-3.5 w-3.5" style={{ color: "#00897B" }} />}
+                        ? <EyeOff className="h-3.5 w-3.5" style={{ color: "var(--pr-warn)" }} />
+                        : <Eye  className="h-3.5 w-3.5" style={{ color: "var(--pr-success)" }} />}
                     </button>
                     <button onClick={() => { if (confirm("Excluir permanentemente?")) deleteMutation.mutate({ id: item.id }); }}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title="Excluir">
-                      <Trash2 className="h-3.5 w-3.5" style={{ color: "#E53935" }} />
+                      <Trash2 className="h-3.5 w-3.5" style={{ color: "var(--pr-danger)" }} />
                     </button>
                   </div>
                 </div>
@@ -313,12 +313,12 @@ export default function AdminRevise() {
                       </>
                     )}
                     {hasPdf && (
-                      <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "#F3EAF9" }}>
-                        <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#7B3FA0" }} />
-                        <p className="text-xs flex-1 truncate" style={{ color: "#7B3FA0" }}>{item.url_pdf}</p>
+                      <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "color-mix(in srgb, #A78BFA 14%, var(--card))" }}>
+                        <FileText className="h-5 w-5 flex-shrink-0" style={{ color: "#A78BFA" }} />
+                        <p className="text-xs flex-1 truncate" style={{ color: "#A78BFA" }}>{item.url_pdf}</p>
                         <a href={item.url_pdf} target="_blank" rel="noopener noreferrer"
                           className="flex items-center gap-1 text-xs font-bold flex-shrink-0 px-3 py-1.5 rounded-lg"
-                          style={{ background: "#7B3FA0", color: "#fff" }}>
+                          style={{ background: "#A78BFA", color: "#fff" }}>
                           <ExternalLink className="h-3 w-3" /> Abrir
                         </a>
                       </div>

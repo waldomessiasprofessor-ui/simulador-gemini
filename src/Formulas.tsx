@@ -173,7 +173,7 @@ export default function Formulas() {
 
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
         </div>
       ) : (
         <div className="space-y-4">

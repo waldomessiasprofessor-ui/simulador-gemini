@@ -144,7 +144,7 @@ export default function Treino() {
           <div className="space-y-5">
             {/* Tópico */}
             <div>
-              <p className="text-sm font-semibold mb-3" style={{ color: "#1A1A2E" }}>Tópico</p>
+              <p className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>Tópico</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   onClick={() => setSelectedTopic(null)}
@@ -177,7 +177,7 @@ export default function Treino() {
 
             {/* Quantidade */}
             <div>
-              <p className="text-sm font-semibold mb-3" style={{ color: "#1A1A2E" }}>Quantidade</p>
+              <p className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>Quantidade</p>
               <div className="flex gap-2">
                 {[5, 10, 15, 20].map((n) => (
                   <button
@@ -219,7 +219,7 @@ export default function Treino() {
     const pct = Math.round((correct / questions.length) * 100);
     return (
       <div className="space-y-6 py-2">
-        <div className="rounded-2xl p-6 text-center" style={{ background: pct >= 70 ? "#E0F7F4" : "#FFEBEE", border: `1.5px solid ${pct >= 70 ? "#00BFA5" : "#E53935"}` }}>
+        <div className="rounded-2xl p-6 text-center" style={{ background: pct >= 70 ? "var(--pr-success-bg)" : "var(--pr-danger-bg)", border: `1.5px solid ${pct >= 70 ? "var(--pr-success-border)" : "var(--pr-danger-border)"}` }}>
           <p className="text-4xl font-black mb-1" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>{pct}%</p>
           <p className="text-sm font-medium" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>
             {correct} de {questions.length} acertos
@@ -241,9 +241,9 @@ export default function Treino() {
             const isCorrect = answers[q.id] === q.gabarito;
             return (
               <div key={q.id} className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: isCorrect ? "#E0F7F4" : "#FFEBEE", border: `1px solid ${isCorrect ? "#00BFA544" : "#E5393544"}` }}>
+                style={{ background: isCorrect ? "var(--pr-success-bg)" : "var(--pr-danger-bg)", border: `1px solid ${isCorrect ? "var(--pr-success-border)" : "var(--pr-danger-border)"}` }}>
                 <span className="text-xs font-bold w-5 text-center" style={{ color: isCorrect ? "#00695C" : "#C62828" }}>{i + 1}</span>
-                <span className="flex-1 text-xs truncate" style={{ color: "#64748B" }}>{q.conteudo_principal}</span>
+                <span className="flex-1 text-xs truncate" style={{ color: "var(--muted-foreground)" }}>{q.conteudo_principal}</span>
                 <span className="text-xs font-bold" style={{ color: isCorrect ? "#00695C" : "#C62828" }}>
                   {answers[q.id] ?? "—"} → {q.gabarito}
                 </span>
@@ -276,7 +276,7 @@ export default function Treino() {
           <span className="text-sm font-bold" style={{ color: "var(--pr-teal)" }}>Treino livre</span>
           <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-darker)" }}>{q.nivel_dificuldade}</span>
         </div>
-        <span className="text-sm font-mono" style={{ color: "#64748B" }}>{idx + 1}/{questions.length}</span>
+        <span className="text-sm font-mono" style={{ color: "var(--muted-foreground)" }}>{idx + 1}/{questions.length}</span>
       </div>
 
       {/* Questão */}
@@ -302,7 +302,7 @@ export default function Treino() {
               <button
                 onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
                 className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
-                style={{ background: openResolution[q.id] ? "#1D4ED8" : "#EFF6FF", color: openResolution[q.id] ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
+                style={{ background: openResolution[q.id] ? "var(--pr-info)" : "var(--pr-info-bg)", color: openResolution[q.id] ? "#fff" : "var(--pr-info)", border: "1px solid var(--pr-info-border)" }}>
                 <BookOpen className="h-4 w-4" />
                 {openResolution[q.id] ? "Ocultar resolução" : "Ver resolução"}
               </button>
@@ -316,7 +316,7 @@ export default function Treino() {
             )}
           </div>
           {openResolution[q.id] && q.comentario_resolucao && (
-            <div className="rounded-xl p-4" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+            <div className="rounded-xl p-4" style={{ background: "var(--pr-info-bg)", border: "1px solid var(--pr-info-border)" }}>
               <p className="text-xs font-semibold mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
               <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
             </div>
@@ -330,7 +330,7 @@ export default function Treino() {
           <ChevronLeft className="h-4 w-4" /> Anterior
         </button>
 
-        <span className="text-sm font-semibold tabular-nums px-3 py-2 rounded-xl" style={{ background: "#F1F5F9", color: "#1A1A2E" }}>
+        <span className="text-sm font-semibold tabular-nums px-3 py-2 rounded-xl" style={{ background: "var(--muted)", color: "var(--foreground)" }}>
           {idx + 1} / {questions.length}
         </span>
 

@@ -148,7 +148,7 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
             <button
               onClick={() => setShowOptions(false)}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
-              style={{ background: "var(--teal-soft)", color: "#009688", border: "1.5px solid #00968844" }}>
+              style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)", border: "1.5px solid var(--pr-teal-border)" }}>
               <Pause className="h-4 w-4" />
               Pausar — continuar depois
               <span className="ml-auto text-xs opacity-70">salva progresso</span>
@@ -162,7 +162,7 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
               }}
               disabled={abandon.isPending || start.isPending}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
-              style={{ background: "#FFF8E1", color: "#E65100", border: "1.5px solid #F9A82544" }}>
+              style={{ background: "var(--pr-warn-bg)", color: "var(--pr-warn)", border: "1.5px solid var(--pr-warn-border)" }}>
               <RotateCcw className="h-4 w-4" />
               Reiniciar simulado
               <span className="ml-auto text-xs opacity-70">descarta respostas</span>
@@ -175,7 +175,7 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
               }}
               disabled={abandon.isPending}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm"
-              style={{ background: "#FFEBEE", color: "#C62828", border: "1.5px solid #E5393544" }}>
+              style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)", border: "1.5px solid var(--pr-danger-border)" }}>
               <XCircle className="h-4 w-4" />
               Encerrar sem salvar
               <span className="ml-auto text-xs opacity-70">não vai ao histórico</span>
@@ -185,9 +185,9 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
       )}
 
       <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap"
-        style={{ background: "var(--teal-soft)", border: "1.5px solid #00968844" }}>
+        style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
         <div className="flex items-center gap-3">
-          <button onClick={() => setShowOptions(true)} className="flex items-center gap-1.5 text-sm font-bold hover:opacity-70 transition-opacity" style={{ color: "#009688" }}>
+          <button onClick={() => setShowOptions(true)} className="flex items-center gap-1.5 text-sm font-bold hover:opacity-70 transition-opacity" style={{ color: "var(--pr-teal)" }}>
             <Pause className="h-3.5 w-3.5" />
             Simulado
           </button>
@@ -248,9 +248,9 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
               <button key={q.id} onClick={() => { setIdx(i); setShowGrid(false); }}
                 className="h-8 rounded-lg text-xs font-bold transition-colors"
                 style={i === idx
-                  ? { background: "var(--teal-soft)", border: "2px solid #009688", color: "#009688" }
+                  ? { background: "var(--pr-teal-soft)", border: "2px solid var(--pr-teal)", color: "var(--pr-teal)" }
                   : answers[q.id]
-                  ? { background: "#009688", color: "#fff", border: "2px solid transparent" }
+                  ? { background: "var(--pr-teal)", color: "#fff", border: "2px solid transparent" }
                   : { background: "var(--muted)", color: "var(--muted-foreground)", border: "2px solid var(--border)" }}>
                 {i + 1}
               </button>

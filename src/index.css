@@ -176,6 +176,13 @@
   --pr-warn-bg:      #2D1A05;
   --pr-warn-border:  #78350F;
 
+  --pr-info:         #60A5FA;
+  --pr-info-bg:      #0C1F3D;
+  --pr-info-border:  #1E3A8A;
+
+  --pr-accent-gold:  #FBBF24;
+  --pr-accent-blue:  #60A5FA;
+
   --background:          var(--pr-bg);
   --foreground:          var(--pr-fg);
   --card:                var(--pr-card);

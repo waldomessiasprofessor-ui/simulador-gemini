@@ -43,7 +43,7 @@ function SubscriptionBanner({ session }: { session: any }) {
   if (expiry && expiry < now) {
     return (
       <div className="w-full px-4 py-3 text-center text-sm font-semibold flex items-center justify-center gap-2"
-        style={{ background: "#FFEBEE", color: "#C62828", borderBottom: "1px solid #FFCDD2" }}>
+        style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)", borderBottom: "1px solid var(--pr-danger-border)" }}>
         <AlertTriangle className="h-4 w-4 flex-shrink-0" />
         Sua assinatura expirou em {expiry.toLocaleDateString("pt-BR")}. Entre em contato com o administrador para renovar.
       </div>
@@ -54,7 +54,7 @@ function SubscriptionBanner({ session }: { session: any }) {
     if (days <= 30) {
       return (
         <div className="w-full px-4 py-2 text-center text-xs font-semibold flex items-center justify-center gap-2"
-          style={{ background: "#FFF8E1", color: "#E65100", borderBottom: "1px solid #FFE082" }}>
+          style={{ background: "var(--pr-warn-bg)", color: "var(--pr-warn)", borderBottom: "1px solid var(--pr-warn-border)" }}>
           <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
           Sua assinatura expira em {days} {days === 1 ? "dia" : "dias"} ({expiry.toLocaleDateString("pt-BR")}).
         </div>

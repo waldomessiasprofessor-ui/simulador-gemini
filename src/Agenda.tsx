@@ -14,13 +14,15 @@ const DAYS = [
   { value: 6, short: "Sáb", full: "Sábado"        },
 ];
 
+// Tokens que se adaptam ao tema: derivamos de tokens semânticos para que
+// o agenda apareça bem tanto no claro quanto no escuro.
 const DAY_COLORS: Record<number, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
-  1: { bg: "#EFF6FF", border: "#BFDBFE", text: "#1D4ED8", badge: "#DBEAFE", badgeText: "#1E40AF" },
-  2: { bg: "#F0FDF4", border: "#BBF7D0", text: "#16A34A", badge: "#DCFCE7", badgeText: "#15803D" },
-  3: { bg: "#FDF4FF", border: "#E9D5FF", text: "#9333EA", badge: "#F3E8FF", badgeText: "#7E22CE" },
-  4: { bg: "#FFF7ED", border: "#FED7AA", text: "#EA580C", badge: "#FFEDD5", badgeText: "#C2410C" },
-  5: { bg: "#ECFDF5", border: "#A7F3D0", text: "#059669", badge: "#D1FAE5", badgeText: "#047857" },
-  6: { bg: "#FFF1F2", border: "#FECDD3", text: "#E11D48", badge: "#FFE4E6", badgeText: "#BE123C" },
+  1: { bg: "var(--pr-info-bg)",    border: "var(--pr-info-border)",    text: "var(--pr-info)",    badge: "color-mix(in srgb, var(--pr-info) 18%, var(--card))",    badgeText: "var(--pr-info)" },
+  2: { bg: "var(--pr-success-bg)", border: "var(--pr-success-border)", text: "var(--pr-success)", badge: "color-mix(in srgb, var(--pr-success) 18%, var(--card))", badgeText: "var(--pr-success)" },
+  3: { bg: "color-mix(in srgb, #9333EA 12%, var(--card))", border: "color-mix(in srgb, #9333EA 30%, var(--card))", text: "#9333EA", badge: "color-mix(in srgb, #9333EA 18%, var(--card))", badgeText: "#9333EA" },
+  4: { bg: "var(--pr-warn-bg)",    border: "var(--pr-warn-border)",    text: "var(--pr-warn)",    badge: "color-mix(in srgb, var(--pr-warn) 18%, var(--card))",    badgeText: "var(--pr-warn)" },
+  5: { bg: "color-mix(in srgb, var(--pr-teal) 12%, var(--card))", border: "var(--pr-teal-border)", text: "var(--pr-teal)", badge: "color-mix(in srgb, var(--pr-teal) 18%, var(--card))", badgeText: "var(--pr-teal)" },
+  6: { bg: "var(--pr-danger-bg)",  border: "var(--pr-danger-border)",  text: "var(--pr-danger)",  badge: "color-mix(in srgb, var(--pr-danger) 18%, var(--card))",  badgeText: "var(--pr-danger)" },
 };
 
 const ENEM_TOPICS = [
@@ -317,7 +319,7 @@ export default function Agenda() {
               </button>
 
               {startTime >= endTime && selTopics.length > 0 && (
-                <p className="text-xs text-center" style={{ color: "#DC2626" }}>
+                <p className="text-xs text-center" style={{ color: "var(--pr-danger)" }}>
                   O horário de término deve ser após o início
                 </p>
               )}
@@ -378,10 +380,10 @@ export default function Agenda() {
           <div className="mt-2 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
             {topicStats.slice(0, 10).map((item, i) => {
               const s =
-                item.status === "fraco"   ? { bg: "#FEF2F2", text: "#DC2626", label: "Prioridade" } :
-                item.status === "regular" ? { bg: "#FFFBEB", text: "#D97706", label: "Em progresso" } :
-                item.status === "forte"   ? { bg: "#F0FDF4", text: "#16A34A", label: "Dominado" } :
-                                            { bg: "#F1F5F9", text: "#64748B", label: "Sem dados" };
+                item.status === "fraco"   ? { bg: "var(--pr-danger-bg)",  text: "var(--pr-danger)",      label: "Prioridade" } :
+                item.status === "regular" ? { bg: "var(--pr-warn-bg)",    text: "var(--pr-warn)",        label: "Em progresso" } :
+                item.status === "forte"   ? { bg: "var(--pr-success-bg)", text: "var(--pr-success)",     label: "Dominado" } :
+                                            { bg: "var(--muted)",         text: "var(--muted-foreground)", label: "Sem dados" };
               return (
                 <div key={item.topic}
                   className="flex items-center gap-3 px-4 py-3"

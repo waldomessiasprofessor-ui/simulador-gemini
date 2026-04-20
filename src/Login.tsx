@@ -31,10 +31,10 @@ const FEATURES = [
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "0.65rem 0.85rem", borderRadius: "0.75rem",
-  border: "2px solid #D1D5DB", fontSize: "0.9rem", outline: "none",
-  color: "#1E293B", background: "#FFFFFF", transition: "border-color 0.15s",
+  border: "2px solid var(--border)", fontSize: "0.9rem", outline: "none",
+  color: "var(--foreground)", background: "var(--card)", transition: "border-color 0.15s",
 };
-const errorStyle: React.CSSProperties = { color: "#DC2626", fontSize: "0.75rem", marginTop: "0.25rem" };
+const errorStyle: React.CSSProperties = { color: "var(--pr-danger)", fontSize: "0.75rem", marginTop: "0.25rem" };
 
 export default function Login() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -59,11 +59,11 @@ export default function Login() {
     setMode(m); resetLogin(); resetRegister();
   }
 
-  function focusBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "#009688"; }
-  function blurBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "#D1D5DB"; }
+  function focusBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "var(--pr-teal)"; }
+  function blurBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "var(--border)"; }
 
   return (
-    <div className="min-h-screen" style={{ background: "#f4f4f4" }}>
+    <div className="min-h-screen" style={{ background: "var(--background)" }}>
       {/* Hero + formulário */}
       <div style={{ background: "linear-gradient(135deg, #263238 0%, #009688 100%)" }}>
         <div className="container mx-auto px-4 max-w-5xl py-12 flex flex-col lg:flex-row items-center gap-10">
@@ -96,12 +96,12 @@ export default function Login() {
 
           {/* Card login/cadastro */}
           <div className="w-full lg:w-96 flex-shrink-0">
-            <div className="rounded-2xl p-6 space-y-4" style={{ background: "#fff", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
-              <div className="flex rounded-xl overflow-hidden" style={{ background: "#F1F5F9" }}>
+            <div className="rounded-2xl p-6 space-y-4" style={{ background: "var(--card)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
+              <div className="flex rounded-xl overflow-hidden" style={{ background: "var(--muted)" }}>
                 {(["login", "register"] as const).map((m) => (
                   <button key={m} onClick={() => switchMode(m)}
                     className="flex-1 py-2.5 text-sm font-bold transition-colors rounded-xl"
-                    style={mode === m ? { background: "#009688", color: "#fff" } : { background: "transparent", color: "#64748B" }}>
+                    style={mode === m ? { background: "var(--pr-teal)", color: "#fff" } : { background: "transparent", color: "var(--muted-foreground)" }}>
                     {m === "login" ? "Entrar" : "Criar conta"}
                   </button>
                 ))}
@@ -110,22 +110,22 @@ export default function Login() {
               {mode === "login" && (
                 <form onSubmit={handleLogin((d) => login.mutate(d))} className="space-y-3" noValidate>
                   <div>
-                    <label className="block text-sm font-semibold mb-1" style={{ color: "#1E293B" }}>E-mail</label>
+                    <label className="block text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>E-mail</label>
                     <input {...regLogin("email")} type="email" placeholder="seu@email.com" style={inputStyle} onFocus={focusBorder} onBlur={blurBorder} />
                     {loginErrors.email && <p style={errorStyle}>{loginErrors.email.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1" style={{ color: "#1E293B" }}>Senha</label>
+                    <label className="block text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>Senha</label>
                     <input {...regLogin("password")} type="password" placeholder="Sua senha" style={inputStyle} onFocus={focusBorder} onBlur={blurBorder} />
                     {loginErrors.password && <p style={errorStyle}>{loginErrors.password.message}</p>}
                   </div>
                   <button type="submit" disabled={isPending} className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2"
-                    style={{ background: isPending ? "#00695C" : "#009688", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
+                    style={{ background: isPending ? "var(--pr-teal-dark)" : "var(--pr-teal)", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
                     {isPending && <Loader2 className="h-5 w-5 animate-spin" />} Entrar na conta
                   </button>
-                  <p className="text-center text-sm" style={{ color: "#64748B" }}>
+                  <p className="text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
                     Não possui conta?{" "}
-                    <button type="button" onClick={() => switchMode("register")} className="font-bold underline" style={{ color: "#009688" }}>Cadastre-se</button>
+                    <button type="button" onClick={() => switchMode("register")} className="font-bold underline" style={{ color: "var(--pr-teal)" }}>Cadastre-se</button>
                   </p>
                 </form>
               )}
@@ -133,27 +133,27 @@ export default function Login() {
               {mode === "register" && (
                 <form onSubmit={handleRegister((d) => register.mutate(d))} className="space-y-3" noValidate>
                   <div>
-                    <label className="block text-sm font-semibold mb-1" style={{ color: "#1E293B" }}>Nome completo</label>
+                    <label className="block text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>Nome completo</label>
                     <input {...regRegister("name")} type="text" placeholder="Seu nome" style={inputStyle} onFocus={focusBorder} onBlur={blurBorder} />
                     {registerErrors.name && <p style={errorStyle}>{registerErrors.name.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1" style={{ color: "#1E293B" }}>E-mail</label>
+                    <label className="block text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>E-mail</label>
                     <input {...regRegister("email")} type="email" placeholder="seu@email.com" style={inputStyle} onFocus={focusBorder} onBlur={blurBorder} />
                     {registerErrors.email && <p style={errorStyle}>{registerErrors.email.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1" style={{ color: "#1E293B" }}>Senha</label>
+                    <label className="block text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>Senha</label>
                     <input {...regRegister("password")} type="password" placeholder="Mínimo 6 caracteres" style={inputStyle} onFocus={focusBorder} onBlur={blurBorder} />
                     {registerErrors.password && <p style={errorStyle}>{registerErrors.password.message}</p>}
                   </div>
                   <button type="submit" disabled={isPending} className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2"
-                    style={{ background: isPending ? "#00695C" : "#009688", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
+                    style={{ background: isPending ? "var(--pr-teal-dark)" : "var(--pr-teal)", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
                     {isPending && <Loader2 className="h-5 w-5 animate-spin" />} Criar minha conta
                   </button>
-                  <p className="text-center text-sm" style={{ color: "#64748B" }}>
+                  <p className="text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
                     Já possui conta?{" "}
-                    <button type="button" onClick={() => switchMode("login")} className="font-bold underline" style={{ color: "#009688" }}>Faça login</button>
+                    <button type="button" onClick={() => switchMode("login")} className="font-bold underline" style={{ color: "var(--pr-teal)" }}>Faça login</button>
                   </p>
                 </form>
               )}
@@ -164,20 +164,20 @@ export default function Login() {
 
       {/* Funcionalidades da plataforma */}
       <div className="container mx-auto px-4 max-w-5xl py-12">
-        <h2 className="text-xl font-bold mb-2" style={{ color: "#1A1A2E" }}>Tudo que você precisa para o ENEM</h2>
-        <p className="text-sm mb-6" style={{ color: "#64748B" }}>Uma plataforma completa, focada em resultado.</p>
+        <h2 className="text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>Tudo que você precisa para o ENEM</h2>
+        <p className="text-sm mb-6" style={{ color: "var(--muted-foreground)" }}>Uma plataforma completa, focada em resultado.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="rounded-xl p-5" style={{ background: "#fff", border: "1.5px solid #B2DFDB" }}>
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "#E0F2F1" }}>
-                <Icon className="h-5 w-5" style={{ color: "#009688" }} />
+            <div key={title} className="rounded-xl p-5" style={{ background: "var(--card)", border: "1.5px solid var(--pr-teal-border)" }}>
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--pr-teal-soft)" }}>
+                <Icon className="h-5 w-5" style={{ color: "var(--pr-teal)" }} />
               </div>
-              <h3 className="font-bold text-sm mb-1" style={{ color: "#1A1A2E" }}>{title}</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
+              <h3 className="font-bold text-sm mb-1" style={{ color: "var(--foreground)" }}>{title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{desc}</p>
             </div>
           ))}
         </div>
-        <p className="text-center text-xs mt-10" style={{ color: "#94A3B8" }}>
+        <p className="text-center text-xs mt-10" style={{ color: "var(--muted-foreground)" }}>
           © {new Date().getFullYear()} Escola Prova Real · Todos os direitos reservados
         </p>
       </div>

@@ -46,9 +46,9 @@ const FACE_BACK: React.CSSProperties = {
 // Cores de qualidade
 // =============================================================================
 const QUALITY_OPTS = [
-  { quality: 1 as const, label: "Não lembrei",  emoji: "😕", bg: "#FEF2F2", color: "#991B1B", border: "#FECACA" },
-  { quality: 3 as const, label: "Difícil",       emoji: "😐", bg: "#FFFBEB", color: "#92400E", border: "#FCD34D" },
-  { quality: 5 as const, label: "Fácil!",        emoji: "😄", bg: "#F0FDF4", color: "#166534", border: "#86EFAC" },
+  { quality: 1 as const, label: "Não lembrei",  emoji: "😕", bg: "var(--pr-danger-bg)",  color: "var(--pr-danger)",  border: "var(--pr-danger-border)" },
+  { quality: 3 as const, label: "Difícil",       emoji: "😐", bg: "var(--pr-warn-bg)",    color: "var(--pr-warn)",    border: "var(--pr-warn-border)" },
+  { quality: 5 as const, label: "Fácil!",        emoji: "😄", bg: "var(--pr-success-bg)", color: "var(--pr-success)", border: "var(--pr-success-border)" },
 ] as const;
 
 // =============================================================================
@@ -74,7 +74,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
   if (isLoading) {
     return (
       <div className="flex justify-center py-24">
-        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "#009688" }} />
+        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "var(--pr-teal)" }} />
       </div>
     );
   }
@@ -84,12 +84,12 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
     return (
       <div className="flex flex-col items-center py-20 gap-5 text-center">
         <div className="h-20 w-20 rounded-2xl flex items-center justify-center text-4xl"
-          style={{ background: "#E0F2F1" }}>
+          style={{ background: "var(--pr-teal-soft)" }}>
           🎉
         </div>
         <div>
-          <p className="text-xl font-bold" style={{ color: "#1A1A2E" }}>Nada para revisar hoje!</p>
-          <p className="text-sm mt-1" style={{ color: "#64748B" }}>
+          <p className="text-xl font-bold" style={{ color: "var(--foreground)" }}>Nada para revisar hoje!</p>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
             {next
               ? `Próxima revisão agendada para ${next.toLocaleDateString("pt-BR")}`
               : "Todos os cards estão em dia."}
@@ -97,7 +97,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
         </div>
         <button onClick={onBack}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm"
-          style={{ background: "#E0F2F1", color: "#009688" }}>
+          style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
           <ArrowLeft className="h-4 w-4" /> Voltar aos baralhos
         </button>
       </div>
@@ -119,23 +119,23 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
           <Trophy className="h-9 w-9 text-white" />
         </div>
         <div>
-          <p className="text-2xl font-black" style={{ color: "#1A1A2E" }}>Sessão concluída!</p>
-          <p className="text-sm mt-1" style={{ color: "#64748B" }}>{total} card(s) revisado(s)</p>
+          <p className="text-2xl font-black" style={{ color: "var(--foreground)" }}>Sessão concluída!</p>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>{total} card(s) revisado(s)</p>
         </div>
 
-        <div className="w-full rounded-2xl p-5 space-y-3" style={{ background: "#F8FAFC", border: "1.5px solid #E2E8F0" }}>
+        <div className="w-full rounded-2xl p-5 space-y-3" style={{ background: "var(--muted)", border: "1.5px solid var(--border)" }}>
           <div className="flex justify-between items-center">
-            <span className="text-sm font-semibold" style={{ color: "#64748B" }}>Taxa de acerto</span>
-            <span className="text-xl font-black" style={{ color: pct >= 70 ? "#166534" : "#92400E" }}>{pct}%</span>
+            <span className="text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>Taxa de acerto</span>
+            <span className="text-xl font-black" style={{ color: pct >= 70 ? "var(--pr-success)" : "var(--pr-warn)" }}>{pct}%</span>
           </div>
-          <div className="w-full rounded-full h-2" style={{ background: "#E2E8F0" }}>
-            <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: pct >= 70 ? "#009688" : "#F59E0B" }} />
+          <div className="w-full rounded-full h-2" style={{ background: "var(--border)" }}>
+            <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: pct >= 70 ? "var(--pr-teal)" : "var(--pr-warn)" }} />
           </div>
           <div className="grid grid-cols-3 gap-2 pt-1">
             {[
-              { label: "Não lembrei", n: forgot, color: "#991B1B", bg: "#FEF2F2" },
-              { label: "Difícil",     n: hard,   color: "#92400E", bg: "#FFFBEB" },
-              { label: "Fácil",       n: easy,   color: "#166534", bg: "#F0FDF4" },
+              { label: "Não lembrei", n: forgot, color: "var(--pr-danger)",  bg: "var(--pr-danger-bg)" },
+              { label: "Difícil",     n: hard,   color: "var(--pr-warn)",    bg: "var(--pr-warn-bg)" },
+              { label: "Fácil",       n: easy,   color: "var(--pr-success)", bg: "var(--pr-success-bg)" },
             ].map(({ label, n, color, bg }) => (
               <div key={label} className="rounded-xl p-2 text-center" style={{ background: bg }}>
                 <p className="text-lg font-black" style={{ color }}>{n}</p>
@@ -149,7 +149,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
           <button
             onClick={() => { setIdx(0); setFlipped(false); setResults([]); setDone(false); }}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm"
-            style={{ background: "#E0F2F1", color: "#009688" }}>
+            style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
             <RotateCcw className="h-4 w-4" /> Repetir
           </button>
           <button
@@ -181,19 +181,19 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
     }
   }
 
-  const deckColor = data.deck?.color ?? "#009688";
+  const deckColor = data.deck?.color ?? "var(--pr-teal)";
 
   return (
     <div className="space-y-5 max-w-xl mx-auto">
 
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="p-2 rounded-xl hover:opacity-70" style={{ color: "#64748B" }}>
+        <button onClick={onBack} className="p-2 rounded-xl hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm truncate" style={{ color: "#1A1A2E" }}>{data.deck?.title}</p>
-          <p className="text-xs" style={{ color: "#64748B" }}>
+          <p className="font-bold text-sm truncate" style={{ color: "var(--foreground)" }}>{data.deck?.title}</p>
+          <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
             Card {idx + 1} de {cards.length}
             {data.dueCount > 0 && ` · ${data.dueCount} para revisão`}
             {data.newCount > 0 && ` · ${data.newCount} novos`}
@@ -202,7 +202,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
       </div>
 
       {/* Barra de progresso */}
-      <div className="w-full rounded-full h-1.5" style={{ background: "#E2E8F0" }}>
+      <div className="w-full rounded-full h-1.5" style={{ background: "var(--border)" }}>
         <div className="h-1.5 rounded-full transition-all duration-300"
           style={{ width: `${progress}%`, background: deckColor }} />
       </div>
@@ -212,7 +212,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
         <div style={{ ...flipInner(flipped), minHeight: 280 }}>
 
           {/* Frente */}
-          <div style={{ ...FACE_BASE, background: "#fff", border: `2px solid ${deckColor}30`, boxShadow: "0 4px 24px #00000012" }}>
+          <div style={{ ...FACE_BASE, background: "var(--card)", color: "var(--foreground)", border: `2px solid ${deckColor}30`, boxShadow: "0 4px 24px #00000012" }}>
             <span className="text-xs font-bold uppercase tracking-widest mb-1"
               style={{ color: deckColor, opacity: 0.7 }}>Frente</span>
             <div className="w-full text-center">
@@ -220,15 +220,15 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
             </div>
             {card.frontImage && (
               <img src={card.frontImage} alt="" className="max-w-full max-h-40 rounded-xl object-contain"
-                style={{ border: "1px solid #E2E8F0" }} />
+                style={{ border: "1px solid var(--border)" }} />
             )}
             {!flipped && (
-              <p className="text-xs mt-2" style={{ color: "#94A3B8" }}>Toque para revelar</p>
+              <p className="text-xs mt-2" style={{ color: "var(--muted-foreground)" }}>Toque para revelar</p>
             )}
           </div>
 
           {/* Verso */}
-          <div style={{ ...FACE_BACK, background: "#F0FDF8", border: `2px solid ${deckColor}60`, boxShadow: "0 4px 24px #00000012" }}>
+          <div style={{ ...FACE_BACK, background: "var(--pr-teal-soft)", color: "var(--foreground)", border: `2px solid ${deckColor}60`, boxShadow: "0 4px 24px #00000012" }}>
             <span className="text-xs font-bold uppercase tracking-widest mb-1"
               style={{ color: deckColor, opacity: 0.7 }}>Resposta</span>
             <div className="w-full text-center">
@@ -236,7 +236,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
             </div>
             {card.backImage && (
               <img src={card.backImage} alt="" className="max-w-full max-h-40 rounded-xl object-contain"
-                style={{ border: "1px solid #D1FAE5" }} />
+                style={{ border: "1px solid var(--pr-teal-border)" }} />
             )}
           </div>
         </div>
@@ -244,7 +244,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
 
       {/* Botões de avaliação — só aparecem depois de virar */}
       <div className={`transition-all duration-300 ${flipped ? "opacity-100 translate-y-0" : "opacity-0 pointer-events-none translate-y-2"}`}>
-        <p className="text-xs font-semibold text-center mb-3" style={{ color: "#64748B" }}>
+        <p className="text-xs font-semibold text-center mb-3" style={{ color: "var(--muted-foreground)" }}>
           Como foi?
         </p>
         <div className="grid grid-cols-3 gap-2">
@@ -252,7 +252,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
             <button key={quality}
               onClick={(e) => { e.stopPropagation(); handleRate(quality); }}
               className="flex flex-col items-center gap-1 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
-              style={{ background: bg, color, border: `2px solid ${border}` }}>
+              style={{ background: bg, color, border: `2px solid ${border}` } as React.CSSProperties}>
               <span className="text-xl">{emoji}</span>
               <span className="text-xs font-bold">{label}</span>
             </button>
@@ -273,7 +273,7 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-24">
-        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "#009688" }} />
+        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "var(--pr-teal)" }} />
       </div>
     );
   }
@@ -297,14 +297,14 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
       {/* Baralhos */}
       {!decks || decks.length === 0 ? (
         <div className="text-center py-20 space-y-2">
-          <Layers className="h-12 w-12 mx-auto" style={{ color: "#CBD5E1" }} />
-          <p className="font-semibold" style={{ color: "#1A1A2E" }}>Nenhum baralho disponível</p>
-          <p className="text-sm" style={{ color: "#64748B" }}>O admin ainda não criou baralhos.</p>
+          <Layers className="h-12 w-12 mx-auto" style={{ color: "var(--muted-foreground)" }} />
+          <p className="font-semibold" style={{ color: "var(--foreground)" }}>Nenhum baralho disponível</p>
+          <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>O admin ainda não criou baralhos.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {decks.map((deck) => {
-            const color      = deck.color ?? "#009688";
+            const color      = deck.color ?? "var(--pr-teal)";
             const hasDue     = (deck.dueCount ?? 0) > 0;
             const hasNew     = (deck.newCount ?? 0) > 0;
             const studyable  = deck.studyableCount ?? 0;
@@ -323,14 +323,14 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-base" style={{ color: "var(--foreground)" }}>{deck.title}</p>
                       {deck.description && (
-                        <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#64748B" }}>{deck.description}</p>
+                        <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--muted-foreground)" }}>{deck.description}</p>
                       )}
                     </div>
                     <button
                       onClick={() => studyable > 0 ? onSelect(deck.id) : undefined}
                       disabled={studyable === 0}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold flex-shrink-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-default"
-                      style={{ background: studyable > 0 ? color : "#F1F5F9", color: studyable > 0 ? "#fff" : "#94A3B8" }}>
+                      style={{ background: studyable > 0 ? color : "var(--muted)", color: studyable > 0 ? "#fff" : "var(--muted-foreground)" }}>
                       {studyable > 0 ? (
                         <><BookOpen className="h-3.5 w-3.5" /> Estudar</>
                       ) : (
@@ -343,24 +343,24 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
                   <div className="flex flex-wrap gap-2">
                     {hasDue && (
                       <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: "#FEF2F2", color: "#991B1B" }}>
+                        style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)" }}>
                         <Clock className="h-3 w-3" /> {deck.dueCount} para revisar
                       </span>
                     )}
                     {hasNew && (
                       <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: "#EFF6FF", color: "#1D4ED8" }}>
+                        style={{ background: "var(--pr-info-bg)", color: "var(--pr-info)" }}>
                         ✨ {deck.newCount} novos
                       </span>
                     )}
                     {mastered > 0 && (
                       <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: "#F0FDF4", color: "#166534" }}>
+                        style={{ background: "var(--pr-success-bg)", color: "var(--pr-success)" }}>
                         <CheckCircle2 className="h-3 w-3" /> {mastered} dominados
                       </span>
                     )}
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                      style={{ background: "var(--muted)", color: "#64748B" }}>
+                      style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
                       {total} cards no total
                     </span>
                   </div>
@@ -369,10 +369,10 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
                   {total > 0 && (
                     <div>
                       <div className="flex justify-between mb-1">
-                        <span className="text-xs" style={{ color: "#94A3B8" }}>Domínio</span>
+                        <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>Domínio</span>
                         <span className="text-xs font-bold" style={{ color }}>{pct}%</span>
                       </div>
-                      <div className="w-full rounded-full h-1.5" style={{ background: "#E2E8F0" }}>
+                      <div className="w-full rounded-full h-1.5" style={{ background: "var(--border)" }}>
                         <div className="h-1.5 rounded-full transition-all"
                           style={{ width: `${pct}%`, background: color }} />
                       </div>

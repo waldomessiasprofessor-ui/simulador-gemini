@@ -33,31 +33,31 @@ function DeckForm({
 
   return (
     <div className="space-y-4 p-5 rounded-2xl"
-      style={{ background: "#fff", border: "1.5px solid #E2D9EE" }}>
+      style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
       <div>
-        <label className="text-xs font-bold block mb-1" style={{ color: "#1A1A2E" }}>Nome do baralho *</label>
+        <label className="text-xs font-bold block mb-1" style={{ color: "var(--foreground)" }}>Nome do baralho *</label>
         <input
           value={title} onChange={e => setTitle(e.target.value)}
           className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-          style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
+          style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
           placeholder="Ex: Trigonometria"
-          onFocus={e => (e.target.style.borderColor = "#009688")}
-          onBlur={e  => (e.target.style.borderColor = "#E2D9EE")}
+          onFocus={e => (e.target.style.borderColor = "var(--pr-teal)")}
+          onBlur={e  => (e.target.style.borderColor = "var(--border)")}
         />
       </div>
       <div>
-        <label className="text-xs font-bold block mb-1" style={{ color: "#1A1A2E" }}>Descrição (opcional)</label>
+        <label className="text-xs font-bold block mb-1" style={{ color: "var(--foreground)" }}>Descrição (opcional)</label>
         <input
           value={description} onChange={e => setDesc(e.target.value)}
           className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-          style={{ border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" }}
+          style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
           placeholder="Ex: Seno, cosseno, tangente e relações no triângulo"
-          onFocus={e => (e.target.style.borderColor = "#009688")}
-          onBlur={e  => (e.target.style.borderColor = "#E2D9EE")}
+          onFocus={e => (e.target.style.borderColor = "var(--pr-teal)")}
+          onBlur={e  => (e.target.style.borderColor = "var(--border)")}
         />
       </div>
       <div>
-        <label className="text-xs font-bold block mb-2" style={{ color: "#1A1A2E" }}>Cor do baralho</label>
+        <label className="text-xs font-bold block mb-2" style={{ color: "var(--foreground)" }}>Cor do baralho</label>
         <div className="flex flex-wrap gap-2">
           {DECK_COLORS.map(c => (
             <button key={c} type="button" onClick={() => setColor(c)}
@@ -77,7 +77,7 @@ function DeckForm({
         </button>
         <button onClick={onCancel}
           className="px-4 py-2.5 rounded-xl text-sm font-bold"
-          style={{ background: "#F1F5F9", color: "#64748B" }}>
+          style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
           Cancelar
         </button>
       </div>
@@ -91,7 +91,7 @@ function DeckForm({
 function LatexPreview({ content, label, color }: { content: string; label: string; color: string }) {
   if (!content) return null;
   return (
-    <div className="rounded-xl p-3 space-y-1" style={{ background: "#F8FAFC", border: "1.5px solid #E2E8F0" }}>
+    <div className="rounded-xl p-3 space-y-1" style={{ background: "var(--muted)", border: "1.5px solid var(--border)" }}>
       <p className="text-xs font-bold uppercase tracking-wide" style={{ color }}>{label}</p>
       <LatexRenderer fontSize="sm" compact>{content}</LatexRenderer>
     </div>
@@ -116,16 +116,16 @@ function CardForm({
   const [backImage,  setBackImage]  = useState(initial?.backImage  ?? "");
   const [preview,    setPreview]    = useState(false);
 
-  const inputStyle = { border: "1.5px solid #E2D9EE", background: "#fff", color: "#1A1A2E" };
-  const labelStyle: React.CSSProperties = { color: "#1A1A2E", fontSize: "0.75rem", fontWeight: 700, display: "block", marginBottom: 4 };
+  const inputStyle = { border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" };
+  const labelStyle: React.CSSProperties = { color: "var(--foreground)", fontSize: "0.75rem", fontWeight: 700, display: "block", marginBottom: 4 };
 
   return (
     <div className="space-y-4 p-5 rounded-2xl"
-      style={{ background: "#fff", border: `1.5px solid ${deckColor}44` }}>
+      style={{ background: "var(--card)", border: `1.5px solid ${deckColor}44` }}>
 
       {/* Toggle preview */}
       <div className="flex items-center justify-between">
-        <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>
+        <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>
           {initial ? "Editar card" : "Novo card"}
         </p>
         <button onClick={() => setPreview(p => !p)}
@@ -146,13 +146,13 @@ function CardForm({
             style={{ ...inputStyle, resize: "vertical" }}
             placeholder="Pergunta ou conceito. Use $...$ para inline LaTeX e $$...$$ para bloco."
             onFocus={e => (e.target.style.borderColor = deckColor)}
-            onBlur={e  => (e.target.style.borderColor = "#E2D9EE")}
+            onBlur={e  => (e.target.style.borderColor = "var(--border)")}
           />
           <input value={frontImage} onChange={e => setFrontImage(e.target.value)}
             className="w-full px-3 py-2 rounded-xl text-sm outline-none"
             style={inputStyle} placeholder="URL de imagem na frente (opcional)"
             onFocus={e => (e.target.style.borderColor = deckColor)}
-            onBlur={e  => (e.target.style.borderColor = "#E2D9EE")}
+            onBlur={e  => (e.target.style.borderColor = "var(--border)")}
           />
           {preview && <LatexPreview content={front} label="Prévia — Frente" color={deckColor} />}
         </div>
@@ -166,13 +166,13 @@ function CardForm({
             style={{ ...inputStyle, resize: "vertical" }}
             placeholder="Resposta ou desenvolvimento. LaTeX suportado."
             onFocus={e => (e.target.style.borderColor = deckColor)}
-            onBlur={e  => (e.target.style.borderColor = "#E2D9EE")}
+            onBlur={e  => (e.target.style.borderColor = "var(--border)")}
           />
           <input value={backImage} onChange={e => setBackImage(e.target.value)}
             className="w-full px-3 py-2 rounded-xl text-sm outline-none"
             style={inputStyle} placeholder="URL de imagem no verso (opcional)"
             onFocus={e => (e.target.style.borderColor = deckColor)}
-            onBlur={e  => (e.target.style.borderColor = "#E2D9EE")}
+            onBlur={e  => (e.target.style.borderColor = "var(--border)")}
           />
           {preview && <LatexPreview content={back} label="Prévia — Verso" color={deckColor} />}
         </div>
@@ -192,7 +192,7 @@ function CardForm({
         </button>
         <button onClick={onCancel}
           className="px-4 py-2.5 rounded-xl text-sm font-bold"
-          style={{ background: "#F1F5F9", color: "#64748B" }}>
+          style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
           Cancelar
         </button>
       </div>
@@ -271,9 +271,9 @@ function CardsPanel({ deckId, deckColor, onBack }: { deckId: number; deckColor: 
         </div>
       ) : !cards || cards.length === 0 ? (
         <div className="text-center py-12 space-y-1">
-          <FileText className="h-10 w-10 mx-auto" style={{ color: "#CBD5E1" }} />
-          <p className="text-sm font-semibold" style={{ color: "#1A1A2E" }}>Nenhum card ainda</p>
-          <p className="text-xs" style={{ color: "#64748B" }}>Clique em "Novo card" para começar.</p>
+          <FileText className="h-10 w-10 mx-auto" style={{ color: "var(--muted-foreground)" }} />
+          <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Nenhum card ainda</p>
+          <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Clique em "Novo card" para começar.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -284,11 +284,11 @@ function CardsPanel({ deckId, deckColor, onBack }: { deckId: number; deckColor: 
                 style={{ border: `1.5px solid ${card.active ? deckColor + "33" : "#E2E8F0"}`, background: card.active ? "#fff" : "#F8FAFC", opacity: card.active ? 1 : 0.55 }}>
 
                 <div className="flex items-center gap-2 px-3 py-2.5">
-                  <span className="text-xs font-bold w-6 flex-shrink-0" style={{ color: "#94A3B8" }}>#{i + 1}</span>
+                  <span className="text-xs font-bold w-6 flex-shrink-0" style={{ color: "var(--muted-foreground)" }}>#{i + 1}</span>
 
                   <button onClick={() => setExpandedId(isExpanded ? null : card.id)}
                     className="flex-1 text-left min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: "#1A1A2E" }}>
+                    <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
                       {card.front.slice(0, 80)}{card.front.length > 80 ? "…" : ""}
                     </p>
                   </button>
@@ -312,7 +312,7 @@ function CardsPanel({ deckId, deckColor, onBack }: { deckId: number; deckColor: 
                           style={{ background: "#E53935" }}>Sim</button>
                         <button onClick={() => setDeleteConfirmId(null)}
                           className="px-2 py-0.5 rounded-lg text-xs font-bold"
-                          style={{ background: "#F1F5F9", color: "#64748B" }}>Não</button>
+                          style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>Não</button>
                       </div>
                     ) : (
                       <button onClick={() => setDeleteConfirmId(card.id)}
@@ -436,15 +436,15 @@ export default function AdminFlashcards() {
             </div>
           ) : !decks || decks.length === 0 ? (
             <div className="text-center py-16 space-y-2">
-              <Layers className="h-12 w-12 mx-auto" style={{ color: "#CBD5E1" }} />
-              <p className="font-semibold" style={{ color: "#1A1A2E" }}>Nenhum baralho criado</p>
-              <p className="text-sm" style={{ color: "#64748B" }}>Clique em "Novo baralho" para começar.</p>
+              <Layers className="h-12 w-12 mx-auto" style={{ color: "var(--muted-foreground)" }} />
+              <p className="font-semibold" style={{ color: "var(--foreground)" }}>Nenhum baralho criado</p>
+              <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Clique em "Novo baralho" para começar.</p>
             </div>
           ) : (
             <div className="space-y-2">
               {decks.map(deck => (
                 <div key={deck.id} className="rounded-xl overflow-hidden"
-                  style={{ border: "1.5px solid #E2D9EE", background: "#fff" }}>
+                  style={{ border: "1.5px solid var(--border)", background: "var(--card)" }}>
 
                   <div className="h-1" style={{ background: deck.color }} />
 
@@ -454,8 +454,8 @@ export default function AdminFlashcards() {
                       <Layers className="h-4 w-4" style={{ color: deck.color }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold" style={{ color: "#1A1A2E" }}>{deck.title}</p>
-                      <p className="text-xs" style={{ color: "#94A3B8" }}>
+                      <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{deck.title}</p>
+                      <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                         {deck.cardCount ?? 0} card(s)
                         {deck.description ? ` · ${deck.description.slice(0, 50)}` : ""}
                       </p>
@@ -478,7 +478,7 @@ export default function AdminFlashcards() {
                             style={{ background: "#E53935" }}>Sim</button>
                           <button onClick={() => setDeleteDeckId(null)}
                             className="px-2 py-0.5 rounded-lg text-xs font-bold"
-                            style={{ background: "#F1F5F9", color: "#64748B" }}>Não</button>
+                            style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>Não</button>
                         </div>
                       ) : (
                         <button onClick={() => setDeleteDeckId(deck.id)}

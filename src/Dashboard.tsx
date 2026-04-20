@@ -29,7 +29,7 @@ function DailyCard() {
 
   if (isLoading) return (
     <div className="rounded-2xl p-4 flex justify-center" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--pr-teal)" }} />
     </div>
   );
   if (!daily) return null;
@@ -41,14 +41,14 @@ function DailyCard() {
   if (daily.completed) {
     const correct = daily.correctCount ?? 0;
     return (
-      <div className="rounded-2xl p-4" style={{ background: "var(--pr-purple-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
+      <div className="rounded-2xl p-4" style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal)" }}>
               <Trophy className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-sm" style={{ color: "#009688" }}>Desafio do dia — concluído!</p>
+              <p className="font-bold text-sm" style={{ color: "var(--pr-teal)" }}>Desafio do dia — concluído!</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{correct}/{questions.length} acertos</p>
             </div>
           </div>
@@ -57,7 +57,7 @@ function DailyCard() {
               const ok = answers[q.id] === q.gabarito;
               return (
                 <div key={i} className="h-7 w-7 rounded-full flex items-center justify-center"
-                  style={{ background: ok ? "#009688" : "#E53935" }}>
+                  style={{ background: ok ? "var(--pr-teal)" : "var(--pr-danger)" }}>
                   {ok ? <CheckCircle2 className="h-3.5 w-3.5 text-white" /> : <XCircle className="h-3.5 w-3.5 text-white" />}
                 </div>
               );
@@ -70,28 +70,28 @@ function DailyCard() {
 
   return (
     <button onClick={() => navigate("/desafio")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "var(--pr-purple-soft, #E0F2F1)", border: "1.5px solid #00968844" }}>
+      style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal)" }}>
             <Flame className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#009688" }}>Desafio de Hoje</p>
+            <p className="font-bold text-sm" style={{ color: "var(--pr-teal)" }}>Desafio de Hoje</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               Resolva três questões escolhidas por nós para manter o cérebro ativo
             </p>
-            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#009688" }}>
+            <p className="text-xs mt-0.5 font-semibold" style={{ color: "var(--pr-teal)" }}>
               {answered}/{questions.length} respondidas · Toque para começar
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#009688" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-teal)" }} />
       </div>
       <div className="flex gap-1.5 mt-3">
         {questions.map((_, i) => (
           <div key={i} className="h-1.5 flex-1 rounded-full"
-            style={{ background: answers[questions[i].id] ? "#009688" : "var(--border)" }} />
+            style={{ background: answers[questions[i].id] ? "var(--pr-teal)" : "var(--border)" }} />
         ))}
       </div>
     </button>
@@ -107,7 +107,7 @@ function StudyCard() {
 
   if (isLoading) return (
     <div className="rounded-2xl p-4 flex justify-center" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#1E40AF" }} />
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--pr-info)" }} />
     </div>
   );
 
@@ -117,8 +117,8 @@ function StudyCard() {
     <div className="rounded-2xl p-4 opacity-60" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "#EFF6FF" }}>
-          <BookOpen className="h-5 w-5" style={{ color: "#1E40AF" }} />
+          style={{ background: "var(--pr-info-bg)" }}>
+          <BookOpen className="h-5 w-5" style={{ color: "var(--pr-info)" }} />
         </div>
         <div>
           <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Vamos estudar?</p>
@@ -130,24 +130,24 @@ function StudyCard() {
 
   return (
     <button onClick={() => navigate("/revise")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "#EFF6FF", border: "1.5px solid #1E40AF33" }}>
+      style={{ background: "var(--pr-info-bg)", border: "1.5px solid var(--pr-info-border)" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "#1E40AF" }}>
+            style={{ background: "var(--pr-info)" }}>
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#1E40AF" }}>Vamos Estudar?</p>
+            <p className="font-bold text-sm" style={{ color: "var(--pr-info)" }}>Vamos Estudar?</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               Selecionamos um tópico para revisar e manter os conteúdos sempre em dia
             </p>
-            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#1E40AF" }}>
+            <p className="text-xs mt-0.5 font-semibold" style={{ color: "var(--pr-info)" }}>
               {content.topico ?? content.titulo}
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#1E40AF" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-info)" }} />
       </div>
     </button>
   );
@@ -172,14 +172,14 @@ function StatsCard({ stats, navigate }: { stats: any; navigate: (to: string) => 
             <button key={t} onClick={() => setTab(t)}
               className="px-3 py-1 rounded-md text-xs font-bold transition-all"
               style={tab === t
-                ? { background: "var(--card)", color: "#009688", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }
+                ? { background: "var(--card)", color: "var(--pr-teal)", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }
                 : { color: "var(--muted-foreground)" }}>
               {t === "semanal" ? "Semanal" : "Geral"}
             </button>
           ))}
         </div>
         <button onClick={() => navigate("/ranking")}
-          className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#009688" }}>
+          className="flex items-center gap-1 text-xs font-semibold" style={{ color: "var(--pr-teal)" }}>
           <Medal className="h-3.5 w-3.5" /> Ranking
         </button>
       </div>
@@ -191,8 +191,8 @@ function StatsCard({ stats, navigate }: { stats: any; navigate: (to: string) => 
           { icon: Star,      label: "Simulados completos",  value: String(stats.totalSimulations ?? 0) },
         ].map(({ icon: Icon, label: lbl, value }) => (
           <div key={lbl} className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
-              <Icon className="h-3.5 w-3.5" style={{ color: "#009688" }} />
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal-soft)" }}>
+              <Icon className="h-3.5 w-3.5" style={{ color: "var(--pr-teal)" }} />
             </div>
             <div className="flex-1">
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{lbl}</p>
@@ -225,7 +225,7 @@ function CircularAccuracy({ value }: { value: number }) {
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, value));
   const offset = circumference - (clamped / 100) * circumference;
-  const color = clamped >= 70 ? "#009688" : clamped >= 40 ? "#E65100" : "#C62828";
+  const color = clamped >= 70 ? "var(--pr-teal)" : clamped >= 40 ? "var(--pr-warn)" : "var(--pr-danger)";
 
   return (
     <svg width="80" height="80" viewBox="0 0 80 80">
@@ -332,7 +332,7 @@ function RadarTabs() {
               onClick={() => setTab(t.key as "area" | "performance")}
               className="flex-1 py-1.5 rounded-lg font-bold text-xs transition-all"
               style={{
-                background: active ? "#009688" : "transparent",
+                background: active ? "var(--pr-teal)" : "transparent",
                 color: active ? "#fff" : "var(--muted-foreground)",
                 boxShadow: active ? "0 1px 4px rgba(0,150,136,0.35)" : "none",
               }}>
@@ -403,7 +403,7 @@ function RadarPerformance() {
     return (
       <div className="rounded-2xl p-4 flex justify-center items-center"
         style={{ height: 200, background: "var(--card)", border: "1.5px solid var(--border)" }}>
-        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
+        <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--pr-teal)" }} />
       </div>
     );
   }
@@ -433,7 +433,7 @@ function RadarPerformance() {
       <div className="flex items-center justify-between">
         <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Performance</p>
         <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-          style={{ background: "#E0F2F1", color: "#00695C" }}>5 eixos</span>
+          style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>5 eixos</span>
       </div>
 
       <ResponsiveContainer width="100%" height={260}>
@@ -444,8 +444,8 @@ function RadarPerformance() {
           <PolarRadiusAxis angle={30} domain={[0, 100]}
             tick={{ fontSize: 9, fill: "var(--muted-foreground)" }}
             tickCount={4} axisLine={false} />
-          <Radar dataKey="pct" stroke="#009688" fill="#009688" fillOpacity={0.35}
-            strokeWidth={2} dot={{ r: 3, fill: "#009688" }} />
+          <Radar dataKey="pct" stroke="var(--pr-teal)" fill="var(--pr-teal)" fillOpacity={0.35}
+            strokeWidth={2} dot={{ r: 3, fill: "var(--pr-teal)" }} />
           <Tooltip
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
             formatter={(v: number, _name: string, props: any) => {
@@ -463,7 +463,7 @@ function RadarPerformance() {
             style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
             <span className="text-xs font-semibold truncate" style={{ color: "var(--foreground)" }}>{d.eixo}</span>
             <span className="text-xs font-black flex-shrink-0"
-              style={{ color: d.pct >= 70 ? "#15803D" : d.pct >= 40 ? "#D97706" : "#DC2626" }}>{d.pct}%</span>
+              style={{ color: d.pct >= 70 ? "var(--pr-success)" : d.pct >= 40 ? "var(--pr-warn)" : "var(--pr-danger)" }}>{d.pct}%</span>
           </div>
         ))}
       </div>
@@ -473,21 +473,21 @@ function RadarPerformance() {
         <div className="space-y-2 pt-1">
           {best.pct > 0 && (
             <div className="rounded-xl px-3 py-2 flex items-center gap-3"
-              style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+              style={{ background: "var(--pr-success-bg)", border: "1px solid var(--pr-success-border)" }}>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold" style={{ color: "#15803D" }}>Destaque</p>
-                <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#166534" }}>
+                <p className="text-xs font-semibold" style={{ color: "var(--pr-success)" }}>Destaque</p>
+                <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "var(--pr-success)" }}>
                   {best.eixo} — {formatRaw(best)}
                 </p>
               </div>
-              <span className="text-sm font-black flex-shrink-0" style={{ color: "#15803D" }}>{best.pct}%</span>
+              <span className="text-sm font-black flex-shrink-0" style={{ color: "var(--pr-success)" }}>{best.pct}%</span>
             </div>
           )}
           {weak.pct < 70 && (
             <div className="rounded-xl px-3 py-2"
-              style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}>
-              <p className="text-xs font-semibold mb-0.5" style={{ color: "#DC2626" }}>A melhorar</p>
-              <p className="text-sm font-bold truncate" style={{ color: "#991B1B" }}>
+              style={{ background: "var(--pr-danger-bg)", border: "1px solid var(--pr-danger-border)" }}>
+              <p className="text-xs font-semibold mb-0.5" style={{ color: "var(--pr-danger)" }}>A melhorar</p>
+              <p className="text-sm font-bold truncate" style={{ color: "var(--pr-danger)" }}>
                 {weak.eixo} — {formatRaw(weak)}
               </p>
             </div>
@@ -534,7 +534,7 @@ function RadarTopicos() {
   // ── Returns condicionais SÓ depois de todos os hooks ────────────────
   if (isLoading) return (
     <div className="rounded-2xl p-4 flex justify-center items-center" style={{ height: 200, background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#009688" }} />
+      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--pr-teal)" }} />
     </div>
   );
 
@@ -565,7 +565,7 @@ function RadarTopicos() {
               <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                 {d.correct}/{d.total}
               </span>
-              <span className="text-xs font-black w-10 text-right" style={{ color: d.pct >= 70 ? "#15803D" : d.pct >= 40 ? "#D97706" : "#DC2626" }}>
+              <span className="text-xs font-black w-10 text-right" style={{ color: d.pct >= 70 ? "var(--pr-success)" : d.pct >= 40 ? "var(--pr-warn)" : "var(--pr-danger)" }}>
                 {d.pct}%
               </span>
             </div>
@@ -605,12 +605,12 @@ function RadarTopicos() {
                 <p className="font-semibold" style={{ color: "var(--foreground)" }}>Como ler este gráfico</p>
                 <p style={{ color: "var(--muted-foreground)" }}>Cada ponta representa uma área da Matemática. Quanto mais o polígono se estende em direção à ponta, maior é o seu percentual de acerto naquele conteúdo.</p>
                 <p style={{ color: "var(--muted-foreground)" }}>Um polígono grande e simétrico indica desempenho equilibrado. Pontas "afundadas" indicam onde concentrar os estudos.</p>
-                <button onClick={() => setShowInfo(false)} className="text-xs font-semibold mt-1" style={{ color: "#009688" }}>Fechar</button>
+                <button onClick={() => setShowInfo(false)} className="text-xs font-semibold mt-1" style={{ color: "var(--pr-teal)" }}>Fechar</button>
               </div>
             )}
           </div>
         </div>
-        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#E0F2F1", color: "#00695C" }}>
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>
           {data.length} áreas
         </span>
       </div>
@@ -631,11 +631,11 @@ function RadarTopicos() {
           />
           <Radar
             dataKey="pct"
-            stroke="#009688"
-            fill="#009688"
+            stroke="var(--pr-teal)"
+            fill="var(--pr-teal)"
             fillOpacity={0.25}
             strokeWidth={2}
-            dot={{ r: 3, fill: "#009688", strokeWidth: 0 }}
+            dot={{ r: 3, fill: "var(--pr-teal)", strokeWidth: 0 }}
             isAnimationActive={false}
           />
           <Tooltip
@@ -648,21 +648,21 @@ function RadarTopicos() {
       {/* Destaques */}
       <div className="space-y-2 pt-1">
         {/* Melhor área */}
-        <div className="rounded-xl px-3 py-2 flex items-center gap-3" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+        <div className="rounded-xl px-3 py-2 flex items-center gap-3" style={{ background: "var(--pr-success-bg)", border: "1px solid var(--pr-success-border)" }}>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold" style={{ color: "#15803D" }}>Melhor área</p>
-            <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#166534" }}>{shortLabel(best.conteudo)}</p>
+            <p className="text-xs font-semibold" style={{ color: "var(--pr-success)" }}>Melhor área</p>
+            <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "var(--pr-success)" }}>{shortLabel(best.conteudo)}</p>
           </div>
-          <span className="text-sm font-black flex-shrink-0" style={{ color: "#15803D" }}>{best.pct}%</span>
+          <span className="text-sm font-black flex-shrink-0" style={{ color: "var(--pr-success)" }}>{best.pct}%</span>
         </div>
 
         {/* Pontos a melhorar — lista das áreas mais fracas */}
-        <div className="rounded-xl px-3 py-2" style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}>
-          <p className="text-xs font-semibold mb-1.5" style={{ color: "#DC2626" }}>
+        <div className="rounded-xl px-3 py-2" style={{ background: "var(--pr-danger-bg)", border: "1px solid var(--pr-danger-border)" }}>
+          <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--pr-danger)" }}>
             {belowThreshold.length > 0 ? "Pontos a melhorar" : "Áreas com menor acerto"}
           </p>
           {weakList.length === 0 ? (
-            <p className="text-xs" style={{ color: "#991B1B" }}>Sem dados suficientes.</p>
+            <p className="text-xs" style={{ color: "var(--pr-danger)" }}>Sem dados suficientes.</p>
           ) : (
             <div className="space-y-1.5">
               {weakList.map((w) => {
@@ -672,13 +672,13 @@ function RadarTopicos() {
                   <div
                     key={w.conteudo}
                     className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "#991B1B" }}>
+                    <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "var(--pr-danger)" }}>
                       {label}
                     </span>
-                    <span className="text-xs flex-shrink-0" style={{ color: "#991B1B", opacity: 0.7 }}>
+                    <span className="text-xs flex-shrink-0" style={{ color: "var(--pr-danger)", opacity: 0.7 }}>
                       {w.correct}/{w.total}
                     </span>
-                    <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#DC2626" }}>
+                    <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "var(--pr-danger)" }}>
                       {w.pct}%
                     </span>
                     {trilha && (
@@ -705,7 +705,7 @@ function RadarTopicos() {
           {/* Dica quando há trilha */}
           {weakList.some((w) => getTrilhaByArea(w.conteudo)) && (
             <p className="text-xs mt-2 pt-2 border-t flex items-center gap-1"
-              style={{ color: "#991B1B", opacity: 0.8, borderColor: "#FECACA" }}>
+              style={{ color: "var(--pr-danger)", opacity: 0.8, borderColor: "var(--pr-danger-border)" }}>
               <Sparkles className="h-3 w-3" /> Clique em <strong>Trilha</strong> para treinar essa área guiado passo a passo.
             </p>
           )}
@@ -717,13 +717,17 @@ function RadarTopicos() {
 
 // ─── Card da Agenda na Dashboard ─────────────────────────────────────────────
 
+// Paletas de dia da semana — usam tokens semânticos quando disponíveis,
+// para responder a light/dark automaticamente. Quando não há token equivalente
+// (roxo/laranja/rosa), usamos color-mix contra o background/foreground atual
+// para manter contraste em ambos os temas.
 const DAY_COLORS: Record<number, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
-  1: { bg: "#EFF6FF", border: "#BFDBFE", text: "#1D4ED8", badge: "#DBEAFE", badgeText: "#1E40AF" },
-  2: { bg: "#F0FDF4", border: "#BBF7D0", text: "#16A34A", badge: "#DCFCE7", badgeText: "#15803D" },
-  3: { bg: "#FDF4FF", border: "#E9D5FF", text: "#9333EA", badge: "#F3E8FF", badgeText: "#7E22CE" },
-  4: { bg: "#FFF7ED", border: "#FED7AA", text: "#EA580C", badge: "#FFEDD5", badgeText: "#C2410C" },
-  5: { bg: "#ECFDF5", border: "#A7F3D0", text: "#059669", badge: "#D1FAE5", badgeText: "#047857" },
-  6: { bg: "#FFF1F2", border: "#FECDD3", text: "#E11D48", badge: "#FFE4E6", badgeText: "#BE123C" },
+  1: { bg: "var(--pr-info-bg)",    border: "var(--pr-info-border)",    text: "var(--pr-info)",    badge: "var(--pr-info-bg)",    badgeText: "var(--pr-info)" },
+  2: { bg: "var(--pr-success-bg)", border: "var(--pr-success-border)", text: "var(--pr-success)", badge: "var(--pr-success-bg)", badgeText: "var(--pr-success)" },
+  3: { bg: "color-mix(in srgb, var(--pr-teal) 12%, var(--card))", border: "color-mix(in srgb, var(--pr-teal) 30%, var(--card))", text: "var(--pr-teal)", badge: "color-mix(in srgb, var(--pr-teal) 12%, var(--card))", badgeText: "var(--pr-teal)" },
+  4: { bg: "var(--pr-warn-bg)",    border: "var(--pr-warn-border)",    text: "var(--pr-warn)",    badge: "var(--pr-warn-bg)",    badgeText: "var(--pr-warn)" },
+  5: { bg: "var(--pr-success-bg)", border: "var(--pr-success-border)", text: "var(--pr-success)", badge: "var(--pr-success-bg)", badgeText: "var(--pr-success)" },
+  6: { bg: "var(--pr-danger-bg)",  border: "var(--pr-danger-border)",  text: "var(--pr-danger)",  badge: "var(--pr-danger-bg)",  badgeText: "var(--pr-danger)" },
 };
 
 const DAYS_SHORT: Record<number, string> = { 1: "Seg", 2: "Ter", 3: "Qua", 4: "Qui", 5: "Sex", 6: "Sáb" };
@@ -756,7 +760,7 @@ function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
 
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between"
-        style={{ background: "linear-gradient(135deg, #01738d, #015f75)" }}>
+        style={{ background: "linear-gradient(135deg, var(--pr-teal-dark), var(--pr-teal-darker))" }}>
         <div className="flex items-center gap-2">
           <CalendarDays className="h-4 w-4 text-white opacity-80" />
           <p className="font-bold text-sm text-white">Planner de Estudos</p>
@@ -778,7 +782,7 @@ function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
           <p className="text-sm text-muted-foreground">Você ainda não montou seu cronograma.</p>
           <button onClick={() => navigate("/agenda")}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white"
-            style={{ background: "#01738d" }}>
+            style={{ background: "var(--pr-teal-dark)" }}>
             <CalendarDays className="h-4 w-4" /> Criar meu planner
           </button>
         </div>
@@ -969,7 +973,7 @@ export default function Dashboard() {
                   formatter={(v: number) => [v, "Questões"]} />
                 <Bar dataKey="questoes" radius={[4, 4, 0, 0]} maxBarSize={32}>
                   {stats.dailyData.map((entry, i) => (
-                    <Cell key={i} fill={entry.questoes > 0 ? "#009688" : "var(--border)"} />
+                    <Cell key={i} fill={entry.questoes > 0 ? "var(--pr-teal)" : "var(--border)"} />
                   ))}
                 </Bar>
               </BarChart>
@@ -1002,8 +1006,8 @@ export default function Dashboard() {
           style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
-                <Dumbbell className="h-5 w-5" style={{ color: "#009688" }} />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal-soft)" }}>
+                <Dumbbell className="h-5 w-5" style={{ color: "var(--pr-teal)" }} />
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino Livre</p>
@@ -1023,8 +1027,8 @@ export default function Dashboard() {
           style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
-                <BarChart2 className="h-5 w-5" style={{ color: "#009688" }} />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal-soft)" }}>
+                <BarChart2 className="h-5 w-5" style={{ color: "var(--pr-teal)" }} />
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Banco de Questões</p>
@@ -1041,8 +1045,8 @@ export default function Dashboard() {
           style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
-                <FlaskConical className="h-5 w-5" style={{ color: "#009688" }} />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal-soft)" }}>
+                <FlaskConical className="h-5 w-5" style={{ color: "var(--pr-teal)" }} />
               </div>
               <div>
                 <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Fórmulas</p>

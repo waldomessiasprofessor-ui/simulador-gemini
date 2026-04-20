@@ -14,10 +14,10 @@ type TopicStat = {
 };
 
 function getLevel(accuracy: number, total: number) {
-  if (total < 3) return { label: "Poucos dados", color: "#94A3B8", bg: "#F1F5F9", bar: "#CBD5E1" };
-  if (accuracy >= 75) return { label: "Dominado", color: "#16A34A", bg: "#F0FDF4", bar: "#22C55E" };
-  if (accuracy >= 50) return { label: "Em progresso", color: "#D97706", bg: "#FFFBEB", bar: "#F59E0B" };
-  return { label: "Prioridade", color: "#DC2626", bg: "#FEF2F2", bar: "#EF4444" };
+  if (total < 3) return { label: "Poucos dados", color: "var(--muted-foreground)", bg: "var(--muted)",        bar: "var(--muted-foreground)" };
+  if (accuracy >= 75) return { label: "Dominado",    color: "var(--pr-success)",     bg: "var(--pr-success-bg)", bar: "var(--pr-success)" };
+  if (accuracy >= 50) return { label: "Em progresso",color: "var(--pr-warn)",        bg: "var(--pr-warn-bg)",    bar: "var(--pr-warn)" };
+  return { label: "Prioridade",                        color: "var(--pr-danger)",      bg: "var(--pr-danger-bg)",  bar: "var(--pr-danger)" };
 }
 
 function TopicCard({ topic, navigate }: { topic: TopicStat; navigate: (p: string) => void }) {
@@ -82,7 +82,7 @@ export default function Desempenho() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
     </div>
   );
 
@@ -133,7 +133,7 @@ export default function Desempenho() {
 
       {!hasData ? (
         <div className="text-center py-16 space-y-3 card">
-          <Target className="h-12 w-12 mx-auto opacity-30" style={{ color: "#009688" }} />
+          <Target className="h-12 w-12 mx-auto opacity-30" style={{ color: "var(--pr-teal)" }} />
           <p className="font-semibold" style={{ color: "var(--foreground)" }}>Nenhum dado ainda</p>
           <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
             Complete simulados ou treinos para ver sua análise por tema.
@@ -148,8 +148,8 @@ export default function Desempenho() {
           {weak.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2 px-1">
-                <TrendingDown className="h-4 w-4" style={{ color: "#DC2626" }} />
-                <h2 className="font-bold text-sm" style={{ color: "#DC2626" }}>
+                <TrendingDown className="h-4 w-4" style={{ color: "var(--pr-danger)" }} />
+                <h2 className="font-bold text-sm" style={{ color: "var(--pr-danger)" }}>
                   Prioridade — estude esses primeiro
                 </h2>
               </div>
@@ -160,8 +160,8 @@ export default function Desempenho() {
           {mid.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2 px-1">
-                <Minus className="h-4 w-4" style={{ color: "#D97706" }} />
-                <h2 className="font-bold text-sm" style={{ color: "#D97706" }}>
+                <Minus className="h-4 w-4" style={{ color: "var(--pr-warn)" }} />
+                <h2 className="font-bold text-sm" style={{ color: "var(--pr-warn)" }}>
                   Em progresso — continue praticando
                 </h2>
               </div>
@@ -172,8 +172,8 @@ export default function Desempenho() {
           {strong.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2 px-1">
-                <TrendingUp className="h-4 w-4" style={{ color: "#16A34A" }} />
-                <h2 className="font-bold text-sm" style={{ color: "#16A34A" }}>
+                <TrendingUp className="h-4 w-4" style={{ color: "var(--pr-success)" }} />
+                <h2 className="font-bold text-sm" style={{ color: "var(--pr-success)" }}>
                   Dominado — bom trabalho!
                 </h2>
               </div>

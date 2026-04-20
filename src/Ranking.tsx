@@ -10,7 +10,7 @@ export default function Ranking() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
     </div>
   );
 
@@ -27,7 +27,7 @@ export default function Ranking() {
       </div>
 
       {!ranking || ranking.length === 0 ? (
-        <div className="text-center py-16" style={{ color: "#94A3B8" }}>
+        <div className="text-center py-16" style={{ color: "var(--muted-foreground)" }}>
           <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">Nenhum aluno completou a Simulação Enem ainda.</p>
           <p className="text-xs mt-1">Seja o primeiro!</p>
@@ -41,8 +41,8 @@ export default function Ranking() {
                 key={entry.userId}
                 className="flex items-center gap-4 p-4 rounded-xl"
                 style={{
-                  background: entry.isMe ? "#E0F2F1" : "#fff",
-                  border: `1.5px solid ${entry.isMe ? "#00968855" : "#E2E8F0"}`,
+                  background: entry.isMe ? "var(--pr-teal-soft)" : "var(--card)",
+                  border: `1.5px solid ${entry.isMe ? "var(--pr-teal-border)" : "var(--border)"}`,
                 }}
               >
                 {/* Posição */}
@@ -50,32 +50,32 @@ export default function Ranking() {
                   {medalColor ? (
                     <Medal className="h-5 w-5 mx-auto" style={{ color: medalColor }} />
                   ) : (
-                    <span className="text-sm font-bold" style={{ color: "#94A3B8" }}>{entry.position}</span>
+                    <span className="text-sm font-bold" style={{ color: "var(--muted-foreground)" }}>{entry.position}</span>
                   )}
                 </div>
 
                 {/* Avatar */}
                 <div className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{ background: entry.isMe ? "#009688" : "#E2E8F0", color: entry.isMe ? "#fff" : "#64748B" }}>
+                  style={{ background: entry.isMe ? "var(--pr-teal)" : "var(--border)", color: entry.isMe ? "#fff" : "var(--muted-foreground)" }}>
                   {entry.userName[0]?.toUpperCase() ?? "?"}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate" style={{ color: "#1A1A2E" }}>
-                    {entry.userName} {entry.isMe && <span className="text-xs font-normal" style={{ color: "#009688" }}>(você)</span>}
+                  <p className="font-semibold text-sm truncate" style={{ color: "var(--foreground)" }}>
+                    {entry.userName} {entry.isMe && <span className="text-xs font-normal" style={{ color: "var(--pr-teal)" }}>(você)</span>}
                   </p>
-                  <p className="text-xs" style={{ color: "#94A3B8" }}>
+                  <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                     {entry.completedAt ? format(new Date(entry.completedAt), "dd/MM/yyyy", { locale: ptBR }) : "—"}
                   </p>
                 </div>
 
                 {/* Nota */}
                 <div className="text-right flex-shrink-0">
-                  <p className="text-lg font-black" style={{ color: entry.isMe ? "#009688" : "#1A1A2E" }}>
+                  <p className="text-lg font-black" style={{ color: entry.isMe ? "var(--pr-teal)" : "var(--foreground)" }}>
                     {entry.score != null ? Math.round(entry.score) : "—"}
                   </p>
-                  <p className="text-xs" style={{ color: "#94A3B8" }}>pts TRI</p>
+                  <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>pts TRI</p>
                 </div>
               </div>
             );
