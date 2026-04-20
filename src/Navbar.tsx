@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight, ChevronDown,
-  User, Mail, Shield, Zap, GraduationCap, Moon, Sun, CalendarDays, Brain
+  User, Mail, Shield, Zap, GraduationCap, Moon, Sun, CalendarDays, Brain,
+  Star
 } from "lucide-react";
 
 function useDarkMode() {
@@ -20,94 +21,182 @@ function useDarkMode() {
   return [dark, toggle] as const;
 }
 
-const PAULISTAS = [
-  { id: "unicamp", label: "UNICAMP",       comingSoon: false },
-  { id: "fuvest",  label: "FUVEST",        comingSoon: true },
-  { id: "unesp",   label: "UNESP",         comingSoon: true },
-  { id: "repvet",  label: "Rep. Vetor",    comingSoon: false },
-];
+// =============================================================================
+// Hierarquia do menu
+// =============================================================================
+// Estrutura nova (abril 2026):
+//   Banco de Questões
+//     ENEM · Paulistas (em breve) · Repositório Vetor
+//   Simulados
+//     ENEM (com TRI) · Paulistas (em breve — UNICAMP/Fuvest/UNESP)
+//   Treino Livre · Desafio do Dia · Planner de Estudos · Flashcards ·
+//   Revisão · Fórmulas · Histórico · Ranking
+//   (Admin — só para administradores)
 
-interface NavLinkItem {
+// Item de link disponível
+interface LinkItem {
+  kind: "link";
   href: string;
   label: string;
-  icon: React.ElementType;
-  adminOnly?: boolean;
+  icon?: React.ElementType;
+  badge?: string;
 }
+// Item desabilitado (em breve)
+interface SoonItem {
+  kind: "soon";
+  label: string;
+  icon?: React.ElementType;
+  children?: SoonItem[];  // UNICAMP/Fuvest/UNESP dentro de Paulistas
+}
+type SubItem = LinkItem | SoonItem;
 
-// Ordem: Início → Simulado ENEM → [Paulistas] → Banco de Questões ENEM → resto
-const NAV_LINKS: NavLinkItem[] = [
-  { href: "/", label: "Início", icon: Home },
-  { href: "/simulado", label: "Simulado ENEM", icon: ClipboardList },
-  { href: "/questoes", label: "Banco de questões ENEM", icon: BookOpen },
-  { href: "/treino", label: "Treino livre", icon: Dumbbell },
-  { href: "/desafio", label: "Desafio do dia", icon: Zap },
-  { href: "/agenda", label: "Agenda de estudos", icon: CalendarDays },
-  { href: "/revisao", label: "Revisão", icon: BookOpen },
-  { href: "/formulas", label: "Fórmulas", icon: FlaskConical },
-  { href: "/historico", label: "Histórico", icon: History },
-  { href: "/ranking", label: "Ranking", icon: Trophy },
-  { href: "/flashcards", label: "Flashcards", icon: Brain },
-  { href: "/admin/questoes", label: "Admin — questões", icon: Users, adminOnly: true },
-  { href: "/admin/usuarios", label: "Admin — usuários", icon: Users, adminOnly: true },
-  { href: "/admin/formulas", label: "Admin — fórmulas", icon: FlaskConical, adminOnly: true },
-  { href: "/admin/revise", label: "Admin — revise", icon: BookOpen, adminOnly: true },
-  { href: "/admin/flashcards", label: "Admin — flashcards", icon: Brain, adminOnly: true },
+// Itens que têm sub-menu (Banco de Questões, Simulados)
+interface GroupItem {
+  kind: "group";
+  label: string;
+  icon: React.ElementType;
+  children: SubItem[];
+}
+type TopItem = GroupItem | LinkItem;
+
+const NAV_TREE: TopItem[] = [
+  {
+    kind: "group",
+    label: "Banco de Questões",
+    icon: BookOpen,
+    children: [
+      { kind: "link", href: "/questoes",        label: "ENEM",               icon: GraduationCap },
+      { kind: "soon", label: "Paulistas",       icon: GraduationCap },
+      { kind: "link", href: "/questoes/repvet", label: "Repositório Vetor", icon: Star },
+    ],
+  },
+  {
+    kind: "group",
+    label: "Simulados",
+    icon: ClipboardList,
+    children: [
+      { kind: "link", href: "/simulado", label: "ENEM", icon: GraduationCap, badge: "Com TRI" },
+      {
+        kind: "soon",
+        label: "Paulistas",
+        icon: GraduationCap,
+        children: [
+          { kind: "soon", label: "UNICAMP" },
+          { kind: "soon", label: "Fuvest"  },
+          { kind: "soon", label: "UNESP"   },
+        ],
+      },
+    ],
+  },
+  { kind: "link", href: "/treino",     label: "Treino Livre",       icon: Dumbbell },
+  { kind: "link", href: "/desafio",    label: "Desafio do Dia",     icon: Zap },
+  { kind: "link", href: "/agenda",     label: "Planner de Estudos", icon: CalendarDays },
+  { kind: "link", href: "/flashcards", label: "Flashcards",         icon: Brain },
+  { kind: "link", href: "/revisao",    label: "Revisão",            icon: BookOpen },
+  { kind: "link", href: "/formulas",   label: "Fórmulas",           icon: FlaskConical },
+  { kind: "link", href: "/historico",  label: "Histórico",          icon: History },
+  { kind: "link", href: "/ranking",    label: "Ranking",            icon: Trophy },
 ];
 
-function PaulistasSubmenu({ location, onClose }: { location: string; onClose: () => void }) {
-  const [open, setOpen] = useState(false);
-  const isPaulistasActive = location.startsWith("/questoes/") || location.startsWith("/simulado/unicamp") || location.startsWith("/simulado/fuvest") || location.startsWith("/simulado/unesp") || location.startsWith("/simulado/repvet");
+const ADMIN_LINKS: LinkItem[] = [
+  { kind: "link", href: "/admin/questoes",   label: "Admin — questões",   icon: Users },
+  { kind: "link", href: "/admin/usuarios",   label: "Admin — usuários",   icon: Users },
+  { kind: "link", href: "/admin/formulas",   label: "Admin — fórmulas",   icon: FlaskConical },
+  { kind: "link", href: "/admin/revise",     label: "Admin — revise",     icon: BookOpen },
+  { kind: "link", href: "/admin/flashcards", label: "Admin — flashcards", icon: Brain },
+];
+
+// =============================================================================
+// Renderização dos sub-itens
+// =============================================================================
+
+function SoonBadge() {
+  return (
+    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+      style={{ background: "#E0F2F1", color: "#00695C", letterSpacing: "0.03em" }}>
+      Em breve
+    </span>
+  );
+}
+
+function renderSub(item: SubItem, location: string, onClose: () => void, depth = 0): ReactElement {
+  const Icon = item.icon;
+  const pad = depth === 0 ? "pl-3" : "pl-5";
+
+  if (item.kind === "soon") {
+    return (
+      <div key={item.label + depth}>
+        <div className={`flex items-center gap-2 pr-3 py-2 rounded-xl cursor-default opacity-70 ${pad}`}>
+          {Icon && <Icon className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />}
+          <span className="text-sm font-medium flex-1" style={{ color: "var(--muted-foreground)" }}>
+            {item.label}
+          </span>
+          <SoonBadge />
+        </div>
+        {item.children && (
+          <div className="space-y-0.5 mt-0.5">
+            {item.children.map((c) => renderSub(c, location, onClose, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // link ativo
+  const active = location === item.href;
+  return (
+    <Link key={item.href} href={item.href}>
+      <span onClick={onClose}
+        className={`flex items-center gap-2 pr-3 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all ${pad}`}
+        style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
+        {Icon && <Icon className="h-3.5 w-3.5 flex-shrink-0" />}
+        <span className="flex-1">{item.label}</span>
+        {item.badge && (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+            style={{ background: "#009688", color: "#fff", letterSpacing: "0.03em" }}>
+            {item.badge}
+          </span>
+        )}
+      </span>
+    </Link>
+  );
+}
+
+function GroupMenu({ item, location, onClose, startOpen }: {
+  item: GroupItem; location: string; onClose: () => void; startOpen: boolean;
+}) {
+  const [open, setOpen] = useState(startOpen);
+  const Icon = item.icon;
+
+  // Pai ativo quando alguma criança está na rota atual
+  const isActive = item.children.some(
+    (c) => c.kind === "link" && location === c.href
+  );
 
   return (
     <div>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-        style={isPaulistasActive ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
-        <GraduationCap className="h-4 w-4 flex-shrink-0" />
-        Paulistas
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+        style={isActive ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--foreground)" }}>
+        <Icon className="h-4 w-4 flex-shrink-0" />
+        <span className="flex-1 text-left">{item.label}</span>
         {open
-          ? <ChevronDown className="h-3.5 w-3.5 ml-auto" />
-          : <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+          ? <ChevronDown className="h-3.5 w-3.5" />
+          : <ChevronRight className="h-3.5 w-3.5" />}
       </button>
-
       {open && (
-        <div className="ml-4 mt-1 space-y-0.5 border-l-2 pl-3" style={{ borderColor: "#00968844" }}>
-          {PAULISTAS.map((p) => (
-            <div key={p.id}>
-              {p.comingSoon ? (
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl opacity-50 cursor-default">
-                  <span className="text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>{p.label}</span>
-                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                    style={{ background: "#E0F2F1", color: "#009688" }}>Em breve</span>
-                </div>
-              ) : (
-                <div className="space-y-0.5">
-                  <Link href={`/questoes/${p.id}`}>
-                    <span onClick={onClose}
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all"
-                      style={location === `/questoes/${p.id}` ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
-                      <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                      {p.label} — Questões
-                    </span>
-                  </Link>
-                  <Link href={`/simulado/${p.id}`}>
-                    <span onClick={onClose}
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all"
-                      style={location === `/simulado/${p.id}` ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
-                      <ClipboardList className="h-3.5 w-3.5 flex-shrink-0" />
-                      {p.label} — Simulado
-                    </span>
-                  </Link>
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="ml-3 mt-1 space-y-0.5 border-l-2 pl-2" style={{ borderColor: "#00968833" }}>
+          {item.children.map((c) => renderSub(c, location, onClose))}
         </div>
       )}
     </div>
   );
 }
+
+// =============================================================================
+// Drawer de perfil (inalterado do anterior)
+// =============================================================================
 
 function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void }) {
   const logout = trpc.auth.logout.useMutation({
@@ -202,6 +291,10 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
   );
 }
 
+// =============================================================================
+// Navbar + Sidebar
+// =============================================================================
+
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -214,7 +307,10 @@ export default function Navbar() {
     return location.startsWith(href);
   }
 
-  const visibleLinks = NAV_LINKS.filter((l) => !l.adminOnly || session?.role === "admin");
+  // Decide quais grupos começam abertos baseado na rota atual
+  const bancoOpen = location.startsWith("/questoes");
+  const simOpen   = location.startsWith("/simulado");
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <>
@@ -264,7 +360,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={closeSidebar} />}
 
       <aside className="fixed left-0 top-0 h-full z-50 w-72 flex flex-col"
         style={{
@@ -283,34 +379,62 @@ export default function Navbar() {
               <p className="text-xs leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Escola de Alta Performance</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>
+          <button onClick={closeSidebar} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {visibleLinks.map(({ href, label, icon: Icon }, i) => {
-            const active = isActive(href);
+          {NAV_TREE.map((item, i) => {
+            if (item.kind === "group") {
+              return (
+                <GroupMenu
+                  key={item.label + i}
+                  item={item}
+                  location={location}
+                  onClose={closeSidebar}
+                  startOpen={item.label === "Banco de Questões" ? bancoOpen : simOpen}
+                />
+              );
+            }
+            // link de topo
+            const Icon = item.icon!;
+            const active = isActive(item.href);
             return (
-              <div key={href}>
-                {/* Insere submenu Paulistas após Simulado ENEM (índice 1) */}
-                {i === 1 && (
-                  <div className="pb-1">
-                    <PaulistasSubmenu location={location} onClose={() => setSidebarOpen(false)} />
-                  </div>
-                )}
-                <Link href={href}>
-                  <span onClick={() => setSidebarOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
-                    style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                    {label}
-                    {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
-                  </span>
-                </Link>
-              </div>
+              <Link key={item.href} href={item.href}>
+                <span onClick={closeSidebar}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
+                  style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  {item.label}
+                  {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+                </span>
+              </Link>
             );
           })}
+
+          {/* Área admin */}
+          {session?.role === "admin" && (
+            <div className="pt-3 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
+              <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>
+                Administração
+              </p>
+              {ADMIN_LINKS.map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
+                return (
+                  <Link key={href} href={href}>
+                    <span onClick={closeSidebar}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
+                      style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
+                      {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
+                      {label}
+                      {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </nav>
 
         {session && (

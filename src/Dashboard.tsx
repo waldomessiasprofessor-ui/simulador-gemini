@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import { getTrilhaByArea } from "@/trilhas";
+import { getTrilhaStats } from "@/trilhas/stats";
 
 const VESTIBULARES = [
   { id: "ENEM",    label: "ENEM",        sub: "45 questões · TRI",        badge: "Nacional", color: "#009688", comingSoon: false },
@@ -349,9 +350,34 @@ function RadarTabs() {
 // 5 eixos: Velocidade, Questões, Estudos, Fixação, Dedicação — cada um 0–100%.
 // Diferente do radar por área (que mede acerto), este mede hábito/volume.
 function RadarPerformance() {
-  const { data, isLoading, dataUpdatedAt } = trpc.simulations.getPerformanceStats.useQuery(undefined, {
+  const { data: rawData, isLoading, dataUpdatedAt } = trpc.simulations.getPerformanceStats.useQuery(undefined, {
     staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true, refetchInterval: 60_000,
   });
+
+  // Incorpora estatísticas das trilhas (localStorage) nos eixos Dedicação e
+  // Questões — servidor ainda não conhece as trilhas, então fazemos no cliente.
+  const data = useMemo(() => {
+    if (!rawData) return rawData;
+    const t = getTrilhaStats();
+    const extraHoras = t.totalTimeSec / 3600;
+    const extraQuestoes = t.totalExercises;
+    if (extraHoras === 0 && extraQuestoes === 0) return rawData;
+    return rawData.map((d) => {
+      if (d.eixo === "Dedicação") {
+        const baseRaw = Number(d.raw ?? 0);
+        const newRaw = baseRaw + extraHoras;
+        const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
+        return { ...d, pct: newPct, raw: Math.round(newRaw * 10) / 10 };
+      }
+      if (d.eixo === "Questões") {
+        const baseRaw = Number(d.raw ?? 0);
+        const newRaw = baseRaw + extraQuestoes;
+        const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
+        return { ...d, pct: newPct, raw: newRaw };
+      }
+      return d;
+    });
+  }, [rawData, dataUpdatedAt]);
 
   const [animated, setAnimated] = useState<{ eixo: string; pct: number }[]>([]);
   const rafRef = useRef<number | null>(null);
@@ -638,15 +664,16 @@ function RadarTopicos() {
           {weakList.length === 0 ? (
             <p className="text-xs" style={{ color: "#991B1B" }}>Sem dados suficientes.</p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {weakList.map((w) => {
                 const trilha = getTrilhaByArea(w.conteudo);
                 const label = shortLabel(w.conteudo);
-                const meta = (
-                  <>
-                    <span className="text-xs font-semibold flex-1 min-w-0 truncate flex items-center gap-1" style={{ color: "#991B1B" }}>
+                return (
+                  <div
+                    key={w.conteudo}
+                    className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "#991B1B" }}>
                       {label}
-                      {trilha && <Sparkles className="h-3 w-3 flex-shrink-0" style={{ color: "#DC2626" }} />}
                     </span>
                     <span className="text-xs flex-shrink-0" style={{ color: "#991B1B", opacity: 0.7 }}>
                       {w.correct}/{w.total}
@@ -654,20 +681,22 @@ function RadarTopicos() {
                     <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#DC2626" }}>
                       {w.pct}%
                     </span>
-                  </>
-                );
-                return trilha ? (
-                  <button
-                    key={w.conteudo}
-                    onClick={() => navigate(`/trilha/${trilha.slug}`)}
-                    className="w-full flex items-center gap-2 rounded-lg px-2 py-1 -mx-2 transition-colors hover:bg-white/50"
-                    title={`Abrir trilha: ${trilha.titulo}`}>
-                    {meta}
-                    <ChevronRight className="h-3 w-3 flex-shrink-0" style={{ color: "#DC2626" }} />
-                  </button>
-                ) : (
-                  <div key={w.conteudo} className="flex items-center gap-2">
-                    {meta}
+                    {trilha && (
+                      <button
+                        onClick={() => navigate(`/trilha/${trilha.slug}`)}
+                        title={`Abrir trilha: ${trilha.titulo}`}
+                        className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full transition-transform hover:scale-105"
+                        style={{
+                          backgroundColor: "#009688",
+                          backgroundImage: "linear-gradient(135deg, #009688 0%, #00695C 100%)",
+                          color: "#ffffff",
+                          border: "none",
+                          boxShadow: "0 2px 6px rgba(0,150,136,0.35)",
+                        }}>
+                        <Sparkles className="h-3 w-3" /> Trilha
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -677,7 +706,7 @@ function RadarTopicos() {
           {weakList.some((w) => getTrilhaByArea(w.conteudo)) && (
             <p className="text-xs mt-2 pt-2 border-t flex items-center gap-1"
               style={{ color: "#991B1B", opacity: 0.8, borderColor: "#FECACA" }}>
-              <Sparkles className="h-3 w-3" /> Tem trilha disponível — clique para começar
+              <Sparkles className="h-3 w-3" /> Clique em <strong>Trilha</strong> para treinar essa área guiado passo a passo.
             </p>
           )}
         </div>

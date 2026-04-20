@@ -319,8 +319,14 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
           </p>
           <button
             onClick={() => setFase("exercicios")}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white"
-            style={{ background: "var(--pr-grad-btn)", boxShadow: "var(--pr-shadow-teal)" }}>
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold"
+            style={{
+              backgroundColor: "#009688",
+              backgroundImage: "linear-gradient(135deg, #009688 0%, #00695C 100%)",
+              color: "#ffffff",
+              border: "none",
+              boxShadow: "0 4px 14px rgba(0,150,136,0.4)",
+            }}>
             Começar exercícios <ChevronRight className="h-4 w-4" />
           </button>
         </div>
@@ -414,14 +420,21 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
           )}
         </div>
 
-        {/* Botão avançar */}
+        {/* Botão avançar — solid teal, bulletproof (sem depender de CSS vars) */}
         {isRevealed && (
           <button
             onClick={handleNext}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold"
-            style={{ background: "var(--pr-grad-btn)", boxShadow: "var(--pr-shadow-teal)" }}>
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-base"
+            style={{
+              backgroundColor: "#009688",
+              backgroundImage: "linear-gradient(135deg, #009688 0%, #00695C 100%)",
+              color: "#ffffff",
+              border: "none",
+              boxShadow: "0 4px 14px rgba(0,150,136,0.4)",
+              letterSpacing: "0.01em",
+            }}>
             {idx < total - 1 ? "Próximo exercício" : "Ver resultado"}
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
           </button>
         )}
       </div>
@@ -525,8 +538,14 @@ function ResumoLicao({
       <div className="flex flex-col gap-2">
         <button
           onClick={onRestart}
-          className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white"
-          style={{ background: "var(--pr-grad-btn)", boxShadow: "var(--pr-shadow-teal)" }}>
+          className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold"
+          style={{
+            backgroundColor: "#009688",
+            backgroundImage: "linear-gradient(135deg, #009688 0%, #00695C 100%)",
+            color: "#ffffff",
+            border: "none",
+            boxShadow: "0 4px 14px rgba(0,150,136,0.4)",
+          }}>
           <RotateCcw className="h-4 w-4" /> Refazer a lição
         </button>
         <button
