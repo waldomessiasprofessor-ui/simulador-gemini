@@ -704,9 +704,10 @@ function RadarTopicos() {
           )}
           {/* Dica quando há trilha */}
           {weakList.some((w) => getTrilhaByArea(w.conteudo)) && (
-            <p className="text-xs mt-2 pt-2 border-t flex items-center gap-1"
+            <p className="text-xs mt-2 pt-2 border-t leading-relaxed"
               style={{ color: "var(--pr-danger)", opacity: 0.8, borderColor: "var(--pr-danger-border)" }}>
-              <Sparkles className="h-3 w-3" /> Clique em <strong>Trilha</strong> para treinar essa área guiado passo a passo.
+              <Sparkles className="inline h-3 w-3 mr-1 -mt-0.5" />
+              Clique em <strong>Trilha</strong> para treinar essa área guiado passo a passo.
             </p>
           )}
         </div>

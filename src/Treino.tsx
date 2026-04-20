@@ -129,7 +129,7 @@ export default function Treino() {
   if (questions.length === 0) {
     return (
       <div className="space-y-8 py-2">
-        <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "var(--pr-grad-hero)" }}>
+        <div className="rounded-2xl px-6 py-8" style={{ background: "linear-gradient(135deg, #263238 0%, #009688 100%)", color: "#ffffff" }}>
           <div className="flex items-center gap-2 mb-3">
             <BookOpen className="h-5 w-5" />
             <span className="text-sm font-semibold opacity-80">Treino livre</span>

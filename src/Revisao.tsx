@@ -9,8 +9,8 @@ export default function Revisao() {
   return (
     <div className="space-y-6 py-2">
       {/* Cabeçalho */}
-      <div className="rounded-2xl px-6 py-6 text-white"
-        style={{ background: "var(--pr-grad-hero)" }}>
+      <div className="rounded-2xl px-6 py-6"
+        style={{ background: "linear-gradient(135deg, #263238 0%, #009688 100%)", color: "#ffffff" }}>
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: "rgba(255,255,255,0.2)" }}>

@@ -111,19 +111,22 @@ function TrilhaIndex({ trilha }: { trilha: TrilhaType }) {
       </button>
 
       {/* Cabeçalho da trilha */}
-      <div className="rounded-2xl px-6 py-6 text-white"
-        style={{ background: "var(--pr-grad-hero)" }}>
+      <div className="rounded-2xl px-6 py-6"
+        style={{
+          background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
+          color: "#ffffff",
+        }}>
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(255,255,255,0.2)" }}>
-            <Sparkles className="h-5 w-5 text-white" />
+            style={{ background: "rgba(255,255,255,0.22)" }}>
+            <Sparkles className="h-5 w-5" style={{ color: "#ffffff" }} />
           </div>
           <div>
-            <p className="text-xs font-bold opacity-80 uppercase tracking-wider">Trilha</p>
-            <h1 className="text-xl font-black">{trilha.titulo}</h1>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.85)" }}>Trilha</p>
+            <h1 className="text-xl font-black" style={{ color: "#ffffff" }}>{trilha.titulo}</h1>
           </div>
         </div>
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.88)" }}>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.92)" }}>
           {trilha.descricao}
         </p>
       </div>
