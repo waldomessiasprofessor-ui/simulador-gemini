@@ -225,11 +225,12 @@ function CircularAccuracy({ value }: { value: number }) {
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, value));
   const offset = circumference - (clamped / 100) * circumference;
-  const color = clamped >= 70 ? "var(--pr-teal)" : clamped >= 40 ? "var(--pr-warn)" : "var(--pr-danger)";
+  // Hex direto: CSS var() em atributos SVG stroke/fill não resolve de forma confiável em todos os navegadores.
+  const color = clamped >= 70 ? "#009688" : clamped >= 40 ? "#F59E0B" : "#EF4444";
 
   return (
     <svg width="80" height="80" viewBox="0 0 80 80">
-      <circle cx="40" cy="40" r={radius} fill="none" stroke="var(--border)" strokeWidth="7" />
+      <circle cx="40" cy="40" r={radius} fill="none" stroke="rgba(128,128,128,0.25)" strokeWidth="7" />
       <circle
         cx="40" cy="40" r={radius} fill="none"
         stroke={color} strokeWidth="7"
@@ -438,14 +439,14 @@ function RadarPerformance() {
 
       <ResponsiveContainer width="100%" height={260}>
         <RadarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-          <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
+          <PolarGrid stroke="rgba(128,128,128,0.3)" strokeDasharray="3 3" />
           <PolarAngleAxis dataKey="eixo"
             tick={{ fontSize: 11, fill: "var(--muted-foreground)", fontWeight: 600 }} />
           <PolarRadiusAxis angle={30} domain={[0, 100]}
             tick={{ fontSize: 9, fill: "var(--muted-foreground)" }}
             tickCount={4} axisLine={false} />
-          <Radar dataKey="pct" stroke="var(--pr-teal)" fill="var(--pr-teal)" fillOpacity={0.35}
-            strokeWidth={2} dot={{ r: 3, fill: "var(--pr-teal)" }} />
+          <Radar dataKey="pct" stroke="#009688" fill="#009688" fillOpacity={0.35}
+            strokeWidth={2} dot={{ r: 3, fill: "#009688" }} />
           <Tooltip
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
             formatter={(v: number, _name: string, props: any) => {
@@ -617,7 +618,7 @@ function RadarTopicos() {
 
       <ResponsiveContainer width="100%" height={260}>
         <RadarChart data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-          <PolarGrid stroke="var(--border)" strokeDasharray="3 3" />
+          <PolarGrid stroke="rgba(128,128,128,0.3)" strokeDasharray="3 3" />
           <PolarAngleAxis
             dataKey="area"
             tick={<WrapTick />}
@@ -631,11 +632,11 @@ function RadarTopicos() {
           />
           <Radar
             dataKey="pct"
-            stroke="var(--pr-teal)"
-            fill="var(--pr-teal)"
+            stroke="#009688"
+            fill="#009688"
             fillOpacity={0.25}
             strokeWidth={2}
-            dot={{ r: 3, fill: "var(--pr-teal)", strokeWidth: 0 }}
+            dot={{ r: 3, fill: "#009688", strokeWidth: 0 }}
             isAnimationActive={false}
           />
           <Tooltip
@@ -974,7 +975,7 @@ export default function Dashboard() {
                   formatter={(v: number) => [v, "Questões"]} />
                 <Bar dataKey="questoes" radius={[4, 4, 0, 0]} maxBarSize={32}>
                   {stats.dailyData.map((entry, i) => (
-                    <Cell key={i} fill={entry.questoes > 0 ? "var(--pr-teal)" : "var(--border)"} />
+                    <Cell key={i} fill={entry.questoes > 0 ? "#009688" : "rgba(128,128,128,0.25)"} />
                   ))}
                 </Bar>
               </BarChart>

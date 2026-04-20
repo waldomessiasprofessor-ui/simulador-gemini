@@ -44,7 +44,7 @@ function TabSimulados() {
           </p>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,128,128,0.3)" opacity={0.4} />
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
               <Tooltip
@@ -52,8 +52,8 @@ function TabSimulados() {
                 formatter={(v: number) => [v, "Acertos"]}
                 labelFormatter={(l) => `Data: ${l}`}
               />
-              <Line type="monotone" dataKey="acertos" stroke="var(--pr-teal)" strokeWidth={2}
-                dot={{ r: 3, fill: "var(--pr-teal)" }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="acertos" stroke="#009688" strokeWidth={2}
+                dot={{ r: 3, fill: "#009688" }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
