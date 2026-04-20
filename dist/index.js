@@ -38,6 +38,7 @@ __export(schema_exports, {
   simulations: () => simulations,
   simulationsRelations: () => simulationsRelations,
   studySchedule: () => studySchedule,
+  trilhaVideos: () => trilhaVideos,
   users: () => users,
   usersRelations: () => usersRelations
 });
@@ -278,6 +279,20 @@ var flashcardProgress = mysqlTable(
   (t2) => ({
     idxUserCard: index("idx_fc_user_card").on(t2.userId, t2.cardId),
     idxNextReview: index("idx_fc_next_review").on(t2.userId, t2.nextReview)
+  })
+);
+var trilhaVideos = mysqlTable(
+  "trilha_videos",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    trilhaSlug: varchar("trilha_slug", { length: 100 }).notNull(),
+    licaoSlug: varchar("licao_slug", { length: 100 }).notNull().default(""),
+    urlYoutube: varchar("url_youtube", { length: 512 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull()
+  },
+  (t2) => ({
+    idxTrilhaLicao: index("idx_trilha_licao").on(t2.trilhaSlug, t2.licaoSlug)
   })
 );
 
@@ -2718,6 +2733,56 @@ var flashcardsRouter = createTRPCRouter({
   })
 });
 
+// server/trilhas.router.ts
+import { z as z9 } from "zod";
+import { and as and6, eq as eq9 } from "drizzle-orm";
+var slugSchema = z9.string().min(1).max(100);
+var licaoSlugSchema = z9.string().max(100).default("");
+var urlSchema = z9.string().trim().url("URL inv\xE1lida").max(512);
+var trilhasRouter = createTRPCRouter({
+  // Buscar URL de uma trilha/lição específica (retorna null se não houver).
+  // Usado pela tela Trilha.tsx.
+  get: protectedProcedure.input(z9.object({ trilhaSlug: slugSchema, licaoSlug: licaoSlugSchema })).query(async ({ ctx, input }) => {
+    const [row] = await ctx.db.select().from(trilhaVideos).where(
+      and6(
+        eq9(trilhaVideos.trilhaSlug, input.trilhaSlug),
+        eq9(trilhaVideos.licaoSlug, input.licaoSlug)
+      )
+    ).limit(1);
+    return row ?? null;
+  }),
+  // Admin: lista todos os vídeos cadastrados (para a tela de administração).
+  listAll: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.select().from(trilhaVideos);
+  }),
+  // Admin: upsert — cria se não existe, atualiza se já existe.
+  upsert: adminProcedure.input(
+    z9.object({
+      trilhaSlug: slugSchema,
+      licaoSlug: licaoSlugSchema,
+      urlYoutube: urlSchema
+    })
+  ).mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.select().from(trilhaVideos).where(
+      and6(
+        eq9(trilhaVideos.trilhaSlug, input.trilhaSlug),
+        eq9(trilhaVideos.licaoSlug, input.licaoSlug)
+      )
+    ).limit(1);
+    if (existing.length > 0) {
+      await ctx.db.update(trilhaVideos).set({ urlYoutube: input.urlYoutube }).where(eq9(trilhaVideos.id, existing[0].id));
+      return { id: existing[0].id, success: true, updated: true };
+    }
+    const [result] = await ctx.db.insert(trilhaVideos).values(input);
+    return { id: Number(result.insertId), success: true, updated: false };
+  }),
+  // Admin: remover vídeo
+  delete: adminProcedure.input(z9.object({ id: z9.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(trilhaVideos).where(eq9(trilhaVideos.id, input.id));
+    return { success: true };
+  })
+});
+
 // server/router.ts
 var appRouter = createTRPCRouter({
   auth: authRouter,
@@ -2727,11 +2792,12 @@ var appRouter = createTRPCRouter({
   review: reviewRouter,
   formulas: formulasRouter,
   agenda: agendaRouter,
-  flashcards: flashcardsRouter
+  flashcards: flashcardsRouter,
+  trilhas: trilhasRouter
 });
 
 // server/index.ts
-import { eq as eq9 } from "drizzle-orm";
+import { eq as eq10 } from "drizzle-orm";
 
 // server/seed-matematica-content.ts
 var FRACOES_ARTICLE = {
@@ -3681,7 +3747,7 @@ app.get("/admin/make-admin", async (req, res) => {
   if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
   if (!email) return res.status(400).send("Forne\xE7a ?email=teu@email.com");
   try {
-    await db.update(users).set({ role: "admin" }).where(eq9(users.email, email.toLowerCase().trim()));
+    await db.update(users).set({ role: "admin" }).where(eq10(users.email, email.toLowerCase().trim()));
     res.send(`\u2705 ${email} \xE9 agora admin. Fa\xE7a logout e login novamente no site.`);
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);

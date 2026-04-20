@@ -12,6 +12,7 @@ import AdminQuestoes from "@/AdminQuestoes";
 import AdminUsuarios from "@/AdminUsuarios";
 import AdminFormulas from "@/AdminFormulas";
 import AdminRevise from "@/AdminRevise";
+import AdminTrilhas from "@/AdminTrilhas";
 import Flashcards from "@/Flashcards";
 import AdminFlashcards from "@/AdminFlashcards";
 import Revise from "@/Revise";
@@ -135,6 +136,9 @@ export default function App() {
           </Route>
           <Route path="/admin/flashcards">
             {isAdmin ? <AdminFlashcards /> : <Redirect to="/" />}
+          </Route>
+          <Route path="/admin/trilhas">
+            {isAdmin ? <AdminTrilhas /> : <Redirect to="/" />}
           </Route>
           <Route path="/flashcards/:deckId">
             {(params) => <Flashcards deckId={Number(params.deckId)} />}

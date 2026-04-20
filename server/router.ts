@@ -7,6 +7,7 @@ import { reviewRouter } from "./review.router";
 import { formulasRouter } from "./formulas.router";
 import { agendaRouter } from "./agenda.router";
 import { flashcardsRouter } from "./flashcards.router";
+import { trilhasRouter } from "./trilhas.router";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   formulas: formulasRouter,
   agenda: agendaRouter,
   flashcards: flashcardsRouter,
+  trilhas: trilhasRouter,
 });
 
 export type AppRouter = typeof appRouter;

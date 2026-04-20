@@ -5,7 +5,7 @@ import {
   Home, BookOpen, ClipboardList, History, Dumbbell,
   Trophy, Users, LogOut, X, FlaskConical, ChevronRight, ChevronDown,
   User, Mail, Shield, Zap, GraduationCap, Moon, Sun, CalendarDays, Brain,
-  Star
+  Star, Youtube
 } from "lucide-react";
 
 function useDarkMode() {
@@ -104,6 +104,7 @@ const ADMIN_LINKS: LinkItem[] = [
   { kind: "link", href: "/admin/formulas",   label: "Admin — fórmulas",   icon: FlaskConical },
   { kind: "link", href: "/admin/revise",     label: "Admin — revise",     icon: BookOpen },
   { kind: "link", href: "/admin/flashcards", label: "Admin — flashcards", icon: Brain },
+  { kind: "link", href: "/admin/trilhas",    label: "Admin — trilhas",    icon: Youtube },
 ];
 
 // =============================================================================

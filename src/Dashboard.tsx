@@ -44,11 +44,11 @@ function DailyCard() {
       <div className="rounded-2xl p-4" style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal)" }}>
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
               <Trophy className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-sm" style={{ color: "var(--pr-teal)" }}>Desafio do dia — concluído!</p>
+              <p className="font-bold text-sm" style={{ color: "#00695C" }}>Desafio do dia — concluído!</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>{correct}/{questions.length} acertos</p>
             </div>
           </div>
@@ -57,7 +57,7 @@ function DailyCard() {
               const ok = answers[q.id] === q.gabarito;
               return (
                 <div key={i} className="h-7 w-7 rounded-full flex items-center justify-center"
-                  style={{ background: ok ? "var(--pr-teal)" : "var(--pr-danger)" }}>
+                  style={{ background: ok ? "#009688" : "#EF4444" }}>
                   {ok ? <CheckCircle2 className="h-3.5 w-3.5 text-white" /> : <XCircle className="h-3.5 w-3.5 text-white" />}
                 </div>
               );
@@ -73,25 +73,25 @@ function DailyCard() {
       style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pr-teal)" }}>
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#009688" }}>
             <Flame className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "var(--pr-teal)" }}>Desafio de Hoje</p>
+            <p className="font-bold text-sm" style={{ color: "#00695C" }}>Desafio de Hoje</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               Resolva três questões escolhidas por nós para manter o cérebro ativo
             </p>
-            <p className="text-xs mt-0.5 font-semibold" style={{ color: "var(--pr-teal)" }}>
+            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#00695C" }}>
               {answered}/{questions.length} respondidas · Toque para começar
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-teal)" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#00695C" }} />
       </div>
       <div className="flex gap-1.5 mt-3">
         {questions.map((_, i) => (
           <div key={i} className="h-1.5 flex-1 rounded-full"
-            style={{ background: answers[questions[i].id] ? "var(--pr-teal)" : "var(--border)" }} />
+            style={{ background: answers[questions[i].id] ? "#009688" : "rgba(128,128,128,0.25)" }} />
         ))}
       </div>
     </button>
@@ -118,7 +118,7 @@ function StudyCard() {
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: "var(--pr-info-bg)" }}>
-          <BookOpen className="h-5 w-5" style={{ color: "var(--pr-info)" }} />
+          <BookOpen className="h-5 w-5" style={{ color: "#1D4ED8" }} />
         </div>
         <div>
           <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Vamos estudar?</p>
@@ -134,20 +134,20 @@ function StudyCard() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "var(--pr-info)" }}>
+            style={{ background: "#1D4ED8" }}>
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "var(--pr-info)" }}>Vamos Estudar?</p>
+            <p className="font-bold text-sm" style={{ color: "#1D4ED8" }}>Vamos Estudar?</p>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               Selecionamos um tópico para revisar e manter os conteúdos sempre em dia
             </p>
-            <p className="text-xs mt-0.5 font-semibold" style={{ color: "var(--pr-info)" }}>
+            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#1D4ED8" }}>
               {content.topico ?? content.titulo}
             </p>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-info)" }} />
+        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#1D4ED8" }} />
       </div>
     </button>
   );

@@ -3,10 +3,44 @@ import { useLocation } from "wouter";
 import { LatexRenderer } from "@/LatexRenderer";
 import { getTrilhaBySlug } from "@/trilhas";
 import type { Licao, Trilha as TrilhaType } from "@/trilhas/types";
+import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft, BookOpen, Sparkles, Clock, Target, ChevronRight, CheckCircle2,
-  XCircle, Trophy, RotateCcw, Home, Lightbulb,
+  XCircle, Trophy, RotateCcw, Home, Lightbulb, PlayCircle,
 } from "lucide-react";
+
+// =============================================================================
+// Botão de vídeo do YouTube — só aparece se o admin tiver cadastrado uma URL
+// para a lição em /admin/trilhas.
+// =============================================================================
+function VideoAulaBotao({ trilhaSlug, licaoSlug }: { trilhaSlug: string; licaoSlug: string }) {
+  const { data } = trpc.trilhas.get.useQuery(
+    { trilhaSlug, licaoSlug },
+    { staleTime: 60_000 },
+  );
+  if (!data?.urlYoutube) return null;
+  return (
+    <a
+      href={data.urlYoutube}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all hover:opacity-90"
+      style={{ background: "#FFF1F2", border: "1.5px solid #FECDD3" }}
+    >
+      <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: "#DC2626" }}>
+        <PlayCircle className="h-5 w-5 text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-sm" style={{ color: "#991B1B" }}>Videoaula</p>
+        <p className="text-xs mt-0.5" style={{ color: "#9F1239" }}>
+          Assista no YouTube antes de praticar
+        </p>
+      </div>
+      <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "#991B1B" }} />
+    </a>
+  );
+}
 
 // =============================================================================
 // Persistência local (localStorage) — v1 sem alteração de schema
@@ -275,6 +309,9 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
             </h1>
           </div>
         </div>
+
+        {/* Videoaula (se admin tiver cadastrado uma URL) */}
+        <VideoAulaBotao trilhaSlug={trilha.slug} licaoSlug={licao.slug} />
 
         {/* Explicação */}
         <div className="card space-y-3">

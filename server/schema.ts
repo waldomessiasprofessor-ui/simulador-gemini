@@ -328,3 +328,31 @@ export type NewFlashcardDeck   = typeof flashcardDecks.$inferInsert;
 export type Flashcard          = typeof flashcards.$inferSelect;
 export type NewFlashcard       = typeof flashcards.$inferInsert;
 export type FlashcardProgress  = typeof flashcardProgress.$inferSelect;
+
+// =============================================================================
+// Tabela: trilha_videos — URLs de vídeo do YouTube por lição da trilha
+// =============================================================================
+// As trilhas em si vivem em arquivos TypeScript estáticos (src/trilhas/*.ts).
+// Esta tabela apenas complementa com um campo editável: a URL de vídeo do
+// YouTube que o admin pode definir sem precisar mexer no código.
+// Chave lógica: (trilhaSlug, licaoSlug). Se licaoSlug for string vazia, o
+// vídeo vale para a trilha toda (cabeçalho). Caso contrário, vale só para
+// aquela lição específica.
+
+export const trilhaVideos = mysqlTable(
+  "trilha_videos",
+  {
+    id:         int("id").primaryKey().autoincrement(),
+    trilhaSlug: varchar("trilha_slug", { length: 100 }).notNull(),
+    licaoSlug:  varchar("licao_slug",  { length: 100 }).notNull().default(""),
+    urlYoutube: varchar("url_youtube", { length: 512 }).notNull(),
+    createdAt:  timestamp("created_at").defaultNow().notNull(),
+    updatedAt:  timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => ({
+    idxTrilhaLicao: index("idx_trilha_licao").on(t.trilhaSlug, t.licaoSlug),
+  })
+);
+
+export type TrilhaVideo    = typeof trilhaVideos.$inferSelect;
+export type NewTrilhaVideo = typeof trilhaVideos.$inferInsert;
