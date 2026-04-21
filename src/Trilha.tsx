@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { LatexRenderer } from "@/LatexRenderer";
-import { getTrilhaBySlug } from "@/trilhas";
+import { getTrilhaBySlug, TRILHAS } from "@/trilhas";
 import type { Licao, Trilha as TrilhaType } from "@/trilhas/types";
 import { trpc } from "@/lib/trpc";
 import {
@@ -74,18 +74,32 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
   const [, navigate] = useLocation();
   const trilha = areaSlug ? getTrilhaBySlug(areaSlug) : undefined;
 
-  // Área inválida
+  // Sem área: mostra índice de trilhas disponíveis
   if (!trilha) {
     return (
-      <div className="text-center py-20 space-y-3">
-        <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "var(--pr-teal)" }} />
-        <p className="font-semibold" style={{ color: "var(--foreground)" }}>
-          Trilha não encontrada
-        </p>
-        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
-          Essa área ainda não tem uma trilha de desenvolvimento.
-        </p>
-        <button onClick={() => navigate("/")} className="btn-outline">Voltar ao início</button>
+      <div className="max-w-2xl mx-auto py-10 space-y-6 px-4">
+        <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>Trilhas de Estudo</h1>
+        {TRILHAS.length === 0 ? (
+          <p style={{ color: "var(--muted-foreground)" }}>Nenhuma trilha disponível no momento.</p>
+        ) : (
+          <div className="space-y-3">
+            {TRILHAS.map((t) => (
+              <button
+                key={t.slug}
+                onClick={() => navigate(`/trilha/${t.slug}`)}
+                className="w-full text-left p-4 rounded-xl border flex items-center gap-3 hover:bg-[var(--secondary)] transition-colors"
+                style={{ borderColor: "var(--border)", background: "var(--card)" }}
+              >
+                <BookOpen className="h-5 w-5 shrink-0" style={{ color: "var(--pr-teal)" }} />
+                <div>
+                  <p className="font-semibold" style={{ color: "var(--foreground)" }}>{t.titulo}</p>
+                  <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>{t.descricao}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 ml-auto shrink-0" style={{ color: "var(--muted-foreground)" }} />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
