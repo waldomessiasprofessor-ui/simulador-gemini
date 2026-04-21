@@ -186,7 +186,8 @@ export default function Questoes({ fonte }: { fonte?: string }) {
           </p>
           {filterTag !== "Todas" && (
             <button onClick={() => setFilterTag("Todas")}
-              className="text-sm font-semibold underline underline-offset-2" style={{ color: "var(--pr-teal)" }}>
+              className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #263238, #009688)" }}>
               Ver todas as questões
             </button>
           )}
