@@ -199,8 +199,8 @@ export default function Treino() {
             <button
               onClick={handleStart}
               disabled={startTraining.isPending}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-white font-bold"
-              style={{ background: "var(--pr-teal)" }}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white"
+              style={{ background: "#009688" }}
             >
               {startTraining.isPending
                 ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -253,7 +253,7 @@ export default function Treino() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <button onClick={handleReset} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white" style={{ background: "var(--pr-teal)" }}>
+          <button onClick={handleReset} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white" style={{ background: "#009688" }}>
             <RotateCcw className="h-4 w-4" /> Novo treino
           </button>
           <button onClick={() => navigate("/")} className="flex items-center justify-center gap-2 py-3 rounded-xl font-bold" style={{ background: "var(--muted)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}>
