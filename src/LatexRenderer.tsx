@@ -476,33 +476,29 @@ export function Alternative({ id, text, imageUrl, selected, correct, onClick, di
   const isCorrectAnswer = isRevealed && correct === true;
   const isWrongSelected = isRevealed && selected && correct === false;
 
-  // Estilo "prova": borda esquerda colorida + fundo sutilmente tintado
+  // Cores que funcionam nos dois temas:
+  // — padrão: fundo do card (var), badge sempre azul #1883FF
+  // — correto/errado/selecionado: hex que funciona em light e dark
   const accentColor = isCorrectAnswer ? "#16A34A"
     : isWrongSelected ? "#DC2626"
-    : selected ? "#1E40AF"
-    : "transparent";
+    : selected ? "#1883FF"
+    : "#1883FF";
 
   const bgColor = isCorrectAnswer ? "#F0FDF4"
     : isWrongSelected ? "#FEF2F2"
     : selected ? "#EFF6FF"
-    : "#FAFAFA";
+    : "var(--card)";            // ← tema-aware: branco no light, escuro no dark
 
   const borderColor = isCorrectAnswer ? "#BBF7D0"
     : isWrongSelected ? "#FECACA"
     : selected ? "#BFDBFE"
-    : "#E5E7EB";
+    : "var(--border)";          // ← tema-aware
 
   const badgeBg = isCorrectAnswer ? "#16A34A"
     : isWrongSelected ? "#DC2626"
-    : selected ? "#1E40AF"
-    : "#fff";
+    : "#1883FF";                // ← sempre azul (visível nos dois temas)
 
-  const badgeBorder = isCorrectAnswer ? "#16A34A"
-    : isWrongSelected ? "#DC2626"
-    : selected ? "#1E40AF"
-    : "#D1D5DB";
-
-  const badgeColor = (selected || isCorrectAnswer) ? "#fff" : "#6B7280";
+  const badgeColor = "#fff";   // ← sempre branco sobre azul/verde/vermelho
 
   return (
     <button
@@ -513,18 +509,18 @@ export function Alternative({ id, text, imageUrl, selected, correct, onClick, di
         padding: "0.65rem 1rem",
         borderRadius: "0.5rem",
         border: `1px solid ${borderColor}`,
-        borderLeft: `3px solid ${accentColor === "transparent" ? "#E5E7EB" : accentColor}`,
+        borderLeft: `3px solid ${accentColor}`,
         background: bgColor,
-        color: "#2C2C3A",
+        color: "var(--foreground)", // ← tema-aware: escuro no light, claro no dark
         cursor: disabled ? "default" : "pointer",
-        opacity: disabled && !selected && !isCorrectAnswer ? 0.55 : 1,
+        opacity: disabled && !selected && !isCorrectAnswer ? 0.6 : 1,
         transition: "border-color 0.15s, background 0.15s",
       }}
     >
       <span
         className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
         style={{
-          border: `1.5px solid ${badgeBorder}`,
+          border: `1.5px solid ${badgeBg}`,
           background: badgeBg,
           color: badgeColor,
           fontSize: "0.7rem",
@@ -581,7 +577,7 @@ export function QuestionCard({
       </p>
 
       {/* Enunciado — tipografia limpa, sem caixa */}
-      <div style={{ lineHeight: 1.75, color: "#2C2C3A" }}>
+      <div style={{ lineHeight: 1.75, color: "var(--foreground)" }}>
         <LatexRenderer fontSize="base">{enunciado}</LatexRenderer>
       </div>
 
@@ -589,12 +585,12 @@ export function QuestionCard({
         <figure className="my-2">
           <img src={url_imagem} alt={`Imagem da questão ${order}`}
             className="max-w-full mx-auto"
-            style={{ borderRadius: "0.375rem", border: "1px solid #E5E7EB" }} loading="lazy" />
+            style={{ borderRadius: "0.375rem", border: "1px solid var(--border)" }} loading="lazy" />
         </figure>
       )}
 
       {/* Separador sutil antes das alternativas */}
-      <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "0.75rem" }}>
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.75rem" }}>
         <div className="space-y-2">
           {altEntries.map(([id, value]) => {
             const text = typeof value === "string" ? value : (value !== null && value?.text) ? value.text : "";

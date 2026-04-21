@@ -151,8 +151,8 @@ export default function Treino() {
                   className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
                   style={{
                     border: `1.5px solid ${selectedTopic === null ? "var(--pr-teal)" : "var(--pr-border)"}`,
-                    background: selectedTopic === null ? "var(--pr-teal-soft)" : "#fff",
-                    color: selectedTopic === null ? "var(--pr-teal)" : "#64748B",
+                    background: selectedTopic === null ? "#E0F2F1" : "var(--card)",
+                    color: selectedTopic === null ? "#00695C" : "var(--muted-foreground)",
                   }}
                 >
                   Todos os tópicos
@@ -164,8 +164,8 @@ export default function Treino() {
                     className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
                     style={{
                       border: `1.5px solid ${selectedTopic === t.conteudo ? "var(--pr-teal)" : "var(--pr-border)"}`,
-                      background: selectedTopic === t.conteudo ? "var(--pr-teal-soft)" : "#fff",
-                      color: selectedTopic === t.conteudo ? "var(--pr-teal)" : "#64748B",
+                      background: selectedTopic === t.conteudo ? "#E0F2F1" : "var(--card)",
+                      color: selectedTopic === t.conteudo ? "#00695C" : "var(--muted-foreground)",
                     }}
                   >
                     <span className="block">{t.conteudo}</span>
@@ -186,8 +186,8 @@ export default function Treino() {
                     className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
                     style={{
                       border: `1.5px solid ${count === n ? "var(--pr-teal)" : "var(--pr-border)"}`,
-                      background: count === n ? "var(--pr-teal-soft)" : "#fff",
-                      color: count === n ? "var(--pr-teal)" : "#64748B",
+                      background: count === n ? "#E0F2F1" : "var(--card)",
+                      color: count === n ? "#00695C" : "var(--muted-foreground)",
                     }}
                   >
                     {n}

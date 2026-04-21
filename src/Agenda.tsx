@@ -16,13 +16,14 @@ const DAYS = [
 
 // Tokens que se adaptam ao tema: derivamos de tokens semânticos para que
 // o agenda apareça bem tanto no claro quanto no escuro.
+// Hex direto — color-mix()+var() não funciona em Safari mobile.
 const DAY_COLORS: Record<number, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
-  1: { bg: "var(--pr-info-bg)",    border: "var(--pr-info-border)",    text: "var(--pr-info)",    badge: "color-mix(in srgb, var(--pr-info) 18%, var(--card))",    badgeText: "var(--pr-info)" },
-  2: { bg: "var(--pr-success-bg)", border: "var(--pr-success-border)", text: "var(--pr-success)", badge: "color-mix(in srgb, var(--pr-success) 18%, var(--card))", badgeText: "var(--pr-success)" },
-  3: { bg: "color-mix(in srgb, #9333EA 12%, var(--card))", border: "color-mix(in srgb, #9333EA 30%, var(--card))", text: "#9333EA", badge: "color-mix(in srgb, #9333EA 18%, var(--card))", badgeText: "#9333EA" },
-  4: { bg: "var(--pr-warn-bg)",    border: "var(--pr-warn-border)",    text: "var(--pr-warn)",    badge: "color-mix(in srgb, var(--pr-warn) 18%, var(--card))",    badgeText: "var(--pr-warn)" },
-  5: { bg: "color-mix(in srgb, var(--pr-teal) 12%, var(--card))", border: "var(--pr-teal-border)", text: "var(--pr-teal)", badge: "color-mix(in srgb, var(--pr-teal) 18%, var(--card))", badgeText: "var(--pr-teal)" },
-  6: { bg: "var(--pr-danger-bg)",  border: "var(--pr-danger-border)",  text: "var(--pr-danger)",  badge: "color-mix(in srgb, var(--pr-danger) 18%, var(--card))",  badgeText: "var(--pr-danger)" },
+  1: { bg: "#EFF6FF", border: "#BFDBFE", text: "#1D4ED8", badge: "#DBEAFE", badgeText: "#1D4ED8" }, // azul
+  2: { bg: "#F0FDF4", border: "#BBF7D0", text: "#15803D", badge: "#DCFCE7", badgeText: "#15803D" }, // verde
+  3: { bg: "#F5F3FF", border: "#DDD6FE", text: "#7C3AED", badge: "#EDE9FE", badgeText: "#7C3AED" }, // roxo
+  4: { bg: "#FFFBEB", border: "#FDE68A", text: "#B45309", badge: "#FEF3C7", badgeText: "#B45309" }, // âmbar
+  5: { bg: "#E0F2F1", border: "#B2DFDB", text: "#00695C", badge: "#CCFBF1", badgeText: "#00695C" }, // teal
+  6: { bg: "#FFF1F2", border: "#FECDD3", text: "#B91C1C", badge: "#FFE4E6", badgeText: "#B91C1C" }, // vermelho
 };
 
 const ENEM_TOPICS = [
