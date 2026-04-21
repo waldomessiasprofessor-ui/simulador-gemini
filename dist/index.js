@@ -1664,7 +1664,7 @@ var simulationsRouter = createTRPCRouter({
     const drCount = Number(drAgg[0]?.count ?? 0);
     const drTime = Number(drAgg[0]?.timeSum ?? 0);
     const fcAgg = await ctx.db.select({
-      goodCount: sql2`SUM(CASE WHEN ${flashcardProgress.repetitions} >= 1 THEN 1 ELSE 0 END)`,
+      goodCount: sql2`COALESCE(SUM(${flashcardProgress.repetitions}), 0)`,
       timeSum: sql2`COALESCE(SUM(${flashcardProgress.timeSpentSeconds}), 0)`
     }).from(flashcardProgress).where(eq2(flashcardProgress.userId, userId));
     const fcGood = Number(fcAgg[0]?.goodCount ?? 0);
@@ -1688,7 +1688,7 @@ var simulationsRouter = createTRPCRouter({
     const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/quest\xE3o" },
-      { eixo: "Quest\xF5es", pct: questoes, raw: questoesTotal, meta: META_QUESTOES, unidade: "quest\xF5es" },
+      { eixo: "Resolu\xE7\xF5es", pct: questoes, raw: questoesTotal, meta: META_QUESTOES, unidade: "resolu\xE7\xF5es" },
       { eixo: "Estudos", pct: estudos, raw: drCount, meta: META_ESTUDOS, unidade: "textos" },
       { eixo: "Fixa\xE7\xE3o", pct: fixacao, raw: fcGood, meta: META_FIXACAO, unidade: "cards" },
       { eixo: "Dedica\xE7\xE3o", pct: dedicacao, raw: Math.round(dedicacaoHoras * 10) / 10, meta: META_DEDICACAO_HORAS, unidade: "horas" }

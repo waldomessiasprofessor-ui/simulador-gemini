@@ -224,6 +224,7 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, "A" | "B" | "C" | "D" | "E">>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [leituraFeita, setLeituraFeita] = useState(false);
   const startRef = useRef<number>(Date.now());
 
   const total = licao.exercicios.length;
@@ -333,6 +334,26 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
             </div>
           </div>
         ))}
+
+        {/* Concluir Leitura */}
+        <button
+          onClick={() => {
+            if (leituraFeita) return;
+            setLeituraFeita(true);
+            try {
+              const prev = parseInt(localStorage.getItem("trilha:leituras") || "0", 10) || 0;
+              localStorage.setItem("trilha:leituras", String(prev + 1));
+            } catch { /* ignora */ }
+          }}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all"
+          style={{
+            background: leituraFeita ? "#F0FDF4" : "#EFF6FF",
+            border: `1.5px solid ${leituraFeita ? "#86EFAC" : "#BFDBFE"}`,
+            color: leituraFeita ? "#15803D" : "#1D4ED8",
+          }}>
+          <CheckCircle2 className="h-4 w-4" />
+          {leituraFeita ? "Leitura concluída ✓" : "Concluir Leitura"}
+        </button>
 
         {/* CTA — Agora é sua vez */}
         <div className="rounded-2xl p-5 text-center space-y-3"

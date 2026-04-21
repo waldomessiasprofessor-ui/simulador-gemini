@@ -984,10 +984,10 @@ export const simulationsRouter = createTRPCRouter({
     const drTime  = Number(drAgg[0]?.timeSum ?? 0);
 
     // ── Fonte 4: Flashcards — revisões bem-sucedidas + tempo ─────────────────
-    // "Boa avaliação" = SM-2 com repetitions ≥ 1 (quality=1 zera repetições).
+    // Conta a SOMA de repetições (cada "fácil"/"bom" acumula +1 no campo).
     const fcAgg = await ctx.db
       .select({
-        goodCount: sql<number>`SUM(CASE WHEN ${flashcardProgress.repetitions} >= 1 THEN 1 ELSE 0 END)`,
+        goodCount: sql<number>`COALESCE(SUM(${flashcardProgress.repetitions}), 0)`,
         timeSum:   sql<number>`COALESCE(SUM(${flashcardProgress.timeSpentSeconds}), 0)`,
       })
       .from(flashcardProgress)
@@ -1021,7 +1021,7 @@ export const simulationsRouter = createTRPCRouter({
 
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/questão" },
-      { eixo: "Questões",   pct: questoes,   raw: questoesTotal,                         meta: META_QUESTOES,           unidade: "questões" },
+      { eixo: "Resoluções", pct: questoes,   raw: questoesTotal,                         meta: META_QUESTOES,           unidade: "resoluções" },
       { eixo: "Estudos",    pct: estudos,    raw: drCount,                               meta: META_ESTUDOS,            unidade: "textos" },
       { eixo: "Fixação",    pct: fixacao,    raw: fcGood,                                meta: META_FIXACAO,            unidade: "cards" },
       { eixo: "Dedicação",  pct: dedicacao,  raw: Math.round(dedicacaoHoras * 10) / 10,  meta: META_DEDICACAO_HORAS,    unidade: "horas" },

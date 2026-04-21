@@ -361,9 +361,10 @@ function RadarPerformance() {
   const data = useMemo(() => {
     if (!rawData) return rawData;
     const t = getTrilhaStats();
-    const extraHoras = t.totalTimeSec / 3600;
-    const extraQuestoes = t.totalExercises;
-    if (extraHoras === 0 && extraQuestoes === 0) return rawData;
+    const extraHoras     = t.totalTimeSec / 3600;
+    const extraQuestoes  = t.totalExercises;
+    const extraLeituras  = t.totalLeituras;
+    if (extraHoras === 0 && extraQuestoes === 0 && extraLeituras === 0) return rawData;
     return rawData.map((d) => {
       if (d.eixo === "Dedicação") {
         const baseRaw = Number(d.raw ?? 0);
@@ -371,9 +372,15 @@ function RadarPerformance() {
         const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
         return { ...d, pct: newPct, raw: Math.round(newRaw * 10) / 10 };
       }
-      if (d.eixo === "Questões") {
+      if (d.eixo === "Resoluções") {
         const baseRaw = Number(d.raw ?? 0);
         const newRaw = baseRaw + extraQuestoes;
+        const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
+        return { ...d, pct: newPct, raw: newRaw };
+      }
+      if (d.eixo === "Estudos" && extraLeituras > 0) {
+        const baseRaw = Number(d.raw ?? 0);
+        const newRaw = baseRaw + extraLeituras;
         const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
         return { ...d, pct: newPct, raw: newRaw };
       }

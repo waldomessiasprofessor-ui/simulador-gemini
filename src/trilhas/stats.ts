@@ -18,6 +18,7 @@ export interface TrilhaStats {
   totalExercises: number;     // soma dos exercícios das lições concluídas
   totalCorrect: number;       // acertos aproximados (lastScorePct × total)
   totalTimeSec: number;       // tempo cronometrado nas lições
+  totalLeituras: number;      // cliques em "Concluir Leitura" nas trilhas
 }
 
 export function getTrilhaStats(): TrilhaStats {
@@ -26,6 +27,7 @@ export function getTrilhaStats(): TrilhaStats {
     totalExercises: 0,
     totalCorrect: 0,
     totalTimeSec: 0,
+    totalLeituras: 0,
   };
 
   if (typeof window === "undefined" || !window.localStorage) return out;
@@ -63,6 +65,10 @@ export function getTrilhaStats(): TrilhaStats {
       );
     }
   } catch { /* localStorage bloqueado (aba privada etc.) — retorna zeros */ }
+
+  try {
+    out.totalLeituras = parseInt(localStorage.getItem("trilha:leituras") || "0", 10) || 0;
+  } catch { /* ignora */ }
 
   return out;
 }
