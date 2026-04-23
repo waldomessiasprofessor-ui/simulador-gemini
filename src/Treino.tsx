@@ -150,7 +150,7 @@ export default function Treino() {
                   onClick={() => setSelectedTopic(null)}
                   className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
                   style={{
-                    border: `1.5px solid ${selectedTopic === null ? "#009688" : "var(--pr-border)"}`,
+                    border: `1.5px solid ${selectedTopic === null ? "#009688" : "var(--border)"}`,
                     background: selectedTopic === null ? "#E0F2F1" : "var(--card)",
                     color: selectedTopic === null ? "#00695C" : "var(--muted-foreground)",
                   }}
@@ -163,7 +163,7 @@ export default function Treino() {
                     onClick={() => setSelectedTopic(t.conteudo)}
                     className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
                     style={{
-                      border: `1.5px solid ${selectedTopic === t.conteudo ? "#009688" : "var(--pr-border)"}`,
+                      border: `1.5px solid ${selectedTopic === t.conteudo ? "#009688" : "var(--border)"}`,
                       background: selectedTopic === t.conteudo ? "#E0F2F1" : "var(--card)",
                       color: selectedTopic === t.conteudo ? "#00695C" : "var(--muted-foreground)",
                     }}
@@ -185,7 +185,7 @@ export default function Treino() {
                     onClick={() => setCount(n)}
                     className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
                     style={{
-                      border: `1.5px solid ${count === n ? "#009688" : "var(--pr-border)"}`,
+                      border: `1.5px solid ${count === n ? "#009688" : "var(--border)"}`,
                       background: count === n ? "#E0F2F1" : "var(--card)",
                       color: count === n ? "#00695C" : "var(--muted-foreground)",
                     }}
@@ -220,17 +220,17 @@ export default function Treino() {
     return (
       <div className="space-y-6 py-2">
         <div className="rounded-2xl p-6 text-center" style={{ background: pct >= 70 ? "#F0FDF4" : "#FEF2F2", border: `1.5px solid ${pct >= 70 ? "#A7F3D0" : "#FECACA"}` }}>
-          <p className="text-4xl font-black mb-1" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>{pct}%</p>
-          <p className="text-sm font-medium" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>
+          <p className="text-4xl font-black mb-1" style={{ color: pct >= 70 ? "#16A34A" : "#DC2626" }}>{pct}%</p>
+          <p className="text-sm font-medium" style={{ color: pct >= 70 ? "#16A34A" : "#DC2626" }}>
             {correct} de {questions.length} acertos
           </p>
           <div className="flex items-center justify-center gap-1.5 mt-2">
-            <Clock className="h-3.5 w-3.5" style={{ color: pct >= 70 ? "#00695C" : "#C62828", opacity: 0.7 }} />
-            <p className="text-xs opacity-70" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>
+            <Clock className="h-3.5 w-3.5" style={{ color: pct >= 70 ? "#16A34A" : "#DC2626", opacity: 0.7 }} />
+            <p className="text-xs opacity-70" style={{ color: pct >= 70 ? "#16A34A" : "#DC2626" }}>
               Tempo total: {fmtTime(elapsedSeconds)}
             </p>
           </div>
-          <p className="text-xs mt-1 opacity-70" style={{ color: pct >= 70 ? "#00695C" : "#C62828" }}>
+          <p className="text-xs mt-1 opacity-70" style={{ color: pct >= 70 ? "#16A34A" : "#DC2626" }}>
             {pct >= 70 ? "Ótimo desempenho!" : pct >= 50 ? "Continue praticando!" : "Revise o conteúdo e tente novamente."}
           </p>
         </div>
@@ -242,9 +242,9 @@ export default function Treino() {
             return (
               <div key={q.id} className="flex items-center gap-3 p-3 rounded-xl"
                 style={{ background: isCorrect ? "#F0FDF4" : "#FEF2F2", border: `1px solid ${isCorrect ? "#A7F3D0" : "#FECACA"}` }}>
-                <span className="text-xs font-bold w-5 text-center" style={{ color: isCorrect ? "#00695C" : "#C62828" }}>{i + 1}</span>
+                <span className="text-xs font-bold w-5 text-center" style={{ color: isCorrect ? "#16A34A" : "#DC2626" }}>{i + 1}</span>
                 <span className="flex-1 text-xs truncate" style={{ color: "var(--muted-foreground)" }}>{q.conteudo_principal}</span>
-                <span className="text-xs font-bold" style={{ color: isCorrect ? "#00695C" : "#C62828" }}>
+                <span className="text-xs font-bold" style={{ color: isCorrect ? "#16A34A" : "#DC2626" }}>
                   {answers[q.id] ?? "—"} → {q.gabarito}
                 </span>
               </div>
@@ -276,7 +276,12 @@ export default function Treino() {
           <span className="text-sm font-bold" style={{ color: "#009688" }}>Treino livre</span>
           <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "#E0F2F1", color: "#004D40" }}>{q.nivel_dificuldade}</span>
         </div>
-        <span className="text-sm font-mono" style={{ color: "var(--muted-foreground)" }}>{idx + 1}/{questions.length}</span>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1 text-xs font-mono" style={{ color: "#009688" }}>
+            <Clock className="h-3.5 w-3.5" />{fmtTime(elapsedSeconds)}
+          </span>
+          <span className="text-sm font-mono" style={{ color: "var(--muted-foreground)" }}>{idx + 1}/{questions.length}</span>
+        </div>
       </div>
 
       {/* Questão */}

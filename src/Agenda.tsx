@@ -367,38 +367,33 @@ export default function Agenda() {
         </div>
       )}
 
-      {/* Sugestões */}
+      {/* O que mais caiu no ENEM */}
       <div>
         <button
           onClick={() => setShowSugest((p) => !p)}
           className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all"
           style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--foreground)" }}>
-          <span>💡 Sugestões baseadas no seu desempenho</span>
+          <span>🏆 O que mais caiu no ENEM nos últimos 5 anos?</span>
           {showSugest ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
 
         {showSugest && (
           <div className="mt-2 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
             {topicStats.slice(0, 10).map((item, i) => {
-              const s =
-                item.status === "fraco"   ? { bg: "#FEF2F2",  text: "#DC2626",      label: "Prioridade" } :
-                item.status === "regular" ? { bg: "#FFFBEB",    text: "#B45309",        label: "Em progresso" } :
-                item.status === "forte"   ? { bg: "#F0FDF4", text: "#16A34A",     label: "Dominado" } :
-                                            { bg: "var(--muted)",         text: "var(--muted-foreground)", label: "Sem dados" };
+              const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null;
               return (
                 <div key={item.topic}
                   className="flex items-center gap-3 px-4 py-3"
                   style={{ borderBottom: i < 9 ? "1px solid var(--border)" : "none", background: "var(--card)" }}>
-                  <span className="text-xs font-bold w-5 text-center text-muted-foreground">{i + 1}</span>
+                  <span className="text-base w-6 text-center flex-shrink-0">
+                    {medal ?? <span className="text-xs font-bold" style={{ color: "var(--muted-foreground)" }}>{i + 1}</span>}
+                  </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>{item.topic}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.enemPct}% do ENEM{item.userAccuracy !== null ? ` · ${item.userAccuracy}% de acerto` : " · sem histórico"}
-                    </p>
+                    <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>{item.topic}</p>
                   </div>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-                    style={{ background: s.bg, color: s.text }}>
-                    {s.label}
+                  <span className="text-xs font-bold flex-shrink-0 px-2 py-0.5 rounded-full"
+                    style={{ background: "#E0F2F1", color: "#004D40" }}>
+                    {item.enemPct}% das questões
                   </span>
                 </div>
               );

@@ -108,7 +108,7 @@ export default function DesafioPage() {
                   </span>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-xs font-bold px-2 py-0.5 rounded"
-                      style={{ background: isCorrect ? "#16A34A" : "#DC2626", color: "#fff" }}>
+                      style={{ background: isCorrect ? "#F0FDF4" : "#FEF2F2", color: isCorrect ? "#16A34A" : "#DC2626", border: `1px solid ${isCorrect ? "#A7F3D0" : "#FECACA"}` }}>
                       {answers[q.id] ?? "—"} → {q.gabarito}
                     </span>
                     <div className="flex items-center gap-1.5 flex-shrink-0">

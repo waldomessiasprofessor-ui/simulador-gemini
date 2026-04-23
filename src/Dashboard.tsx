@@ -657,7 +657,7 @@ function RadarTopicos() {
       {/* Destaques */}
       <div className="space-y-2 pt-1">
         {/* Melhor área */}
-        <div className="rounded-xl px-3 py-2 flex items-center gap-3" style={{ background: "#F0FDF4", border: "1px solid #A7F3D0" }}>
+        <div className="rounded-xl px-3 py-2 flex items-center gap-3" style={{ background: "rgba(0,105,92,0.15)", border: "1.5px solid #A7F3D0" }}>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold" style={{ color: "#16A34A" }}>Melhor área</p>
             <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#16A34A" }}>{shortLabel(best.conteudo)}</p>
@@ -666,7 +666,7 @@ function RadarTopicos() {
         </div>
 
         {/* Pontos a melhorar — lista das áreas mais fracas */}
-        <div className="rounded-xl px-3 py-2" style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}>
+        <div className="rounded-xl px-3 py-2" style={{ background: "rgba(185,28,28,0.12)", border: "1.5px solid #FECACA" }}>
           <p className="text-xs font-semibold mb-1.5" style={{ color: "#DC2626" }}>
             {belowThreshold.length > 0 ? "Pontos a melhorar" : "Áreas com menor acerto"}
           </p>
