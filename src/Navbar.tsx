@@ -88,6 +88,7 @@ const NAV_TREE: TopItem[] = [
       },
     ],
   },
+  { kind: "link", href: "/trilhas",    label: "Trilhas",            icon: Youtube },
   { kind: "link", href: "/treino",     label: "Treino Livre",       icon: Dumbbell },
   { kind: "link", href: "/desafio",    label: "Desafio do Dia",     icon: Zap },
   { kind: "link", href: "/agenda",     label: "Planner de Estudos", icon: CalendarDays },

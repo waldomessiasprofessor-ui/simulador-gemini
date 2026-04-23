@@ -116,6 +116,7 @@ export default function App() {
           <Route path="/formulas"><Formulas /></Route>
           <Route path="/desafio"><DesafioPage /></Route>
           <Route path="/agenda"><Agenda /></Route>
+          <Route path="/trilhas"><Trilha /></Route>
           <Route path="/trilha/:areaSlug/:licaoSlug">
             {(params) => <Trilha areaSlug={params.areaSlug} licaoSlug={params.licaoSlug} />}
           </Route>

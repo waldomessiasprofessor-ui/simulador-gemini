@@ -345,6 +345,19 @@ body {
 .html-content tr:nth-child(even) td {
   background: var(--secondary);
 }
+/* dark mode: garante contraste em células com background inline do banco */
+.dark .html-content td,
+.dark .html-content th {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+}
+.dark .html-content th {
+  background-color: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+}
+.dark .html-content tr:nth-child(even) td {
+  background-color: var(--muted) !important;
+}
 .html-content ul,
 .html-content ol {
   padding-left: 1.5rem;
