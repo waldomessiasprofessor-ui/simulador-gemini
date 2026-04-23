@@ -114,7 +114,7 @@ const ADMIN_LINKS: LinkItem[] = [
 function SoonBadge() {
   return (
     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-      style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)", letterSpacing: "0.03em" }}>
+      style={{ background: "#E0F2F1", color: "#00695C", letterSpacing: "0.03em" }}>
       Em breve
     </span>
   );
@@ -149,12 +149,12 @@ function renderSub(item: SubItem, location: string, onClose: () => void, depth =
     <Link key={item.href} href={item.href}>
       <span onClick={onClose}
         className={`flex items-center gap-2 pr-3 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all ${pad}`}
-        style={active ? { background: "var(--pr-teal-soft)", color: "var(--pr-teal)" } : { color: "var(--muted-foreground)" }}>
+        style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
         {Icon && <Icon className="h-3.5 w-3.5 flex-shrink-0" />}
         <span className="flex-1">{item.label}</span>
         {item.badge && (
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-            style={{ background: "var(--pr-teal)", color: "#fff", letterSpacing: "0.03em" }}>
+            style={{ background: "#009688", color: "#fff", letterSpacing: "0.03em" }}>
             {item.badge}
           </span>
         )}
@@ -179,7 +179,7 @@ function GroupMenu({ item, location, onClose, startOpen }: {
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
-        style={isActive ? { background: "var(--pr-teal-soft)", color: "var(--pr-teal)" } : { color: "var(--foreground)" }}>
+        style={isActive ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--foreground)" }}>
         <Icon className="h-4 w-4 flex-shrink-0" />
         <span className="flex-1 text-left">{item.label}</span>
         {open
@@ -187,7 +187,7 @@ function GroupMenu({ item, location, onClose, startOpen }: {
           : <ChevronRight className="h-3.5 w-3.5" />}
       </button>
       {open && (
-        <div className="ml-3 mt-1 space-y-0.5 border-l-2 pl-2" style={{ borderColor: "var(--pr-teal-border)" }}>
+        <div className="ml-3 mt-1 space-y-0.5 border-l-2 pl-2" style={{ borderColor: "#B2DFDB" }}>
           {item.children.map((c) => renderSub(c, location, onClose))}
         </div>
       )}
@@ -224,7 +224,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
 
         <div className="px-5 py-6 flex items-center gap-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <div className="h-14 w-14 rounded-full flex items-center justify-center text-xl font-black flex-shrink-0"
-            style={{ background: "var(--pr-teal)", color: "#fff" }}>
+            style={{ background: "#009688", color: "#fff" }}>
             {(session.name as string)?.[0]?.toUpperCase() ?? "U"}
           </div>
           <div className="min-w-0">
@@ -232,7 +232,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
             <p className="text-xs truncate mt-0.5" style={{ color: "var(--muted-foreground)" }}>{session.email}</p>
             {session.role === "admin" && (
               <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full mt-1 font-semibold"
-                style={{ background: "var(--pr-warn)", color: "#fff" }}>
+                style={{ background: "#B45309", color: "#fff" }}>
                 <Shield className="h-3 w-3" /> Admin
               </span>
             )}
@@ -242,15 +242,15 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
         {stats && (
           <div className="px-5 py-4 grid grid-cols-3 gap-3" style={{ borderBottom: "1px solid var(--border)" }}>
             <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "var(--pr-teal)" }}>{stats.streak}</p>
+              <p className="text-lg font-black" style={{ color: "#009688" }}>{stats.streak}</p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>streak</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "var(--pr-teal)" }}>{stats.weeklyQuestions}</p>
+              <p className="text-lg font-black" style={{ color: "#009688" }}>{stats.weeklyQuestions}</p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>esta semana</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-black" style={{ color: "var(--pr-teal)" }}>{stats.weeklyAccuracy}%</p>
+              <p className="text-lg font-black" style={{ color: "#009688" }}>{stats.weeklyAccuracy}%</p>
               <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>acerto</p>
             </div>
           </div>
@@ -259,11 +259,11 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
         <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <p className="text-xs font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>Assinatura</p>
           {session.role === "admin" ? (
-            <span className="text-sm font-medium" style={{ color: "var(--pr-teal)" }}>Acesso admin (ilimitado)</span>
+            <span className="text-sm font-medium" style={{ color: "#009688" }}>Acesso admin (ilimitado)</span>
           ) : expired ? (
-            <span className="text-sm font-medium" style={{ color: "var(--pr-danger)" }}>Expirada em {expiry?.toLocaleDateString("pt-BR")}</span>
+            <span className="text-sm font-medium" style={{ color: "#DC2626" }}>Expirada em {expiry?.toLocaleDateString("pt-BR")}</span>
           ) : expiry ? (
-            <span className="text-sm font-medium" style={{ color: "var(--pr-teal)" }}>Ativa · {daysLeft} dias restantes</span>
+            <span className="text-sm font-medium" style={{ color: "#009688" }}>Ativa · {daysLeft} dias restantes</span>
           ) : (
             <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>Sem assinatura ativa</span>
           )}
@@ -283,7 +283,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
         <div className="px-5 py-4" style={{ borderTop: "1px solid var(--border)" }}>
           <button onClick={() => logout.mutate()} disabled={logout.isPending}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
-            style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)", border: "1px solid var(--pr-danger-border)" }}>
+            style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
             <LogOut className="h-4 w-4" /> Sair da conta
           </button>
         </div>
@@ -374,7 +374,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: "1px solid var(--border)" }}>
           <div className="flex items-center gap-2">
             <img src="/logo-vetor.png" alt="Prova Real" className="h-8 w-8 object-contain"
-              style={{ filter: "brightness(0) invert(1)", background: "var(--pr-teal)", borderRadius: 6, padding: 2 }} />
+              style={{ filter: "brightness(0) invert(1)", background: "#009688", borderRadius: 6, padding: 2 }} />
             <div>
               <p className="font-black text-sm leading-none" style={{ color: "var(--foreground)" }}>VETOR</p>
               <p className="text-xs leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Escola de Alta Performance</p>
@@ -405,7 +405,7 @@ export default function Navbar() {
               <Link key={item.href} href={item.href}>
                 <span onClick={closeSidebar}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
-                  style={active ? { background: "var(--pr-teal-soft)", color: "var(--pr-teal)" } : { color: "var(--muted-foreground)" }}>
+                  style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   {item.label}
                   {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
@@ -426,7 +426,7 @@ export default function Navbar() {
                   <Link key={href} href={href}>
                     <span onClick={closeSidebar}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
-                      style={active ? { background: "var(--pr-teal-soft)", color: "var(--pr-teal)" } : { color: "var(--muted-foreground)" }}>
+                      style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
                       {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
                       {label}
                       {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
@@ -442,14 +442,14 @@ export default function Navbar() {
           <div className="px-3 py-4" style={{ borderTop: "1px solid var(--border)" }}>
             <button onClick={() => { setSidebarOpen(false); setProfileOpen(true); }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:opacity-80"
-              style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+              style={{ background: "#E0F2F1", color: "#009688" }}>
               <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold"
-                style={{ background: "var(--pr-teal)", color: "#fff" }}>
+                style={{ background: "#009688", color: "#fff" }}>
                 {(session.name as string)?.[0]?.toUpperCase() ?? "U"}
               </div>
               <div className="text-left min-w-0">
                 <p className="font-semibold truncate text-xs">{session.name as string}</p>
-                <p className="text-xs truncate" style={{ color: "var(--pr-teal-dark)" }}>{session.email as string}</p>
+                <p className="text-xs truncate" style={{ color: "#00695C" }}>{session.email as string}</p>
               </div>
               <User className="h-4 w-4 ml-auto flex-shrink-0" />
             </button>

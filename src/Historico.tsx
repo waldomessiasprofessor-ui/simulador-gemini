@@ -33,14 +33,14 @@ function TabSimulados() {
     date: sim.completedAt ? format(new Date(sim.completedAt), "dd/MM", { locale: ptBR }) : "",
   }));
 
-  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} /></div>;
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} /></div>;
 
   return (
     <div className="space-y-6">
       {chartData.length > 1 && (
         <div className="rounded-xl p-4" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
           <p className="font-semibold text-sm mb-3 flex items-center gap-2" style={{ color: "var(--foreground)" }}>
-            <TrendingUp className="h-4 w-4" style={{ color: "var(--pr-teal)" }} /> Evolução de acertos
+            <TrendingUp className="h-4 w-4" style={{ color: "#009688" }} /> Evolução de acertos
           </p>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
@@ -71,8 +71,8 @@ function TabSimulados() {
                 style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}
                 onClick={() => navigate(`/resultado/${sim.id}`)}>
                 {pct >= 60
-                  ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-success)" }} />
-                  : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-danger)" }} />}
+                  ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#16A34A" }} />
+                  : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#DC2626" }} />}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
@@ -80,7 +80,7 @@ function TabSimulados() {
                     </span>
                     {sim.score != null && (
                       <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                        style={{ background: "var(--pr-warn-bg)", color: "var(--pr-warn)" }}>
+                        style={{ background: "#FFFBEB", color: "#B45309" }}>
                         {sim.score.toFixed(0)} pts TRI
                       </span>
                     )}
@@ -94,7 +94,7 @@ function TabSimulados() {
                 </div>
                 <div className="w-16 hidden sm:block">
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct >= 60 ? "var(--pr-success)" : "var(--pr-danger)" }} />
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct >= 60 ? "#16A34A" : "#DC2626" }} />
                   </div>
                 </div>
               </div>
@@ -117,11 +117,11 @@ function TabErros() {
     { staleTime: 0 }
   );
 
-  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-danger)" }} /></div>;
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "#DC2626" }} /></div>;
 
   if (!data?.rows.length) return (
     <div className="text-center py-16 space-y-3">
-      <CheckCircle2 className="h-12 w-12 mx-auto" style={{ color: "var(--pr-success)", opacity: 0.4 }} />
+      <CheckCircle2 className="h-12 w-12 mx-auto" style={{ color: "#16A34A", opacity: 0.4 }} />
       <p className="font-semibold" style={{ color: "var(--foreground)" }}>Sem erros registrados</p>
       <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
         Você ainda não completou nenhum simulado, ou acertou tudo! 🎉
@@ -134,7 +134,7 @@ function TabErros() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 px-1">
-        <AlertTriangle className="h-4 w-4" style={{ color: "var(--pr-warn)" }} />
+        <AlertTriangle className="h-4 w-4" style={{ color: "#B45309" }} />
         <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
           {data.total} questão(ões) errada(s) no total
         </p>
@@ -151,8 +151,8 @@ function TabErros() {
               <button className="w-full flex items-start gap-3 px-4 py-3.5 text-left"
                 onClick={() => setOpenId(isOpen ? null : row.answerId)}>
                 <div className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: "var(--pr-danger-bg)" }}>
-                  <XCircle className="h-4 w-4" style={{ color: "var(--pr-danger)" }} />
+                  style={{ background: "#FEF2F2" }}>
+                  <XCircle className="h-4 w-4" style={{ color: "#DC2626" }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
@@ -160,8 +160,8 @@ function TabErros() {
                   </p>
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                      Sua resposta: <span className="font-bold" style={{ color: "var(--pr-danger)" }}>{row.selectedAnswer ?? "—"}</span>
-                      {" · "}Correta: <span className="font-bold" style={{ color: "var(--pr-success)" }}>{row.gabarito}</span>
+                      Sua resposta: <span className="font-bold" style={{ color: "#DC2626" }}>{row.selectedAnswer ?? "—"}</span>
+                      {" · "}Correta: <span className="font-bold" style={{ color: "#16A34A" }}>{row.gabarito}</span>
                     </span>
                     <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
                       {row.nivel_dificuldade}
@@ -190,23 +190,23 @@ function TabErros() {
                       return (
                         <div key={id} className="flex gap-2 px-3 py-2 rounded-lg text-sm"
                           style={{
-                            background: isCorrect ? "var(--pr-success-bg)" : isSelected ? "var(--pr-danger-bg)" : "var(--muted)",
-                            border: `1px solid ${isCorrect ? "var(--pr-success-border)" : isSelected ? "var(--pr-danger-border)" : "transparent"}`,
+                            background: isCorrect ? "#F0FDF4" : isSelected ? "#FEF2F2" : "var(--muted)",
+                            border: `1px solid ${isCorrect ? "#A7F3D0" : isSelected ? "#FECACA" : "transparent"}`,
                           }}>
                           <span className="font-bold w-4 flex-shrink-0"
-                            style={{ color: isCorrect ? "var(--pr-success)" : isSelected ? "var(--pr-danger)" : "var(--muted-foreground)" }}>
+                            style={{ color: isCorrect ? "#16A34A" : isSelected ? "#DC2626" : "var(--muted-foreground)" }}>
                             {id}
                           </span>
                           <LatexRenderer inline fontSize="sm">{String(text)}</LatexRenderer>
-                          {isCorrect && <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 ml-auto my-auto" style={{ color: "var(--pr-success)" }} />}
-                          {isSelected && !isCorrect && <XCircle className="h-3.5 w-3.5 flex-shrink-0 ml-auto my-auto" style={{ color: "var(--pr-danger)" }} />}
+                          {isCorrect && <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 ml-auto my-auto" style={{ color: "#16A34A" }} />}
+                          {isSelected && !isCorrect && <XCircle className="h-3.5 w-3.5 flex-shrink-0 ml-auto my-auto" style={{ color: "#DC2626" }} />}
                         </div>
                       );
                     })}
                   </div>
                   {row.comentario_resolucao && (
-                    <div className="rounded-xl p-3" style={{ background: "var(--pr-info-bg)", border: "1px solid var(--pr-info-border)" }}>
-                      <p className="text-xs font-semibold mb-1" style={{ color: "var(--pr-info)" }}>Resolução</p>
+                    <div className="rounded-xl p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: "#1D4ED8" }}>Resolução</p>
                       <LatexRenderer fontSize="sm">{row.comentario_resolucao}</LatexRenderer>
                     </div>
                   )}
@@ -253,14 +253,14 @@ export default function Historico() {
         <button onClick={() => setTab("simulados")}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
           style={tab === "simulados"
-            ? { background: "var(--pr-teal)", color: "#fff" }
+            ? { background: "#009688", color: "#fff" }
             : { background: "var(--muted)", color: "var(--muted-foreground)" }}>
           <TrendingUp className="h-4 w-4" /> Simulados
         </button>
         <button onClick={() => setTab("erros")}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
           style={tab === "erros"
-            ? { background: "var(--pr-danger)", color: "#fff" }
+            ? { background: "#DC2626", color: "#fff" }
             : { background: "var(--muted)", color: "var(--muted-foreground)" }}>
           <AlertTriangle className="h-4 w-4" /> O que já errei?
         </button>

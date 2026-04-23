@@ -78,7 +78,7 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
   if (!trilha) {
     return (
       <div className="text-center py-20 space-y-3">
-        <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "var(--pr-teal)" }} />
+        <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "#009688" }} />
         <p className="font-semibold" style={{ color: "var(--foreground)" }}>
           Trilha não encontrada
         </p>
@@ -99,7 +99,7 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
     if (!licao) {
       return (
         <div className="text-center py-20 space-y-3">
-          <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "var(--pr-teal)" }} />
+          <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "#009688" }} />
           <p className="font-semibold" style={{ color: "var(--foreground)" }}>Lição não encontrada</p>
           <button onClick={() => navigate(`/trilha/${trilha.slug}`)} className="btn-outline">
             Voltar à trilha
@@ -170,12 +170,12 @@ function TrilhaIndex({ trilha }: { trilha: TrilhaType }) {
                   <div className="flex items-center gap-3 px-4 py-4">
                     <div className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{
-                        background: concluida ? "var(--pr-success-bg)" : "var(--pr-teal-soft)",
-                        border: `1.5px solid ${concluida ? "var(--pr-success-border)" : "var(--pr-teal-border)"}`,
+                        background: concluida ? "#F0FDF4" : "#E0F2F1",
+                        border: `1.5px solid ${concluida ? "#A7F3D0" : "#B2DFDB"}`,
                       }}>
                       {concluida
-                        ? <CheckCircle2 className="h-5 w-5" style={{ color: "var(--pr-success)" }} />
-                        : <BookOpen className="h-5 w-5" style={{ color: "var(--pr-teal-dark)" }} />}
+                        ? <CheckCircle2 className="h-5 w-5" style={{ color: "#16A34A" }} />
+                        : <BookOpen className="h-5 w-5" style={{ color: "#00695C" }} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
@@ -193,7 +193,7 @@ function TrilhaIndex({ trilha }: { trilha: TrilhaType }) {
                         </span>
                         {concluida && prog.lastScorePct !== undefined && (
                           <span className="inline-flex items-center gap-1 text-xs font-bold"
-                            style={{ color: "var(--pr-success)" }}>
+                            style={{ color: "#16A34A" }}>
                             <CheckCircle2 className="h-3 w-3" /> {prog.lastScorePct}%
                           </span>
                         )}
@@ -289,11 +289,11 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
 
         {/* Título da lição */}
         <div className="rounded-xl px-4 py-3 flex items-center gap-3"
-          style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
-          <BookOpen className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-teal-dark)" }} />
+          style={{ background: "#E0F2F1", border: "1.5px solid #B2DFDB" }}>
+          <BookOpen className="h-5 w-5 flex-shrink-0" style={{ color: "#00695C" }} />
           <div className="flex-1 min-w-0">
             <p className="pr-eyebrow">Lição</p>
-            <h1 className="font-black text-base" style={{ color: "var(--pr-teal-darker)" }}>
+            <h1 className="font-black text-base" style={{ color: "#004D40" }}>
               {licao.titulo}
             </h1>
           </div>
@@ -305,7 +305,7 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
         {/* Explicação */}
         <div className="card space-y-3">
           <div className="flex items-center gap-2">
-            <Lightbulb className="h-4 w-4" style={{ color: "var(--pr-teal-dark)" }} />
+            <Lightbulb className="h-4 w-4" style={{ color: "#00695C" }} />
             <h2 className="pr-eyebrow">O conceito</h2>
           </div>
           <LatexRenderer fontSize="base">{licao.explicacao}</LatexRenderer>
@@ -316,7 +316,7 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
           <div key={i} className="card space-y-3"
             style={{ background: "var(--pr-bg-alt)" }}>
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4" style={{ color: "var(--pr-teal-dark)" }} />
+              <Target className="h-4 w-4" style={{ color: "#00695C" }} />
               <h3 className="pr-eyebrow">{ex.titulo}</h3>
             </div>
             <div className="space-y-2">
@@ -357,9 +357,9 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
 
         {/* CTA — Agora é sua vez */}
         <div className="rounded-2xl p-5 text-center space-y-3"
-          style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
-          <Sparkles className="h-8 w-8 mx-auto" style={{ color: "var(--pr-teal-dark)" }} />
-          <p className="font-black" style={{ color: "var(--pr-teal-darker)" }}>
+          style={{ background: "#E0F2F1", border: "1.5px solid #B2DFDB" }}>
+          <Sparkles className="h-8 w-8 mx-auto" style={{ color: "#00695C" }} />
+          <p className="font-black" style={{ color: "#004D40" }}>
             Agora é sua vez!
           </p>
           <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
@@ -395,13 +395,13 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
       <div className="space-y-5 py-2">
         {/* Header — progresso */}
         <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
-          style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
+          style={{ background: "#E0F2F1", border: "1.5px solid #B2DFDB" }}>
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-bold" style={{ color: "var(--pr-teal-darker)" }}>
+            <span className="text-sm font-bold" style={{ color: "#004D40" }}>
               {licao.titulo}
             </span>
           </div>
-          <span className="text-sm font-mono font-bold flex-shrink-0" style={{ color: "var(--pr-teal-dark)" }}>
+          <span className="text-sm font-mono font-bold flex-shrink-0" style={{ color: "#00695C" }}>
             {idx + 1}/{total}
           </span>
         </div>
@@ -450,15 +450,15 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
           {isRevealed && (
             <div className="rounded-xl p-4 space-y-2"
               style={{
-                background: isCorrect ? "var(--pr-success-bg)" : "var(--pr-danger-bg)",
-                border: `1.5px solid ${isCorrect ? "var(--pr-success-border)" : "var(--pr-danger-border)"}`,
+                background: isCorrect ? "#F0FDF4" : "#FEF2F2",
+                border: `1.5px solid ${isCorrect ? "#A7F3D0" : "#FECACA"}`,
               }}>
               <div className="flex items-center gap-2">
                 {isCorrect
-                  ? <CheckCircle2 className="h-5 w-5" style={{ color: "var(--pr-success)" }} />
-                  : <XCircle className="h-5 w-5" style={{ color: "var(--pr-danger)" }} />}
+                  ? <CheckCircle2 className="h-5 w-5" style={{ color: "#16A34A" }} />
+                  : <XCircle className="h-5 w-5" style={{ color: "#DC2626" }} />}
                 <p className="font-bold text-sm"
-                  style={{ color: isCorrect ? "var(--pr-success)" : "var(--pr-danger)" }}>
+                  style={{ color: isCorrect ? "#16A34A" : "#DC2626" }}>
                   {isCorrect ? "Correto!" : `Resposta correta: ${currentEx.gabarito}`}
                 </p>
               </div>
@@ -520,9 +520,9 @@ function ResumoLicao({
   const bom = pct >= 70;
   const ok  = pct >= 50 && pct < 70;
 
-  const cor = bom ? "var(--pr-success)"  : ok ? "var(--pr-warn)"    : "var(--pr-danger)";
-  const bg  = bom ? "var(--pr-success-bg)" : ok ? "var(--pr-warn-bg)" : "var(--pr-danger-bg)";
-  const bd  = bom ? "var(--pr-success-border)" : ok ? "var(--pr-warn-border)" : "var(--pr-danger-border)";
+  const cor = bom ? "#16A34A"  : ok ? "#B45309"    : "#DC2626";
+  const bg  = bom ? "#F0FDF4" : ok ? "#FFFBEB" : "#FEF2F2";
+  const bd  = bom ? "#A7F3D0" : ok ? "#FCD34D" : "#FECACA";
 
   const mensagem = bom
     ? "Excelente! Você dominou este conteúdo."
@@ -561,23 +561,23 @@ function ResumoLicao({
           return (
             <div key={ex.id} className="flex items-center gap-3 p-3 rounded-xl"
               style={{
-                background: acertou ? "var(--pr-success-bg)" : "var(--pr-danger-bg)",
-                border: `1px solid ${acertou ? "var(--pr-success-border)" : "var(--pr-danger-border)"}`,
+                background: acertou ? "#F0FDF4" : "#FEF2F2",
+                border: `1px solid ${acertou ? "#A7F3D0" : "#FECACA"}`,
               }}>
               <span className="text-xs font-bold w-6 text-center flex-shrink-0"
-                style={{ color: acertou ? "var(--pr-success)" : "var(--pr-danger)" }}>
+                style={{ color: acertou ? "#16A34A" : "#DC2626" }}>
                 {i + 1}
               </span>
               <span className="flex-1 text-xs truncate" style={{ color: "var(--muted-foreground)" }}>
                 Exercício {i + 1}
               </span>
               <span className="text-xs font-bold flex-shrink-0"
-                style={{ color: acertou ? "var(--pr-success)" : "var(--pr-danger)" }}>
+                style={{ color: acertou ? "#16A34A" : "#DC2626" }}>
                 {selected ?? "—"} → {ex.gabarito}
               </span>
               {acertou
-                ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-success)" }} />
-                : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-danger)" }} />}
+                ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#16A34A" }} />
+                : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#DC2626" }} />}
             </div>
           );
         })}

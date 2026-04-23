@@ -53,7 +53,7 @@ function FilterDropdown({ filterTag, setFilterTag }: { filterTag: string; setFil
         {filterTag === "Todas" ? "Filtrar conteúdo" : filterTag}
         {open ? <ChevronUp className="h-3.5 w-3.5 ml-auto" /> : <ChevronDown className="h-3.5 w-3.5 ml-auto" />}
         {filterTag !== "Todas" && (
-          <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ background: "var(--pr-teal)", color: "#fff" }}>1</span>
+          <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ background: "#009688", color: "#fff" }}>1</span>
         )}
       </button>
 
@@ -63,7 +63,7 @@ function FilterDropdown({ filterTag, setFilterTag }: { filterTag: string; setFil
             <button key={tag} onClick={() => { setFilterTag(tag); setOpen(false); }}
               className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
               style={filterTag === tag
-                ? { background: "var(--pr-teal)", color: "#fff" }
+                ? { background: "#009688", color: "#fff" }
                 : { background: "var(--muted)", color: "var(--muted-foreground)" }}>
               {tag}
             </button>
@@ -139,7 +139,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
           placeholder="Buscar por conteúdo..."
           className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
           style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
-          onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal)")}
+          onFocus={(e) => (e.target.style.borderColor = "#009688")}
           onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
       </div>
 
@@ -148,15 +148,15 @@ export default function Questoes({ fonte }: { fonte?: string }) {
 
       {/* Banner do filtro por tópico vindo do Planner / Dashboard */}
       {topicFilter && (
-        <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal)" }}>
-          <Dumbbell className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-teal-dark)" }} />
-          <p className="text-sm font-semibold flex-1" style={{ color: "var(--pr-teal-dark)" }}>
-            Praticando: <span style={{ color: "var(--pr-teal-darker)" }}>{topicFilter}</span>
+        <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: "#E0F2F1", border: "1.5px solid #009688" }}>
+          <Dumbbell className="h-4 w-4 flex-shrink-0" style={{ color: "#00695C" }} />
+          <p className="text-sm font-semibold flex-1" style={{ color: "#00695C" }}>
+            Praticando: <span style={{ color: "#004D40" }}>{topicFilter}</span>
           </p>
           <button
             onClick={() => { setTopicFilter(""); setPage(1); }}
             className="text-xs font-bold px-2 py-1 rounded-lg transition-opacity hover:opacity-80"
-            style={{ background: "var(--pr-teal)", color: "#fff" }}>
+            style={{ background: "#009688", color: "#fff" }}>
             Ver todas
           </button>
         </div>
@@ -172,7 +172,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 space-y-2">
@@ -186,7 +186,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
           </p>
           {filterTag !== "Todas" && (
             <button onClick={() => setFilterTag("Todas")}
-              className="text-sm font-semibold underline underline-offset-2" style={{ color: "var(--pr-teal)" }}>
+              className="text-sm font-semibold underline underline-offset-2" style={{ color: "#009688" }}>
               Ver todas as questões
             </button>
           )}
@@ -205,7 +205,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                 <button className="w-full flex items-start gap-3 px-4 py-3.5 text-left"
                   onClick={() => setOpenId(isOpen ? null : q.id)}>
                   <div className="h-8 w-8 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-black"
-                    style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+                    style={{ background: "#E0F2F1", color: "#009688" }}>
                     {q.conteudo_principal.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -220,7 +220,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                         {qTags.map((tag: string) => (
                           <button key={tag} onClick={(e) => { e.stopPropagation(); setFilterTag(tag); }}
                             className="text-xs px-2 py-0.5 rounded-full font-medium transition-colors hover:opacity-80"
-                            style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>
+                            style={{ background: "#E0F2F1", color: "#00695C" }}>
                             {tag}
                           </button>
                         ))}
@@ -248,7 +248,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                         return (
                           <div key={id} className="flex gap-2 px-3 py-2 rounded-lg text-sm"
                             style={{ background: "var(--muted)" }}>
-                            <span className="font-bold flex-shrink-0 w-4" style={{ color: "var(--pr-teal)" }}>{id}</span>
+                            <span className="font-bold flex-shrink-0 w-4" style={{ color: "#009688" }}>{id}</span>
                             <div className="flex-1">
                               {file && <img src={file} alt={`Alt ${id}`} className="max-w-xs rounded mb-1" />}
                               {text && <LatexRenderer inline>{text}</LatexRenderer>}
@@ -262,7 +262,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                     <div className="pt-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-bold px-2.5 py-1 rounded-full"
-                          style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>
+                          style={{ background: "#E0F2F1", color: "#00695C" }}>
                           Gabarito: {q.gabarito}
                         </span>
                         {q.comentario_resolucao && (
@@ -270,9 +270,9 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                             onClick={() => setOpenResolution(openResolution === q.id ? null : q.id)}
                             className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full transition-all"
                             style={{
-                              background: openResolution === q.id ? "var(--pr-teal)" : "var(--muted)",
-                              color: openResolution === q.id ? "#fff" : "var(--pr-teal)",
-                              border: "1.5px solid var(--pr-teal-border)",
+                              background: openResolution === q.id ? "#009688" : "var(--muted)",
+                              color: openResolution === q.id ? "#fff" : "#009688",
+                              border: "1.5px solid #B2DFDB",
                             }}>
                             <BookOpen className="h-3 w-3" />
                             {openResolution === q.id ? "Ocultar resolução" : "Ver resolução"}
@@ -290,8 +290,8 @@ export default function Questoes({ fonte }: { fonte?: string }) {
 
                       {openResolution === q.id && q.comentario_resolucao && (
                         <div className="rounded-xl p-4 space-y-1"
-                          style={{ background: "var(--pr-info-bg)", border: "1px solid var(--pr-info-border)" }}>
-                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--pr-info)" }}>
+                          style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#1D4ED8" }}>
                             Resolução
                           </p>
                           <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>

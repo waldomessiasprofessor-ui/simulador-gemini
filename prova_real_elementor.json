@@ -1,0 +1,1142 @@
+{
+  "version": "0.4",
+  "title": "Prova Real — Página de Vendas",
+  "type": "page",
+  "content": [
+    {
+      "id": "099ac8d",
+      "elType": "section",
+      "settings": {
+        "background_background": "classic",
+        "background_color": "#0D2137",
+        "padding": {
+          "top": "100",
+          "right": "0",
+          "bottom": "100",
+          "left": "0",
+          "unit": "px",
+          "isLinked": false
+        },
+        "content_width": {
+          "unit": "px",
+          "size": 1100
+        }
+      },
+      "elements": [
+        {
+          "id": "45541e8",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "_inline_size": null
+          },
+          "elements": [
+            {
+              "id": "0c936cd",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Você está a 45 questões de mudar o seu futuro.",
+                "header_size": "h1",
+                "align": "center",
+                "title_color": "#FFFFFF",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 48
+                },
+                "typography_font_weight": "900",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.2
+                }
+              }
+            },
+            {
+              "id": "f5e341a",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 20
+                }
+              }
+            },
+            {
+              "id": "6f113ff",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "A <strong>Prova Real</strong> é a plataforma de alta performance em Matemática que transforma o seu maior obstáculo no ENEM e vestibulares em uma vantagem estratégica.",
+                "align": "center",
+                "text_color": "#B0BEC5",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 20
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.8
+                }
+              }
+            },
+            {
+              "id": "129079e",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 30
+                }
+              }
+            },
+            {
+              "id": "50c505f",
+              "elType": "widget",
+              "widgetType": "button",
+              "settings": {
+                "text": "Quero começar agora — R$ 27,97/mês",
+                "link": {
+                  "url": "#",
+                  "is_external": false
+                },
+                "align": "center",
+                "size": "xl",
+                "button_text_color": "#0D2137",
+                "background_color": "#00BFA5",
+                "border_radius": {
+                  "top": "8",
+                  "right": "8",
+                  "bottom": "8",
+                  "left": "8",
+                  "unit": "px"
+                },
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 20
+                },
+                "typography_font_weight": "700",
+                "padding": {
+                  "top": "20",
+                  "right": "50",
+                  "bottom": "20",
+                  "left": "50",
+                  "unit": "px",
+                  "isLinked": false
+                }
+              }
+            },
+            {
+              "id": "41fc4ed",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 15
+                }
+              }
+            },
+            {
+              "id": "8e879e3",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<em>Menos de R$ 1 por dia. Cancele quando quiser.</em>",
+                "align": "center",
+                "text_color": "#78909C",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 14
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "264c1f8",
+      "elType": "section",
+      "settings": {
+        "background_background": "classic",
+        "background_color": "#F5F5F5",
+        "padding": {
+          "top": "70",
+          "right": "0",
+          "bottom": "70",
+          "left": "0",
+          "unit": "px",
+          "isLinked": false
+        },
+        "content_width": {
+          "unit": "px",
+          "size": 1100
+        }
+      },
+      "elements": [
+        {
+          "id": "f167553",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "_inline_size": null
+          },
+          "elements": [
+            {
+              "id": "8bb6e94",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "A Matemática do ENEM não é só difícil. Ela é estratégica.",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#0D2137",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 34
+                },
+                "typography_font_weight": "700",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.3
+                }
+              }
+            },
+            {
+              "id": "2dc84fb",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 20
+                }
+              }
+            },
+            {
+              "id": "f382b76",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "São <strong>45 questões</strong> em menos de 4 horas. Cada minuto conta. Cada erro custa pontos. E quem não está preparado sente isso na pele.",
+                "align": "center",
+                "text_color": "#444444",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 18
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            },
+            {
+              "id": "df1d8b0",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 30
+                }
+              }
+            },
+            {
+              "id": "dcb5376",
+              "elType": "widget",
+              "widgetType": "icon-list",
+              "settings": {
+                "icon_list": [
+                  {
+                    "id": "3cbc14f",
+                    "text": "\"Fico preso nas questões difíceis e o tempo acaba antes de terminar\"",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "b743cdb"
+                  },
+                  {
+                    "id": "da019f4",
+                    "text": "\"Não sei identificar o conteúdo e fico sem saber por onde começar\"",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "f336f6f"
+                  },
+                  {
+                    "id": "89d09fc",
+                    "text": "\"Treino muito, mas na hora H a cabeça trava\"",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "34e0d8d"
+                  },
+                  {
+                    "id": "550d368",
+                    "text": "\"Não tenho como saber se estou evoluindo de verdade\"",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "f4529cc"
+                  },
+                  {
+                    "id": "4c1e12f",
+                    "text": "\"Já deixei passar vestibulares por causa da Matemática\"",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "ffc89ca"
+                  }
+                ],
+                "space_between": {
+                  "unit": "px",
+                  "size": 18
+                },
+                "icon_color": "#E53935",
+                "text_color": "#333333",
+                "icon_size": {
+                  "unit": "px",
+                  "size": 17
+                },
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 17
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.6
+                }
+              }
+            },
+            {
+              "id": "1ade087",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 30
+                }
+              }
+            },
+            {
+              "id": "e55f5cd",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<strong>Se você se identificou com algum desses cenários, a Prova Real foi criada para você.</strong>",
+                "align": "center",
+                "text_color": "#0D2137",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 20
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "803a10b",
+      "elType": "section",
+      "settings": {
+        "background_background": "classic",
+        "background_color": "#00897B",
+        "padding": {
+          "top": "80",
+          "right": "0",
+          "bottom": "80",
+          "left": "0",
+          "unit": "px",
+          "isLinked": false
+        },
+        "content_width": {
+          "unit": "px",
+          "size": 1100
+        }
+      },
+      "elements": [
+        {
+          "id": "b4b5bb1",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "_inline_size": null
+          },
+          "elements": [
+            {
+              "id": "cbf787e",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Apresentamos a Prova Real",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#FFFFFF",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 40
+                },
+                "typography_font_weight": "700",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.3
+                }
+              }
+            },
+            {
+              "id": "60cc238",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 15
+                }
+              }
+            },
+            {
+              "id": "1a3d030",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<strong>Plataforma de alta performance em Matemática para o ENEM e vestibulares</strong>",
+                "align": "center",
+                "text_color": "#E0F2F1",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 22
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            },
+            {
+              "id": "91ada06",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 20
+                }
+              }
+            },
+            {
+              "id": "f3f09de",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "A Prova Real foi desenvolvida para ir muito além de \"estudar mais\". Aqui você treina a <strong>capacidade de identificar, interpretar e decidir</strong> — as mesmas habilidades que os candidatos aprovados usam na prova.",
+                "align": "center",
+                "text_color": "#E0F2F1",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 18
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6e7f941",
+      "elType": "section",
+      "settings": {
+        "background_background": "classic",
+        "background_color": "#FFFFFF",
+        "padding": {
+          "top": "80",
+          "right": "0",
+          "bottom": "80",
+          "left": "0",
+          "unit": "px",
+          "isLinked": false
+        },
+        "content_width": {
+          "unit": "px",
+          "size": 1100
+        }
+      },
+      "elements": [
+        {
+          "id": "40cc12b",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "_inline_size": null
+          },
+          "elements": [
+            {
+              "id": "515ddf9",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Tudo que você precisa para dominar a Matemática do ENEM",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#0D2137",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 34
+                },
+                "typography_font_weight": "700",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.3
+                }
+              }
+            },
+            {
+              "id": "18349e2",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 10
+                }
+              }
+            },
+            {
+              "id": "3f9ed79",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "Uma plataforma completa, pensada para quem quer resultado real.",
+                "align": "center",
+                "text_color": "#666666",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 17
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            },
+            {
+              "id": "90267c8",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 30
+                }
+              }
+            },
+            {
+              "id": "bf2ae10",
+              "elType": "widget",
+              "widgetType": "icon-list",
+              "settings": {
+                "icon_list": [
+                  {
+                    "id": "266c7b5",
+                    "text": "Exercícios de provas anteriores + questões inéditas selecionadas estrategicamente",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "4d7889d"
+                  },
+                  {
+                    "id": "7a64e7f",
+                    "text": "Banco de questões com resolução atualizado toda semana",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "05096c6"
+                  },
+                  {
+                    "id": "bda92dd",
+                    "text": "Simulados com correção por TRI — o mesmo sistema do ENEM",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "0b76c12"
+                  },
+                  {
+                    "id": "75969a7",
+                    "text": "Temporizador de questões para treinar velocidade e controle",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "7e0833b"
+                  },
+                  {
+                    "id": "8d99530",
+                    "text": "Artigos de revisão dos conteúdos mais cobrados",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "3aa07d2"
+                  },
+                  {
+                    "id": "7cf7980",
+                    "text": "Flashcards para fixação e memorização de fórmulas e conceitos",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "f03137c"
+                  },
+                  {
+                    "id": "e6741cc",
+                    "text": "Análise gráfica de desempenho para acompanhar sua evolução",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "3f895b8"
+                  },
+                  {
+                    "id": "1b46f5b",
+                    "text": "Aulas dos conteúdos que mais caem no ENEM e nos vestibulares",
+                    "selected_icon": {
+                      "value": "fas fa-check-circle",
+                      "library": "fa-solid"
+                    },
+                    "_id": "3ddb58a"
+                  }
+                ],
+                "space_between": {
+                  "unit": "px",
+                  "size": 18
+                },
+                "icon_color": "#00897B",
+                "text_color": "#2D3436",
+                "icon_size": {
+                  "unit": "px",
+                  "size": 17
+                },
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 17
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.6
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "afae68e",
+      "elType": "section",
+      "settings": {
+        "background_background": "classic",
+        "background_color": "#E8F5E9",
+        "padding": {
+          "top": "60",
+          "right": "0",
+          "bottom": "60",
+          "left": "0",
+          "unit": "px",
+          "isLinked": false
+        },
+        "content_width": {
+          "unit": "px",
+          "size": 1100
+        }
+      },
+      "elements": [
+        {
+          "id": "779091d",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "_inline_size": null
+          },
+          "elements": [
+            {
+              "id": "81ca00f",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "O único simulador com correção por TRI",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#1B5E20",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 32
+                },
+                "typography_font_weight": "700",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.3
+                }
+              }
+            },
+            {
+              "id": "3050e74",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 15
+                }
+              }
+            },
+            {
+              "id": "70e7b15",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "A <strong>Teoria de Resposta ao Item (TRI)</strong> é o sistema real usado pelo INEP para calcular a nota do ENEM. Treinar com simulados corrigidos por TRI é a diferença entre <em>estudar muito</em> e <em>estudar certo</em>.",
+                "align": "center",
+                "text_color": "#2E7D32",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 18
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            },
+            {
+              "id": "d0bbd35",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 20
+                }
+              }
+            },
+            {
+              "id": "ae6db6b",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "Na Prova Real, você sabe exatamente onde está e o que precisa melhorar — antes do dia da prova.",
+                "align": "center",
+                "text_color": "#1B5E20",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 18
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "30e797c",
+      "elType": "section",
+      "settings": {
+        "background_background": "classic",
+        "background_color": "#0D2137",
+        "padding": {
+          "top": "80",
+          "right": "0",
+          "bottom": "80",
+          "left": "0",
+          "unit": "px",
+          "isLinked": false
+        },
+        "content_width": {
+          "unit": "px",
+          "size": 1100
+        }
+      },
+      "elements": [
+        {
+          "id": "c25b8f0",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "_inline_size": null
+          },
+          "elements": [
+            {
+              "id": "2f2ac91",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Acesso completo por menos de R$ 1 por dia",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#FFFFFF",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 36
+                },
+                "typography_font_weight": "700",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.3
+                }
+              }
+            },
+            {
+              "id": "1c099be",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 20
+                }
+              }
+            },
+            {
+              "id": "d2bf9be",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "R$ 27,97/mês",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#00BFA5",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 56
+                },
+                "typography_font_weight": "900",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.3
+                }
+              }
+            },
+            {
+              "id": "d7d6f75",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 10
+                }
+              }
+            },
+            {
+              "id": "2ebae89",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "✅ Acesso a todos os recursos &nbsp;|&nbsp; ✅ Cancele quando quiser &nbsp;|&nbsp; ✅ Conteúdo atualizado semanalmente",
+                "align": "center",
+                "text_color": "#B0BEC5",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 16
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            },
+            {
+              "id": "80c3b68",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 30
+                }
+              }
+            },
+            {
+              "id": "fd38a73",
+              "elType": "widget",
+              "widgetType": "button",
+              "settings": {
+                "text": "Garantir meu acesso agora",
+                "link": {
+                  "url": "#",
+                  "is_external": false
+                },
+                "align": "center",
+                "size": "xl",
+                "button_text_color": "#0D2137",
+                "background_color": "#00BFA5",
+                "border_radius": {
+                  "top": "8",
+                  "right": "8",
+                  "bottom": "8",
+                  "left": "8",
+                  "unit": "px"
+                },
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 22
+                },
+                "typography_font_weight": "700",
+                "padding": {
+                  "top": "20",
+                  "right": "50",
+                  "bottom": "20",
+                  "left": "50",
+                  "unit": "px",
+                  "isLinked": false
+                }
+              }
+            },
+            {
+              "id": "9344936",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 15
+                }
+              }
+            },
+            {
+              "id": "03decaa",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "🔒 Pagamento seguro. Satisfação garantida.",
+                "align": "center",
+                "text_color": "#78909C",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 14
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cb06958",
+      "elType": "section",
+      "settings": {
+        "background_background": "classic",
+        "background_color": "#F5F5F5",
+        "padding": {
+          "top": "70",
+          "right": "0",
+          "bottom": "70",
+          "left": "0",
+          "unit": "px",
+          "isLinked": false
+        },
+        "content_width": {
+          "unit": "px",
+          "size": 1100
+        }
+      },
+      "elements": [
+        {
+          "id": "a1fe67c",
+          "elType": "column",
+          "settings": {
+            "_column_size": 100,
+            "_inline_size": null
+          },
+          "elements": [
+            {
+              "id": "01924cb",
+              "elType": "widget",
+              "widgetType": "heading",
+              "settings": {
+                "title": "Cada semana sem treinar é uma semana perdida.",
+                "header_size": "h2",
+                "align": "center",
+                "title_color": "#0D2137",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 32
+                },
+                "typography_font_weight": "700",
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.3
+                }
+              }
+            },
+            {
+              "id": "79a8a44",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 15
+                }
+              }
+            },
+            {
+              "id": "0c9b1e5",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "Os candidatos aprovados não têm um segredo mágico. Eles <strong>treinaram de forma consistente, estratégica e com as ferramentas certas</strong>. A Prova Real coloca essas ferramentas nas suas mãos — hoje.",
+                "align": "center",
+                "text_color": "#444444",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 18
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            },
+            {
+              "id": "dc1e902",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 25
+                }
+              }
+            },
+            {
+              "id": "9e533d5",
+              "elType": "widget",
+              "widgetType": "button",
+              "settings": {
+                "text": "Quero minha alta performance — R$ 27,97/mês",
+                "link": {
+                  "url": "#",
+                  "is_external": false
+                },
+                "align": "center",
+                "size": "xl",
+                "button_text_color": "#ffffff",
+                "background_color": "#00897B",
+                "border_radius": {
+                  "top": "8",
+                  "right": "8",
+                  "bottom": "8",
+                  "left": "8",
+                  "unit": "px"
+                },
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 20
+                },
+                "typography_font_weight": "700",
+                "padding": {
+                  "top": "20",
+                  "right": "50",
+                  "bottom": "20",
+                  "left": "50",
+                  "unit": "px",
+                  "isLinked": false
+                }
+              }
+            },
+            {
+              "id": "c9ec502",
+              "elType": "widget",
+              "widgetType": "spacer",
+              "settings": {
+                "space": {
+                  "unit": "px",
+                  "size": 20
+                }
+              }
+            },
+            {
+              "id": "bade37f",
+              "elType": "widget",
+              "widgetType": "text-editor",
+              "settings": {
+                "editor": "<em>Comece agora. Sua próxima prova agradece.</em>",
+                "align": "center",
+                "text_color": "#888888",
+                "typography_typography": "custom",
+                "typography_font_size": {
+                  "unit": "px",
+                  "size": 15
+                },
+                "typography_line_height": {
+                  "unit": "em",
+                  "size": 1.7
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "page_settings": {
+    "hide_title": "yes"
+  }
+}

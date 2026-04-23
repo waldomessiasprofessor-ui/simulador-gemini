@@ -26,11 +26,11 @@ export default function Revisao() {
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
         </div>
       ) : !data || data.length === 0 ? (
         <div className="text-center py-16 space-y-2">
-          <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "var(--pr-teal)" }} />
+          <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "#009688" }} />
           <p className="font-semibold" style={{ color: "var(--foreground)" }}>
             Nenhum conteúdo disponível ainda
           </p>
@@ -50,10 +50,10 @@ export default function Revisao() {
                 style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
                 <div className="flex items-center gap-3 px-4 py-4">
                   <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: "var(--pr-teal-soft)" }}>
+                    style={{ background: "#E0F2F1" }}>
                     {hasPdf
-                      ? <FileText className="h-5 w-5" style={{ color: "var(--pr-teal)" }} />
-                      : <BookOpen className="h-5 w-5" style={{ color: "var(--pr-teal)" }} />}
+                      ? <FileText className="h-5 w-5" style={{ color: "#009688" }} />
+                      : <BookOpen className="h-5 w-5" style={{ color: "#009688" }} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>
@@ -65,7 +65,7 @@ export default function Revisao() {
                       </p>
                     )}
                     <span className="inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+                      style={{ background: "#E0F2F1", color: "#009688" }}>
                       {hasPdf ? "PDF" : "Texto"}
                     </span>
                   </div>

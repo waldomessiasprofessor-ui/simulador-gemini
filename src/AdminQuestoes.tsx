@@ -137,7 +137,7 @@ function LatexImportModal({ onImport, onClose }: {
             {/* Botão exemplo */}
             <button onClick={() => setShowExample(!showExample)}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5"
-              style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>
+              style={{ background: "#E0F2F1", color: "#00695C" }}>
               <ClipboardPaste className="h-3.5 w-3.5" />
               {showExample ? "Ocultar" : "Ver"} formato esperado
             </button>
@@ -167,8 +167,8 @@ function LatexImportModal({ onImport, onClose }: {
             {/* Preview */}
             {preview && (
               <div className="rounded-xl p-4 space-y-3"
-                style={{ background: "var(--pr-success-bg)", border: "1.5px solid #86EFAC" }}>
-                <div className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--pr-success)" }}>
+                style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
+                <div className="flex items-center gap-2 text-sm font-bold" style={{ color: "#16A34A" }}>
                   <CheckCircle2 className="h-4 w-4" /> Prévia detectada — confirme antes de importar
                 </div>
                 <div className="space-y-1 text-xs" style={{ color: "var(--foreground)" }}>
@@ -377,14 +377,14 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
           {/* Erro */}
           {auditMutation.error && (
-            <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--pr-danger-bg)", border: "1.5px solid #FECACA" }}>
-              <div className="flex items-center gap-2 font-bold text-sm" style={{ color: "var(--pr-danger)" }}>
+            <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
+              <div className="flex items-center gap-2 font-bold text-sm" style={{ color: "#DC2626" }}>
                 <AlertTriangle className="h-4 w-4" /> Erro na auditoria
               </div>
-              <p className="text-sm" style={{ color: "var(--pr-danger)" }}>{auditMutation.error.message}</p>
+              <p className="text-sm" style={{ color: "#DC2626" }}>{auditMutation.error.message}</p>
               <button onClick={() => auditMutation.mutate({ id: questionId }, { onSuccess: (d) => onAuditSuccess(d.audit as AuditResult) })}
                 className="text-xs font-bold px-3 py-1.5 rounded-lg mt-1"
-                style={{ background: "#FECACA", color: "var(--pr-danger)" }}>
+                style={{ background: "#FECACA", color: "#DC2626" }}>
                 Tentar novamente
               </button>
             </div>
@@ -408,7 +408,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     </span>
                     {!isMath && (
                       <span className="px-2 py-0.5 rounded-full text-xs font-bold"
-                        style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)", border: "1px solid #FECACA" }}>
+                        style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
                         ⚠️ Fora do escopo
                       </span>
                     )}
@@ -424,9 +424,9 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                 <div className="rounded-xl p-4 space-y-3"
                   style={{ background: "#FFF5F5", border: "2px solid #FFCDD2" }}>
                   <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "var(--pr-danger)" }} />
+                    <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: "#DC2626" }} />
                     <div>
-                      <p className="text-sm font-bold" style={{ color: "var(--pr-danger)" }}>
+                      <p className="text-sm font-bold" style={{ color: "#DC2626" }}>
                         Esta questão não é de Matemática
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "#E57373" }}>
@@ -438,12 +438,12 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                     <button
                       onClick={() => setConfirmDelete(true)}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
-                      style={{ background: "#FFCDD2", color: "var(--pr-danger)", border: "1.5px solid #EF9A9A" }}>
+                      style={{ background: "#FFCDD2", color: "#DC2626", border: "1.5px solid #EF9A9A" }}>
                       <Trash2 className="h-4 w-4" /> Excluir esta questão
                     </button>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-xs font-bold text-center" style={{ color: "var(--pr-danger)" }}>
+                      <p className="text-xs font-bold text-center" style={{ color: "#DC2626" }}>
                         Tem certeza? Esta ação é irreversível.
                       </p>
                       <div className="flex gap-2">
@@ -489,14 +489,14 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                   border: `1.5px solid ${audit.gabarito_correto ? "#86EFAC" : "#FECACA"}`
                 }}>
                 {audit.gabarito_correto
-                  ? <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-success)" }} />
-                  : <ThumbsDown className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-danger)" }} />}
+                  ? <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "#16A34A" }} />
+                  : <ThumbsDown className="h-5 w-5 flex-shrink-0" style={{ color: "#DC2626" }} />}
                 <div>
                   <p className="text-sm font-bold" style={{ color: audit.gabarito_correto ? "#166534" : "#991B1B" }}>
                     {audit.gabarito_correto ? "Gabarito correto ✓" : "Gabarito possivelmente incorreto!"}
                   </p>
                   {!audit.gabarito_correto && audit.gabarito_sugerido && (
-                    <p className="text-xs mt-0.5" style={{ color: "var(--pr-danger)" }}>
+                    <p className="text-xs mt-0.5" style={{ color: "#DC2626" }}>
                       Gabarito sugerido pelo Gemini: <b>{audit.gabarito_sugerido}</b>
                     </p>
                   )}
@@ -519,7 +519,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
               {/* Tags */}
               <div className="rounded-xl p-4"
                 style={{
-                  background: audit.tags_atuais_corretas ? "var(--pr-success-bg)" : "var(--pr-info-bg)",
+                  background: audit.tags_atuais_corretas ? "#F0FDF4" : "#EFF6FF",
                   border: `1.5px solid ${audit.tags_atuais_corretas ? "#86EFAC" : "#93C5FD"}`
                 }}>
                 <div className="flex items-center gap-2 mb-2">
@@ -532,7 +532,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                   <div className="flex flex-wrap gap-1.5">
                     {audit.tags_sugeridas.map((tag) => (
                       <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                        style={{ background: "#DBEAFE", color: "var(--pr-info)", border: "1px solid #93C5FD" }}>
+                        style={{ background: "#DBEAFE", color: "#1D4ED8", border: "1px solid #93C5FD" }}>
                         {tag}
                       </span>
                     ))}
@@ -542,8 +542,8 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
               {/* Problemas */}
               {audit.problemas?.length > 0 && (
-                <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--pr-danger-bg)", border: "1.5px solid #FECACA" }}>
-                  <p className="text-xs font-bold uppercase" style={{ color: "var(--pr-danger)" }}>Problemas encontrados</p>
+                <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
+                  <p className="text-xs font-bold uppercase" style={{ color: "#DC2626" }}>Problemas encontrados</p>
                   <ul className="space-y-1">
                     {audit.problemas.map((p, i) => (
                       <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#7F1D1D" }}>
@@ -556,8 +556,8 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
               {/* Sugestões */}
               {audit.sugestoes?.length > 0 && (
-                <div className="rounded-xl p-4 space-y-2" style={{ background: "var(--pr-success-bg)", border: "1.5px solid #86EFAC" }}>
-                  <p className="text-xs font-bold uppercase" style={{ color: "var(--pr-success)" }}>Sugestões de melhoria</p>
+                <div className="rounded-xl p-4 space-y-2" style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
+                  <p className="text-xs font-bold uppercase" style={{ color: "#16A34A" }}>Sugestões de melhoria</p>
                   <ul className="space-y-1">
                     {audit.sugestoes.map((s, i) => (
                       <li key={i} className="text-sm flex items-start gap-2" style={{ color: "#14532D" }}>
@@ -586,7 +586,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                             className="h-4 w-4 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <ThumbsDown className="h-4 w-4" style={{ color: "var(--pr-danger)" }} />
+                              <ThumbsDown className="h-4 w-4" style={{ color: "#DC2626" }} />
                               <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Corrigir gabarito</p>
                             </div>
                             <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
@@ -605,11 +605,11 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                             className="h-4 w-4 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <Info className="h-4 w-4" style={{ color: "var(--pr-warn)" }} />
+                              <Info className="h-4 w-4" style={{ color: "#B45309" }} />
                               <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Ajustar dificuldade</p>
                             </div>
                             <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
-                              Dificuldade real: <b style={{ color: "var(--pr-warn)" }}>{audit.dificuldade_real}</b>
+                              Dificuldade real: <b style={{ color: "#B45309" }}>{audit.dificuldade_real}</b>
                             </p>
                           </div>
                         </label>
@@ -624,7 +624,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <Tag className="h-4 w-4" style={{ color: "var(--pr-teal-dark)" }} />
+                              <Tag className="h-4 w-4" style={{ color: "#00695C" }} />
                               <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Atualizar tags de conteúdo</p>
                             </div>
                             <p className="text-xs mt-0.5 mb-2" style={{ color: "var(--muted-foreground)" }}>
@@ -633,7 +633,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                             <div className="flex flex-wrap gap-1.5 mt-1">
                               {audit.tags_sugeridas.map((tag) => (
                                 <span key={tag} className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                                  style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)", border: "1px solid #01738d44" }}>
+                                  style={{ background: "#E0F2F1", color: "#00695C", border: "1px solid #01738d44" }}>
                                   {tag}
                                 </span>
                               ))}
@@ -651,7 +651,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4" style={{ color: "var(--pr-success)" }} />
+                              <CheckCircle2 className="h-4 w-4" style={{ color: "#16A34A" }} />
                               <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Aplicar enunciado melhorado</p>
                             </div>
                             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Edite abaixo antes de aplicar se desejar</p>
@@ -674,7 +674,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                             className="h-4 w-4 mt-0.5 accent-purple-700" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4" style={{ color: "var(--pr-success)" }} />
+                              <CheckCircle2 className="h-4 w-4" style={{ color: "#16A34A" }} />
                               <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Aplicar resolução melhorada</p>
                             </div>
                             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Edite abaixo antes de aplicar se desejar</p>
@@ -699,7 +699,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                         : <><Sparkles className="h-4 w-4" /> Aplicar correções selecionadas</>}
                     </button>
                     {applyMutation.isSuccess && (
-                      <p className="text-center text-xs mt-2 font-semibold" style={{ color: "var(--pr-success)" }}>
+                      <p className="text-center text-xs mt-2 font-semibold" style={{ color: "#16A34A" }}>
                         ✅ Correções aplicadas! A questão foi atualizada no banco.
                       </p>
                     )}
@@ -709,9 +709,9 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
 
               {!hasCorrections && isMath && (
                 <div className="rounded-xl p-4 flex items-center gap-3"
-                  style={{ background: "var(--pr-success-bg)", border: "1.5px solid #86EFAC" }}>
-                  <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "var(--pr-success)" }} />
-                  <p className="text-sm font-bold" style={{ color: "var(--pr-success)" }}>
+                  style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC" }}>
+                  <ThumbsUp className="h-5 w-5 flex-shrink-0" style={{ color: "#16A34A" }} />
+                  <p className="text-sm font-bold" style={{ color: "#16A34A" }}>
                     Questão aprovada! O Gemini não identificou correções necessárias.
                   </p>
                 </div>
@@ -747,7 +747,7 @@ function InlineImageInsert({ onInsert }: { onInsert: (tag: string) => void }) {
       <button type="button" disabled={loading}
         onClick={() => ref.current?.click()}
         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
-        style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)", border: "1.5px solid #01738d44" }}>
+        style={{ background: "#E0F2F1", color: "#00695C", border: "1.5px solid #01738d44" }}>
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
         Inserir imagem
       </button>
@@ -775,7 +775,7 @@ function AltImageUpload({ currentUrl, onUpload }: { currentUrl: string | null; o
         onClick={() => ref.current?.click()}
         title={currentUrl ? "Trocar imagem" : "Adicionar imagem à alternativa"}
         className="flex-shrink-0 p-2 rounded-lg"
-        style={{ background: currentUrl ? "#E0F7F4" : "#F8FAFC", border: "1.5px solid var(--border)", color: "var(--pr-teal-dark)" }}>
+        style={{ background: currentUrl ? "#E0F7F4" : "#F8FAFC", border: "1.5px solid var(--border)", color: "#00695C" }}>
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
       </button>
       <input ref={ref} type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -917,7 +917,7 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (url: 
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold flex-shrink-0"
-          style={{ background: "var(--teal-soft)", color: "var(--pr-teal-dark)", border: "1.5px solid #01738d44" }}>
+          style={{ background: "var(--teal-soft)", color: "#00695C", border: "1.5px solid #01738d44" }}>
           {uploading
             ? <Loader2 className="h-4 w-4 animate-spin" />
             : <ImageUp className="h-4 w-4" />}
@@ -1165,7 +1165,7 @@ export default function AdminQuestoes() {
         {!confirmDelete ? (
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="text-sm font-bold" style={{ color: "var(--pr-danger)" }}>Zona de perigo</p>
+              <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Zona de perigo</p>
               <p className="text-xs mt-0.5" style={{ color: "#E57373" }}>
                 Excluir todas as questões é irreversível. Use para auditar o banco ano a ano.
               </p>
@@ -1173,7 +1173,7 @@ export default function AdminQuestoes() {
             <button
               onClick={() => setConfirmDelete(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold"
-              style={{ background: "#FFCDD2", color: "var(--pr-danger)", border: "1.5px solid #EF9A9A" }}
+              style={{ background: "#FFCDD2", color: "#DC2626", border: "1.5px solid #EF9A9A" }}
             >
               <Trash2 className="h-4 w-4" />
               Excluir todas as questões
@@ -1181,7 +1181,7 @@ export default function AdminQuestoes() {
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm font-bold" style={{ color: "var(--pr-danger)" }}>
+            <p className="text-sm font-bold" style={{ color: "#DC2626" }}>
               Confirme a senha para excluir todas as questões permanentemente.
             </p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -1264,14 +1264,14 @@ export default function AdminQuestoes() {
               <input className={inputClass} style={inputStyle} value={form.conteudo_principal}
                 onChange={(e) => setForm({ ...form, conteudo_principal: e.target.value })}
                 placeholder="Ex: Logaritmos"
-                onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                onFocus={(e) => (e.target.style.borderColor = "#00695C")}
                 onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
             </div>
             <div>
               <label style={labelStyle}>Ano</label>
               <input className={inputClass} style={inputStyle} type="number" value={form.ano}
                 onChange={(e) => setForm({ ...form, ano: Number(e.target.value) })}
-                onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                onFocus={(e) => (e.target.style.borderColor = "#00695C")}
                 onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
             </div>
             <div>
@@ -1286,7 +1286,7 @@ export default function AdminQuestoes() {
           {/* Tags de conteúdo */}
           <div>
             <label style={{ ...labelStyle, display: "flex", alignItems: "center", gap: 6 }}>
-              <Tag className="h-3.5 w-3.5" style={{ color: "var(--pr-teal-dark)" }} />
+              <Tag className="h-3.5 w-3.5" style={{ color: "#00695C" }} />
               Tags de conteúdo
               <span style={{ fontWeight: 400, color: "#94A3B8", fontSize: "0.75rem" }}>
                 — clique para selecionar (pode escolher várias)
@@ -1300,7 +1300,7 @@ export default function AdminQuestoes() {
                     className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                     style={selected
                       ? { background: "#01738d", color: "#fff", border: "1.5px solid #01738d" }
-                      : { background: "var(--card)", color: "var(--pr-teal-dark)", border: "1.5px solid #01738d" }}>
+                      : { background: "var(--card)", color: "#00695C", border: "1.5px solid #01738d" }}>
                     {selected ? "✓ " : ""}{tag}
                   </button>
                 );
@@ -1331,7 +1331,7 @@ export default function AdminQuestoes() {
               value={form.enunciado}
               onChange={(e) => setForm({ ...form, enunciado: e.target.value })}
               placeholder="Texto do enunciado... Use o botão 'Inserir imagem' para colocar imagens onde quiser."
-              onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+              onFocus={(e) => (e.target.style.borderColor = "#00695C")}
               onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
             <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>
               Use <code style={{ fontSize: 11 }}>[Imagem: url]</code> para inserir imagens dentro do texto. O botão acima faz isso automaticamente.
@@ -1356,7 +1356,7 @@ export default function AdminQuestoes() {
                 return (
                   <div key={letra} className="space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "var(--pr-teal-dark)" }}>{letra}</span>
+                      <span className="font-black w-5 text-sm flex-shrink-0" style={{ color: "#00695C" }}>{letra}</span>
                       <input className={inputClass} style={{ ...inputStyle, flex: 1 }}
                         value={getAltText(altVal)}
                         onChange={(e) => {
@@ -1364,7 +1364,7 @@ export default function AdminQuestoes() {
                           setForm(f => ({ ...f, alternativas: { ...f.alternativas, [letra]: file ? { text: e.target.value, file } : e.target.value } }));
                         }}
                         placeholder={`Alternativa ${letra} — texto opcional se tiver imagem`}
-                        onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                        onFocus={(e) => (e.target.style.borderColor = "#00695C")}
                         onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
                       <AltImageUpload
                         currentUrl={altFile}
@@ -1411,7 +1411,7 @@ export default function AdminQuestoes() {
                       value={form[p]}
                       onChange={(e) => setForm({ ...form, [p]: Number(e.target.value) })}
                       placeholder={["a", "b", "c"][i]}
-                      onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+                      onFocus={(e) => (e.target.style.borderColor = "#00695C")}
                       onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
                   </div>
                 ))}
@@ -1426,7 +1426,7 @@ export default function AdminQuestoes() {
               value={form.comentario_resolucao}
               onChange={(e) => setForm({ ...form, comentario_resolucao: e.target.value })}
               placeholder="Passo a passo da resolução..."
-              onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+              onFocus={(e) => (e.target.style.borderColor = "#00695C")}
               onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
           </div>
 
@@ -1436,7 +1436,7 @@ export default function AdminQuestoes() {
             <input className={inputClass} style={inputStyle} value={form.url_video}
               onChange={(e) => setForm({ ...form, url_video: e.target.value })}
               placeholder="https://www.youtube.com/watch?v=..."
-              onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+              onFocus={(e) => (e.target.style.borderColor = "#00695C")}
               onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
           </div>
 
@@ -1465,7 +1465,7 @@ export default function AdminQuestoes() {
             placeholder="Buscar por conteúdo..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
             style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
-            onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal-dark)")}
+            onFocus={(e) => (e.target.style.borderColor = "#00695C")}
             onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
         </div>
 
@@ -1480,7 +1480,7 @@ export default function AdminQuestoes() {
                 className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
                 style={filterTag === tag
                   ? { background: "#01738d", color: "#fff" }
-                  : { background: "var(--pr-teal-soft)", color: "var(--pr-teal-dark)" }}>
+                  : { background: "#E0F2F1", color: "#00695C" }}>
                 {tag}
               </button>
             ))}
@@ -1498,7 +1498,7 @@ export default function AdminQuestoes() {
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal-dark)" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#00695C" }} />
         </div>
       ) : (
         <div className="space-y-2">
@@ -1520,7 +1520,7 @@ export default function AdminQuestoes() {
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {qTags.map((tag: string) => (
                             <span key={tag} className="text-xs px-2 py-0.5 rounded-full font-medium"
-                              style={{ background: "var(--pr-teal-soft)", color: "#00897B" }}>
+                              style={{ background: "#E0F2F1", color: "#00897B" }}>
                               {tag}
                             </span>
                           ))}
@@ -1552,7 +1552,7 @@ export default function AdminQuestoes() {
                       <Sparkles className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                     </button>
                     <button onClick={() => startEdit(q)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
-                      <Pencil className="h-3.5 w-3.5" style={{ color: "var(--pr-teal-dark)" }} />
+                      <Pencil className="h-3.5 w-3.5" style={{ color: "#00695C" }} />
                     </button>
                     <button onClick={() => toggleMutation.mutate({ id: q.id, active: !q.active })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title={q.active ? "Desativar" : "Ativar"}>
@@ -1610,8 +1610,8 @@ export default function AdminQuestoes() {
                       })}
                     </div>
                     {q.comentario_resolucao && (
-                      <div className="rounded-lg p-3" style={{ background: "var(--pr-info-bg)", border: "1px solid #BFDBFE" }}>
-                        <p className="text-xs font-bold mb-1" style={{ color: "var(--pr-info)" }}>Resolução</p>
+                      <div className="rounded-lg p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                        <p className="text-xs font-bold mb-1" style={{ color: "#1D4ED8" }}>Resolução</p>
                         <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                       </div>
                     )}

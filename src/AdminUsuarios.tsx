@@ -15,8 +15,8 @@ type ActionState =
 
 const STATUS_CONFIG = {
   admin:          { label: "Admin",           bg: "#F3EAF9", color: "#263238" },
-  ativa:          { label: "Assinatura ativa", bg: "#E0F2F1", color: "var(--pr-teal-dark)" },
-  expirada:       { label: "Expirada",         bg: "#FFEBEE", color: "var(--pr-danger)" },
+  ativa:          { label: "Assinatura ativa", bg: "#E0F2F1", color: "#00695C" },
+  expirada:       { label: "Expirada",         bg: "#FFEBEE", color: "#DC2626" },
   sem_assinatura: { label: "Sem assinatura",   bg: "#F1F5F9", color: "var(--muted-foreground)" },
 };
 
@@ -82,8 +82,8 @@ export default function AdminUsuarios() {
       {/* Cards de resumo */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Ativas", value: ativas, bg: "#E0F2F1", color: "var(--pr-teal-dark)" },
-          { label: "Expiradas", value: expiradas, bg: "#FFEBEE", color: "var(--pr-danger)" },
+          { label: "Ativas", value: ativas, bg: "#E0F2F1", color: "#00695C" },
+          { label: "Expiradas", value: expiradas, bg: "#FFEBEE", color: "#DC2626" },
           { label: "Sem assinatura", value: semAssinatura, bg: "#F1F5F9", color: "var(--muted-foreground)" },
         ].map(({ label, value, bg, color }) => (
           <div key={label} className="rounded-xl p-4 text-center" style={{ background: bg, border: `1.5px solid ${color}33` }}>
@@ -100,14 +100,14 @@ export default function AdminUsuarios() {
           placeholder="Buscar por nome ou e-mail..."
           className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
           style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
-          onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal)")}
+          onFocus={(e) => (e.target.style.borderColor = "#009688")}
           onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
       </div>
 
       {/* Lista */}
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
         </div>
       ) : users_list.length === 0 ? (
         <div className="text-center py-16 text-sm" style={{ color: "var(--muted-foreground)" }}>Nenhum usuário encontrado.</div>
@@ -162,17 +162,17 @@ export default function AdminUsuarios() {
                       <button onClick={() => { setAction(isSettingSub ? { type: "none" } : { type: "setSubscription", userId: u.id, name: u.name }); }}
                         className="p-2 rounded-lg transition-colors" title="Gerenciar assinatura"
                         style={{ background: isSettingSub ? "#E0F2F1" : "transparent" }}>
-                        <Calendar className="h-4 w-4" style={{ color: "var(--pr-teal)" }} />
+                        <Calendar className="h-4 w-4" style={{ color: "#009688" }} />
                       </button>
                       <button onClick={() => { setNewPassword(""); setAction(isResetting ? { type: "none" } : { type: "resetPassword", userId: u.id, name: u.name }); }}
                         className="p-2 rounded-lg transition-colors" title="Redefinir senha"
                         style={{ background: isResetting ? "#E0F2F1" : "transparent" }}>
-                        <KeyRound className="h-4 w-4" style={{ color: "var(--pr-teal)" }} />
+                        <KeyRound className="h-4 w-4" style={{ color: "#009688" }} />
                       </button>
                       <button onClick={() => setAction(isConfirmingDelete ? { type: "none" } : { type: "confirmDelete", userId: u.id })}
                         className="p-2 rounded-lg transition-colors" title="Excluir"
                         style={{ background: isConfirmingDelete ? "#FFEBEE" : "transparent" }}>
-                        <Trash2 className="h-4 w-4" style={{ color: "var(--pr-danger)" }} />
+                        <Trash2 className="h-4 w-4" style={{ color: "#DC2626" }} />
                       </button>
                       <button onClick={() => setExpandedId(isExpanded ? null : u.id)}
                         className="p-2 rounded-lg" style={{ color: "var(--muted-foreground)" }}>
@@ -184,8 +184,8 @@ export default function AdminUsuarios() {
 
                 {/* Painel: gerenciar assinatura */}
                 {isSettingSub && (
-                  <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid var(--pr-teal-border)", background: "var(--muted)" }}>
-                    <p className="text-sm font-bold" style={{ color: "var(--pr-teal)" }}>
+                  <div className="px-4 py-4 space-y-3" style={{ borderTop: "1px solid #B2DFDB", background: "var(--muted)" }}>
+                    <p className="text-sm font-bold" style={{ color: "#009688" }}>
                       Assinatura de {u.name}
                     </p>
 
@@ -193,7 +193,7 @@ export default function AdminUsuarios() {
                       <div className="flex items-center gap-2">
                         <button onClick={() => setMonths((m) => Math.max(1, m - 1))}
                           className="h-8 w-8 rounded-lg flex items-center justify-center"
-                          style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+                          style={{ background: "#E0F2F1", color: "#009688" }}>
                           <MinusCircle className="h-4 w-4" />
                         </button>
                         <span className="text-sm font-bold w-28 text-center" style={{ color: "var(--foreground)" }}>
@@ -201,7 +201,7 @@ export default function AdminUsuarios() {
                         </span>
                         <button onClick={() => setMonths((m) => Math.min(24, m + 1))}
                           className="h-8 w-8 rounded-lg flex items-center justify-center"
-                          style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+                          style={{ background: "#E0F2F1", color: "#009688" }}>
                           <PlusCircle className="h-4 w-4" />
                         </button>
                       </div>
@@ -212,7 +212,7 @@ export default function AdminUsuarios() {
                             className="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
                             style={months === m
                               ? { background: "#009688", color: "#fff" }
-                              : { background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+                              : { background: "#E0F2F1", color: "#009688" }}>
                             {m === 1 ? "1 mês" : m === 12 ? "1 ano" : `${m} meses`}
                           </button>
                         ))}
@@ -233,7 +233,7 @@ export default function AdminUsuarios() {
                         })()}
                       </strong>
                       {u.subscriptionExpiresAt && new Date(u.subscriptionExpiresAt) > new Date() && (
-                        <span style={{ color: "var(--pr-teal-dark)" }}> (renovação a partir da data actual)</span>
+                        <span style={{ color: "#00695C" }}> (renovação a partir da data actual)</span>
                       )}
                     </p>
 
@@ -247,7 +247,7 @@ export default function AdminUsuarios() {
                       {u.subscriptionExpiresAt && (
                         <button onClick={() => { if (confirm("Revogar assinatura?")) revokeMutation.mutate({ id: u.id }); }}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold"
-                          style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)" }}>
+                          style={{ background: "#FEF2F2", color: "#DC2626" }}>
                           <MinusCircle className="h-3.5 w-3.5" /> Revogar
                         </button>
                       )}
@@ -262,13 +262,13 @@ export default function AdminUsuarios() {
 
                 {/* Painel: redefinir senha */}
                 {isResetting && (
-                  <div className="px-4 py-3 space-y-2" style={{ borderTop: "1px solid var(--pr-teal-border)", background: "var(--muted)" }}>
-                    <p className="text-sm font-semibold" style={{ color: "var(--pr-teal)" }}>Nova senha para {u.name}</p>
+                  <div className="px-4 py-3 space-y-2" style={{ borderTop: "1px solid #B2DFDB", background: "var(--muted)" }}>
+                    <p className="text-sm font-semibold" style={{ color: "#009688" }}>Nova senha para {u.name}</p>
                     <div className="flex items-center gap-2 flex-wrap">
                       <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Nova senha (mínimo 6 caracteres)"
                         style={{ ...inputStyle, flex: 1, minWidth: 200 }}
-                        onFocus={(e) => (e.target.style.borderColor = "var(--pr-teal)")}
+                        onFocus={(e) => (e.target.style.borderColor = "#009688")}
                         onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
                         onKeyDown={(e) => e.key === "Enter" && resetMutation.mutate({ id: u.id, newPassword })} />
                       <button onClick={() => resetMutation.mutate({ id: u.id, newPassword })}
@@ -289,8 +289,8 @@ export default function AdminUsuarios() {
                 {/* Painel: confirmar exclusão */}
                 {isConfirmingDelete && (
                   <div className="px-4 py-3 flex items-center gap-3 flex-wrap"
-                    style={{ borderTop: "1px solid var(--pr-danger-border)", background: "var(--pr-danger-bg)" }}>
-                    <p className="text-sm font-semibold flex-1" style={{ color: "var(--pr-danger)" }}>
+                    style={{ borderTop: "1px solid #FECACA", background: "#FEF2F2" }}>
+                    <p className="text-sm font-semibold flex-1" style={{ color: "#DC2626" }}>
                       Excluir "{u.name}"? Todos os dados serão apagados.
                     </p>
                     <button onClick={() => deleteMutation.mutate({ id: u.id })} disabled={deleteMutation.isPending}

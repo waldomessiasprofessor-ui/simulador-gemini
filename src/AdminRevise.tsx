@@ -267,7 +267,7 @@ export default function AdminRevise() {
                   <button onClick={() => setOpenId(isOpen ? null : item.id)}
                     className="flex-1 flex items-start gap-3 text-left">
                     <div className="flex gap-1 flex-shrink-0 mt-0.5">
-                      {hasText && <BookOpen className="h-4 w-4" style={{ color: "var(--pr-teal)" }} />}
+                      {hasText && <BookOpen className="h-4 w-4" style={{ color: "#009688" }} />}
                       {hasPdf  && <FileText  className="h-4 w-4" style={{ color: "#A78BFA" }} />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -287,17 +287,17 @@ export default function AdminRevise() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button onClick={() => setModalData({ ...item })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
-                      <Pencil className="h-3.5 w-3.5" style={{ color: "var(--pr-teal)" }} />
+                      <Pencil className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                     </button>
                     <button onClick={() => toggleMutation.mutate({ id: item.id, active: !item.active })}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title={item.active ? "Ocultar" : "Mostrar"}>
                       {item.active
-                        ? <EyeOff className="h-3.5 w-3.5" style={{ color: "var(--pr-warn)" }} />
-                        : <Eye  className="h-3.5 w-3.5" style={{ color: "var(--pr-success)" }} />}
+                        ? <EyeOff className="h-3.5 w-3.5" style={{ color: "#B45309" }} />
+                        : <Eye  className="h-3.5 w-3.5" style={{ color: "#16A34A" }} />}
                     </button>
                     <button onClick={() => { if (confirm("Excluir permanentemente?")) deleteMutation.mutate({ id: item.id }); }}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title="Excluir">
-                      <Trash2 className="h-3.5 w-3.5" style={{ color: "var(--pr-danger)" }} />
+                      <Trash2 className="h-3.5 w-3.5" style={{ color: "#DC2626" }} />
                     </button>
                   </div>
                 </div>

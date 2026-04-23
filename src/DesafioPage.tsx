@@ -58,7 +58,7 @@ export default function DesafioPage() {
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--pr-teal)" }} />
+      <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
     </div>
   );
   if (!daily) return null;
@@ -71,9 +71,9 @@ export default function DesafioPage() {
   if (daily.completed) {
     const correct = daily.correctCount ?? 0;
     const total = questions.length;
-    const color = correct === total ? "var(--pr-success)" : correct >= 2 ? "var(--pr-warn)" : "var(--pr-danger)";
-    const bg = correct === total ? "var(--pr-success-bg)" : correct >= 2 ? "var(--pr-warn-bg)" : "var(--pr-danger-bg)";
-    const border = correct === total ? "var(--pr-success-border)" : correct >= 2 ? "var(--pr-warn-border)" : "var(--pr-danger-border)";
+    const color = correct === total ? "#16A34A" : correct >= 2 ? "#B45309" : "#DC2626";
+    const bg = correct === total ? "#F0FDF4" : correct >= 2 ? "#FFFBEB" : "#FEF2F2";
+    const border = correct === total ? "#A7F3D0" : correct >= 2 ? "#FCD34D" : "#FECACA";
 
     return (
       <div className="space-y-4 py-2">
@@ -96,19 +96,19 @@ export default function DesafioPage() {
             const resOpen = openResolution[q.id];
             return (
               <div key={q.id} className="rounded-xl overflow-hidden"
-                style={{ border: `1px solid ${isCorrect ? "var(--pr-success-border)" : "var(--pr-danger-border)"}` }}>
+                style={{ border: `1px solid ${isCorrect ? "#A7F3D0" : "#FECACA"}` }}>
                 {/* Linha de resultado */}
                 <div className="flex items-center gap-3 px-4 py-3"
-                  style={{ background: isCorrect ? "var(--pr-success-bg)" : "var(--pr-danger-bg)" }}>
+                  style={{ background: isCorrect ? "#F0FDF4" : "#FEF2F2" }}>
                   {isCorrect
-                    ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-success)" }} />
-                    : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "var(--pr-danger)" }} />}
+                    ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#16A34A" }} />
+                    : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#DC2626" }} />}
                   <span className="flex-1 text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>
                     {q.conteudo_principal}
                   </span>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-xs font-bold px-2 py-0.5 rounded"
-                      style={{ background: isCorrect ? "var(--pr-success)" : "var(--pr-danger)", color: "#fff" }}>
+                      style={{ background: isCorrect ? "#16A34A" : "#DC2626", color: "#fff" }}>
                       {answers[q.id] ?? "—"} → {q.gabarito}
                     </span>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -117,9 +117,9 @@ export default function DesafioPage() {
                           onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
                           className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-all"
                           style={{
-                            background: resOpen ? "var(--pr-info)" : "var(--pr-info-bg)",
-                            color: resOpen ? "#fff" : "var(--pr-info)",
-                            border: `1px solid var(--pr-info-border)`,
+                            background: resOpen ? "#1D4ED8" : "#EFF6FF",
+                            color: resOpen ? "#fff" : "#1D4ED8",
+                            border: `1px solid #BFDBFE`,
                           }}>
                           <BookOpen className="h-3 w-3" />
                           {resOpen ? "Fechar" : "Resolução"}
@@ -138,8 +138,8 @@ export default function DesafioPage() {
                 </div>
                 {/* Resolução expandida com LaTeX */}
                 {resOpen && q.comentario_resolucao && (
-                  <div className="px-4 pb-4 pt-3 space-y-2" style={{ background: "var(--pr-info-bg)", borderTop: "1px solid var(--pr-info-border)" }}>
-                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--pr-info)" }}>Resolução</p>
+                  <div className="px-4 pb-4 pt-3 space-y-2" style={{ background: "#EFF6FF", borderTop: "1px solid #BFDBFE" }}>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#1D4ED8" }}>Resolução</p>
                     <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                   </div>
                 )}
@@ -182,16 +182,16 @@ export default function DesafioPage() {
     <div className="space-y-5 py-2">
       {/* Barra de progresso */}
       <div className="rounded-xl px-4 py-3 flex items-center justify-between"
-        style={{ background: "var(--pr-teal-soft)", border: "1.5px solid var(--pr-teal-border)" }}>
+        style={{ background: "#E0F2F1", border: "1.5px solid #B2DFDB" }}>
         <div className="flex items-center gap-2">
-          <Flame className="h-4 w-4" style={{ color: "var(--pr-warn)" }} />
-          <span className="font-bold text-sm" style={{ color: "var(--pr-teal)" }}>Desafio do dia</span>
+          <Flame className="h-4 w-4" style={{ color: "#B45309" }} />
+          <span className="font-bold text-sm" style={{ color: "#009688" }}>Desafio do dia</span>
         </div>
         <div className="flex gap-1.5">
           {questions.map((_, i) => (
             <button key={i} onClick={() => setIdx(i)}
               className="h-2 rounded-full transition-all"
-              style={{ width: idx === i ? 20 : 8, background: answers[questions[i].id] ? "var(--pr-teal)" : "var(--border)" }} />
+              style={{ width: idx === i ? 20 : 8, background: answers[questions[i].id] ? "#009688" : "var(--border)" }} />
           ))}
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function DesafioPage() {
               <button
                 onClick={() => setOpenResolution(p => ({ ...p, [q.id]: !p[q.id] }))}
                 className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-xl transition-all"
-                style={{ background: openResolution[q.id] ? "var(--pr-info)" : "var(--pr-info-bg)", color: openResolution[q.id] ? "#fff" : "var(--pr-info)", border: "1px solid var(--pr-info-border)" }}>
+                style={{ background: openResolution[q.id] ? "#1D4ED8" : "#EFF6FF", color: openResolution[q.id] ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
                 <BookOpen className="h-4 w-4" />
                 {openResolution[q.id] ? "Ocultar resolução" : "Ver resolução"}
               </button>
@@ -233,8 +233,8 @@ export default function DesafioPage() {
             )}
           </div>
           {openResolution[q.id] && q.comentario_resolucao && (
-            <div className="rounded-xl p-4" style={{ background: "var(--pr-info-bg)", border: "1px solid var(--pr-info-border)" }}>
-              <p className="text-xs font-semibold mb-2" style={{ color: "var(--pr-info)" }}>Resolução</p>
+            <div className="rounded-xl p-4" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+              <p className="text-xs font-semibold mb-2" style={{ color: "#1D4ED8" }}>Resolução</p>
               <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
             </div>
           )}

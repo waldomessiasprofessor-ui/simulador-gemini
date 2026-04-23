@@ -41,7 +41,7 @@ function DeckForm({
           className="w-full px-3 py-2 rounded-xl text-sm outline-none"
           style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
           placeholder="Ex: Trigonometria"
-          onFocus={e => (e.target.style.borderColor = "var(--pr-teal)")}
+          onFocus={e => (e.target.style.borderColor = "#009688")}
           onBlur={e  => (e.target.style.borderColor = "var(--border)")}
         />
       </div>
@@ -52,7 +52,7 @@ function DeckForm({
           className="w-full px-3 py-2 rounded-xl text-sm outline-none"
           style={{ border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--foreground)" }}
           placeholder="Ex: Seno, cosseno, tangente e relações no triângulo"
-          onFocus={e => (e.target.style.borderColor = "var(--pr-teal)")}
+          onFocus={e => (e.target.style.borderColor = "#009688")}
           onBlur={e  => (e.target.style.borderColor = "var(--border)")}
         />
       </div>

@@ -34,7 +34,7 @@ const inputStyle: React.CSSProperties = {
   border: "2px solid var(--border)", fontSize: "0.9rem", outline: "none",
   color: "var(--foreground)", background: "var(--card)", transition: "border-color 0.15s",
 };
-const errorStyle: React.CSSProperties = { color: "var(--pr-danger)", fontSize: "0.75rem", marginTop: "0.25rem" };
+const errorStyle: React.CSSProperties = { color: "#DC2626", fontSize: "0.75rem", marginTop: "0.25rem" };
 
 export default function Login() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -59,7 +59,7 @@ export default function Login() {
     setMode(m); resetLogin(); resetRegister();
   }
 
-  function focusBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "var(--pr-teal)"; }
+  function focusBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "#009688"; }
   function blurBorder(e: React.FocusEvent<HTMLInputElement>) { e.target.style.borderColor = "var(--border)"; }
 
   return (
@@ -101,7 +101,7 @@ export default function Login() {
                 {(["login", "register"] as const).map((m) => (
                   <button key={m} onClick={() => switchMode(m)}
                     className="flex-1 py-2.5 text-sm font-bold transition-colors rounded-xl"
-                    style={mode === m ? { background: "var(--pr-teal)", color: "#fff" } : { background: "transparent", color: "var(--muted-foreground)" }}>
+                    style={mode === m ? { background: "#009688", color: "#fff" } : { background: "transparent", color: "var(--muted-foreground)" }}>
                     {m === "login" ? "Entrar" : "Criar conta"}
                   </button>
                 ))}
@@ -120,12 +120,12 @@ export default function Login() {
                     {loginErrors.password && <p style={errorStyle}>{loginErrors.password.message}</p>}
                   </div>
                   <button type="submit" disabled={isPending} className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2"
-                    style={{ background: isPending ? "var(--pr-teal-dark)" : "var(--pr-teal)", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
+                    style={{ background: isPending ? "#00695C" : "#009688", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
                     {isPending && <Loader2 className="h-5 w-5 animate-spin" />} Entrar na conta
                   </button>
                   <p className="text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
                     Não possui conta?{" "}
-                    <button type="button" onClick={() => switchMode("register")} className="font-bold underline" style={{ color: "var(--pr-teal)" }}>Cadastre-se</button>
+                    <button type="button" onClick={() => switchMode("register")} className="font-bold underline" style={{ color: "#009688" }}>Cadastre-se</button>
                   </p>
                 </form>
               )}
@@ -148,12 +148,12 @@ export default function Login() {
                     {registerErrors.password && <p style={errorStyle}>{registerErrors.password.message}</p>}
                   </div>
                   <button type="submit" disabled={isPending} className="w-full py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2"
-                    style={{ background: isPending ? "var(--pr-teal-dark)" : "var(--pr-teal)", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
+                    style={{ background: isPending ? "#00695C" : "#009688", color: "#fff", border: "none", cursor: isPending ? "not-allowed" : "pointer", marginTop: "0.5rem" }}>
                     {isPending && <Loader2 className="h-5 w-5 animate-spin" />} Criar minha conta
                   </button>
                   <p className="text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
                     Já possui conta?{" "}
-                    <button type="button" onClick={() => switchMode("login")} className="font-bold underline" style={{ color: "var(--pr-teal)" }}>Faça login</button>
+                    <button type="button" onClick={() => switchMode("login")} className="font-bold underline" style={{ color: "#009688" }}>Faça login</button>
                   </p>
                 </form>
               )}
@@ -168,9 +168,9 @@ export default function Login() {
         <p className="text-sm mb-6" style={{ color: "var(--muted-foreground)" }}>Uma plataforma completa, focada em resultado.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="rounded-xl p-5" style={{ background: "var(--card)", border: "1.5px solid var(--pr-teal-border)" }}>
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--pr-teal-soft)" }}>
-                <Icon className="h-5 w-5" style={{ color: "var(--pr-teal)" }} />
+            <div key={title} className="rounded-xl p-5" style={{ background: "var(--card)", border: "1.5px solid #B2DFDB" }}>
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "#E0F2F1" }}>
+                <Icon className="h-5 w-5" style={{ color: "#009688" }} />
               </div>
               <h3 className="font-bold text-sm mb-1" style={{ color: "var(--foreground)" }}>{title}</h3>
               <p className="text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{desc}</p>

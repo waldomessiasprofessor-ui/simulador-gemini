@@ -152,7 +152,7 @@ export default function Resultado({ id }: { id: number }) {
                           <button
                             onClick={() => setOpenRes(openRes === i ? null : i)}
                             className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-all"
-                            style={{ background: openRes === i ? "var(--pr-info)" : "var(--pr-info-bg)", color: openRes === i ? "#fff" : "var(--pr-info)", border: "1px solid var(--pr-info-border)" }}>
+                            style={{ background: openRes === i ? "#1D4ED8" : "#EFF6FF", color: openRes === i ? "#fff" : "#1D4ED8", border: "1px solid #BFDBFE" }}>
                             <BookOpen className="h-3 w-3" />
                             {openRes === i ? "Ocultar resolução" : "Ver resolução"}
                           </button>
@@ -167,8 +167,8 @@ export default function Resultado({ id }: { id: number }) {
                         )}
                       </div>
                       {openRes === i && ans.comentario_resolucao && (
-                        <div className="rounded-lg p-3" style={{ background: "var(--pr-info-bg)", border: "1px solid var(--pr-info-border)" }}>
-                          <p className="text-xs font-medium mb-1.5" style={{ color: "var(--pr-info)" }}>Resolução</p>
+                        <div className="rounded-lg p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                          <p className="text-xs font-medium mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
                           <LatexRenderer fontSize="sm">{ans.comentario_resolucao}</LatexRenderer>
                         </div>
                       )}

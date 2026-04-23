@@ -46,9 +46,9 @@ const FACE_BACK: React.CSSProperties = {
 // Cores de qualidade
 // =============================================================================
 const QUALITY_OPTS = [
-  { quality: 1 as const, label: "Não lembrei",  emoji: "😕", bg: "var(--pr-danger-bg)",  color: "var(--pr-danger)",  border: "var(--pr-danger-border)" },
-  { quality: 3 as const, label: "Difícil",       emoji: "😐", bg: "var(--pr-warn-bg)",    color: "var(--pr-warn)",    border: "var(--pr-warn-border)" },
-  { quality: 5 as const, label: "Fácil!",        emoji: "😄", bg: "var(--pr-success-bg)", color: "var(--pr-success)", border: "var(--pr-success-border)" },
+  { quality: 1 as const, label: "Não lembrei",  emoji: "😕", bg: "#FEF2F2",  color: "#DC2626",  border: "#FECACA" },
+  { quality: 3 as const, label: "Difícil",       emoji: "😐", bg: "#FFFBEB",    color: "#B45309",    border: "#FCD34D" },
+  { quality: 5 as const, label: "Fácil!",        emoji: "😄", bg: "#F0FDF4", color: "#16A34A", border: "#A7F3D0" },
 ] as const;
 
 // =============================================================================
@@ -74,7 +74,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
   if (isLoading) {
     return (
       <div className="flex justify-center py-24">
-        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "var(--pr-teal)" }} />
+        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "#009688" }} />
       </div>
     );
   }
@@ -84,7 +84,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
     return (
       <div className="flex flex-col items-center py-20 gap-5 text-center">
         <div className="h-20 w-20 rounded-2xl flex items-center justify-center text-4xl"
-          style={{ background: "var(--pr-teal-soft)" }}>
+          style={{ background: "#E0F2F1" }}>
           🎉
         </div>
         <div>
@@ -97,7 +97,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
         </div>
         <button onClick={onBack}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm"
-          style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+          style={{ background: "#E0F2F1", color: "#009688" }}>
           <ArrowLeft className="h-4 w-4" /> Voltar aos baralhos
         </button>
       </div>
@@ -126,16 +126,16 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
         <div className="w-full rounded-2xl p-5 space-y-3" style={{ background: "var(--muted)", border: "1.5px solid var(--border)" }}>
           <div className="flex justify-between items-center">
             <span className="text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>Taxa de acerto</span>
-            <span className="text-xl font-black" style={{ color: pct >= 70 ? "var(--pr-success)" : "var(--pr-warn)" }}>{pct}%</span>
+            <span className="text-xl font-black" style={{ color: pct >= 70 ? "#16A34A" : "#B45309" }}>{pct}%</span>
           </div>
           <div className="w-full rounded-full h-2" style={{ background: "var(--border)" }}>
-            <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: pct >= 70 ? "var(--pr-teal)" : "var(--pr-warn)" }} />
+            <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: pct >= 70 ? "#009688" : "#B45309" }} />
           </div>
           <div className="grid grid-cols-3 gap-2 pt-1">
             {[
-              { label: "Não lembrei", n: forgot, color: "var(--pr-danger)",  bg: "var(--pr-danger-bg)" },
-              { label: "Difícil",     n: hard,   color: "var(--pr-warn)",    bg: "var(--pr-warn-bg)" },
-              { label: "Fácil",       n: easy,   color: "var(--pr-success)", bg: "var(--pr-success-bg)" },
+              { label: "Não lembrei", n: forgot, color: "#DC2626",  bg: "#FEF2F2" },
+              { label: "Difícil",     n: hard,   color: "#B45309",    bg: "#FFFBEB" },
+              { label: "Fácil",       n: easy,   color: "#16A34A", bg: "#F0FDF4" },
             ].map(({ label, n, color, bg }) => (
               <div key={label} className="rounded-xl p-2 text-center" style={{ background: bg }}>
                 <p className="text-lg font-black" style={{ color }}>{n}</p>
@@ -149,7 +149,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
           <button
             onClick={() => { setIdx(0); setFlipped(false); setResults([]); setDone(false); }}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm"
-            style={{ background: "var(--pr-teal-soft)", color: "var(--pr-teal)" }}>
+            style={{ background: "#E0F2F1", color: "#009688" }}>
             <RotateCcw className="h-4 w-4" /> Repetir
           </button>
           <button
@@ -181,7 +181,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
     }
   }
 
-  const deckColor = data.deck?.color ?? "var(--pr-teal)";
+  const deckColor = data.deck?.color ?? "#009688";
 
   return (
     <div className="space-y-5 max-w-xl mx-auto">
@@ -228,7 +228,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
           </div>
 
           {/* Verso */}
-          <div style={{ ...FACE_BACK, background: "var(--pr-teal-soft)", color: "var(--foreground)", border: `2px solid ${deckColor}60`, boxShadow: "0 4px 24px #00000012" }}>
+          <div style={{ ...FACE_BACK, background: "#E0F2F1", color: "var(--foreground)", border: `2px solid ${deckColor}60`, boxShadow: "0 4px 24px #00000012" }}>
             <span className="text-xs font-bold uppercase tracking-widest mb-1"
               style={{ color: deckColor, opacity: 0.7 }}>Resposta</span>
             <div className="w-full text-center">
@@ -236,7 +236,7 @@ function StudySession({ deckId, onBack }: { deckId: number; onBack: () => void }
             </div>
             {card.backImage && (
               <img src={card.backImage} alt="" className="max-w-full max-h-40 rounded-xl object-contain"
-                style={{ border: "1px solid var(--pr-teal-border)" }} />
+                style={{ border: "1px solid #B2DFDB" }} />
             )}
           </div>
         </div>
@@ -273,7 +273,7 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-24">
-        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "var(--pr-teal)" }} />
+        <Loader2 className="h-7 w-7 animate-spin" style={{ color: "#009688" }} />
       </div>
     );
   }
@@ -304,7 +304,7 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
       ) : (
         <div className="space-y-3">
           {decks.map((deck) => {
-            const color      = deck.color ?? "var(--pr-teal)";
+            const color      = deck.color ?? "#009688";
             const hasDue     = (deck.dueCount ?? 0) > 0;
             const hasNew     = (deck.newCount ?? 0) > 0;
             const studyable  = deck.studyableCount ?? 0;
@@ -343,19 +343,19 @@ function DeckList({ onSelect }: { onSelect: (deckId: number) => void }) {
                   <div className="flex flex-wrap gap-2">
                     {hasDue && (
                       <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: "var(--pr-danger-bg)", color: "var(--pr-danger)" }}>
+                        style={{ background: "#FEF2F2", color: "#DC2626" }}>
                         <Clock className="h-3 w-3" /> {deck.dueCount} para revisar
                       </span>
                     )}
                     {hasNew && (
                       <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: "var(--pr-info-bg)", color: "var(--pr-info)" }}>
+                        style={{ background: "#EFF6FF", color: "#1D4ED8" }}>
                         ✨ {deck.newCount} novos
                       </span>
                     )}
                     {mastered > 0 && (
                       <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: "var(--pr-success-bg)", color: "var(--pr-success)" }}>
+                        style={{ background: "#F0FDF4", color: "#16A34A" }}>
                         <CheckCircle2 className="h-3 w-3" /> {mastered} dominados
                       </span>
                     )}

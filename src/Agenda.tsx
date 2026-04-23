@@ -320,7 +320,7 @@ export default function Agenda() {
               </button>
 
               {startTime >= endTime && selTopics.length > 0 && (
-                <p className="text-xs text-center" style={{ color: "var(--pr-danger)" }}>
+                <p className="text-xs text-center" style={{ color: "#DC2626" }}>
                   O horário de término deve ser após o início
                 </p>
               )}
@@ -381,9 +381,9 @@ export default function Agenda() {
           <div className="mt-2 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
             {topicStats.slice(0, 10).map((item, i) => {
               const s =
-                item.status === "fraco"   ? { bg: "var(--pr-danger-bg)",  text: "var(--pr-danger)",      label: "Prioridade" } :
-                item.status === "regular" ? { bg: "var(--pr-warn-bg)",    text: "var(--pr-warn)",        label: "Em progresso" } :
-                item.status === "forte"   ? { bg: "var(--pr-success-bg)", text: "var(--pr-success)",     label: "Dominado" } :
+                item.status === "fraco"   ? { bg: "#FEF2F2",  text: "#DC2626",      label: "Prioridade" } :
+                item.status === "regular" ? { bg: "#FFFBEB",    text: "#B45309",        label: "Em progresso" } :
+                item.status === "forte"   ? { bg: "#F0FDF4", text: "#16A34A",     label: "Dominado" } :
                                             { bg: "var(--muted)",         text: "var(--muted-foreground)", label: "Sem dados" };
               return (
                 <div key={item.topic}

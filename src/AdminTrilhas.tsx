@@ -70,7 +70,7 @@ export default function AdminTrilhas() {
         <div className="flex justify-center py-16">
           <Loader2
             className="h-6 w-6 animate-spin"
-            style={{ color: "var(--pr-teal)" }}
+            style={{ color: "#009688" }}
           />
         </div>
       ) : (
@@ -220,9 +220,9 @@ function LicaoEditor({
             onClick={handleDelete}
             className="rounded-lg px-3 py-2 text-sm font-semibold flex items-center gap-2"
             style={{
-              background: "var(--pr-danger-bg)",
-              color: "var(--pr-danger)",
-              border: "1.5px solid var(--pr-danger-border)",
+              background: "#FEF2F2",
+              color: "#DC2626",
+              border: "1.5px solid #FECACA",
             }}
             title="Remover URL cadastrada"
           >
@@ -235,9 +235,9 @@ function LicaoEditor({
         <div
           className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg"
           style={{
-            background: "var(--pr-danger-bg)",
-            color: "var(--pr-danger)",
-            border: "1px solid var(--pr-danger-border)",
+            background: "#FEF2F2",
+            color: "#DC2626",
+            border: "1px solid #FECACA",
           }}
         >
           <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
