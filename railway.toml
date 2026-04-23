@@ -1,7 +1,5 @@
 [build]
-# dist/ (frontend + server) já está commitado no Git.
-# O Railway só precisa instalar as dependências de runtime.
-buildCommand = "npm ci --omit=dev"
+buildCommand = "npm run build"
 
 [deploy]
 startCommand = "node dist/index.js"
