@@ -123,7 +123,7 @@ function splitTableChunks(text: string): Array<{ isTable: boolean; content: stri
 
 function parseLatexChunk(text: string): Segment[] {
   const segments: Segment[] = [];
-  const combined = /\[Imagem(?::\s*(https?:\/\/[^\]]+))?\]|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)|\$([^\s$][^$]*?[^\s$]|\S)\$/gi;
+  const combined = /\[Imagem(?::\s*(https?:\/\/[^\]]+))?\]|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)|\$([^$\n]+?)\$/gi;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -371,7 +371,6 @@ function renderKatex(latex: string, displayMode: boolean, key: string, compact =
         // Geometria
         "\\grau": "^\\circ",
         "\\paralelo": "\\parallel",
-        "\\perp": "\\perp",
         "\\angulo": "\\angle",
         "\\tri": "\\triangle",
         // Probabilidade / Estatística
