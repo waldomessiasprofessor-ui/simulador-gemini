@@ -205,8 +205,8 @@ function TabErros() {
                     })}
                   </div>
                   {row.comentario_resolucao && (
-                    <div className="rounded-xl p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
-                      <p className="text-xs font-semibold mb-1" style={{ color: "#1D4ED8" }}>Resolução</p>
+                    <div className="rounded-xl p-3" style={{ background: "var(--card)", borderLeft: "3px solid #1D4ED8", border: "1px solid var(--border)" }}>
+                      <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "#1D4ED8" }}>Resolução</p>
                       <LatexRenderer fontSize="sm">{row.comentario_resolucao}</LatexRenderer>
                     </div>
                   )}

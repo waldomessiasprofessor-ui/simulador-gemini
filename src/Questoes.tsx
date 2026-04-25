@@ -290,7 +290,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
 
                       {openResolution === q.id && q.comentario_resolucao && (
                         <div className="rounded-xl p-4 space-y-1"
-                          style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+                          style={{ background: "var(--card)", borderLeft: "3px solid #1D4ED8", border: "1px solid var(--border)" }}>
                           <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#1D4ED8" }}>
                             Resolução
                           </p>
