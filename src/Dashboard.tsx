@@ -364,11 +364,14 @@ function RadarPerformance() {
     const extraHoras     = t.totalTimeSec / 3600;
     const extraQuestoes  = t.totalExercises;
     const extraLeituras  = t.totalLeituras;
-    if (extraHoras === 0 && extraQuestoes === 0 && extraLeituras === 0) return rawData;
+    // Cada lição concluída na trilha equivale a +0,5h de dedicação
+    // (complementa o tempo real já somado via totalTimeSec).
+    const licoesBonusHoras = t.lessonsCompleted * 0.5;
+    if (extraHoras === 0 && extraQuestoes === 0 && extraLeituras === 0 && licoesBonusHoras === 0) return rawData;
     return rawData.map((d) => {
       if (d.eixo === "Dedicação") {
         const baseRaw = Number(d.raw ?? 0);
-        const newRaw = baseRaw + extraHoras;
+        const newRaw = baseRaw + extraHoras + licoesBonusHoras;
         const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
         return { ...d, pct: newPct, raw: Math.round(newRaw * 10) / 10 };
       }
