@@ -23,9 +23,9 @@ export function NextStepCard({
   onSecondary,
 }: NextStepCardProps) {
   return (
-    <Card padding={22}>
+    <Card padding={22} style={{ borderLeft: "4px solid #009688" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span className="pr-eyebrow">Próximo passo</span>
+        <span className="pr-eyebrow" style={{ fontWeight: 800 }}>Próximo passo</span>
         {stage && (
           <span
             style={{

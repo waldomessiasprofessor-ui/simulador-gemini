@@ -17,31 +17,33 @@ const SIZES: Record<ButtonSize, { padding: string; fontSize: string }> = {
   lg: { padding: "13px 22px", fontSize: "16px" },
 };
 
+// Hex hardcoded — var() in inline styles fails on Safari mobile and some
+// Tailwind v4 contexts where the custom property isn't inherited correctly.
 const VARIANTS: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    background: "var(--pr-grad-btn)",
+    background: "linear-gradient(135deg, #009688, #00695C)",
     color: "#fff",
     border: "none",
-    boxShadow: "var(--pr-shadow-teal)",
+    boxShadow: "0 2px 10px rgba(0,150,136,0.35)",
   },
   valendo: {
-    background: "var(--pr-grad-hero)",
+    background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
     color: "#fff",
     border: "none",
-    boxShadow: "var(--pr-shadow-teal-lg)",
+    boxShadow: "0 6px 20px rgba(0,150,136,0.40)",
   },
   outline: {
     background: "transparent",
-    color: "var(--pr-teal-darker)",
-    border: "2px solid var(--pr-teal)",
+    color: "#004D40",
+    border: "2px solid #009688",
   },
   ghost: {
     background: "transparent",
-    color: "var(--pr-muted-fg)",
+    color: "#475569",
     border: "none",
   },
   danger: {
-    background: "var(--pr-danger)",
+    background: "#DC2626",
     color: "#fff",
     border: "none",
   },
@@ -66,9 +68,9 @@ export function Button({
         display: "inline-flex",
         alignItems: "center",
         gap: 8,
-        fontFamily: "var(--pr-font-ui)",
+        fontFamily: '"Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif',
         fontWeight: 700,
-        borderRadius: "var(--pr-radius)",
+        borderRadius: "0.75rem",
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "opacity 0.15s, transform 0.15s",
         lineHeight: 1,
