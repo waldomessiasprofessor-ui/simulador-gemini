@@ -547,5 +547,538 @@ $$
         },
       ],
     },
+
+    // =========================================================================
+    // Capítulo 2 — Potenciação
+    // =========================================================================
+    {
+      slug: "potenciacao",
+      titulo: "Potenciação",
+      licoes: [
+
+        // =====================================================================
+        // Lição 1 — Definição e propriedades básicas
+        // =====================================================================
+        {
+          slug: "potenciacao-definicao-propriedades",
+          titulo: "Definição e propriedades básicas",
+          resumo:
+            "O que é uma potência e as quatro propriedades fundamentais: produto, quociente, potência de potência e potência de produto.",
+          duracaoMinutos: 20,
+
+          explicacao: `
+A **potência** é uma forma compacta de escrever uma multiplicação repetida.
+
+$$
+a^n = \\underbrace{a \\cdot a \\cdot a \\cdots a}_{n \\text{ vezes}}
+$$
+
+Aqui $a$ é a **base** e $n$ é o **expoente**. Exemplo: $2^5 = 2 \\cdot 2 \\cdot 2 \\cdot 2 \\cdot 2 = 32$.
+
+---
+
+### Propriedade 1 — Produto de mesma base
+
+Quando as bases são iguais, **soma os expoentes**:
+
+$$
+a^m \\cdot a^n = a^{m+n}
+$$
+
+Exemplo: $3^2 \\cdot 3^4 = 3^{2+4} = 3^6 = 729$.
+
+---
+
+### Propriedade 2 — Quociente de mesma base
+
+Quando as bases são iguais, **subtrai os expoentes**:
+
+$$
+\\frac{a^m}{a^n} = a^{m-n} \\quad (a \\neq 0)
+$$
+
+Exemplo: $\\dfrac{5^7}{5^3} = 5^{7-3} = 5^4 = 625$.
+
+---
+
+### Propriedade 3 — Potência de potência
+
+**Multiplica os expoentes**:
+
+$$
+(a^m)^n = a^{m \\cdot n}
+$$
+
+Exemplo: $(2^3)^4 = 2^{3 \\cdot 4} = 2^{12}$.
+
+---
+
+### Propriedade 4 — Potência de um produto (ou quociente)
+
+**Distribui o expoente** para cada fator:
+
+$$
+(a \\cdot b)^n = a^n \\cdot b^n \\qquad \\left(\\frac{a}{b}\\right)^n = \\frac{a^n}{b^n}
+$$
+
+Exemplo: $(2 \\cdot 3)^4 = 2^4 \\cdot 3^4 = 16 \\cdot 81 = 1296$.
+
+---
+
+### Atenção ao erro mais comum
+
+Não confunda a Propriedade 1 com multiplicação de expoentes:
+
+$$
+a^m \\cdot a^n = a^{m+n} \\quad \\text{(soma!)} \\qquad (a^m)^n = a^{m \\cdot n} \\quad \\text{(multiplica!)}
+$$
+`.trim(),
+
+          exemplos: [
+            {
+              titulo: "Exemplo 1 — Produto de mesma base",
+              problema: "Simplifique $2^3 \\cdot 2^5$.",
+              resolucao: `
+As bases são iguais ($2$), então somamos os expoentes:
+
+$$
+2^3 \\cdot 2^5 = 2^{3+5} = 2^8 = 256
+$$
+`.trim(),
+            },
+            {
+              titulo: "Exemplo 2 — Potência de potência",
+              problema: "Calcule $(3^2)^3$.",
+              resolucao: `
+Potência de potência: multiplicamos os expoentes.
+
+$$
+(3^2)^3 = 3^{2 \\cdot 3} = 3^6 = 729
+$$
+`.trim(),
+            },
+          ],
+
+          exercicios: [
+            // ── q1 — fácil: valor de potência simples ─────────────────────────
+            {
+              id: "pot-q1",
+              enunciado: "Qual o valor de $2^4$?",
+              alternativas: [
+                { letra: "A", texto: "$6$" },
+                { letra: "B", texto: "$8$" },
+                { letra: "C", texto: "$12$" },
+                { letra: "D", texto: "$16$" },
+                { letra: "E", texto: "$24$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$2^4 = 2 \\cdot 2 \\cdot 2 \\cdot 2 = 16$. Potência é multiplicação repetida da base por ela mesma.",
+            },
+
+            // ── q2 — fácil: base 10 ───────────────────────────────────────────
+            {
+              id: "pot-q2",
+              enunciado: "Quanto vale $10^3$?",
+              alternativas: [
+                { letra: "A", texto: "$30$" },
+                { letra: "B", texto: "$100$" },
+                { letra: "C", texto: "$1000$" },
+                { letra: "D", texto: "$300$" },
+                { letra: "E", texto: "$10000$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$10^3 = 10 \\cdot 10 \\cdot 10 = 1000$. Para potências de 10, basta contar os zeros: $10^n$ tem $n$ zeros.",
+            },
+
+            // ── q3 — fácil: base negativa ─────────────────────────────────────
+            {
+              id: "pot-q3",
+              enunciado: "Qual o valor de $(-2)^3$?",
+              alternativas: [
+                { letra: "A", texto: "$8$" },
+                { letra: "B", texto: "$-6$" },
+                { letra: "C", texto: "$6$" },
+                { letra: "D", texto: "$-8$" },
+                { letra: "E", texto: "$-2$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$(-2)^3 = (-2) \\cdot (-2) \\cdot (-2) = 4 \\cdot (-2) = -8$. Expoente ímpar com base negativa sempre dá resultado negativo.",
+            },
+
+            // ── q4 — fácil: produto de mesma base ────────────────────────────
+            {
+              id: "pot-q4",
+              enunciado: "Simplifique $3^2 \\cdot 3^3$.",
+              alternativas: [
+                { letra: "A", texto: "$3^6$" },
+                { letra: "B", texto: "$9^5$" },
+                { letra: "C", texto: "$3^5$" },
+                { letra: "D", texto: "$3^1$" },
+                { letra: "E", texto: "$6^5$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Produto de mesma base: soma os expoentes. $3^2 \\cdot 3^3 = 3^{2+3} = 3^5$.",
+            },
+
+            // ── q5 — fácil: quociente de mesma base ──────────────────────────
+            {
+              id: "pot-q5",
+              enunciado: "Simplifique $\\dfrac{5^6}{5^2}$.",
+              alternativas: [
+                { letra: "A", texto: "$5^3$" },
+                { letra: "B", texto: "$5^8$" },
+                { letra: "C", texto: "$1^4$" },
+                { letra: "D", texto: "$5^4$" },
+                { letra: "E", texto: "$5^{12}$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "Quociente de mesma base: subtrai os expoentes. $\\frac{5^6}{5^2} = 5^{6-2} = 5^4$.",
+            },
+
+            // ── q6 — médio: potência de potência ──────────────────────────────
+            {
+              id: "pot-q6",
+              enunciado: "Qual o resultado de $(4^2)^3$?",
+              alternativas: [
+                { letra: "A", texto: "$4^5$" },
+                { letra: "B", texto: "$4^8$" },
+                { letra: "C", texto: "$4^6$" },
+                { letra: "D", texto: "$4^9$" },
+                { letra: "E", texto: "$16^3$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Potência de potência: multiplica os expoentes. $(4^2)^3 = 4^{2 \\cdot 3} = 4^6$.",
+            },
+
+            // ── q7 — médio: potência de produto ───────────────────────────────
+            {
+              id: "pot-q7",
+              enunciado: "Expanda $(2 \\cdot 5)^3$ usando a propriedade da potência de produto.",
+              alternativas: [
+                { letra: "A", texto: "$2^3 + 5^3$" },
+                { letra: "B", texto: "$2 \\cdot 5^3$" },
+                { letra: "C", texto: "$10^3$" },
+                { letra: "D", texto: "$2^3 \\cdot 5^3$" },
+                { letra: "E", texto: "$6^3$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$(a \\cdot b)^n = a^n \\cdot b^n$. Portanto $(2 \\cdot 5)^3 = 2^3 \\cdot 5^3 = 8 \\cdot 125 = 1000$. Note que $10^3 = 1000$ também — as alternativas C e D dão o mesmo valor numérico, mas a alternativa D é a forma expandida pedida pela propriedade.",
+            },
+
+            // ── q8 — médio: combina produto e quociente ───────────────────────
+            {
+              id: "pot-q8",
+              enunciado: "Simplifique $\\dfrac{2^8 \\cdot 2^2}{2^5}$.",
+              alternativas: [
+                { letra: "A", texto: "$2^{15}$" },
+                { letra: "B", texto: "$2^{5}$" },
+                { letra: "C", texto: "$2^{4}$" },
+                { letra: "D", texto: "$2^{1}$" },
+                { letra: "E", texto: "$2^{3}$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "Primeiro soma os expoentes do numerador: $2^8 \\cdot 2^2 = 2^{10}$. Depois subtrai o do denominador: $\\frac{2^{10}}{2^5} = 2^{10-5} = 2^5$.",
+            },
+
+            // ── q9 — difícil: potência de quociente ───────────────────────────
+            {
+              id: "pot-q9",
+              enunciado: "Qual o valor de $\\left(\\dfrac{3}{2}\\right)^4$?",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{12}{8}$" },
+                { letra: "B", texto: "$\\dfrac{81}{16}$" },
+                { letra: "C", texto: "$\\dfrac{9}{8}$" },
+                { letra: "D", texto: "$\\dfrac{81}{8}$" },
+                { letra: "E", texto: "$\\dfrac{12}{16}$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "$\\left(\\frac{3}{2}\\right)^4 = \\frac{3^4}{2^4} = \\frac{81}{16}$. A propriedade distribui o expoente para o numerador e para o denominador.",
+            },
+
+            // ── q10 — difícil: expressão combinada ────────────────────────────
+            {
+              id: "pot-q10",
+              enunciado:
+                "Simplifique $\\dfrac{(2^3)^2 \\cdot 2^4}{2^{10}}$.",
+              alternativas: [
+                { letra: "A", texto: "$2^6$" },
+                { letra: "B", texto: "$2^0$" },
+                { letra: "C", texto: "$2^3$" },
+                { letra: "D", texto: "$2^{-2}$" },
+                { letra: "E", texto: "$2^2$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "$(2^3)^2 = 2^6$. Numerador: $2^6 \\cdot 2^4 = 2^{10}$. Quociente: $\\frac{2^{10}}{2^{10}} = 2^0 = 1$. Qualquer base não-nula elevada a zero é $1$.",
+            },
+          ],
+        },
+
+        // =====================================================================
+        // Lição 2 — Expoente zero, negativo e fracionário
+        // =====================================================================
+        {
+          slug: "potenciacao-expoente-especial",
+          titulo: "Expoente zero, negativo e fracionário",
+          resumo:
+            "Por que qualquer número elevado a zero vale 1, como interpretar expoentes negativos e o que significa um expoente fracionário.",
+          duracaoMinutos: 20,
+
+          explicacao: `
+### Expoente zero
+
+Usando a propriedade do quociente: $\\dfrac{a^n}{a^n} = a^{n-n} = a^0$. Mas $\\dfrac{a^n}{a^n} = 1$. Portanto:
+
+$$
+a^0 = 1 \\quad (a \\neq 0)
+$$
+
+Exemplos: $7^0 = 1$, $(-5)^0 = 1$, $\\left(\\frac{2}{3}\\right)^0 = 1$.
+
+---
+
+### Expoente negativo
+
+Pelo mesmo raciocínio do quociente: $\\dfrac{a^0}{a^n} = a^{0-n} = a^{-n}$. Como $a^0 = 1$:
+
+$$
+a^{-n} = \\frac{1}{a^n} \\quad (a \\neq 0)
+$$
+
+Exemplos: $2^{-3} = \\dfrac{1}{2^3} = \\dfrac{1}{8}$. \\quad $5^{-1} = \\dfrac{1}{5}$.
+
+Para **inverter** uma fração com expoente negativo:
+
+$$
+\\left(\\frac{a}{b}\\right)^{-n} = \\left(\\frac{b}{a}\\right)^{n}
+$$
+
+---
+
+### Expoente fracionário (radical)
+
+A ligação entre potência e raiz é:
+
+$$
+a^{1/n} = \\sqrt[n]{a} \\qquad a^{m/n} = \\sqrt[n]{a^m} = \\left(\\sqrt[n]{a}\\right)^m
+$$
+
+Exemplos: $8^{1/3} = \\sqrt[3]{8} = 2$. \\quad $4^{3/2} = (\\sqrt{4})^3 = 2^3 = 8$.
+
+---
+
+### Resumo das propriedades
+
+| Propriedade | Fórmula |
+|---|---|
+| Produto | $a^m \\cdot a^n = a^{m+n}$ |
+| Quociente | $a^m / a^n = a^{m-n}$ |
+| Potência de potência | $(a^m)^n = a^{mn}$ |
+| Potência de produto | $(ab)^n = a^n b^n$ |
+| Expoente zero | $a^0 = 1$ |
+| Expoente negativo | $a^{-n} = 1/a^n$ |
+| Expoente fracionário | $a^{m/n} = \\sqrt[n]{a^m}$ |
+`.trim(),
+
+          exemplos: [
+            {
+              titulo: "Exemplo 1 — Expoente negativo",
+              problema: "Calcule $\\left(\\dfrac{2}{3}\\right)^{-2}$.",
+              resolucao: `
+Expoente negativo inverte a fração e troca o sinal do expoente:
+
+$$
+\\left(\\frac{2}{3}\\right)^{-2} = \\left(\\frac{3}{2}\\right)^{2} = \\frac{3^2}{2^2} = \\frac{9}{4}
+$$
+`.trim(),
+            },
+            {
+              titulo: "Exemplo 2 — Expoente fracionário",
+              problema: "Calcule $27^{2/3}$.",
+              resolucao: `
+Expoente fracionário $m/n$ significa tirar a raiz $n$-ésima e elevar a $m$:
+
+$$
+27^{2/3} = \\left(\\sqrt[3]{27}\\right)^2 = 3^2 = 9
+$$
+`.trim(),
+            },
+          ],
+
+          exercicios: [
+            // ── q1 — fácil: expoente zero ──────────────────────────────────────
+            {
+              id: "pot2-q1",
+              enunciado: "Qual o valor de $99^0$?",
+              alternativas: [
+                { letra: "A", texto: "$99$" },
+                { letra: "B", texto: "$0$" },
+                { letra: "C", texto: "$1$" },
+                { letra: "D", texto: "$-1$" },
+                { letra: "E", texto: "$9$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Qualquer número não-nulo elevado a zero é igual a $1$. Portanto $99^0 = 1$.",
+            },
+
+            // ── q2 — fácil: expoente negativo simples ─────────────────────────
+            {
+              id: "pot2-q2",
+              enunciado: "Qual o valor de $2^{-3}$?",
+              alternativas: [
+                { letra: "A", texto: "$-8$" },
+                { letra: "B", texto: "$\\dfrac{1}{6}$" },
+                { letra: "C", texto: "$8$" },
+                { letra: "D", texto: "$\\dfrac{1}{8}$" },
+                { letra: "E", texto: "$-6$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$2^{-3} = \\dfrac{1}{2^3} = \\dfrac{1}{8}$. Expoente negativo significa o inverso (recíproco) da potência positiva.",
+            },
+
+            // ── q3 — fácil: raiz quadrada como expoente ───────────────────────
+            {
+              id: "pot2-q3",
+              enunciado: "Qual o valor de $25^{1/2}$?",
+              alternativas: [
+                { letra: "A", texto: "$12{,}5$" },
+                { letra: "B", texto: "$625$" },
+                { letra: "C", texto: "$5$" },
+                { letra: "D", texto: "$50$" },
+                { letra: "E", texto: "$\\dfrac{1}{5}$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$25^{1/2} = \\sqrt{25} = 5$. O expoente $\\frac{1}{2}$ é o mesmo que tirar a raiz quadrada.",
+            },
+
+            // ── q4 — fácil: base negativa expoente par ────────────────────────
+            {
+              id: "pot2-q4",
+              enunciado: "Quanto vale $(-3)^4$?",
+              alternativas: [
+                { letra: "A", texto: "$-81$" },
+                { letra: "B", texto: "$12$" },
+                { letra: "C", texto: "$81$" },
+                { letra: "D", texto: "$-12$" },
+                { letra: "E", texto: "$-27$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$(-3)^4 = (-3)(-3)(-3)(-3) = 9 \\cdot 9 = 81$. Expoente **par** com base negativa sempre resulta em positivo.",
+            },
+
+            // ── q5 — médio: expoente negativo com fração ──────────────────────
+            {
+              id: "pot2-q5",
+              enunciado: "Simplifique $\\left(\\dfrac{3}{4}\\right)^{-1}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{3}{4}$" },
+                { letra: "B", texto: "$-\\dfrac{3}{4}$" },
+                { letra: "C", texto: "$\\dfrac{4}{3}$" },
+                { letra: "D", texto: "$\\dfrac{1}{12}$" },
+                { letra: "E", texto: "$-\\dfrac{4}{3}$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Expoente $-1$ inverte a fração: $\\left(\\frac{3}{4}\\right)^{-1} = \\frac{4}{3}$.",
+            },
+
+            // ── q6 — médio: expoente fracionário ──────────────────────────────
+            {
+              id: "pot2-q6",
+              enunciado: "Qual o valor de $8^{1/3}$?",
+              alternativas: [
+                { letra: "A", texto: "$4$" },
+                { letra: "B", texto: "$24$" },
+                { letra: "C", texto: "$\\dfrac{8}{3}$" },
+                { letra: "D", texto: "$512$" },
+                { letra: "E", texto: "$2$" },
+              ],
+              gabarito: "E",
+              explicacao:
+                "$8^{1/3} = \\sqrt[3]{8} = 2$, pois $2^3 = 8$.",
+            },
+
+            // ── q7 — médio: combinando zero e negativo ────────────────────────
+            {
+              id: "pot2-q7",
+              enunciado: "Calcule $3^0 + 3^{-1} + 3^{-2}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{11}{9}$" },
+                { letra: "B", texto: "$\\dfrac{13}{9}$" },
+                { letra: "C", texto: "$\\dfrac{12}{9}$" },
+                { letra: "D", texto: "$\\dfrac{10}{9}$" },
+                { letra: "E", texto: "$3$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "$3^0 = 1$, $3^{-1} = \\frac{1}{3}$, $3^{-2} = \\frac{1}{9}$. Somando: $1 + \\frac{1}{3} + \\frac{1}{9} = \\frac{9}{9} + \\frac{3}{9} + \\frac{1}{9} = \\frac{13}{9}$.",
+            },
+
+            // ── q8 — médio: expoente fracionário m/n ─────────────────────────
+            {
+              id: "pot2-q8",
+              enunciado: "Qual o valor de $4^{3/2}$?",
+              alternativas: [
+                { letra: "A", texto: "$6$" },
+                { letra: "B", texto: "$12$" },
+                { letra: "C", texto: "$8$" },
+                { letra: "D", texto: "$16$" },
+                { letra: "E", texto: "$64$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$4^{3/2} = (\\sqrt{4})^3 = 2^3 = 8$. O denominador do expoente indica a raiz, o numerador indica a potência.",
+            },
+
+            // ── q9 — difícil: expressão com negativos ─────────────────────────
+            {
+              id: "pot2-q9",
+              enunciado:
+                "Simplifique $\\dfrac{2^{-3} \\cdot 4^2}{8^{-1}}$.",
+              alternativas: [
+                { letra: "A", texto: "$2$" },
+                { letra: "B", texto: "$16$" },
+                { letra: "C", texto: "$4$" },
+                { letra: "D", texto: "$8$" },
+                { letra: "E", texto: "$1$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "Converta tudo para base 2: $4^2 = (2^2)^2 = 2^4$ e $8^{-1} = (2^3)^{-1} = 2^{-3}$. Numerador: $2^{-3} \\cdot 2^4 = 2^1$. Divisão: $\\dfrac{2^1}{2^{-3}} = 2^{1-(-3)} = 2^{1+3} = 2^4 = 16$.",
+            },
+
+            // ── q10 — difícil: aplicação contextualizada ─────────────────────
+            {
+              id: "pot2-q10",
+              enunciado:
+                "Uma bactéria se divide ao meio a cada hora. Se começamos com $2^{10}$ bactérias, quantas haverá após $3$ horas, sabendo que a cada hora o número é multiplicado por $2$?",
+              alternativas: [
+                { letra: "A", texto: "$2^{13}$" },
+                { letra: "B", texto: "$2^{30}$" },
+                { letra: "C", texto: "$2^7$" },
+                { letra: "D", texto: "$2^{10} + 3$" },
+                { letra: "E", texto: "$6 \\cdot 2^{10}$" },
+              ],
+              gabarito: "A",
+              explicacao:
+                "Após 3 horas multiplicamos por $2$ três vezes: $2^{10} \\cdot 2^3 = 2^{10+3} = 2^{13}$. Propriedade do produto de mesma base em contexto real.",
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
