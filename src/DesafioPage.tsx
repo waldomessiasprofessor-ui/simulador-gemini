@@ -138,7 +138,7 @@ export default function DesafioPage() {
                 </div>
                 {/* Resolução expandida com LaTeX */}
                 {resOpen && q.comentario_resolucao && (
-                  <div className="px-4 pb-4 pt-3 space-y-2" style={{ background: "#EFF6FF", borderTop: "1px solid #BFDBFE" }}>
+                  <div className="px-4 pb-4 pt-3 space-y-2" style={{ background: "var(--card)", borderTop: "3px solid #1D4ED8" }}>
                     <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#1D4ED8" }}>Resolução</p>
                     <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
                   </div>
@@ -233,8 +233,8 @@ export default function DesafioPage() {
             )}
           </div>
           {openResolution[q.id] && q.comentario_resolucao && (
-            <div className="rounded-xl p-4" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
-              <p className="text-xs font-semibold mb-2" style={{ color: "#1D4ED8" }}>Resolução</p>
+            <div className="rounded-xl p-4" style={{ background: "var(--card)", borderLeft: "3px solid #1D4ED8", border: "1px solid var(--border)" }}>
+              <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#1D4ED8" }}>Resolução</p>
               <LatexRenderer fontSize="sm">{q.comentario_resolucao}</LatexRenderer>
             </div>
           )}

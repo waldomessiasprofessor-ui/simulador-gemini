@@ -167,8 +167,8 @@ export default function Resultado({ id }: { id: number }) {
                         )}
                       </div>
                       {openRes === i && ans.comentario_resolucao && (
-                        <div className="rounded-lg p-3" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
-                          <p className="text-xs font-medium mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
+                        <div className="rounded-lg p-3" style={{ background: "var(--card)", borderLeft: "3px solid #1D4ED8", border: "1px solid var(--border)" }}>
+                          <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: "#1D4ED8" }}>Resolução</p>
                           <LatexRenderer fontSize="sm">{ans.comentario_resolucao}</LatexRenderer>
                         </div>
                       )}

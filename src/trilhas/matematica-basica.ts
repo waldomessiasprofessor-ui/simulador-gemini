@@ -549,7 +549,540 @@ $$
     },
 
     // =========================================================================
-    // Capítulo 2 — Radiciação
+    // Capítulo 2 — Potenciação
+    // =========================================================================
+    {
+      slug: "potenciacao",
+      titulo: "Potenciação",
+      licoes: [
+
+        // =====================================================================
+        // Lição 1 — Definição e propriedades básicas
+        // =====================================================================
+        {
+          slug: "potenciacao-definicao-propriedades",
+          titulo: "Definição e propriedades básicas",
+          resumo:
+            "O que é uma potência e as quatro propriedades fundamentais: produto, quociente, potência de potência e potência de produto.",
+          duracaoMinutos: 20,
+
+          explicacao: `
+A **potência** é uma forma compacta de escrever uma multiplicação repetida.
+
+$$
+a^n = \\underbrace{a \\cdot a \\cdot a \\cdots a}_{n \\text{ vezes}}
+$$
+
+Aqui $a$ é a **base** e $n$ é o **expoente**. Exemplo: $2^5 = 2 \\cdot 2 \\cdot 2 \\cdot 2 \\cdot 2 = 32$.
+
+---
+
+### Propriedade 1 — Produto de mesma base
+
+Quando as bases são iguais, **soma os expoentes**:
+
+$$
+a^m \\cdot a^n = a^{m+n}
+$$
+
+Exemplo: $3^2 \\cdot 3^4 = 3^{2+4} = 3^6 = 729$.
+
+---
+
+### Propriedade 2 — Quociente de mesma base
+
+Quando as bases são iguais, **subtrai os expoentes**:
+
+$$
+\\frac{a^m}{a^n} = a^{m-n} \\quad (a \\neq 0)
+$$
+
+Exemplo: $\\dfrac{5^7}{5^3} = 5^{7-3} = 5^4 = 625$.
+
+---
+
+### Propriedade 3 — Potência de potência
+
+**Multiplica os expoentes**:
+
+$$
+(a^m)^n = a^{m \\cdot n}
+$$
+
+Exemplo: $(2^3)^4 = 2^{3 \\cdot 4} = 2^{12}$.
+
+---
+
+### Propriedade 4 — Potência de um produto (ou quociente)
+
+**Distribui o expoente** para cada fator:
+
+$$
+(a \\cdot b)^n = a^n \\cdot b^n \\qquad \\left(\\frac{a}{b}\\right)^n = \\frac{a^n}{b^n}
+$$
+
+Exemplo: $(2 \\cdot 3)^4 = 2^4 \\cdot 3^4 = 16 \\cdot 81 = 1296$.
+
+---
+
+### Atenção ao erro mais comum
+
+Não confunda a Propriedade 1 com multiplicação de expoentes:
+
+$$
+a^m \\cdot a^n = a^{m+n} \\quad \\text{(soma!)} \\qquad (a^m)^n = a^{m \\cdot n} \\quad \\text{(multiplica!)}
+$$
+`.trim(),
+
+          exemplos: [
+            {
+              titulo: "Exemplo 1 — Produto de mesma base",
+              problema: "Simplifique $2^3 \\cdot 2^5$.",
+              resolucao: `
+As bases são iguais ($2$), então somamos os expoentes:
+
+$$
+2^3 \\cdot 2^5 = 2^{3+5} = 2^8 = 256
+$$
+`.trim(),
+            },
+            {
+              titulo: "Exemplo 2 — Potência de potência",
+              problema: "Calcule $(3^2)^3$.",
+              resolucao: `
+Potência de potência: multiplicamos os expoentes.
+
+$$
+(3^2)^3 = 3^{2 \\cdot 3} = 3^6 = 729
+$$
+`.trim(),
+            },
+          ],
+
+          exercicios: [
+            // ── q1 — fácil: valor de potência simples ─────────────────────────
+            {
+              id: "pot-q1",
+              enunciado: "Qual o valor de $2^4$?",
+              alternativas: [
+                { letra: "A", texto: "$6$" },
+                { letra: "B", texto: "$8$" },
+                { letra: "C", texto: "$12$" },
+                { letra: "D", texto: "$16$" },
+                { letra: "E", texto: "$24$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$2^4 = 2 \\cdot 2 \\cdot 2 \\cdot 2 = 16$. Potência é multiplicação repetida da base por ela mesma.",
+            },
+
+            // ── q2 — fácil: base 10 ───────────────────────────────────────────
+            {
+              id: "pot-q2",
+              enunciado: "Quanto vale $10^3$?",
+              alternativas: [
+                { letra: "A", texto: "$30$" },
+                { letra: "B", texto: "$100$" },
+                { letra: "C", texto: "$1000$" },
+                { letra: "D", texto: "$300$" },
+                { letra: "E", texto: "$10000$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$10^3 = 10 \\cdot 10 \\cdot 10 = 1000$. Para potências de 10, basta contar os zeros: $10^n$ tem $n$ zeros.",
+            },
+
+            // ── q3 — fácil: base negativa ─────────────────────────────────────
+            {
+              id: "pot-q3",
+              enunciado: "Qual o valor de $(-2)^3$?",
+              alternativas: [
+                { letra: "A", texto: "$8$" },
+                { letra: "B", texto: "$-6$" },
+                { letra: "C", texto: "$6$" },
+                { letra: "D", texto: "$-8$" },
+                { letra: "E", texto: "$-2$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$(-2)^3 = (-2) \\cdot (-2) \\cdot (-2) = 4 \\cdot (-2) = -8$. Expoente ímpar com base negativa sempre dá resultado negativo.",
+            },
+
+            // ── q4 — fácil: produto de mesma base ────────────────────────────
+            {
+              id: "pot-q4",
+              enunciado: "Simplifique $3^2 \\cdot 3^3$.",
+              alternativas: [
+                { letra: "A", texto: "$3^6$" },
+                { letra: "B", texto: "$9^5$" },
+                { letra: "C", texto: "$3^5$" },
+                { letra: "D", texto: "$3^1$" },
+                { letra: "E", texto: "$6^5$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Produto de mesma base: soma os expoentes. $3^2 \\cdot 3^3 = 3^{2+3} = 3^5$.",
+            },
+
+            // ── q5 — fácil: quociente de mesma base ──────────────────────────
+            {
+              id: "pot-q5",
+              enunciado: "Simplifique $\\dfrac{5^6}{5^2}$.",
+              alternativas: [
+                { letra: "A", texto: "$5^3$" },
+                { letra: "B", texto: "$5^8$" },
+                { letra: "C", texto: "$1^4$" },
+                { letra: "D", texto: "$5^4$" },
+                { letra: "E", texto: "$5^{12}$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "Quociente de mesma base: subtrai os expoentes. $\\frac{5^6}{5^2} = 5^{6-2} = 5^4$.",
+            },
+
+            // ── q6 — médio: potência de potência ──────────────────────────────
+            {
+              id: "pot-q6",
+              enunciado: "Qual o resultado de $(4^2)^3$?",
+              alternativas: [
+                { letra: "A", texto: "$4^5$" },
+                { letra: "B", texto: "$4^8$" },
+                { letra: "C", texto: "$4^6$" },
+                { letra: "D", texto: "$4^9$" },
+                { letra: "E", texto: "$16^3$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Potência de potência: multiplica os expoentes. $(4^2)^3 = 4^{2 \\cdot 3} = 4^6$.",
+            },
+
+            // ── q7 — médio: potência de produto ───────────────────────────────
+            {
+              id: "pot-q7",
+              enunciado: "Expanda $(2 \\cdot 5)^3$ usando a propriedade da potência de produto.",
+              alternativas: [
+                { letra: "A", texto: "$2^3 + 5^3$" },
+                { letra: "B", texto: "$2 \\cdot 5^3$" },
+                { letra: "C", texto: "$10^3$" },
+                { letra: "D", texto: "$2^3 \\cdot 5^3$" },
+                { letra: "E", texto: "$6^3$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$(a \\cdot b)^n = a^n \\cdot b^n$. Portanto $(2 \\cdot 5)^3 = 2^3 \\cdot 5^3 = 8 \\cdot 125 = 1000$. Note que $10^3 = 1000$ também — as alternativas C e D dão o mesmo valor numérico, mas a alternativa D é a forma expandida pedida pela propriedade.",
+            },
+
+            // ── q8 — médio: combina produto e quociente ───────────────────────
+            {
+              id: "pot-q8",
+              enunciado: "Simplifique $\\dfrac{2^8 \\cdot 2^2}{2^5}$.",
+              alternativas: [
+                { letra: "A", texto: "$2^{15}$" },
+                { letra: "B", texto: "$2^{5}$" },
+                { letra: "C", texto: "$2^{4}$" },
+                { letra: "D", texto: "$2^{1}$" },
+                { letra: "E", texto: "$2^{3}$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "Primeiro soma os expoentes do numerador: $2^8 \\cdot 2^2 = 2^{10}$. Depois subtrai o do denominador: $\\frac{2^{10}}{2^5} = 2^{10-5} = 2^5$.",
+            },
+
+            // ── q9 — difícil: potência de quociente ───────────────────────────
+            {
+              id: "pot-q9",
+              enunciado: "Qual o valor de $\\left(\\dfrac{3}{2}\\right)^4$?",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{12}{8}$" },
+                { letra: "B", texto: "$\\dfrac{81}{16}$" },
+                { letra: "C", texto: "$\\dfrac{9}{8}$" },
+                { letra: "D", texto: "$\\dfrac{81}{8}$" },
+                { letra: "E", texto: "$\\dfrac{12}{16}$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "$\\left(\\frac{3}{2}\\right)^4 = \\frac{3^4}{2^4} = \\frac{81}{16}$. A propriedade distribui o expoente para o numerador e para o denominador.",
+            },
+
+            // ── q10 — difícil: expressão combinada ────────────────────────────
+            {
+              id: "pot-q10",
+              enunciado:
+                "Simplifique $\\dfrac{(2^3)^2 \\cdot 2^4}{2^{10}}$.",
+              alternativas: [
+                { letra: "A", texto: "$2^6$" },
+                { letra: "B", texto: "$2^0$" },
+                { letra: "C", texto: "$2^3$" },
+                { letra: "D", texto: "$2^{-2}$" },
+                { letra: "E", texto: "$2^2$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "$(2^3)^2 = 2^6$. Numerador: $2^6 \\cdot 2^4 = 2^{10}$. Quociente: $\\frac{2^{10}}{2^{10}} = 2^0 = 1$. Qualquer base não-nula elevada a zero é $1$.",
+            },
+          ],
+        },
+
+        // =====================================================================
+        // Lição 2 — Expoente zero, negativo e fracionário
+        // =====================================================================
+        {
+          slug: "potenciacao-expoente-especial",
+          titulo: "Expoente zero, negativo e fracionário",
+          resumo:
+            "Por que qualquer número elevado a zero vale 1, como interpretar expoentes negativos e o que significa um expoente fracionário.",
+          duracaoMinutos: 20,
+
+          explicacao: `
+### Expoente zero
+
+Usando a propriedade do quociente: $\\dfrac{a^n}{a^n} = a^{n-n} = a^0$. Mas $\\dfrac{a^n}{a^n} = 1$. Portanto:
+
+$$
+a^0 = 1 \\quad (a \\neq 0)
+$$
+
+Exemplos: $7^0 = 1$, $(-5)^0 = 1$, $\\left(\\frac{2}{3}\\right)^0 = 1$.
+
+---
+
+### Expoente negativo
+
+Pelo mesmo raciocínio do quociente: $\\dfrac{a^0}{a^n} = a^{0-n} = a^{-n}$. Como $a^0 = 1$:
+
+$$
+a^{-n} = \\frac{1}{a^n} \\quad (a \\neq 0)
+$$
+
+Exemplos: $2^{-3} = \\dfrac{1}{2^3} = \\dfrac{1}{8}$. \\quad $5^{-1} = \\dfrac{1}{5}$.
+
+Para **inverter** uma fração com expoente negativo:
+
+$$
+\\left(\\frac{a}{b}\\right)^{-n} = \\left(\\frac{b}{a}\\right)^{n}
+$$
+
+---
+
+### Expoente fracionário (radical)
+
+A ligação entre potência e raiz é:
+
+$$
+a^{1/n} = \\sqrt[n]{a} \\qquad a^{m/n} = \\sqrt[n]{a^m} = \\left(\\sqrt[n]{a}\\right)^m
+$$
+
+Exemplos: $8^{1/3} = \\sqrt[3]{8} = 2$. \\quad $4^{3/2} = (\\sqrt{4})^3 = 2^3 = 8$.
+
+---
+
+### Resumo das propriedades
+
+| Propriedade | Fórmula |
+|---|---|
+| Produto | $a^m \\cdot a^n = a^{m+n}$ |
+| Quociente | $a^m / a^n = a^{m-n}$ |
+| Potência de potência | $(a^m)^n = a^{mn}$ |
+| Potência de produto | $(ab)^n = a^n b^n$ |
+| Expoente zero | $a^0 = 1$ |
+| Expoente negativo | $a^{-n} = 1/a^n$ |
+| Expoente fracionário | $a^{m/n} = \\sqrt[n]{a^m}$ |
+`.trim(),
+
+          exemplos: [
+            {
+              titulo: "Exemplo 1 — Expoente negativo",
+              problema: "Calcule $\\left(\\dfrac{2}{3}\\right)^{-2}$.",
+              resolucao: `
+Expoente negativo inverte a fração e troca o sinal do expoente:
+
+$$
+\\left(\\frac{2}{3}\\right)^{-2} = \\left(\\frac{3}{2}\\right)^{2} = \\frac{3^2}{2^2} = \\frac{9}{4}
+$$
+`.trim(),
+            },
+            {
+              titulo: "Exemplo 2 — Expoente fracionário",
+              problema: "Calcule $27^{2/3}$.",
+              resolucao: `
+Expoente fracionário $m/n$ significa tirar a raiz $n$-ésima e elevar a $m$:
+
+$$
+27^{2/3} = \\left(\\sqrt[3]{27}\\right)^2 = 3^2 = 9
+$$
+`.trim(),
+            },
+          ],
+
+          exercicios: [
+            // ── q1 — fácil: expoente zero ──────────────────────────────────────
+            {
+              id: "pot2-q1",
+              enunciado: "Qual o valor de $99^0$?",
+              alternativas: [
+                { letra: "A", texto: "$99$" },
+                { letra: "B", texto: "$0$" },
+                { letra: "C", texto: "$1$" },
+                { letra: "D", texto: "$-1$" },
+                { letra: "E", texto: "$9$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Qualquer número não-nulo elevado a zero é igual a $1$. Portanto $99^0 = 1$.",
+            },
+
+            // ── q2 — fácil: expoente negativo simples ─────────────────────────
+            {
+              id: "pot2-q2",
+              enunciado: "Qual o valor de $2^{-3}$?",
+              alternativas: [
+                { letra: "A", texto: "$-8$" },
+                { letra: "B", texto: "$\\dfrac{1}{6}$" },
+                { letra: "C", texto: "$8$" },
+                { letra: "D", texto: "$\\dfrac{1}{8}$" },
+                { letra: "E", texto: "$-6$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "$2^{-3} = \\dfrac{1}{2^3} = \\dfrac{1}{8}$. Expoente negativo significa o inverso (recíproco) da potência positiva.",
+            },
+
+            // ── q3 — fácil: raiz quadrada como expoente ───────────────────────
+            {
+              id: "pot2-q3",
+              enunciado: "Qual o valor de $25^{1/2}$?",
+              alternativas: [
+                { letra: "A", texto: "$12{,}5$" },
+                { letra: "B", texto: "$625$" },
+                { letra: "C", texto: "$5$" },
+                { letra: "D", texto: "$50$" },
+                { letra: "E", texto: "$\\dfrac{1}{5}$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$25^{1/2} = \\sqrt{25} = 5$. O expoente $\\frac{1}{2}$ é o mesmo que tirar a raiz quadrada.",
+            },
+
+            // ── q4 — fácil: base negativa expoente par ────────────────────────
+            {
+              id: "pot2-q4",
+              enunciado: "Quanto vale $(-3)^4$?",
+              alternativas: [
+                { letra: "A", texto: "$-81$" },
+                { letra: "B", texto: "$12$" },
+                { letra: "C", texto: "$81$" },
+                { letra: "D", texto: "$-12$" },
+                { letra: "E", texto: "$-27$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$(-3)^4 = (-3)(-3)(-3)(-3) = 9 \\cdot 9 = 81$. Expoente **par** com base negativa sempre resulta em positivo.",
+            },
+
+            // ── q5 — médio: expoente negativo com fração ──────────────────────
+            {
+              id: "pot2-q5",
+              enunciado: "Simplifique $\\left(\\dfrac{3}{4}\\right)^{-1}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{3}{4}$" },
+                { letra: "B", texto: "$-\\dfrac{3}{4}$" },
+                { letra: "C", texto: "$\\dfrac{4}{3}$" },
+                { letra: "D", texto: "$\\dfrac{1}{12}$" },
+                { letra: "E", texto: "$-\\dfrac{4}{3}$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Expoente $-1$ inverte a fração: $\\left(\\frac{3}{4}\\right)^{-1} = \\frac{4}{3}$.",
+            },
+
+            // ── q6 — médio: expoente fracionário ──────────────────────────────
+            {
+              id: "pot2-q6",
+              enunciado: "Qual o valor de $8^{1/3}$?",
+              alternativas: [
+                { letra: "A", texto: "$4$" },
+                { letra: "B", texto: "$24$" },
+                { letra: "C", texto: "$\\dfrac{8}{3}$" },
+                { letra: "D", texto: "$512$" },
+                { letra: "E", texto: "$2$" },
+              ],
+              gabarito: "E",
+              explicacao:
+                "$8^{1/3} = \\sqrt[3]{8} = 2$, pois $2^3 = 8$.",
+            },
+
+            // ── q7 — médio: combinando zero e negativo ────────────────────────
+            {
+              id: "pot2-q7",
+              enunciado: "Calcule $3^0 + 3^{-1} + 3^{-2}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{11}{9}$" },
+                { letra: "B", texto: "$\\dfrac{13}{9}$" },
+                { letra: "C", texto: "$\\dfrac{12}{9}$" },
+                { letra: "D", texto: "$\\dfrac{10}{9}$" },
+                { letra: "E", texto: "$3$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "$3^0 = 1$, $3^{-1} = \\frac{1}{3}$, $3^{-2} = \\frac{1}{9}$. Somando: $1 + \\frac{1}{3} + \\frac{1}{9} = \\frac{9}{9} + \\frac{3}{9} + \\frac{1}{9} = \\frac{13}{9}$.",
+            },
+
+            // ── q8 — médio: expoente fracionário m/n ─────────────────────────
+            {
+              id: "pot2-q8",
+              enunciado: "Qual o valor de $4^{3/2}$?",
+              alternativas: [
+                { letra: "A", texto: "$6$" },
+                { letra: "B", texto: "$12$" },
+                { letra: "C", texto: "$8$" },
+                { letra: "D", texto: "$16$" },
+                { letra: "E", texto: "$64$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$4^{3/2} = (\\sqrt{4})^3 = 2^3 = 8$. O denominador do expoente indica a raiz, o numerador indica a potência.",
+            },
+
+            // ── q9 — difícil: expressão com negativos ─────────────────────────
+            {
+              id: "pot2-q9",
+              enunciado:
+                "Simplifique $\\dfrac{2^{-3} \\cdot 4^2}{8^{-1}}$.",
+              alternativas: [
+                { letra: "A", texto: "$2$" },
+                { letra: "B", texto: "$16$" },
+                { letra: "C", texto: "$4$" },
+                { letra: "D", texto: "$8$" },
+                { letra: "E", texto: "$1$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "Converta tudo para base 2: $4^2 = (2^2)^2 = 2^4$ e $8^{-1} = (2^3)^{-1} = 2^{-3}$. Numerador: $2^{-3} \\cdot 2^4 = 2^1$. Divisão: $\\dfrac{2^1}{2^{-3}} = 2^{1-(-3)} = 2^{1+3} = 2^4 = 16$.",
+            },
+
+            // ── q10 — difícil: aplicação contextualizada ─────────────────────
+            {
+              id: "pot2-q10",
+              enunciado:
+                "Uma bactéria se divide ao meio a cada hora. Se começamos com $2^{10}$ bactérias, quantas haverá após $3$ horas, sabendo que a cada hora o número é multiplicado por $2$?",
+              alternativas: [
+                { letra: "A", texto: "$2^{13}$" },
+                { letra: "B", texto: "$2^{30}$" },
+                { letra: "C", texto: "$2^7$" },
+                { letra: "D", texto: "$2^{10} + 3$" },
+                { letra: "E", texto: "$6 \\cdot 2^{10}$" },
+              ],
+              gabarito: "A",
+              explicacao:
+                "Após 3 horas multiplicamos por $2$ três vezes: $2^{10} \\cdot 2^3 = 2^{10+3} = 2^{13}$. Propriedade do produto de mesma base em contexto real.",
+            },
+          ],
+        },
+      ],
+    },
+
+    // =========================================================================
+    // Capítulo 3 — Radiciação
     // =========================================================================
     {
       slug: "radicacao",
@@ -586,11 +1119,9 @@ $$
 - **Índice par** ($n = 2, 4, 6, \\ldots$): o radicando deve ser **não negativo**. $\\sqrt{-4}$ não existe nos reais.
 - **Índice ímpar** ($n = 3, 5, 7, \\ldots$): o radicando pode ser qualquer real. $\\sqrt[3]{-8} = -2$, pois $(-2)^3 = -8$.
 
-### 3. As propriedades dos radicais
+### 3. As seis propriedades dos radicais
 
-Essas seis regras são o coração do assunto. Decore-as e a maioria das questões cai no lugar.
-
-**P1 — Produto:** o radical de um produto é o produto dos radicais (mesmo índice).
+**P1 — Produto:** o radical de um produto é o produto dos radicais.
 
 $$
 \\sqrt[n]{a \\cdot b} = \\sqrt[n]{a} \\cdot \\sqrt[n]{b}
@@ -598,15 +1129,15 @@ $$
 
 Exemplo: $\\sqrt{4 \\cdot 9} = \\sqrt{4} \\cdot \\sqrt{9} = 2 \\cdot 3 = 6$.
 
-**P2 — Quociente:** o radical de uma fração é a fração dos radicais (mesmo índice).
+**P2 — Quociente:** o radical de uma fração é a fração dos radicais.
 
 $$
 \\sqrt[n]{\\dfrac{a}{b}} = \\dfrac{\\sqrt[n]{a}}{\\sqrt[n]{b}}, \\quad b \\neq 0
 $$
 
-Exemplo: $\\sqrt{\\dfrac{25}{4}} = \\dfrac{\\sqrt{25}}{\\sqrt{4}} = \\dfrac{5}{2}$.
+Exemplo: $\\sqrt{\\dfrac{25}{4}} = \\dfrac{5}{2}$.
 
-**P3 — Potência dentro do radical:** um expoente dentro do radical pode "sair" dividido pelo índice.
+**P3 — Potência dentro do radical:** o expoente "sai" dividido pelo índice.
 
 $$
 \\sqrt[n]{a^m} = a^{m/n}
@@ -620,17 +1151,17 @@ $$
 \\sqrt[m]{\\sqrt[n]{a}} = \\sqrt[m \\cdot n]{a}
 $$
 
-Exemplo: $\\sqrt{\\sqrt[3]{a}} = \\sqrt[2 \\cdot 3]{a} = \\sqrt[6]{a}$.
+Exemplo: $\\sqrt{\\sqrt[3]{a}} = \\sqrt[6]{a}$.
 
-**P5 — Redução de índice:** se o expoente do radicando e o índice do radical têm um fator comum, podemos simplificar.
+**P5 — Redução de índice:** se índice e expoente têm fator comum, simplifique.
 
 $$
 \\sqrt[m \\cdot k]{a^{n \\cdot k}} = \\sqrt[m]{a^n}
 $$
 
-Exemplo: $\\sqrt[6]{a^4} = \\sqrt[6/2]{a^{4/2}} = \\sqrt[3]{a^2}$ (dividindo índice e expoente por 2).
+Exemplo: $\\sqrt[6]{a^4} = \\sqrt[3]{a^2}$ (dividindo tudo por 2).
 
-**P6 — Radical de potência igual ao índice:** quando o expoente e o índice coincidem, o resultado é o radicando (para $a \\geq 0$).
+**P6 — Radical de potência igual ao índice:** quando expoente e índice coincidem, o resultado é o radicando.
 
 $$
 \\sqrt[n]{a^n} = a, \\quad a \\geq 0
@@ -638,12 +1169,10 @@ $$
 
 Exemplo: $\\sqrt[5]{3^5} = 3$.
 
-### 4. Simplificação: tirando fatores de dentro do radical
+### 4. Simplificação: tirando fatores para fora
 
-Para simplificar $\\sqrt{72}$, por exemplo:
-
-1. Fatore o radicando: $72 = 36 \\cdot 2$.
-2. Use P1: $\\sqrt{36 \\cdot 2} = \\sqrt{36} \\cdot \\sqrt{2} = 6\\sqrt{2}$.
+Para simplificar $\\sqrt{72}$: escreva $72 = 36 \\cdot 2$, então
+$$\\sqrt{72} = \\sqrt{36} \\cdot \\sqrt{2} = 6\\sqrt{2}.$$
 
 A ideia é **separar os fatores que são potências perfeitas** do índice e tirá-los para fora.
 `.trim(),
@@ -654,7 +1183,7 @@ A ideia é **separar os fatores que são potências perfeitas** do índice e tir
               problema: "Escreva $\\sqrt{72}$ na forma $a\\sqrt{b}$, com $b$ o menor inteiro positivo possível.",
               resolucao: `
 **Passo 1:** Fatoramos 72 em busca de um quadrado perfeito.
-$$72 = 4 \\cdot 18 = 4 \\cdot 9 \\cdot 2 = 36 \\cdot 2$$
+$$72 = 36 \\cdot 2$$
 
 **Passo 2:** Usamos a propriedade do produto (P1):
 $$\\sqrt{72} = \\sqrt{36 \\cdot 2} = \\sqrt{36} \\cdot \\sqrt{2} = 6\\sqrt{2}$$
@@ -669,9 +1198,7 @@ $$\\sqrt{72} = \\sqrt{36 \\cdot 2} = \\sqrt{36} \\cdot \\sqrt{2} = 6\\sqrt{2}$$
               problema: "Escreva $\\sqrt[3]{108}$ na forma $a\\sqrt[3]{b}$, com $b$ o menor inteiro possível.",
               resolucao: `
 **Passo 1:** Fatoramos 108 em busca de um cubo perfeito.
-$$108 = 27 \\cdot 4$$
-
-$27 = 3^3$ é um cubo perfeito. Perfeito.
+$$108 = 27 \\cdot 4 = 3^3 \\cdot 4$$
 
 **Passo 2:** Aplicamos P1:
 $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 3\\sqrt[3]{4}$$
@@ -682,7 +1209,6 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
           ],
 
           exercicios: [
-            // ── 1) Raiz quadrada exata ────────────────────────────────────────
             {
               id: "rad-q1",
               enunciado: "Qual o valor de $\\sqrt{144}$?",
@@ -694,10 +1220,8 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$16$" },
               ],
               gabarito: "C",
-              explicacao: "$\\sqrt{144} = 12$, pois $12^2 = 144$. Quadrados perfeitos para decorar: $1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144\\ldots$",
+              explicacao: "$\\sqrt{144} = 12$, pois $12^2 = 144$. Quadrados perfeitos para lembrar: $1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144\\ldots$",
             },
-
-            // ── 2) Raiz cúbica exata ──────────────────────────────────────────
             {
               id: "rad-q2",
               enunciado: "Qual o valor de $\\sqrt[3]{125}$?",
@@ -709,10 +1233,8 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$25$" },
               ],
               gabarito: "C",
-              explicacao: "$\\sqrt[3]{125} = 5$ porque $5^3 = 125$. Cubos perfeitos iniciais: $1, 8, 27, 64, 125, 216, 343\\ldots$",
+              explicacao: "$\\sqrt[3]{125} = 5$ porque $5^3 = 125$. Cubos perfeitos: $1, 8, 27, 64, 125, 216\\ldots$",
             },
-
-            // ── 3) Simplificação básica ───────────────────────────────────────
             {
               id: "rad-q3",
               enunciado: "Qual a forma simplificada de $\\sqrt{50}$?",
@@ -724,10 +1246,8 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$25\\sqrt{2}$" },
               ],
               gabarito: "A",
-              explicacao: "$50 = 25 \\cdot 2$, logo $\\sqrt{50} = \\sqrt{25} \\cdot \\sqrt{2} = 5\\sqrt{2}$. O fator quadrado perfeito a separar é 25.",
+              explicacao: "$50 = 25 \\cdot 2$, logo $\\sqrt{50} = \\sqrt{25} \\cdot \\sqrt{2} = 5\\sqrt{2}$.",
             },
-
-            // ── 4) Potência ao quadrado e radical se cancelam ─────────────────
             {
               id: "rad-q4",
               enunciado: "Qual o valor de $(\\sqrt{13})^2$?",
@@ -739,10 +1259,8 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$\\sqrt{169}$" },
               ],
               gabarito: "D",
-              explicacao: "Pela P6: $(\\sqrt{a})^2 = \\sqrt{a^2} = a$ para $a \\geq 0$. Portanto $(\\sqrt{13})^2 = 13$. O radical e o quadrado se cancelam.",
+              explicacao: "Pela P6: $(\\sqrt{a})^2 = a$ para $a \\geq 0$. Portanto $(\\sqrt{13})^2 = 13$. O radical e o quadrado se cancelam.",
             },
-
-            // ── 5) Redução de índice ──────────────────────────────────────────
             {
               id: "rad-q5",
               enunciado: "Simplifique $\\sqrt[6]{a^3}$, com $a > 0$.",
@@ -754,10 +1272,8 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$a^2$" },
               ],
               gabarito: "C",
-              explicacao: "Pela P5 (redução de índice): $\\sqrt[6]{a^3} = \\sqrt[6/3]{a^{3/3}} = \\sqrt[2]{a^1} = \\sqrt{a}$. Dividimos índice (6) e expoente (3) por 3.",
+              explicacao: "Pela P5: $\\sqrt[6]{a^3} = \\sqrt[2]{a^1} = \\sqrt{a}$ (dividindo índice e expoente por 3).",
             },
-
-            // ── 6) Radical de radical ─────────────────────────────────────────
             {
               id: "rad-q6",
               enunciado: "Qual o valor de $\\sqrt{\\sqrt[4]{a^8}}$, com $a > 0$?",
@@ -769,10 +1285,8 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$\\sqrt[8]{a}$" },
               ],
               gabarito: "C",
-              explicacao: "Primeiro, resolva o radical interno: $\\sqrt[4]{a^8} = a^{8/4} = a^2$. Depois, $\\sqrt{a^2} = a$ (com $a > 0$). Ou direto pela P4: $\\sqrt{\\sqrt[4]{a^8}} = \\sqrt[2 \\cdot 4]{a^8} = \\sqrt[8]{a^8} = a$.",
+              explicacao: "Pela P4: $\\sqrt{\\sqrt[4]{a^8}} = \\sqrt[2 \\cdot 4]{a^8} = \\sqrt[8]{a^8} = a$.",
             },
-
-            // ── 7) Simplificação nível médio ──────────────────────────────────
             {
               id: "rad-q7",
               enunciado: "Qual a forma simplificada de $\\sqrt{75}$?",
@@ -786,8 +1300,6 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
               gabarito: "B",
               explicacao: "$75 = 25 \\cdot 3$, então $\\sqrt{75} = \\sqrt{25} \\cdot \\sqrt{3} = 5\\sqrt{3}$.",
             },
-
-            // ── 8) Raiz cúbica de negativo ────────────────────────────────────
             {
               id: "rad-q8",
               enunciado: "Qual o valor de $\\sqrt[3]{-27}$?",
@@ -799,10 +1311,8 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$9$" },
               ],
               gabarito: "D",
-              explicacao: "Índice ímpar (3) permite radicando negativo. $\\sqrt[3]{-27} = -3$, pois $(-3)^3 = -27$. Se o índice fosse par (como $\\sqrt{-27}$), aí sim não existiria nos reais.",
+              explicacao: "Índice ímpar (3) permite radicando negativo. $\\sqrt[3]{-27} = -3$, pois $(-3)^3 = -27$. Se o índice fosse par, não existiria nos reais.",
             },
-
-            // ── 9) Radical com variáveis ──────────────────────────────────────
             {
               id: "rad-q9",
               enunciado: "Simplifique $\\sqrt{a^4 b^6}$, com $a, b > 0$.",
@@ -814,13 +1324,11 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$a^2 b^6$" },
               ],
               gabarito: "A",
-              explicacao: "$\\sqrt{a^4 b^6} = \\sqrt{a^4} \\cdot \\sqrt{b^6} = a^{4/2} \\cdot b^{6/2} = a^2 b^3$. A raiz quadrada divide os expoentes por 2.",
+              explicacao: "$\\sqrt{a^4 b^6} = a^{4/2} \\cdot b^{6/2} = a^2 b^3$. A raiz quadrada divide os expoentes por 2.",
             },
-
-            // ── 10) Redução de índice com número ──────────────────────────────
             {
               id: "rad-q10",
-              enunciado: "Qual das expressões abaixo é igual a $\\sqrt[4]{9}$?",
+              enunciado: "Qual expressão é igual a $\\sqrt[4]{9}$?",
               alternativas: [
                 { letra: "A", texto: "$3$" },
                 { letra: "B", texto: "$\\sqrt{3}$" },
@@ -829,7 +1337,7 @@ $$\\sqrt[3]{108} = \\sqrt[3]{27 \\cdot 4} = \\sqrt[3]{27} \\cdot \\sqrt[3]{4} = 
                 { letra: "E", texto: "$\\sqrt[8]{3}$" },
               ],
               gabarito: "B",
-              explicacao: "$\\sqrt[4]{9} = \\sqrt[4]{3^2} = 3^{2/4} = 3^{1/2} = \\sqrt{3}$. Usamos P3: $\\sqrt[n]{a^m} = a^{m/n}$ e depois reduzimos a fração $\\frac{2}{4} = \\frac{1}{2}$.",
+              explicacao: "$\\sqrt[4]{9} = \\sqrt[4]{3^2} = 3^{2/4} = 3^{1/2} = \\sqrt{3}$.",
             },
           ],
         },
@@ -848,27 +1356,25 @@ Com as propriedades na cabeça, as operações ficam mais naturais. Veja cada ca
 
 ### 1. Adição e subtração — radicais semelhantes
 
-Radicais **só podem ser somados ou subtraídos quando são semelhantes**, ou seja, quando têm o mesmo índice **e** o mesmo radicando.
+Radicais **só podem ser somados ou subtraídos quando são semelhantes**: mesmo índice **e** mesmo radicando.
 
 $$
 m\\sqrt[n]{a} \\pm k\\sqrt[n]{a} = (m \\pm k)\\sqrt[n]{a}
 $$
 
-O truque: **simplifique primeiro**. Muitas vezes radicais que parecem diferentes viram semelhantes após simplificar.
+O truque essencial: **simplifique primeiro**. Muitas vezes radicais que parecem diferentes viram semelhantes após simplificar.
 
 Exemplo: $\\sqrt{8} + \\sqrt{18} = 2\\sqrt{2} + 3\\sqrt{2} = 5\\sqrt{2}$.
 
 ### 2. Multiplicação
 
-**Mesmo índice:** multiplique os radicandos.
+**Mesmo índice:** multiplique os radicandos diretamente.
 
 $$
 \\sqrt[n]{a} \\cdot \\sqrt[n]{b} = \\sqrt[n]{a \\cdot b}
 $$
 
-**Índices diferentes:** reduza ao mesmo índice primeiro, usando a P4/P5.
-
-Exemplo: $\\sqrt{2} \\cdot \\sqrt[3]{4}$ → converta $\\sqrt{2} = \\sqrt[6]{2^3} = \\sqrt[6]{8}$ e $\\sqrt[3]{4} = \\sqrt[6]{4^2} = \\sqrt[6]{16}$, daí multiplique: $\\sqrt[6]{128}$.
+Exemplo: $\\sqrt{3} \\cdot \\sqrt{12} = \\sqrt{36} = 6$.
 
 ### 3. Divisão
 
@@ -878,30 +1384,29 @@ $$
 \\frac{\\sqrt[n]{a}}{\\sqrt[n]{b}} = \\sqrt[n]{\\frac{a}{b}}, \\quad b \\neq 0
 $$
 
-Exemplo: $\\dfrac{\\sqrt{50}}{\\sqrt{2}} = \\sqrt{\\dfrac{50}{2}} = \\sqrt{25} = 5$.
+Exemplo: $\\dfrac{\\sqrt{50}}{\\sqrt{2}} = \\sqrt{25} = 5$.
 
 ### 4. Racionalização do denominador
 
-Ter um radical no denominador "trava" o cálculo. Racionalizamos multiplicando por uma fração equivalente a 1 que elimina o radical.
+Ter um radical no denominador "trava" o cálculo. Eliminamos multiplicando por uma fração equivalente a 1.
 
 **Caso 1 — Denominador monômio ($\\sqrt{a}$):**
 
 $$
-\\frac{b}{\\sqrt{a}} = \\frac{b}{\\sqrt{a}} \\cdot \\frac{\\sqrt{a}}{\\sqrt{a}} = \\frac{b\\sqrt{a}}{a}
+\\frac{b}{\\sqrt{a}} \\cdot \\frac{\\sqrt{a}}{\\sqrt{a}} = \\frac{b\\sqrt{a}}{a}
 $$
 
 Exemplo: $\\dfrac{3}{\\sqrt{5}} = \\dfrac{3\\sqrt{5}}{5}$.
 
 **Caso 2 — Denominador binômio ($\\sqrt{a} \\pm \\sqrt{b}$):**
 
-Usamos o **conjugado**: multiplicamos por $\\dfrac{\\sqrt{a} \\mp \\sqrt{b}}{\\sqrt{a} \\mp \\sqrt{b}}$.
+Multiplicamos pelo **conjugado**. A diferença de quadrados elimina os radicais do denominador:
 
-O produto dos conjugados é uma diferença de quadrados:
 $$
 (\\sqrt{a} + \\sqrt{b})(\\sqrt{a} - \\sqrt{b}) = a - b
 $$
 
-Isso elimina todos os radicais do denominador.
+Exemplo: $\\dfrac{4}{\\sqrt{3}+1} \\cdot \\dfrac{\\sqrt{3}-1}{\\sqrt{3}-1} = \\dfrac{4(\\sqrt{3}-1)}{2} = 2\\sqrt{3}-2$.
 `.trim(),
 
           exemplos: [
@@ -909,12 +1414,12 @@ Isso elimina todos os radicais do denominador.
               titulo: "Exemplo 1 — Soma com simplificação prévia",
               problema: "Calcule $3\\sqrt{2} + \\sqrt{8} - \\sqrt{18}$.",
               resolucao: `
-**Passo 1:** Simplifique cada radical.
+**Passo 1:** Simplifique cada radical antes de somar.
 
 - $\\sqrt{8} = \\sqrt{4 \\cdot 2} = 2\\sqrt{2}$
 - $\\sqrt{18} = \\sqrt{9 \\cdot 2} = 3\\sqrt{2}$
 
-**Passo 2:** Agora todos têm o mesmo radicando ($\\sqrt{2}$). Some os coeficientes:
+**Passo 2:** Todos têm $\\sqrt{2}$ — some os coeficientes:
 
 $$3\\sqrt{2} + 2\\sqrt{2} - 3\\sqrt{2} = (3 + 2 - 3)\\sqrt{2} = 2\\sqrt{2}$$
 
@@ -925,9 +1430,9 @@ $$3\\sqrt{2} + 2\\sqrt{2} - 3\\sqrt{2} = (3 + 2 - 3)\\sqrt{2} = 2\\sqrt{2}$$
               titulo: "Exemplo 2 — Racionalização com denominador binômio",
               problema: "Racionalize $\\dfrac{4}{\\sqrt{3} + 1}$.",
               resolucao: `
-**Passo 1:** O conjugado de $\\sqrt{3} + 1$ é $\\sqrt{3} - 1$.
+**Passo 1:** Conjugado de $(\\sqrt{3} + 1)$ é $(\\sqrt{3} - 1)$.
 
-**Passo 2:** Multiplique numerador e denominador pelo conjugado:
+**Passo 2:** Multiplique numerador e denominador:
 
 $$
 \\frac{4}{\\sqrt{3}+1} \\cdot \\frac{\\sqrt{3}-1}{\\sqrt{3}-1} = \\frac{4(\\sqrt{3}-1)}{(\\sqrt{3})^2 - 1^2} = \\frac{4(\\sqrt{3}-1)}{3-1} = \\frac{4(\\sqrt{3}-1)}{2}
@@ -935,9 +1440,7 @@ $$
 
 **Passo 3:** Simplifique:
 
-$$
-\\frac{4(\\sqrt{3}-1)}{2} = 2(\\sqrt{3}-1) = 2\\sqrt{3} - 2
-$$
+$$= 2(\\sqrt{3}-1) = 2\\sqrt{3} - 2$$
 
 **Resposta:** $2\\sqrt{3} - 2$.
 `.trim(),
@@ -945,7 +1448,6 @@ $$
           ],
 
           exercicios: [
-            // ── 1) Soma de semelhantes ────────────────────────────────────────
             {
               id: "rad-op-q1",
               enunciado: "Calcule $\\sqrt{3} + \\sqrt{12}$.",
@@ -957,10 +1459,8 @@ $$
                 { letra: "E", texto: "$\\sqrt{15} + 1$" },
               ],
               gabarito: "C",
-              explicacao: "Simplifique primeiro: $\\sqrt{12} = \\sqrt{4 \\cdot 3} = 2\\sqrt{3}$. Agora some: $\\sqrt{3} + 2\\sqrt{3} = 3\\sqrt{3}$. O erro clássico é somar os radicandos: $\\sqrt{3+12} = \\sqrt{15}$ — isso é errado.",
+              explicacao: "Simplifique primeiro: $\\sqrt{12} = 2\\sqrt{3}$. Somando: $\\sqrt{3} + 2\\sqrt{3} = 3\\sqrt{3}$. Erro clássico: somar os radicandos ($\\sqrt{15}$) — isso é errado.",
             },
-
-            // ── 2) Subtração com simplificação ────────────────────────────────
             {
               id: "rad-op-q2",
               enunciado: "Calcule $\\sqrt{8} - \\sqrt{2}$.",
@@ -974,8 +1474,6 @@ $$
               gabarito: "B",
               explicacao: "$\\sqrt{8} = 2\\sqrt{2}$, então $2\\sqrt{2} - \\sqrt{2} = (2-1)\\sqrt{2} = \\sqrt{2}$.",
             },
-
-            // ── 3) Multiplicação (mesmo índice) ───────────────────────────────
             {
               id: "rad-op-q3",
               enunciado: "Qual o valor de $\\sqrt{3} \\cdot \\sqrt{27}$?",
@@ -983,14 +1481,12 @@ $$
                 { letra: "A", texto: "$3$" },
                 { letra: "B", texto: "$9$" },
                 { letra: "C", texto: "$3\\sqrt{3}$" },
-                { letra: "D", texto: "$\\sqrt{81}$" },
+                { letra: "D", texto: "$27$" },
                 { letra: "E", texto: "$81$" },
               ],
               gabarito: "B",
-              explicacao: "$\\sqrt{3} \\cdot \\sqrt{27} = \\sqrt{3 \\cdot 27} = \\sqrt{81} = 9$. A alternativa D está matematicamente correta também, mas A e B são formas mais simples — e B é o valor numérico reduzido.",
+              explicacao: "$\\sqrt{3} \\cdot \\sqrt{27} = \\sqrt{3 \\cdot 27} = \\sqrt{81} = 9$.",
             },
-
-            // ── 4) Divisão de radicais ────────────────────────────────────────
             {
               id: "rad-op-q4",
               enunciado: "Simplifique $\\dfrac{\\sqrt{18}}{\\sqrt{2}}$.",
@@ -1002,10 +1498,8 @@ $$
                 { letra: "E", texto: "$\\sqrt{16}$" },
               ],
               gabarito: "C",
-              explicacao: "$\\dfrac{\\sqrt{18}}{\\sqrt{2}} = \\sqrt{\\dfrac{18}{2}} = \\sqrt{9} = 3$. Ou: $\\sqrt{18} = 3\\sqrt{2}$, logo $\\dfrac{3\\sqrt{2}}{\\sqrt{2}} = 3$.",
+              explicacao: "$\\dfrac{\\sqrt{18}}{\\sqrt{2}} = \\sqrt{\\dfrac{18}{2}} = \\sqrt{9} = 3$.",
             },
-
-            // ── 5) Racionalização monômia ─────────────────────────────────────
             {
               id: "rad-op-q5",
               enunciado: "Racionalize o denominador de $\\dfrac{2}{\\sqrt{5}}$.",
@@ -1017,10 +1511,8 @@ $$
                 { letra: "E", texto: "$2\\sqrt{5}$" },
               ],
               gabarito: "C",
-              explicacao: "Multiplique por $\\dfrac{\\sqrt{5}}{\\sqrt{5}}$: $\\dfrac{2}{\\sqrt{5}} \\cdot \\dfrac{\\sqrt{5}}{\\sqrt{5}} = \\dfrac{2\\sqrt{5}}{5}$. O denominador vira $\\sqrt{5} \\cdot \\sqrt{5} = 5$.",
+              explicacao: "$\\dfrac{2}{\\sqrt{5}} \\cdot \\dfrac{\\sqrt{5}}{\\sqrt{5}} = \\dfrac{2\\sqrt{5}}{5}$.",
             },
-
-            // ── 6) Soma de três radicais ──────────────────────────────────────
             {
               id: "rad-op-q6",
               enunciado: "Calcule $2\\sqrt{3} + 3\\sqrt{3} - \\sqrt{3}$.",
@@ -1032,10 +1524,8 @@ $$
                 { letra: "E", texto: "$4\\sqrt{6}$" },
               ],
               gabarito: "A",
-              explicacao: "São radicais semelhantes (mesmo $\\sqrt{3}$), então operamos os coeficientes: $(2 + 3 - 1)\\sqrt{3} = 4\\sqrt{3}$.",
+              explicacao: "Radicais semelhantes: $(2 + 3 - 1)\\sqrt{3} = 4\\sqrt{3}$.",
             },
-
-            // ── 7) Multiplicação com coeficiente ──────────────────────────────
             {
               id: "rad-op-q7",
               enunciado: "Qual o valor de $\\sqrt{2} \\cdot \\sqrt{8}$?",
@@ -1049,8 +1539,6 @@ $$
               gabarito: "B",
               explicacao: "$\\sqrt{2} \\cdot \\sqrt{8} = \\sqrt{2 \\cdot 8} = \\sqrt{16} = 4$.",
             },
-
-            // ── 8) Soma nível médio ───────────────────────────────────────────
             {
               id: "rad-op-q8",
               enunciado: "Calcule $\\sqrt{12} + \\sqrt{27} + \\sqrt{75}$.",
@@ -1062,10 +1550,8 @@ $$
                 { letra: "E", texto: "$14\\sqrt{3}$" },
               ],
               gabarito: "B",
-              explicacao: "Simplifique cada um: $\\sqrt{12}=2\\sqrt{3}$, $\\sqrt{27}=3\\sqrt{3}$, $\\sqrt{75}=5\\sqrt{3}$. Somando: $(2+3+5)\\sqrt{3}=10\\sqrt{3}$.",
+              explicacao: "$\\sqrt{12}=2\\sqrt{3}$, $\\sqrt{27}=3\\sqrt{3}$, $\\sqrt{75}=5\\sqrt{3}$. Somando: $(2+3+5)\\sqrt{3}=10\\sqrt{3}$.",
             },
-
-            // ── 9) Racionalização binômia ─────────────────────────────────────
             {
               id: "rad-op-q9",
               enunciado: "Racionalize $\\dfrac{3}{\\sqrt{7} - \\sqrt{3}}$.",
@@ -1077,13 +1563,11 @@ $$
                 { letra: "E", texto: "$\\dfrac{3(\\sqrt{7}-\\sqrt{3})}{10}$" },
               ],
               gabarito: "C",
-              explicacao: "Conjugado de $(\\sqrt{7}-\\sqrt{3})$ é $(\\sqrt{7}+\\sqrt{3})$. Multiplicando: $\\dfrac{3}{\\sqrt{7}-\\sqrt{3}} \\cdot \\dfrac{\\sqrt{7}+\\sqrt{3}}{\\sqrt{7}+\\sqrt{3}} = \\dfrac{3(\\sqrt{7}+\\sqrt{3})}{7-3} = \\dfrac{3(\\sqrt{7}+\\sqrt{3})}{4}$.",
+              explicacao: "Conjugado de $(\\sqrt{7}-\\sqrt{3})$ é $(\\sqrt{7}+\\sqrt{3})$. Denominador: $7-3=4$. Resultado: $\\dfrac{3(\\sqrt{7}+\\sqrt{3})}{4}$.",
             },
-
-            // ── 10) Problema contextualizado ──────────────────────────────────
             {
               id: "rad-op-q10",
-              enunciado: "O lado de um quadrado tem medida $\\sqrt{5} + \\sqrt{20}$ cm. Qual é o perímetro desse quadrado?",
+              enunciado: "O lado de um quadrado mede $\\sqrt{5} + \\sqrt{20}$ cm. Qual é o perímetro?",
               alternativas: [
                 { letra: "A", texto: "$4\\sqrt{5}$ cm" },
                 { letra: "B", texto: "$3\\sqrt{5}$ cm" },
@@ -1092,7 +1576,7 @@ $$
                 { letra: "E", texto: "$8\\sqrt{5}$ cm" },
               ],
               gabarito: "C",
-              explicacao: "Primeiro simplifique o lado: $\\sqrt{20} = 2\\sqrt{5}$, então o lado $= \\sqrt{5} + 2\\sqrt{5} = 3\\sqrt{5}$. O perímetro de um quadrado é $4 \\times \\text{lado} = 4 \\cdot 3\\sqrt{5} = 12\\sqrt{5}$ cm.",
+              explicacao: "Simplifique: $\\sqrt{20} = 2\\sqrt{5}$, então lado $= \\sqrt{5} + 2\\sqrt{5} = 3\\sqrt{5}$. Perímetro $= 4 \\times 3\\sqrt{5} = 12\\sqrt{5}$ cm.",
             },
           ],
         },

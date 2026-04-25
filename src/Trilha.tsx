@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { LatexRenderer } from "@/LatexRenderer";
-import { getTrilhaBySlug } from "@/trilhas";
+import { getTrilhaBySlug, TRILHAS } from "@/trilhas";
 import type { Licao, Trilha as TrilhaType } from "@/trilhas/types";
 import { trpc } from "@/lib/trpc";
 import {
@@ -74,18 +74,54 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
   const [, navigate] = useLocation();
   const trilha = areaSlug ? getTrilhaBySlug(areaSlug) : undefined;
 
-  // Área inválida
+  // Sem slug → index de todas as trilhas disponíveis
+  if (!areaSlug) {
+    return (
+      <div className="space-y-6 py-2">
+        <div className="rounded-2xl px-6 py-8" style={{ background: "linear-gradient(135deg, #263238 0%, #009688 100%)", color: "#ffffff" }}>
+          <div className="flex items-center gap-2 mb-3">
+            <BookOpen className="h-5 w-5" />
+            <span className="text-sm font-semibold opacity-80">Aprendizado estruturado</span>
+          </div>
+          <h1 className="text-2xl font-bold mb-1">Trilhas</h1>
+          <p className="text-sm opacity-80">Siga um caminho guiado, do básico ao avançado.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {TRILHAS.map((t) => {
+            const totalLicoes = t.capitulos.reduce((acc, c) => acc + c.licoes.length, 0);
+            return (
+              <button
+                key={t.slug}
+                onClick={() => navigate(`/trilha/${t.slug}`)}
+                className="text-left p-5 rounded-2xl transition-all hover:opacity-90"
+                style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}
+              >
+                <p className="font-bold text-base mb-1" style={{ color: "var(--foreground)" }}>{t.title}</p>
+                <p className="text-xs mb-3" style={{ color: "var(--muted-foreground)" }}>{t.area}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#E0F2F1", color: "#00695C" }}>
+                    {t.capitulos.length} capítulos
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#E0F2F1", color: "#00695C" }}>
+                    {totalLicoes} lições
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Slug inválido
   if (!trilha) {
     return (
       <div className="text-center py-20 space-y-3">
         <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "#009688" }} />
-        <p className="font-semibold" style={{ color: "var(--foreground)" }}>
-          Trilha não encontrada
-        </p>
-        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
-          Essa área ainda não tem uma trilha de desenvolvimento.
-        </p>
-        <button onClick={() => navigate("/")} className="btn-outline">Voltar ao início</button>
+        <p className="font-semibold" style={{ color: "var(--foreground)" }}>Trilha não encontrada</p>
+        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>Essa área ainda não tem uma trilha de desenvolvimento.</p>
+        <button onClick={() => navigate("/trilhas")} className="btn-outline">Ver todas as trilhas</button>
       </div>
     );
   }

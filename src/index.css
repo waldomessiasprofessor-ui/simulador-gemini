@@ -72,6 +72,30 @@
 
   --pr-accent-gold:   #B45309;
   --pr-accent-blue:   #1565C0;
+  --pr-accent-purple: #6B21A8;
+  --pr-accent-cyan:   #01738D;
+
+  /* ── Foregrounds extras ──────────────────────────────────────── */
+  --pr-fg-heading:    #0F1524;
+  --pr-muted-fg-3:    #94A3B8;
+  --pr-fg-on-teal:    #FFFFFF;
+  --pr-fg-on-ink:     #FFFFFF;
+  --pr-fg-on-ink-dim: rgba(255,255,255,0.82);
+  --pr-fg-on-ink-mut: rgba(255,255,255,0.62);
+
+  /* ── Semânticas extras ───────────────────────────────────────── */
+  --pr-success-fg:    #0F5B4F;
+  --pr-success-border:#A7F3D0;
+  --pr-warn-fg:       #78350F;
+  --pr-warn-soft:     #FFF8E1;
+  --pr-warn-amber:    #B45309;
+  --pr-warn-amber-bg: #FFFBEB;
+  --pr-warn-amber-bd: #FCD34D;
+  --pr-danger-2:      #DC2626;
+  --pr-danger-fg:     #7F1D1D;
+  --pr-danger-bg-2:   #FFE4E6;
+  --pr-danger-border: #FECACA;
+  --pr-info-fg:       #1E3A8A;
 
   /* ── Radii / shadows ─────────────────────────────────────────── */
   --pr-radius-sm:    0.5rem;
@@ -83,17 +107,83 @@
   --pr-shadow-sm:    0 1px 3px rgba(11,18,32,0.08), 0 1px 2px rgba(11,18,32,0.05);
   --pr-shadow:       0 4px 14px rgba(11,18,32,0.09), 0 2px 4px rgba(11,18,32,0.05);
   --pr-shadow-lg:    0 12px 36px rgba(11,18,32,0.15);
-  --pr-shadow-teal:  0 2px 10px rgba(0,150,136,0.35);
+  --pr-shadow-teal:    0 2px 10px rgba(0,150,136,0.35);
+  --pr-shadow-teal-lg: 0 6px 20px rgba(0,150,136,0.40);
+  --pr-shadow-header:  0 2px 8px rgba(38,50,56,0.35);
+  --pr-focus-ring:     0 0 0 2px #FFFFFF, 0 0 0 4px var(--pr-teal);
+  --pr-focus-ring-dark:0 0 0 2px var(--pr-ink), 0 0 0 4px var(--pr-teal);
 
   /* ── Gradientes da marca ─────────────────────────────────────── */
   --pr-grad-hero:     linear-gradient(135deg, #263238 0%, #009688 100%);
   --pr-grad-btn:      linear-gradient(135deg, #009688, #00695C);
-  --pr-grad-progress: linear-gradient(90deg, #009688, #1565C0);
+  --pr-grad-progress: linear-gradient(90deg, #009688, #6366F1);
+  --pr-grad-planner:  linear-gradient(135deg, #01738D, #015F75);
 
   /* ── Famílias tipográficas ──────────────────────────────────── */
   --pr-font-sans:    "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --pr-font-serif:   "Source Serif 4", "Source Serif Pro", Charter, Georgia, serif;
+  --pr-font-serif:   "Source Serif 4", "Source Serif Pro", Charter, "Iowan Old Style", Georgia, serif;
   --pr-font-mono:    ui-monospace, "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+  --pr-font-math:    "KaTeX_Main", "Latin Modern Math", serif;
+  --pr-font-display: var(--pr-font-serif);
+  --pr-font-reading: var(--pr-font-serif);
+  --pr-font-ui:      var(--pr-font-sans);
+  --pr-font-body:    var(--pr-font-sans);
+
+  /* ── Escala de peso ──────────────────────────────────────────── */
+  --pr-weight-regular:  500;
+  --pr-weight-medium:   600;
+  --pr-weight-semibold: 700;
+  --pr-weight-bold:     800;
+  --pr-weight-black:    900;
+
+  /* ── Escala tipográfica ──────────────────────────────────────── */
+  --pr-text-xs:        0.75rem;
+  --pr-text-sm:        0.9375rem;
+  --pr-text-base:      1rem;
+  --pr-text-body:      1.125rem;
+  --pr-text-reading:   1.1875rem;
+  --pr-text-lg-fluid:  clamp(1.375rem, 0.6vw + 1.25rem, 1.5rem);
+  --pr-text-xl-fluid:  clamp(1.5rem, 1vw + 1.25rem, 1.75rem);
+  --pr-text-2xl-fluid: clamp(1.75rem, 1.5vw + 1.25rem, 2rem);
+  --pr-text-3xl:       2.5rem;
+  --pr-text-4xl:       3.25rem;
+  --pr-text-5xl:       4.25rem;
+  --pr-text-display:   clamp(2.25rem, 4.5vw + 1rem, 3.25rem);
+  --pr-text-display-xl:clamp(2.75rem, 6vw + 1rem, 4.25rem);
+
+  /* ── Line-heights ────────────────────────────────────────────── */
+  --pr-leading-display: 1.08;
+  --pr-leading-heading: 1.18;
+  --pr-leading-body:    1.55;
+  --pr-leading-reading: 1.7;
+  --pr-leading-tight:   1.35;
+
+  /* ── Tracking ────────────────────────────────────────────────── */
+  --pr-tracking-display: -0.025em;
+  --pr-tracking-heading: -0.015em;
+  --pr-tracking-body:    -0.005em;
+  --pr-tracking-eyebrow: 0.1em;
+
+  /* ── Coluna de leitura ───────────────────────────────────────── */
+  --pr-reading-max: 65ch;
+
+  /* ── Espaçamento ─────────────────────────────────────────────── */
+  --pr-space-1:  0.25rem;
+  --pr-space-2:  0.5rem;
+  --pr-space-3:  0.75rem;
+  --pr-space-4:  1rem;
+  --pr-space-5:  1.25rem;
+  --pr-space-6:  1.5rem;
+  --pr-space-8:  2rem;
+  --pr-space-10: 2.5rem;
+  --pr-tap-min:  44px;
+
+  /* ── Motion ──────────────────────────────────────────────────── */
+  --pr-ease:      cubic-bezier(0.4, 0.2, 0.2, 1);
+  --pr-dur-fast:  0.15s;
+  --pr-dur:       0.25s;
+  --pr-dur-slow:  0.5s;
+  --pr-dur-xslow: 1.1s;
 
   /* ── Raio global (Tailwind / btn / card) ────────────────────── */
   --radius: 0.75rem;
@@ -154,9 +244,11 @@
 
   --pr-fg:           #F1F5F9;
   --pr-fg-reading:   #E2E8F0;
+  --pr-fg-heading:   #F8FAFC;
   --pr-muted-fg:     #CBD5E1;
   --pr-meta-fg:      #94A3B8;
   --pr-muted-fg-2:   #94A3B8;
+  --pr-muted-fg-3:   #64748B;
 
   --pr-teal:         #4DB6AC;
   --pr-teal-dark:    #009688;
@@ -164,21 +256,30 @@
   --pr-teal-soft:    #0D2B27;
   --pr-teal-border:  #134E4A;
 
-  --pr-success:      #4DB6AC;
-  --pr-success-bg:   #052E1A;
+  --pr-success:       #4DB6AC;
+  --pr-success-fg:    #A7F3D0;
+  --pr-success-bg:    #052E1A;
   --pr-success-border:#065F46;
 
-  --pr-danger:       #F87171;
-  --pr-danger-bg:    #2D0A0A;
-  --pr-danger-border:#7F1D1D;
+  --pr-danger:        #F87171;
+  --pr-danger-2:      #FC8181;
+  --pr-danger-fg:     #FECACA;
+  --pr-danger-bg:     #2D0A0A;
+  --pr-danger-bg-2:   #3B0A0A;
+  --pr-danger-border: #7F1D1D;
 
-  --pr-warn:         #FBBF24;
-  --pr-warn-bg:      #2D1A05;
-  --pr-warn-border:  #78350F;
+  --pr-warn:          #FBBF24;
+  --pr-warn-fg:       #FDE68A;
+  --pr-warn-soft:     #2D1A05;
+  --pr-warn-bg:       #2D1A05;
+  --pr-warn-border:   #78350F;
 
-  --pr-info:         #60A5FA;
-  --pr-info-bg:      #0C1F3D;
-  --pr-info-border:  #1E3A8A;
+  --pr-info:          #60A5FA;
+  --pr-info-fg:       #BFDBFE;
+  --pr-info-bg:       #172554;
+  --pr-info-border:   #1E40AF;
+
+  --pr-focus-ring:    0 0 0 2px var(--pr-bg), 0 0 0 4px var(--pr-teal);
 
   --pr-accent-gold:  #FBBF24;
   --pr-accent-blue:  #60A5FA;
@@ -254,6 +355,29 @@ body {
   transition: background 0.15s;
 }
 .btn-outline:hover { background-color: var(--pr-teal-soft); }
+
+/* Botão "valendo" — gradiente hero, CTAs de maior intenção */
+.btn-valendo {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1.35rem; border-radius: var(--radius);
+  background: var(--pr-grad-hero); color: #fff;
+  font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: var(--pr-shadow-teal-lg);
+}
+.btn-valendo:hover { opacity: 0.92; }
+.btn-valendo:active { transform: translateY(1px); }
+.btn-valendo:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Botão ghost */
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 1rem; border-radius: var(--radius);
+  background: transparent; color: var(--pr-muted-fg);
+  font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-ghost:hover { background: var(--pr-muted); }
 
 /* ── Card ───────────────────────────────────────────────────────────── */
 .card {
@@ -391,4 +515,131 @@ body {
 
 @media (prefers-color-scheme: dark) {
   :root { --logo-filter: brightness(0) invert(1); }
+}
+
+/* =====================================================================
+   VETOR DESIGN SYSTEM — Utility classes (Fase 1)
+   Opt-in: só afetam quem usar a classe. Não quebram nada existente.
+   ===================================================================== */
+
+/* ── Tipografia display (herói, resultado grande) ─────────────────── */
+.pr-display {
+  font-family: var(--pr-font-serif);
+  font-size: var(--pr-text-display);
+  font-weight: var(--pr-weight-black);
+  letter-spacing: var(--pr-tracking-display);
+  line-height: var(--pr-leading-display);
+  color: var(--pr-fg-heading);
+  text-wrap: balance;
+}
+.pr-display-xl {
+  font-family: var(--pr-font-serif);
+  font-size: var(--pr-text-display-xl);
+  font-weight: var(--pr-weight-black);
+  letter-spacing: var(--pr-tracking-display);
+  line-height: var(--pr-leading-display);
+  text-wrap: balance;
+}
+.pr-display-sans {
+  font-family: var(--pr-font-sans);
+  font-size: var(--pr-text-4xl);
+  font-weight: var(--pr-weight-black);
+  letter-spacing: -0.03em;
+  line-height: var(--pr-leading-display);
+}
+
+/* ── Headings utilitários (sans ou serif por escolha) ─────────────── */
+.pr-h1 {
+  font-family: var(--pr-font-serif);
+  font-size: var(--pr-text-3xl);
+  font-weight: var(--pr-weight-black);
+  letter-spacing: var(--pr-tracking-display);
+  line-height: var(--pr-leading-display);
+  color: var(--pr-fg-heading);
+}
+.pr-h2 {
+  font-family: var(--pr-font-serif);
+  font-size: var(--pr-text-2xl-fluid);
+  font-weight: var(--pr-weight-bold);
+  letter-spacing: var(--pr-tracking-display);
+  line-height: var(--pr-leading-heading);
+  color: var(--pr-fg-heading);
+}
+.pr-h3 {
+  font-family: var(--pr-font-sans);
+  font-size: var(--pr-text-xl-fluid);
+  font-weight: var(--pr-weight-bold);
+  letter-spacing: var(--pr-tracking-heading);
+  line-height: var(--pr-leading-heading);
+  color: var(--pr-fg-heading);
+}
+/* Variante editorial (serifa) para seções de leitura longa */
+.pr-h3--editorial {
+  font-family: var(--pr-font-serif);
+  font-weight: var(--pr-weight-bold);
+  font-optical-sizing: auto;
+  letter-spacing: var(--pr-tracking-display);
+}
+
+/* ── Padrão SectionHeader: eyebrow + h3 ──────────────────────────── */
+.pr-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1.25rem;
+  margin-top: 2rem;
+}
+.pr-section-header:first-child { margin-top: 0; }
+.pr-section-header .pr-eyebrow { margin: 0; }
+
+/* ── Prose: leitura longa (enunciados, artigos, trilhas) ──────────── */
+.pr-prose {
+  font-family: var(--pr-font-serif);
+  font-size: var(--pr-text-reading);
+  font-weight: 400;
+  line-height: var(--pr-leading-reading);
+  color: var(--pr-fg-reading);
+  max-width: var(--pr-reading-max);
+  font-optical-sizing: auto;
+  text-wrap: pretty;
+}
+
+/* ── Parágrafos e texto auxiliar ──────────────────────────────────── */
+.pr-lead {
+  font-family: var(--pr-font-sans);
+  font-size: var(--pr-text-body);
+  font-weight: var(--pr-weight-regular);
+  line-height: var(--pr-leading-body);
+  color: var(--pr-muted-fg);
+  text-wrap: pretty;
+  max-width: 58ch;
+}
+.pr-small {
+  font-size: var(--pr-text-sm);
+  font-weight: var(--pr-weight-regular);
+  color: var(--pr-muted-fg);
+}
+.pr-tiny {
+  font-size: var(--pr-text-xs);
+  font-weight: var(--pr-weight-medium);
+  color: var(--pr-meta-fg);
+}
+
+/* ── Eyebrow (já existia, agora usa os tokens) ────────────────────── */
+.pr-eyebrow {
+  display: inline-block;
+  font-family: var(--pr-font-sans);
+  font-weight: var(--pr-weight-semibold);
+  font-size: var(--pr-text-xs);
+  letter-spacing: var(--pr-tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--pr-teal-dark);
+}
+
+/* ── Numerais tabelados (scores, timers) ──────────────────────────── */
+.pr-stat {
+  font-family: var(--pr-font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "ss01";
+  font-weight: var(--pr-weight-black);
 }
