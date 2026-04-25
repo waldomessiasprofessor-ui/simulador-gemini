@@ -739,6 +739,7 @@ function RadarTopicos() {
 // para manter contraste em ambos os temas.
 // Hex direto — color-mix()+var() não funciona em Safari mobile.
 const DAY_COLORS: Record<number, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
+  0: { bg: "#F5F0FF", border: "#DDD6FE", text: "#6D28D9", badge: "#EDE9FE", badgeText: "#6D28D9" }, // violeta (domingo)
   1: { bg: "#EFF6FF", border: "#BFDBFE", text: "#1D4ED8", badge: "#DBEAFE", badgeText: "#1D4ED8" }, // azul
   2: { bg: "#F0FDF4", border: "#BBF7D0", text: "#15803D", badge: "#DCFCE7", badgeText: "#15803D" }, // verde
   3: { bg: "#F5F3FF", border: "#DDD6FE", text: "#7C3AED", badge: "#EDE9FE", badgeText: "#7C3AED" }, // roxo
@@ -747,7 +748,11 @@ const DAY_COLORS: Record<number, { bg: string; border: string; text: string; bad
   6: { bg: "#FFF1F2", border: "#FECDD3", text: "#B91C1C", badge: "#FFE4E6", badgeText: "#B91C1C" }, // vermelho
 };
 
-const DAYS_SHORT: Record<number, string> = { 1: "Seg", 2: "Ter", 3: "Qua", 4: "Qui", 5: "Sex", 6: "Sáb" };
+const DAYS_FULL_NAME: Record<number, string> = {
+  0: "Domingo", 1: "Segunda-feira", 2: "Terça-feira",
+  3: "Quarta-feira", 4: "Quinta-feira", 5: "Sexta-feira", 6: "Sábado",
+};
+const DAYS_SHORT: Record<number, string> = { 0: "Dom", 1: "Seg", 2: "Ter", 3: "Qua", 4: "Qui", 5: "Sex", 6: "Sáb" };
 
 function parseTopics(raw: string): string[] {
   try {
@@ -760,14 +765,15 @@ function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
   const { data: slots = [], isLoading } = trpc.agenda.getMySchedule.useQuery(undefined, { staleTime: 60_000 });
 
   const todayDow = new Date().getDay(); // 0=Dom … 6=Sáb
-  const todayIdx = todayDow >= 1 && todayDow <= 6 ? todayDow : null;
+  const todayIdx = todayDow; // 0–6, domingo incluído
 
-  const todaySlots = todayIdx ? slots.filter((s) => s.dayOfWeek === todayIdx) : [];
+  const todaySlots = slots.filter((s) => s.dayOfWeek === todayIdx);
   const hasAnySlot = slots.length > 0;
-  const colors     = todayIdx ? DAY_COLORS[todayIdx] : DAY_COLORS[1];
+  const colors     = DAY_COLORS[todayIdx] ?? DAY_COLORS[1];
 
   // Agrupa slots por dia para a visão semanal (apenas dias com sessão)
-  const byDay = [1,2,3,4,5,6].map((d) => ({
+  // Ordem: Seg→Sáb→Dom
+  const byDay = [1,2,3,4,5,6,0].map((d) => ({
     day: d,
     slots: slots.filter((s) => s.dayOfWeek === d),
   })).filter((d) => d.slots.length > 0);
@@ -807,53 +813,51 @@ function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
         <div className="p-4 space-y-4">
 
           {/* Hoje */}
-          {todayIdx && (
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: colors.text }}>
-                Hoje — {DAYS_SHORT[todayIdx]}-feira
-              </p>
-              {todaySlots.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Nenhuma sessão agendada para hoje.</p>
-              ) : (
-                <div className="space-y-2">
-                  {todaySlots.map((slot) => {
-                    const topics = parseTopics(slot.topic);
-                    return (
-                      <div key={slot.id} className="rounded-xl px-3 py-2.5 space-y-1.5"
-                        style={{ background: colors.bg, border: `1.5px solid ${colors.border}` }}>
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="h-3 w-3 flex-shrink-0" style={{ color: colors.text }} />
-                          <span className="text-xs font-bold" style={{ color: colors.text }}>
-                            {slot.startTime} – {slot.endTime}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {topics.map((t) => (
-                            <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                              style={{ background: colors.badge, color: colors.badgeText }}>
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                        {/* Botões Praticar */}
-                        <div className="flex flex-wrap gap-1 pt-0.5">
-                          {topics.map((t) => (
-                            <button key={t}
-                              onClick={() => navigate(`/questoes?topic=${encodeURIComponent(t)}`)}
-                              className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg text-white"
-                              style={{ background: colors.text }}>
-                              <Dumbbell className="h-3 w-3" />
-                              Praticar
-                            </button>
-                          ))}
-                        </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: colors.text }}>
+              Hoje — {DAYS_FULL_NAME[todayIdx]}
+            </p>
+            {todaySlots.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Nenhuma sessão agendada para hoje.</p>
+            ) : (
+              <div className="space-y-2">
+                {todaySlots.map((slot) => {
+                  const topics = parseTopics(slot.topic);
+                  return (
+                    <div key={slot.id} className="rounded-xl px-3 py-2.5 space-y-1.5"
+                      style={{ background: colors.bg, border: `1.5px solid ${colors.border}` }}>
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3 w-3 flex-shrink-0" style={{ color: colors.text }} />
+                        <span className="text-xs font-bold" style={{ color: colors.text }}>
+                          {slot.startTime} – {slot.endTime}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+                      <div className="flex flex-wrap gap-1">
+                        {topics.map((t) => (
+                          <span key={t} className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                            style={{ background: colors.badge, color: colors.badgeText }}>
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                      {/* Botões Praticar */}
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {topics.map((t) => (
+                          <button key={t}
+                            onClick={() => navigate(`/questoes?topic=${encodeURIComponent(t)}`)}
+                            className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg text-white"
+                            style={{ background: colors.text }}>
+                            <Dumbbell className="h-3 w-3" />
+                            Praticar
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* Semana resumida */}
           {byDay.length > 0 && (

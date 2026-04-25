@@ -12,6 +12,7 @@ const DAYS = [
   { value: 4, short: "Qui", full: "Quinta-feira"  },
   { value: 5, short: "Sex", full: "Sexta-feira"   },
   { value: 6, short: "Sáb", full: "Sábado"        },
+  { value: 0, short: "Dom", full: "Domingo"       },
 ];
 
 // Tokens que se adaptam ao tema: derivamos de tokens semânticos para que
@@ -24,16 +25,17 @@ const DAY_COLORS: Record<number, { bg: string; border: string; text: string; bad
   4: { bg: "#FFFBEB", border: "#FDE68A", text: "#B45309", badge: "#FEF3C7", badgeText: "#B45309" }, // âmbar
   5: { bg: "#E0F2F1", border: "#B2DFDB", text: "#00695C", badge: "#CCFBF1", badgeText: "#00695C" }, // teal
   6: { bg: "#FFF1F2", border: "#FECDD3", text: "#B91C1C", badge: "#FFE4E6", badgeText: "#B91C1C" }, // vermelho
+  0: { bg: "#F5F0FF", border: "#DDD6FE", text: "#6D28D9", badge: "#EDE9FE", badgeText: "#6D28D9" }, // violeta (domingo)
 };
 
-const ENEM_TOPICS = [
-  "Grandezas Proporcionais", "Geometria Espacial", "Funções", "Estatística",
-  "Geometria Plana", "Probabilidades", "Aritmética", "Análise Combinatória",
-  "Médias", "Trigonometria", "Noções de Lógica Matemática", "Geometria Analítica",
-  "Logarítmos", "Conjuntos Numéricos", "Progressão Aritmética", "Progressão Geométrica",
-  "Equações", "Construções Geométricas", "Inequações", "Matrizes",
-  "Potenciação", "Sistemas Lineares", "Conjuntos", "Equações polinomiais",
-  "Matemática Financeira",
+// Lista estática usada apenas como fallback enquanto topicStats carrega.
+// O seletor de conteúdos usa os tópicos ranqueados do "O que mais caiu no ENEM"
+// para evitar que o aluno escolha conteúdos com poucas questões disponíveis.
+const ENEM_TOPICS_FALLBACK = [
+  "Funções", "Geometria Plana", "Geometria Espacial", "Probabilidades",
+  "Estatística", "Trigonometria", "Análise Combinatória", "Geometria Analítica",
+  "Matemática Financeira", "Progressão Aritmética", "Progressão Geométrica",
+  "Logarítmos", "Matrizes", "Sistemas Lineares",
 ];
 
 const TIME_OPTIONS: string[] = [];
@@ -45,8 +47,7 @@ for (let h = 5; h <= 23; h++) {
 }
 
 function getTodayDow(): number {
-  const d = new Date().getDay();
-  return d >= 1 && d <= 6 ? d : 1;
+  return new Date().getDay(); // 0 = Domingo … 6 = Sábado
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -70,7 +71,12 @@ export default function Agenda() {
   const [showPicker,  setShowPicker]  = useState(false);
   const [showSugest,  setShowSugest]  = useState(false);
 
-  const filteredTopics = ENEM_TOPICS.filter((t) =>
+  // Usa os tópicos do ranking "O que mais caiu" — assim o aluno só escolhe
+  // conteúdos bem representados no banco. Fallback estático enquanto carrega.
+  const rankedTopics = topicStats.length > 0
+    ? topicStats.map((s) => s.topic)
+    : ENEM_TOPICS_FALLBACK;
+  const filteredTopics = rankedTopics.filter((t) =>
     t.toLowerCase().includes(topicSearch.toLowerCase())
   );
 
