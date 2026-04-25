@@ -356,6 +356,29 @@ body {
 }
 .btn-outline:hover { background-color: var(--pr-teal-soft); }
 
+/* Botão "valendo" — gradiente hero, CTAs de maior intenção */
+.btn-valendo {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1.35rem; border-radius: var(--radius);
+  background: var(--pr-grad-hero); color: #fff;
+  font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: var(--pr-shadow-teal-lg);
+}
+.btn-valendo:hover { opacity: 0.92; }
+.btn-valendo:active { transform: translateY(1px); }
+.btn-valendo:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Botão ghost */
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 1rem; border-radius: var(--radius);
+  background: transparent; color: var(--pr-muted-fg);
+  font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-ghost:hover { background: var(--pr-muted); }
+
 /* ── Card ───────────────────────────────────────────────────────────── */
 .card {
   background-color: var(--card);
