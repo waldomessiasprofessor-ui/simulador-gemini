@@ -218,7 +218,7 @@ function TrilhaIndex({ trilha }: { trilha: TrilhaType }) {
                         {licao.titulo}
                       </p>
                       <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--muted-foreground)" }}>
-                        {licao.resumo}
+                        <LatexRenderer inline>{licao.resumo}</LatexRenderer>
                       </p>
                       <div className="flex items-center gap-3 mt-1.5">
                         <span className="inline-flex items-center gap-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
@@ -353,7 +353,7 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
             style={{ background: "var(--pr-bg-alt)" }}>
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4" style={{ color: "#00695C" }} />
-              <h3 className="pr-eyebrow">{ex.titulo}</h3>
+              <h3 className="pr-eyebrow"><LatexRenderer inline>{ex.titulo}</LatexRenderer></h3>
             </div>
             <div className="space-y-2">
               <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
