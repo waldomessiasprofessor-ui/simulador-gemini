@@ -8,6 +8,7 @@ import {
   Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain, TrendingUp,
   CalendarDays, Sparkles
 } from "lucide-react";
+import { NextStepCard, StatNumber } from "@/components/ds";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import { getTrilhaByArea } from "@/trilhas";
 import { getTrilhaStats } from "@/trilhas/stats";
@@ -186,23 +187,28 @@ function StatsCard({ stats, navigate }: { stats: any; navigate: (to: string) => 
 
       {/* Itens */}
       <div className="space-y-2">
-        {[
-          { icon: Zap,       label: "Questões respondidas", value: String(questions) },
-          { icon: Star,      label: "Simulados completos",  value: String(stats.totalSimulations ?? 0) },
-        ].map(({ icon: Icon, label: lbl, value }) => (
-          <div key={lbl} className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
-              <Icon className="h-3.5 w-3.5" style={{ color: "#009688" }} />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{lbl}</p>
-              <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
-                {value}
-                <span className="text-xs font-normal ml-1" style={{ color: "var(--muted-foreground)" }}>{label}</span>
-              </p>
-            </div>
+        {/* Questões respondidas */}
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+            <Zap className="h-3.5 w-3.5" style={{ color: "#009688" }} />
           </div>
-        ))}
+          <StatNumber
+            value={questions}
+            label={`questões respondidas ${label}`}
+            color="#009688"
+          />
+        </div>
+        {/* Simulados completos */}
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+            <Star className="h-3.5 w-3.5" style={{ color: "#009688" }} />
+          </div>
+          <StatNumber
+            value={stats.totalSimulations ?? 0}
+            label="simulados completos"
+            color="#009688"
+          />
+        </div>
 
         {/* Taxa de acerto */}
         <div className="flex items-center gap-3 pt-1">
@@ -919,6 +925,34 @@ export default function Dashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
 
+  // NextStepCard logic: determina a ação mais relevante para o momento
+  const { data: daily } = trpc.simulations.getDailyChallenge.useQuery(
+    undefined, { staleTime: 0 }
+  );
+  const nextStep = active
+    ? {
+        stage: "Simulado em andamento",
+        title: "Continue de onde parou",
+        context: "Você tem um simulado em aberto. Retome agora e termine para ver sua pontuação TRI.",
+        primaryLabel: "Continuar simulado",
+        onPrimary: () => navigate("/simulado"),
+      }
+    : !daily?.completed
+    ? {
+        stage: "Missão diária · 3 questões",
+        title: "Desafio do dia esperando por você",
+        context: "Resolva as três questões selecionadas para hoje e mantenha sua sequência de estudos!",
+        primaryLabel: "Ir ao desafio",
+        onPrimary: () => navigate("/desafio"),
+      }
+    : {
+        stage: "Simulado completo · 45 questões",
+        title: "Pronto para testar seu nível?",
+        context: "Simule o ENEM com 45 questões de Matemática e veja sua pontuação estimada com TRI.",
+        primaryLabel: "Iniciar simulado",
+        onPrimary: () => navigate(`/simulado/${vestibularSelecionado.toLowerCase()}`),
+      };
+
   return (
     <div className="space-y-4 py-2">
 
@@ -966,6 +1000,15 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ── Próximo passo ── */}
+      <NextStepCard
+        stage={nextStep.stage}
+        title={nextStep.title}
+        context={nextStep.context}
+        primaryLabel={nextStep.primaryLabel}
+        onPrimary={nextStep.onPrimary}
+      />
+
       {/* ── Desempenho Semanal + Geral + Diário de Questões ── */}
       {stats && (
         <section className="grid gap-3 sm:grid-cols-2">
@@ -1006,14 +1049,14 @@ export default function Dashboard() {
 
       {/* ── Missão do dia ── */}
       <section className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--muted-foreground)" }}>Missão do dia</p>
+        <p className="pr-eyebrow" style={{ paddingLeft: 4 }}>Missão do dia</p>
         <DailyCard />
         <StudyCard />
       </section>
 
       {/* ── Treine agora ── */}
       <section className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: "var(--muted-foreground)" }}>Treine agora</p>
+        <p className="pr-eyebrow" style={{ paddingLeft: 4 }}>Treine agora</p>
 
         <button onClick={() => navigate("/treino")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
           style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
@@ -1075,7 +1118,7 @@ export default function Dashboard() {
 
       {/* ── Valendo! ── */}
       <section>
-        <p className="text-xs font-semibold uppercase tracking-wider px-1 mb-2" style={{ color: "var(--muted-foreground)" }}>Simulado completo</p>
+        <p className="pr-eyebrow" style={{ paddingLeft: 4, marginBottom: 8 }}>Simulado completo</p>
         <button
           onClick={() => navigate(active ? "/simulado" : `/simulado/${vestibularSelecionado.toLowerCase()}`)}
           className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
