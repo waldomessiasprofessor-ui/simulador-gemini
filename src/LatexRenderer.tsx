@@ -123,7 +123,7 @@ function splitTableChunks(text: string): Array<{ isTable: boolean; content: stri
 
 function parseLatexChunk(text: string): Segment[] {
   const segments: Segment[] = [];
-  const combined = /\[Imagem(?::\s*(https?:\/\/[^\]]+))?\]|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)|\$([^$\n]+?)\$/gi;
+  const combined = /\[Imagem(?::\s*(https?:\/\/[^\]]+))?\]|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)|(?<![A-Za-z])\$([^$\n]+?)\$/gi;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -258,7 +258,7 @@ function renderLatexInHtml(html: string): string {
     } catch { return `$$${latex}$$`; }
   });
   // $...$ inline — evita matches dentro de atributos HTML (não contém < ou >)
-  result = result.replace(/\$([^$<>\n]+?)\$/g, (_, latex) => {
+  result = result.replace(/(?<![A-Za-z])\$([^$<>\n]+?)\$/g, (_, latex) => {
     const trimmed = latex.trim();
     if (!trimmed) return `$${latex}$`;
     try {
