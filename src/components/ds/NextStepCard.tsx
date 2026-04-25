@@ -24,8 +24,8 @@ export function NextStepCard({
 }: NextStepCardProps) {
   return (
     <Card padding={22} style={{ borderLeft: "4px solid #009688" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <span className="pr-eyebrow" style={{ fontWeight: 800 }}>Próximo passo</span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <span className="pr-eyebrow" style={{ fontWeight: 800, whiteSpace: "nowrap", flexShrink: 0 }}>Próximo passo</span>
         {stage && (
           <span
             style={{
@@ -33,6 +33,7 @@ export function NextStepCard({
               fontSize: 11,
               fontWeight: 600,
               color: "var(--pr-meta-fg)",
+              textAlign: "right",
             }}
           >
             {stage}
