@@ -2834,6 +2834,7 @@ var trilhasRouter = createTRPCRouter({
 // server/tutor.router.ts
 import { z as z10 } from "zod";
 import { TRPCError as TRPCError6 } from "@trpc/server";
+import { eq as eq10, and as and7, desc as desc4, sql as sql6, inArray as inArray4 } from "drizzle-orm";
 var SYSTEM_PROMPT = `Voc\xEA \xE9 o Tutor Vetor, um assistente especializado em matem\xE1tica para o ENEM e vestibulares brasileiros (UNICAMP, FUVEST, UNESP).
 
 Regras inviol\xE1veis:
@@ -2849,7 +2850,156 @@ Regras inviol\xE1veis:
 - Se perguntado sobre algo fora de matem\xE1tica/vestibular, redirecione com leveza
 
 Tom: pr\xF3ximo, motivador, como um professor particular que acredita no aluno.`;
+async function callGroq(apiKey, systemContent, messages, maxTokens = 1024) {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: systemContent },
+        ...messages
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.65
+    })
+  });
+  if (!res.ok) {
+    throw new TRPCError6({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `Erro ao contactar o tutor (${res.status}). Tente novamente.`
+    });
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? "";
+}
+async function collectStudentData(ctx) {
+  const userId = ctx.user.id;
+  const recentSims = await ctx.db.select({
+    stage: simulations.stage,
+    score: simulations.score,
+    correctCount: simulations.correctCount,
+    totalQuestions: simulations.totalQuestions,
+    totalTimeSeconds: simulations.totalTimeSeconds,
+    completedAt: simulations.completedAt
+  }).from(simulations).where(and7(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql6`${simulations.stage} > 0`)).orderBy(desc4(simulations.completedAt)).limit(10);
+  const simRows = await ctx.db.select({
+    conteudo: questions.conteudo_principal,
+    tags: questions.tags,
+    isCorrect: simulationAnswers.isCorrect
+  }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq10(simulationAnswers.questionId, questions.id)).where(and7(
+    eq10(simulations.userId, userId),
+    sql6`${simulationAnswers.isCorrect} IS NOT NULL`
+  ));
+  const areaMap = /* @__PURE__ */ new Map();
+  for (const r of simRows) {
+    const area = resolveArea(r.conteudo, r.tags);
+    if (!area) continue;
+    const e = areaMap.get(area) ?? { total: 0, correct: 0 };
+    e.total++;
+    if (r.isCorrect) e.correct++;
+    areaMap.set(area, e);
+  }
+  const challenges = await ctx.db.select({
+    answers: dailyChallenges.answers,
+    questionIds: dailyChallenges.questionIds,
+    correctCount: dailyChallenges.correctCount,
+    completed: dailyChallenges.completed,
+    challengeDate: dailyChallenges.challengeDate
+  }).from(dailyChallenges).where(and7(eq10(dailyChallenges.userId, userId), eq10(dailyChallenges.completed, true))).orderBy(desc4(dailyChallenges.challengeDate)).limit(30);
+  if (challenges.length > 0) {
+    const allQIds = [...new Set(challenges.flatMap((c) => c.questionIds))];
+    if (allQIds.length > 0) {
+      const qDetails = await ctx.db.select({ id: questions.id, conteudo: questions.conteudo_principal, tags: questions.tags, gabarito: questions.gabarito }).from(questions).where(inArray4(questions.id, allQIds));
+      const qMap = new Map(qDetails.map((q) => [q.id, q]));
+      for (const ch of challenges) {
+        const answers = ch.answers;
+        for (const [qIdStr, selected] of Object.entries(answers)) {
+          const q = qMap.get(parseInt(qIdStr));
+          if (!q) continue;
+          const area = resolveArea(q.conteudo, q.tags);
+          if (!area) continue;
+          const hit = selected === q.gabarito;
+          const e = areaMap.get(area) ?? { total: 0, correct: 0 };
+          e.total++;
+          if (hit) e.correct++;
+          areaMap.set(area, e);
+        }
+      }
+    }
+  }
+  const allAnswered = await ctx.db.select({ isCorrect: simulationAnswers.isCorrect }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and7(eq10(simulations.userId, userId), sql6`${simulationAnswers.isCorrect} IS NOT NULL`));
+  const totalAnswered = allAnswered.length;
+  const totalCorrect = allAnswered.filter((a) => a.isCorrect).length;
+  const answered = await ctx.db.select({ answeredAt: simulationAnswers.answeredAt }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and7(eq10(simulations.userId, userId), sql6`${simulationAnswers.answeredAt} IS NOT NULL`));
+  function dayKey(d) {
+    if (!d) return "";
+    const dt = typeof d === "string" ? /* @__PURE__ */ new Date(d + "T12:00:00") : new Date(d);
+    return `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
+  }
+  const activeDays = new Set(answered.map((a) => dayKey(a.answeredAt)));
+  const now = /* @__PURE__ */ new Date();
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    if (activeDays.has(dayKey(d))) streak++;
+    else if (i > 0) break;
+  }
+  return {
+    studentName: ctx.user.name,
+    recentSims,
+    areaMap,
+    totalAnswered,
+    totalCorrect,
+    challengesCompleted: challenges.length,
+    streak
+  };
+}
+function buildDiagnosticContext(data) {
+  const {
+    studentName,
+    recentSims,
+    areaMap,
+    totalAnswered,
+    totalCorrect,
+    challengesCompleted,
+    streak
+  } = data;
+  const globalAccuracy = totalAnswered > 0 ? Math.round(totalCorrect / totalAnswered * 100) : 0;
+  const areaLines = MACRO_AREAS.map((area) => {
+    const v = areaMap.get(area);
+    if (!v || v.total === 0) return `  - ${area}: sem dados`;
+    const pct = Math.round(v.correct / v.total * 100);
+    const label = pct >= 75 ? "\u2705 bom" : pct >= 50 ? "\u26A0\uFE0F regular" : "\u274C fraco";
+    return `  - ${area}: ${pct}% de acerto (${v.correct}/${v.total} quest\xF5es) ${label}`;
+  }).join("\n");
+  const simLines = recentSims.length === 0 ? "  Nenhum simulado realizado ainda." : recentSims.slice(0, 5).map((s, i) => {
+    const pct = s.totalQuestions > 0 ? Math.round((s.correctCount ?? 0) / s.totalQuestions * 100) : 0;
+    const score = s.score ? ` (nota TRI: ${Math.round(s.score)})` : "";
+    const date = s.completedAt ? new Date(s.completedAt).toLocaleDateString("pt-BR") : "";
+    return `  ${i + 1}. Etapa ${s.stage} \u2014 ${s.correctCount ?? 0}/${s.totalQuestions} acertos (${pct}%)${score} em ${date}`;
+  }).join("\n");
+  return `DADOS DO ALUNO: ${studentName}
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
+\u{1F4CA} VIS\xC3O GERAL
+  Total de quest\xF5es respondidas: ${totalAnswered}
+  Aproveitamento geral: ${globalAccuracy}%
+  Desafios di\xE1rios conclu\xEDdos: ${challengesCompleted}
+  Sequ\xEAncia atual de dias estudando: ${streak} dia(s)
+
+\u{1F4C5} \xDALTIMOS SIMULADOS
+${simLines}
+
+\u{1F3AF} DESEMPENHO POR \xC1REA (simulados + desafios di\xE1rios)
+${areaLines}
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`;
+}
 var tutorRouter = createTRPCRouter({
+  // ── Chat livre ──────────────────────────────────────────────────────────────
   chat: protectedProcedure.input(
     z10.object({
       messages: z10.array(
@@ -2858,49 +3008,45 @@ var tutorRouter = createTRPCRouter({
           content: z10.string().max(4e3)
         })
       ).max(30),
-      // Contexto opcional: enunciado da questão que o aluno está vendo
       context: z10.string().max(3e3).optional()
     })
-  ).mutation(async ({ input }) => {
+  ).mutation(async ({ ctx, input }) => {
     const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
-      throw new TRPCError6({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Tutor n\xE3o configurado. Contate o administrador."
-      });
-    }
+    if (!apiKey) throw new TRPCError6({ code: "INTERNAL_SERVER_ERROR", message: "Tutor n\xE3o configurado. Contate o administrador." });
     const systemContent = input.context ? `${SYSTEM_PROMPT}
 
 ---
 O aluno est\xE1 olhando para a seguinte quest\xE3o:
 ${input.context}
 ---` : SYSTEM_PROMPT;
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [
-          { role: "system", content: systemContent },
-          ...input.messages
-        ],
-        max_tokens: 1024,
-        temperature: 0.65
-      })
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      throw new TRPCError6({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Erro ao contactar o tutor (${res.status}). Tente novamente.`
-      });
-    }
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content ?? "";
+    const content = await callGroq(apiKey, systemContent, input.messages);
     return { content };
+  }),
+  // ── Diagnóstico personalizado ────────────────────────────────────────────────
+  diagnose: protectedProcedure.mutation(async ({ ctx }) => {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) throw new TRPCError6({ code: "INTERNAL_SERVER_ERROR", message: "Tutor n\xE3o configurado. Contate o administrador." });
+    const data = await collectStudentData(ctx);
+    const dataContext = buildDiagnosticContext(data);
+    const systemContent = `${SYSTEM_PROMPT}
+
+Voc\xEA recebeu os dados de desempenho do aluno abaixo. Com base EXCLUSIVAMENTE nesses dados reais, elabore um diagn\xF3stico personalizado estruturado da seguinte forma:
+
+1. **Resumo geral** \u2014 2-3 frases avaliando o desempenho global (quest\xF5es respondidas, aproveitamento, regularidade de estudo)
+2. **Pontos fortes** \u2014 liste as \xE1reas com \u2265 70% de acerto e elogie o progresso
+3. **Pontos de aten\xE7\xE3o** \u2014 liste as \xE1reas com < 50% de acerto (ou sem dados) e explique por que merecem aten\xE7\xE3o no ENEM
+4. **Plano de a\xE7\xE3o pr\xE1tico** \u2014 3 recomenda\xE7\xF5es concretas e priorizadas para as pr\xF3ximas semanas
+5. **Mensagem motivacional** \u2014 1-2 frases encorajadoras personalizadas para ${data.studentName}
+
+Use emojis moderadamente para tornar o texto agrad\xE1vel. Use LaTeX para qualquer express\xE3o matem\xE1tica que mencionar.
+Se o aluno tiver poucos dados (< 20 quest\xF5es), adapte o diagn\xF3stico para incentivar o in\xEDcio dos estudos.`;
+    const content = await callGroq(
+      apiKey,
+      systemContent,
+      [{ role: "user", content: dataContext }],
+      1500
+    );
+    return { content, studentData: dataContext };
   })
 });
 
@@ -2919,7 +3065,7 @@ var appRouter = createTRPCRouter({
 });
 
 // server/index.ts
-import { eq as eq10 } from "drizzle-orm";
+import { eq as eq11 } from "drizzle-orm";
 
 // server/seed-matematica-content.ts
 var FRACOES_ARTICLE = {
@@ -3869,7 +4015,7 @@ app.get("/admin/make-admin", async (req, res) => {
   if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
   if (!email) return res.status(400).send("Forne\xE7a ?email=teu@email.com");
   try {
-    await db.update(users).set({ role: "admin" }).where(eq10(users.email, email.toLowerCase().trim()));
+    await db.update(users).set({ role: "admin" }).where(eq11(users.email, email.toLowerCase().trim()));
     res.send(`\u2705 ${email} \xE9 agora admin. Fa\xE7a logout e login novamente no site.`);
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);

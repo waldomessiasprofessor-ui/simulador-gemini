@@ -107,6 +107,16 @@ const SUGGESTIONS = [
   "Dica para probabilidade no ENEM",
 ];
 
+// ── Ícone de diagnóstico ───────────────────────────────────────────────────────
+
+function DiagnosticIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  );
+}
+
 // ── Widget principal ───────────────────────────────────────────────────────────
 
 export default function TutorChat() {
@@ -131,6 +141,31 @@ export default function TutorChat() {
     },
   });
 
+  const diagnoseMutation = trpc.tutor.diagnose.useMutation({
+    onSuccess: (data) => {
+      setMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
+      if (!open) setHasNew(true);
+    },
+    onError: (e) => {
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: `⚠️ ${e.message}`,
+      }]);
+    },
+  });
+
+  const isPending = chatMutation.isPending || diagnoseMutation.isPending;
+
+  function requestDiagnosis() {
+    if (isPending) return;
+    const userMsg: Message = {
+      role: "user",
+      content: "📊 Quero ver meu diagnóstico personalizado de desempenho.",
+    };
+    setMessages((prev) => [...prev, userMsg]);
+    diagnoseMutation.mutate();
+  }
+
   // Auto-scroll para a última mensagem
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -146,13 +181,13 @@ export default function TutorChat() {
 
   const send = useCallback((text: string) => {
     const content = text.trim();
-    if (!content || chatMutation.isPending) return;
+    if (!content || isPending) return;
     const newMsg: Message = { role: "user", content };
     const next = [...messages, newMsg];
     setMessages(next);
     setInput("");
     chatMutation.mutate({ messages: next });
-  }, [messages, chatMutation]);
+  }, [messages, chatMutation, isPending]);
 
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -242,7 +277,7 @@ export default function TutorChat() {
               <div style={{ flex: 1 }}>
                 <p style={{ color: "#fff", fontWeight: 700, fontSize: 14, margin: 0 }}>Tutor Vetor</p>
                 <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 11, margin: 0 }}>
-                  {chatMutation.isPending ? "Digitando…" : "Pronto para ajudar"}
+                  {isPending ? "Digitando…" : "Pronto para ajudar"}
                 </p>
               </div>
               {messages.length > 0 && (
@@ -276,6 +311,35 @@ export default function TutorChat() {
                   <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "0 0 20px" }}>
                     Pode me perguntar sobre qualquer conteúdo de matemática do ENEM.
                   </p>
+                  {/* Botão diagnóstico */}
+                  <button
+                    onClick={requestDiagnosis}
+                    disabled={isPending}
+                    style={{
+                      padding: "12px 14px", borderRadius: 12, fontSize: 13, fontWeight: 600,
+                      background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
+                      border: "none", color: "#fff", cursor: isPending ? "default" : "pointer",
+                      textAlign: "left", display: "flex", alignItems: "center", gap: 10,
+                      opacity: isPending ? 0.7 : 1, transition: "opacity 0.15s",
+                      boxShadow: "0 2px 8px rgba(0,150,136,0.3)",
+                      marginBottom: 4,
+                    }}>
+                    <DiagnosticIcon size={18} />
+                    <div>
+                      <div>📊 Ver meu diagnóstico personalizado</div>
+                      <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>
+                        Análise das suas notas, áreas fortes e o que estudar
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Divisor */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 0" }}>
+                    <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+                    <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>ou pergunte algo</span>
+                    <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+                  </div>
+
                   {/* Sugestões */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {SUGGESTIONS.map((s) => (
@@ -301,7 +365,7 @@ export default function TutorChat() {
               ))}
 
               {/* Indicador digitando */}
-              {chatMutation.isPending && <TypingIndicator />}
+              {isPending && <TypingIndicator />}
 
               <div ref={bottomRef} />
             </div>
@@ -331,7 +395,7 @@ export default function TutorChat() {
                   onKeyDown={handleKey}
                   placeholder="Pergunte algo… (Enter para enviar)"
                   rows={1}
-                  disabled={chatMutation.isPending}
+                  disabled={isPending}
                   style={{
                     flex: 1, border: "none", outline: "none", resize: "none",
                     background: "transparent", color: "var(--foreground)",
@@ -341,11 +405,11 @@ export default function TutorChat() {
                 />
                 <button
                   onClick={() => send(input)}
-                  disabled={!input.trim() || chatMutation.isPending}
+                  disabled={!input.trim() || isPending}
                   style={{
                     width: 34, height: 34, borderRadius: 10, border: "none", cursor: "pointer",
-                    background: input.trim() && !chatMutation.isPending ? "#009688" : "var(--muted)",
-                    color: input.trim() && !chatMutation.isPending ? "#fff" : "var(--muted-foreground)",
+                    background: input.trim() && !isPending ? "#009688" : "var(--muted)",
+                    color: input.trim() && !isPending ? "#fff" : "var(--muted-foreground)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     flexShrink: 0, transition: "background 0.15s",
                   }}>
