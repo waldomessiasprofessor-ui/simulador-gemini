@@ -729,57 +729,281 @@ function RadarTopicos() {
 
 // ─── Mini-Calendário ─────────────────────────────────────────────────────────
 
-function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
-  const today = new Date();
-  const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+const MONTH_NAMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DOW_FULL    = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+const DOW_SHORT   = ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
 
-  const { data: activity = [] } = trpc.simulations.getActivityCalendar.useQuery(undefined, { staleTime: 60_000 });
-  const { data: slots = [] } = trpc.agenda.getMySchedule.useQuery(undefined, { staleTime: 60_000 });
+const CAL_COLORS: Record<number, { bg: string; border: string; text: string; badge: string; badgeText: string }> = {
+  0: { bg: "#F5F0FF", border: "#DDD6FE", text: "#6D28D9", badge: "#EDE9FE", badgeText: "#6D28D9" },
+  1: { bg: "#EFF6FF", border: "#BFDBFE", text: "#1D4ED8", badge: "#DBEAFE", badgeText: "#1D4ED8" },
+  2: { bg: "#F0FDF4", border: "#BBF7D0", text: "#15803D", badge: "#DCFCE7", badgeText: "#15803D" },
+  3: { bg: "#F5F3FF", border: "#DDD6FE", text: "#7C3AED", badge: "#EDE9FE", badgeText: "#7C3AED" },
+  4: { bg: "#FFFBEB", border: "#FDE68A", text: "#B45309", badge: "#FEF3C7", badgeText: "#B45309" },
+  5: { bg: "#E0F2F1", border: "#B2DFDB", text: "#00695C", badge: "#CCFBF1", badgeText: "#00695C" },
+  6: { bg: "#FFF1F2", border: "#FECDD3", text: "#B91C1C", badge: "#FFE4E6", badgeText: "#B91C1C" },
+};
 
-  const year  = viewDate.getFullYear();
-  const month = viewDate.getMonth();
+function parseTops(raw: string): string[] {
+  try { const p = JSON.parse(raw); return Array.isArray(p) ? p : [raw]; } catch { return raw ? [raw] : []; }
+}
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDow    = new Date(year, month, 1).getDay(); // 0=Dom
+function calDots(act: { correct: number; wrong: number } | undefined, isSched: boolean) {
+  const dots: string[] = [];
+  if (act) {
+    const g = act.correct > 0 ? (act.correct >= 10 ? 3 : act.correct >= 5 ? 2 : 1) : 0;
+    for (let i = 0; i < g; i++) dots.push("#4CAF50");
+    if (act.wrong > 0) dots.push("#EF4444");
+  }
+  if (isSched) dots.push("#42A5F5");
+  return dots;
+}
 
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+function DayDetail({ dateStr, act, slots, navigate, onClose }: {
+  dateStr: string;
+  act: { correct: number; wrong: number } | undefined;
+  slots: any[];
+  navigate: (to: string) => void;
+  onClose: () => void;
+}) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dow  = new Date(y, m - 1, d).getDay();
+  const cols = CAL_COLORS[dow];
+  const daySlots = slots.filter((s) => s.dayOfWeek === dow);
+  const allTopics = [...new Set(daySlots.flatMap((s) => parseTops(s.topic)))];
+  const todayStr  = new Date().toISOString().slice(0, 10);
+  const isToday   = dateStr === todayStr;
 
-  // Scheduled days-of-week from agenda (Set of 0-6)
-  const scheduledDows = useMemo(() => new Set(slots.map((s) => s.dayOfWeek)), [slots]);
+  return (
+    <div style={{ borderTop: "1px solid var(--border)", padding: "14px 14px 10px" }}>
+      {/* Header do detalhe */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div>
+          <p style={{ fontWeight: 700, fontSize: 13, color: "var(--foreground)", margin: 0 }}>
+            {isToday ? "Hoje — " : ""}{DOW_FULL[dow]}, {d} de {MONTH_NAMES[m - 1]}
+          </p>
+        </div>
+        <button onClick={onClose}
+          style={{ background: "var(--muted)", border: "none", borderRadius: 8, width: 26, height: 26, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)", fontSize: 14 }}>
+          ×
+        </button>
+      </div>
 
-  // Activity map: date string → { correct, wrong }
+      {/* Atividade do dia */}
+      {act ? (
+        <div style={{ borderRadius: 10, padding: "10px 12px", marginBottom: 10, background: act.correct > 0 ? "#F0FDF4" : "#FFF1F2", border: `1px solid ${act.correct > 0 ? "#BBF7D0" : "#FECDD3"}` }}>
+          <p style={{ fontWeight: 700, fontSize: 12, color: act.correct > 0 ? "#15803D" : "#B91C1C", margin: "0 0 2px" }}>
+            {act.correct > 0 ? "✓ Estudou neste dia" : "✗ Sem acertos registrados"}
+          </p>
+          <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: 0 }}>
+            {act.correct} acerto{act.correct !== 1 ? "s" : ""} · {act.wrong} erro{act.wrong !== 1 ? "s" : ""}
+          </p>
+        </div>
+      ) : (
+        <div style={{ borderRadius: 10, padding: "10px 12px", marginBottom: 10, background: "var(--muted)", border: "1px solid var(--border)" }}>
+          <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: 0 }}>Sem atividade registrada neste dia.</p>
+        </div>
+      )}
+
+      {/* Sessões agendadas */}
+      {allTopics.length > 0 && (
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 6px" }}>
+            Programação do dia
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {daySlots.map((slot) => {
+              const topics = parseTops(slot.topic);
+              return (
+                <div key={slot.id} style={{ borderRadius: 10, padding: "8px 10px", background: cols.bg, border: `1px solid ${cols.border}` }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: cols.text, margin: "0 0 4px" }}>
+                    {slot.startTime} – {slot.endTime}
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {topics.map((t) => (
+                      <button key={t} onClick={() => navigate(`/questoes?topic=${encodeURIComponent(t)}`)}
+                        style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: cols.badge, color: cols.badgeText, border: "none", cursor: "pointer" }}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Botão Praticar hoje */}
+      {isToday && allTopics.length > 0 && (
+        <button onClick={() => navigate(`/questoes?topic=${encodeURIComponent(allTopics[0])}`)}
+          style={{ marginTop: 10, width: "100%", padding: "9px 0", borderRadius: 10, background: "#009688", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}>
+          Praticar agora →
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ExpandedAgenda({ activity, slots, navigate, onClose }: {
+  activity: { date: string; correct: number; wrong: number }[];
+  slots: any[];
+  navigate: (to: string) => void;
+  onClose: () => void;
+}) {
+  // Gera lista dos últimos 30 dias
+  const days = useMemo(() => {
+    const list: string[] = [];
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      list.push(d.toISOString().slice(0, 10));
+    }
+    return list;
+  }, []);
+
   const actMap = useMemo(() => {
     const m = new Map<string, { correct: number; wrong: number }>();
     for (const r of activity) m.set(r.date, { correct: r.correct, wrong: r.wrong });
     return m;
   }, [activity]);
 
-  const prevMonth = useCallback(() => setViewDate(new Date(year, month - 1, 1)), [year, month]);
-  const nextMonth = useCallback(() => setViewDate(new Date(year, month + 1, 1)), [year, month]);
+  const scheduledDows = useMemo(() => new Set(slots.map((s: any) => s.dayOfWeek)), [slots]);
 
-  const MONTH_NAMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  const DOW_LABELS  = ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
+  return (
+    <div style={{ background: "var(--card)", border: "1.5px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
+      {/* Header */}
+      <div style={{ background: "#1C2833", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <button onClick={onClose}
+          style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: "5px 10px", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          ← Voltar
+        </button>
+        <p style={{ color: "#fff", fontWeight: 700, fontSize: 14, margin: 0 }}>Agenda de Estudos</p>
+        <button onClick={() => navigate("/agenda")}
+          style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 8, padding: "5px 10px", color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+          Editar →
+        </button>
+      </div>
 
-  // Calendar cells: null for padding, number for day
+      {/* Lista de dias */}
+      <div style={{ maxHeight: 420, overflowY: "auto", overscrollBehavior: "contain" }}>
+        {days.map((dateStr) => {
+          const [y, m, d] = dateStr.split("-").map(Number);
+          const dow  = new Date(y, m - 1, d).getDay();
+          const act  = actMap.get(dateStr);
+          const isSched = scheduledDows.has(dow);
+          const dots = calDots(act, isSched);
+          const cols = CAL_COLORS[dow];
+          const daySlots = slots.filter((s: any) => s.dayOfWeek === dow);
+          const allTopics = [...new Set(daySlots.flatMap((s: any) => parseTops(s.topic)))];
+          const isToday = dateStr === new Date().toISOString().slice(0, 10);
+
+          return (
+            <div key={dateStr} style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {/* Data */}
+                <div style={{ width: 36, textAlign: "center", flexShrink: 0 }}>
+                  <p style={{ fontSize: 18, fontWeight: isToday ? 800 : 600, color: isToday ? "#009688" : "var(--foreground)", margin: 0, lineHeight: 1 }}>{d}</p>
+                  <p style={{ fontSize: 9, fontWeight: 600, color: "var(--muted-foreground)", margin: "2px 0 0", textTransform: "uppercase" }}>{DOW_SHORT[dow]}</p>
+                </div>
+
+                {/* Dots */}
+                <div style={{ display: "flex", gap: 3, alignItems: "center", flexShrink: 0 }}>
+                  {dots.slice(0, 4).map((c, di) => (
+                    <div key={di} style={{ width: 7, height: 7, borderRadius: "50%", background: c }} />
+                  ))}
+                  {dots.length > 4 && <span style={{ fontSize: 9, color: "var(--muted-foreground)" }}>+{dots.length - 4}</span>}
+                  {dots.length === 0 && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--muted)" }} />}
+                </div>
+
+                {/* Resumo de atividade */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {act ? (
+                    <p style={{ fontSize: 11, color: act.correct > 0 ? "#15803D" : "#B91C1C", fontWeight: 600, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {act.correct}✓ {act.wrong}✗
+                      {allTopics.length > 0 ? ` · ${allTopics.slice(0, 2).join(", ")}` : ""}
+                    </p>
+                  ) : isSched ? (
+                    <p style={{ fontSize: 11, color: cols.text, fontWeight: 600, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      📅 {allTopics.slice(0, 2).join(", ") || "Sessão agendada"}
+                    </p>
+                  ) : (
+                    <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: 0 }}>Sem atividade</p>
+                  )}
+                </div>
+
+                {/* Praticar se for hoje */}
+                {isToday && allTopics.length > 0 && (
+                  <button onClick={() => navigate(`/questoes?topic=${encodeURIComponent(allTopics[0])}`)}
+                    style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, padding: "4px 8px", borderRadius: 8, background: "#009688", color: "#fff", border: "none", cursor: "pointer" }}>
+                    Praticar
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Rodapé */}
+      <div style={{ padding: "10px 14px" }}>
+        <button onClick={() => navigate("/agenda")}
+          style={{ width: "100%", padding: "10px 0", borderRadius: 12, background: "#263238", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}>
+          Gerenciar meu planner →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
+  const today = new Date();
+  const [viewDate, setViewDate]     = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selectedDate, setSelected] = useState<string | null>(null);
+  const [expanded, setExpanded]     = useState(false);
+
+  const { data: activity = [] } = trpc.simulations.getActivityCalendar.useQuery(undefined, { staleTime: 60_000 });
+  const { data: slots = [] }    = trpc.agenda.getMySchedule.useQuery(undefined, { staleTime: 60_000 });
+
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDow    = new Date(year, month, 1).getDay();
+
+  const todayStr = today.toISOString().slice(0, 10);
+
+  const scheduledDows = useMemo(() => new Set(slots.map((s) => s.dayOfWeek)), [slots]);
+  const actMap = useMemo(() => {
+    const m = new Map<string, { correct: number; wrong: number }>();
+    for (const r of activity) m.set(r.date, { correct: r.correct, wrong: r.wrong });
+    return m;
+  }, [activity]);
+
+  const prevMonth = useCallback(() => { setViewDate(new Date(year, month - 1, 1)); setSelected(null); }, [year, month]);
+  const nextMonth = useCallback(() => { setViewDate(new Date(year, month + 1, 1)); setSelected(null); }, [year, month]);
+
   const cells: (number | null)[] = [
     ...Array(firstDow).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
+
+  if (expanded) {
+    return <ExpandedAgenda activity={activity} slots={slots} navigate={navigate} onClose={() => setExpanded(false)} />;
+  }
 
   return (
     <div style={{ background: "var(--card)", border: "1.5px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
 
       {/* ── Header escuro ── */}
       <div style={{ background: "#1C2833", padding: "14px 16px 8px" }}>
-
-        {/* Navegação de mês */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
           <button onClick={prevMonth}
             style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
             ‹
           </button>
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "#fff", fontWeight: 700, fontSize: 14, margin: 0, textTransform: "capitalize" }}>
+            <p style={{ color: "#fff", fontWeight: 700, fontSize: 14, margin: 0 }}>
               {MONTH_NAMES[month]} {year}
             </p>
             {month === today.getMonth() && year === today.getFullYear() && (
@@ -791,10 +1015,8 @@ function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
             ›
           </button>
         </div>
-
-        {/* Rótulos de dia da semana */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginTop: 8 }}>
-          {DOW_LABELS.map((d) => (
+          {DOW_SHORT.map((d) => (
             <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", paddingBottom: 4 }}>
               {d}
             </div>
@@ -803,61 +1025,60 @@ function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
       </div>
 
       {/* ── Grade de dias ── */}
-      <div style={{ padding: "6px 10px 10px", background: "var(--card)" }}>
+      <div style={{ padding: "6px 10px 4px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
           {cells.map((day, i) => {
             if (!day) return <div key={i} style={{ padding: "4px 0" }} />;
 
-            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            const isToday = dateStr === todayStr;
-            const act     = actMap.get(dateStr);
-            const isSched = scheduledDows.has(new Date(year, month, day).getDay());
-
-            // Dots: verde por acertos (até 3), vermelho se erros, azul se agendado
-            const dots: string[] = [];
-            if (act) {
-              const greenCount = Math.min(3, act.correct > 0 ? (act.correct >= 10 ? 3 : act.correct >= 5 ? 2 : 1) : 0);
-              for (let g = 0; g < greenCount; g++) dots.push("#4CAF50");
-              if (act.wrong > 0) dots.push("#EF4444");
-            }
-            if (isSched) dots.push("#42A5F5");
-
-            const visible = dots.slice(0, 3);
+            const dateStr  = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const isToday  = dateStr === todayStr;
+            const isSelected = dateStr === selectedDate;
+            const act      = actMap.get(dateStr);
+            const isSched  = scheduledDows.has(new Date(year, month, day).getDay());
+            const dots     = calDots(act, isSched);
+            const visible  = dots.slice(0, 3);
             const overflow = dots.length - visible.length;
 
             return (
-              <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3px 0" }}>
-                {/* Número do dia */}
+              <button key={i} onClick={() => setSelected(isSelected ? null : dateStr)}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3px 0", background: "transparent", border: "none", cursor: "pointer", borderRadius: 8, outline: isSelected ? "2px solid #009688" : "none" }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: isToday ? "#009688" : "transparent",
-                  fontWeight: isToday ? 800 : 400,
+                  background: isToday ? "#009688" : isSelected ? "#E0F2F1" : "transparent",
+                  fontWeight: isToday || isSelected ? 700 : 400,
                   fontSize: 12,
-                  color: isToday ? "#fff" : "var(--foreground)",
+                  color: isToday ? "#fff" : isSelected ? "#009688" : "var(--foreground)",
                 }}>
                   {day}
                 </div>
-
-                {/* Dots + overflow */}
                 <div style={{ display: "flex", gap: 2, minHeight: 7, marginTop: 2, alignItems: "center" }}>
                   {visible.map((c, di) => (
-                    <div key={di} style={{ width: 5, height: 5, borderRadius: "50%", background: c, flexShrink: 0 }} />
+                    <div key={di} style={{ width: 5, height: 5, borderRadius: "50%", background: c }} />
                   ))}
                   {overflow > 0 && (
-                    <span style={{ fontSize: 8, fontWeight: 700, color: "var(--muted-foreground)", lineHeight: 1 }}>
-                      +{overflow}
-                    </span>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: "var(--muted-foreground)", lineHeight: 1 }}>+{overflow}</span>
                   )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       </div>
 
+      {/* ── Detalhe do dia selecionado ── */}
+      {selectedDate && (
+        <DayDetail
+          dateStr={selectedDate}
+          act={actMap.get(selectedDate)}
+          slots={slots}
+          navigate={navigate}
+          onClose={() => setSelected(null)}
+        />
+      )}
+
       {/* ── Botões ── */}
-      <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ padding: "8px 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => navigate("/desafio")}
             style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#263238", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}>
@@ -868,9 +1089,9 @@ function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
             <CalendarDays className="h-4 w-4" /> Agendar
           </button>
         </div>
-        <button onClick={() => navigate("/agenda")}
+        <button onClick={() => setExpanded(true)}
           style={{ width: "100%", padding: "9px 0", borderRadius: 12, background: "var(--muted)", color: "var(--muted-foreground)", fontWeight: 600, fontSize: 12, border: "1.5px solid var(--border)", cursor: "pointer" }}>
-          ⤢ Abrir calendário expandido
+          ⤢ Abrir agenda expandida
         </button>
       </div>
     </div>
