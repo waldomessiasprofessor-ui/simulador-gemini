@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -727,6 +727,156 @@ function RadarTopicos() {
   );
 }
 
+// ─── Mini-Calendário ─────────────────────────────────────────────────────────
+
+function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const { data: activity = [] } = trpc.simulations.getActivityCalendar.useQuery(undefined, { staleTime: 60_000 });
+  const { data: slots = [] } = trpc.agenda.getMySchedule.useQuery(undefined, { staleTime: 60_000 });
+
+  const year  = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDow    = new Date(year, month, 1).getDay(); // 0=Dom
+
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  // Scheduled days-of-week from agenda (Set of 0-6)
+  const scheduledDows = useMemo(() => new Set(slots.map((s) => s.dayOfWeek)), [slots]);
+
+  // Activity map: date string → { correct, wrong }
+  const actMap = useMemo(() => {
+    const m = new Map<string, { correct: number; wrong: number }>();
+    for (const r of activity) m.set(r.date, { correct: r.correct, wrong: r.wrong });
+    return m;
+  }, [activity]);
+
+  const prevMonth = useCallback(() => setViewDate(new Date(year, month - 1, 1)), [year, month]);
+  const nextMonth = useCallback(() => setViewDate(new Date(year, month + 1, 1)), [year, month]);
+
+  const MONTH_NAMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const DOW_LABELS  = ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
+
+  // Calendar cells: null for padding, number for day
+  const cells: (number | null)[] = [
+    ...Array(firstDow).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+
+  return (
+    <div style={{ background: "var(--card)", border: "1.5px solid var(--border)", borderRadius: 20, overflow: "hidden" }}>
+
+      {/* ── Header escuro ── */}
+      <div style={{ background: "#1C2833", padding: "14px 16px 8px" }}>
+
+        {/* Navegação de mês */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+          <button onClick={prevMonth}
+            style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            ‹
+          </button>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ color: "#fff", fontWeight: 700, fontSize: 14, margin: 0, textTransform: "capitalize" }}>
+              {MONTH_NAMES[month]} {year}
+            </p>
+            {month === today.getMonth() && year === today.getFullYear() && (
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 10, margin: "2px 0 0" }}>Hoje</p>
+            )}
+          </div>
+          <button onClick={nextMonth}
+            style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            ›
+          </button>
+        </div>
+
+        {/* Rótulos de dia da semana */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginTop: 8 }}>
+          {DOW_LABELS.map((d) => (
+            <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", paddingBottom: 4 }}>
+              {d}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Grade de dias ── */}
+      <div style={{ padding: "6px 10px 10px", background: "var(--card)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
+          {cells.map((day, i) => {
+            if (!day) return <div key={i} style={{ padding: "4px 0" }} />;
+
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const isToday = dateStr === todayStr;
+            const act     = actMap.get(dateStr);
+            const isSched = scheduledDows.has(new Date(year, month, day).getDay());
+
+            // Dots: verde por acertos (até 3), vermelho se erros, azul se agendado
+            const dots: string[] = [];
+            if (act) {
+              const greenCount = Math.min(3, act.correct > 0 ? (act.correct >= 10 ? 3 : act.correct >= 5 ? 2 : 1) : 0);
+              for (let g = 0; g < greenCount; g++) dots.push("#4CAF50");
+              if (act.wrong > 0) dots.push("#EF4444");
+            }
+            if (isSched) dots.push("#42A5F5");
+
+            const visible = dots.slice(0, 3);
+            const overflow = dots.length - visible.length;
+
+            return (
+              <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "3px 0" }}>
+                {/* Número do dia */}
+                <div style={{
+                  width: 28, height: 28, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: isToday ? "#009688" : "transparent",
+                  fontWeight: isToday ? 800 : 400,
+                  fontSize: 12,
+                  color: isToday ? "#fff" : "var(--foreground)",
+                }}>
+                  {day}
+                </div>
+
+                {/* Dots + overflow */}
+                <div style={{ display: "flex", gap: 2, minHeight: 7, marginTop: 2, alignItems: "center" }}>
+                  {visible.map((c, di) => (
+                    <div key={di} style={{ width: 5, height: 5, borderRadius: "50%", background: c, flexShrink: 0 }} />
+                  ))}
+                  {overflow > 0 && (
+                    <span style={{ fontSize: 8, fontWeight: 700, color: "var(--muted-foreground)", lineHeight: 1 }}>
+                      +{overflow}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Botões ── */}
+      <div style={{ padding: "0 12px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => navigate("/desafio")}
+            style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "#263238", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}>
+            + Registrar
+          </button>
+          <button onClick={() => navigate("/agenda")}
+            style={{ flex: 1, padding: "10px 0", borderRadius: 12, background: "var(--muted)", color: "var(--foreground)", fontWeight: 600, fontSize: 13, border: "1.5px solid var(--border)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <CalendarDays className="h-4 w-4" /> Agendar
+          </button>
+        </div>
+        <button onClick={() => navigate("/agenda")}
+          style={{ width: "100%", padding: "9px 0", borderRadius: 12, background: "var(--muted)", color: "var(--muted-foreground)", fontWeight: 600, fontSize: 12, border: "1.5px solid var(--border)", cursor: "pointer" }}>
+          ⤢ Abrir calendário expandido
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Card da Agenda na Dashboard ─────────────────────────────────────────────
 
 // Paletas de dia da semana — usam tokens semânticos quando disponíveis,
@@ -1026,8 +1176,8 @@ export default function Dashboard() {
       {/* ── Radares (Por Área ⇄ Performance) ── */}
       <RadarTabs />
 
-      {/* ── Agenda de estudos ── */}
-      <AgendaCard navigate={navigate} />
+      {/* ── Mini-Calendário ── */}
+      <MiniCalendarCard navigate={navigate} />
 
       {/* ── Missão cumprida ── */}
       <MissaoCumprida />

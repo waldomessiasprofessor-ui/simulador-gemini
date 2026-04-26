@@ -1585,4 +1585,68 @@ export const simulationsRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  // ---------------------------------------------------------------------------
+  // ATIVIDADE POR DIA — alimenta o mini-calendário do Dashboard
+  // Retorna até 62 dias (2 meses) de atividade agrupada por data.
+  // Dot verde  = questões certas  |  dot vermelho = questões erradas
+  // ---------------------------------------------------------------------------
+  getActivityCalendar: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 62);
+
+    // Simulados + treino livre completos
+    const simRows = await ctx.db
+      .select({
+        date: sql<string>`DATE(${simulations.completedAt})`,
+        correct: sql<number>`COALESCE(SUM(${simulations.correctCount}), 0)`,
+        total:   sql<number>`COALESCE(SUM(${simulations.totalQuestions}), 0)`,
+      })
+      .from(simulations)
+      .where(
+        and(
+          eq(simulations.userId, userId),
+          eq(simulations.status, "completed"),
+          gte(simulations.completedAt, cutoff),
+        )
+      )
+      .groupBy(sql`DATE(${simulations.completedAt})`);
+
+    // Desafios diários
+    const chalRows = await ctx.db
+      .select({
+        date:    sql<string>`${dailyChallenges.challengeDate}`,
+        correct: sql<number>`COALESCE(SUM(${dailyChallenges.correctCount}), 0)`,
+        total:   sql<number>`COALESCE(SUM(CASE WHEN ${dailyChallenges.completed} THEN 1 ELSE 0 END) * 5, 0)`,
+      })
+      .from(dailyChallenges)
+      .where(
+        and(
+          eq(dailyChallenges.userId, userId),
+          eq(dailyChallenges.completed, true),
+          gte(dailyChallenges.challengeDate, cutoff.toISOString().slice(0, 10)),
+        )
+      )
+      .groupBy(dailyChallenges.challengeDate);
+
+    // Merge por data
+    const map = new Map<string, { correct: number; wrong: number }>();
+    for (const r of simRows) {
+      const key = r.date;
+      const prev = map.get(key) ?? { correct: 0, wrong: 0 };
+      const c = Number(r.correct);
+      const t = Number(r.total);
+      map.set(key, { correct: prev.correct + c, wrong: prev.wrong + (t - c) });
+    }
+    for (const r of chalRows) {
+      const key = typeof r.date === "string" ? r.date : new Date(r.date as any).toISOString().slice(0, 10);
+      const prev = map.get(key) ?? { correct: 0, wrong: 0 };
+      const c = Number(r.correct);
+      const t = Number(r.total);
+      map.set(key, { correct: prev.correct + c, wrong: prev.wrong + Math.max(0, t - c) });
+    }
+
+    return Array.from(map.entries()).map(([date, v]) => ({ date, ...v }));
+  }),
 });

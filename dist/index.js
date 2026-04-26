@@ -718,7 +718,7 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
 
 // server/simulations.router.ts
 import { z as z2 } from "zod";
-import { eq as eq2, and as and2, desc as desc2, sql as sql2, inArray as inArray2 } from "drizzle-orm";
+import { eq as eq2, and as and2, desc as desc2, sql as sql2, inArray as inArray2, gte } from "drizzle-orm";
 import { TRPCError as TRPCError3 } from "@trpc/server";
 
 // server/tri.ts
@@ -2061,6 +2061,54 @@ var simulationsRouter = createTRPCRouter({
       )
     );
     return { success: true };
+  }),
+  // ---------------------------------------------------------------------------
+  // ATIVIDADE POR DIA — alimenta o mini-calendário do Dashboard
+  // Retorna até 62 dias (2 meses) de atividade agrupada por data.
+  // Dot verde  = questões certas  |  dot vermelho = questões erradas
+  // ---------------------------------------------------------------------------
+  getActivityCalendar: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    const cutoff = /* @__PURE__ */ new Date();
+    cutoff.setDate(cutoff.getDate() - 62);
+    const simRows = await ctx.db.select({
+      date: sql2`DATE(${simulations.completedAt})`,
+      correct: sql2`COALESCE(SUM(${simulations.correctCount}), 0)`,
+      total: sql2`COALESCE(SUM(${simulations.totalQuestions}), 0)`
+    }).from(simulations).where(
+      and2(
+        eq2(simulations.userId, userId),
+        eq2(simulations.status, "completed"),
+        gte(simulations.completedAt, cutoff)
+      )
+    ).groupBy(sql2`DATE(${simulations.completedAt})`);
+    const chalRows = await ctx.db.select({
+      date: sql2`${dailyChallenges.challengeDate}`,
+      correct: sql2`COALESCE(SUM(${dailyChallenges.correctCount}), 0)`,
+      total: sql2`COALESCE(SUM(CASE WHEN ${dailyChallenges.completed} THEN 1 ELSE 0 END) * 5, 0)`
+    }).from(dailyChallenges).where(
+      and2(
+        eq2(dailyChallenges.userId, userId),
+        eq2(dailyChallenges.completed, true),
+        gte(dailyChallenges.challengeDate, cutoff.toISOString().slice(0, 10))
+      )
+    ).groupBy(dailyChallenges.challengeDate);
+    const map = /* @__PURE__ */ new Map();
+    for (const r of simRows) {
+      const key = r.date;
+      const prev = map.get(key) ?? { correct: 0, wrong: 0 };
+      const c = Number(r.correct);
+      const t2 = Number(r.total);
+      map.set(key, { correct: prev.correct + c, wrong: prev.wrong + (t2 - c) });
+    }
+    for (const r of chalRows) {
+      const key = typeof r.date === "string" ? r.date : new Date(r.date).toISOString().slice(0, 10);
+      const prev = map.get(key) ?? { correct: 0, wrong: 0 };
+      const c = Number(r.correct);
+      const t2 = Number(r.total);
+      map.set(key, { correct: prev.correct + c, wrong: prev.wrong + Math.max(0, t2 - c) });
+    }
+    return Array.from(map.entries()).map(([date, v]) => ({ date, ...v }));
   })
 });
 
