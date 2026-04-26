@@ -11,12 +11,9 @@ import Questoes from "@/Questoes";
 import AdminQuestoes from "@/AdminQuestoes";
 import AdminUsuarios from "@/AdminUsuarios";
 import AdminFormulas from "@/AdminFormulas";
-import AdminRevise from "@/AdminRevise";
 import AdminTrilhas from "@/AdminTrilhas";
 import Flashcards from "@/Flashcards";
 import AdminFlashcards from "@/AdminFlashcards";
-import Revise from "@/Revise";
-import Revisao from "@/Revisao";
 import Treino from "@/Treino";
 import Ranking from "@/Ranking";
 import Formulas from "@/Formulas";
@@ -106,11 +103,9 @@ export default function App() {
           <Route path="/resultado/:id">
             {(params) => <Resultado id={Number(params.id)} />}
           </Route>
-          <Route path="/revise"><Revise /></Route>
-          <Route path="/revise/:id">
-            {(params) => <Revise id={Number(params.id)} />}
-          </Route>
-          <Route path="/revisao"><Revisao /></Route>
+          <Route path="/revise"><Redirect to="/" /></Route>
+          <Route path="/revise/:id"><Redirect to="/" /></Route>
+          <Route path="/revisao"><Redirect to="/" /></Route>
           <Route path="/historico"><Historico /></Route>
           <Route path="/treino"><Treino /></Route>
           <Route path="/ranking"><Ranking /></Route>
@@ -133,9 +128,7 @@ export default function App() {
           <Route path="/admin/formulas">
             {isAdmin ? <AdminFormulas /> : <Redirect to="/" />}
           </Route>
-          <Route path="/admin/revise">
-            {isAdmin ? <AdminRevise /> : <Redirect to="/" />}
-          </Route>
+          <Route path="/admin/revise"><Redirect to="/" /></Route>
           <Route path="/admin/flashcards">
             {isAdmin ? <AdminFlashcards /> : <Redirect to="/" />}
           </Route>

@@ -92,60 +92,7 @@ function DailyCard() {
   );
 }
 
-// ─── StudyCard ("Vamos estudar?") ─────────────────────────────────────────────
-function StudyCard() {
-  const [, navigate] = useLocation();
-  const { data, isLoading } = trpc.review.getDaily.useQuery(
-    undefined, { staleTime: 0, refetchOnWindowFocus: true }
-  );
 
-  if (isLoading) return (
-    <div className="rounded-2xl p-4 flex justify-center" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#1D4ED8" }} />
-    </div>
-  );
-
-  const content = data?.content;
-
-  if (!content) return (
-    <div className="rounded-2xl p-4 opacity-60" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: "#EFF6FF" }}>
-          <BookOpen className="h-5 w-5" style={{ color: "#1D4ED8" }} />
-        </div>
-        <div>
-          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Vamos estudar?</p>
-          <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>Nenhum conteúdo disponível ainda</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <button onClick={() => navigate("/revise")} className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
-      style={{ background: "#EFF6FF", border: "2px solid #1D4ED8" }}>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "#1D4ED8" }}>
-            <BookOpen className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <p className="font-bold text-sm" style={{ color: "#1D4ED8" }}>Vamos Estudar?</p>
-            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              Selecionamos um tópico para revisar e manter os conteúdos sempre em dia
-            </p>
-            <p className="text-xs mt-0.5 font-semibold" style={{ color: "#1D4ED8" }}>
-              {content.topico ?? content.titulo}
-            </p>
-          </div>
-        </div>
-        <ChevronRight className="h-5 w-5 flex-shrink-0" style={{ color: "#1D4ED8" }} />
-      </div>
-    </button>
-  );
-}
 
 // ─── Card com abas Semanal / Geral ────────────────────────────────────────────
 function StatsCard({ stats, navigate }: { stats: any; navigate: (to: string) => void }) {
@@ -1407,7 +1354,6 @@ export default function Dashboard() {
       <section className="space-y-2">
         <p className="pr-eyebrow" style={{ paddingLeft: 4 }}>Missão do dia</p>
         <DailyCard />
-        <StudyCard />
       </section>
 
       {/* ── Treine agora ── */}

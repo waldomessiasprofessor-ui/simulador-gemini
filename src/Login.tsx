@@ -22,8 +22,8 @@ type RegisterForm = z.infer<typeof registerSchema>;
 const FEATURES = [
   { icon: Target,    title: "Correção pela TRI",        desc: "Nota calculada pela Teoria de Resposta ao Item — a metodologia real do INEP." },
   { icon: Zap,       title: "Desafio diário",            desc: "3 questões todo dia para manter o ritmo. Missão diária com histórico de progresso." },
-  { icon: BookOpen,  title: "Revise",                    desc: "Texto de revisão diário com LaTeX e 3 questões de validação de leitura." },
-  { icon: Brain,     title: "Treino cronometrado",       desc: "Escolha tópico e quantidade. Tempo registrado para acompanhar sua velocidade." },
+  { icon: Brain,     title: "Tutor IA",                  desc: "Tutor personalizado com IA que analisa seu desempenho e responde dúvidas com LaTeX." },
+  { icon: BookOpen,  title: "Treino cronometrado",       desc: "Escolha tópico e quantidade. Tempo registrado para acompanhar sua velocidade." },
   { icon: Timer,     title: "Temporizador inteligente",  desc: "Cronômetro por questão com alerta visual quando o tempo ideal é excedido." },
   { icon: BarChart2, title: "Histórico de evolução",     desc: "Mapa de calor semanal e estatísticas detalhadas de desempenho." },
   { icon: Award,     title: "Ranking & Fórmulas",        desc: "Compare sua nota TRI com outros alunos e consulte todas as fórmulas." },

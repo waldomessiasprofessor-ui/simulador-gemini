@@ -98,7 +98,6 @@ const NAV_TREE: TopItem[] = [
   { kind: "link", href: "/desafio",    label: "Desafio do Dia",     icon: d(Lightning) },
   { kind: "link", href: "/agenda",     label: "Planner de Estudos", icon: d(CalendarDots) },
   { kind: "link", href: "/flashcards", label: "Flashcards",         icon: d(Brain) },
-  { kind: "link", href: "/revisao",    label: "Revisão",            icon: d(Books) },
   { kind: "link", href: "/formulas",   label: "Fórmulas",           icon: d(Flask) },
   { kind: "link", href: "/historico",  label: "Histórico",          icon: d(ClockCounterClockwise) },
   { kind: "link", href: "/ranking",    label: "Ranking",            icon: d(Trophy) },
@@ -108,7 +107,6 @@ const ADMIN_LINKS: LinkItem[] = [
   { kind: "link", href: "/admin/questoes",   label: "Admin — questões",   icon: d(Users) },
   { kind: "link", href: "/admin/usuarios",   label: "Admin — usuários",   icon: d(Users) },
   { kind: "link", href: "/admin/formulas",   label: "Admin — fórmulas",   icon: d(Flask) },
-  { kind: "link", href: "/admin/revise",     label: "Admin — revise",     icon: d(Books) },
   { kind: "link", href: "/admin/flashcards", label: "Admin — flashcards", icon: d(Brain) },
   { kind: "link", href: "/admin/trilhas",    label: "Admin — trilhas",    icon: d(YoutubeLogo) },
 ];
