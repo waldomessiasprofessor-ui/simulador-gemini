@@ -975,6 +975,7 @@ export default function AdminQuestoes() {
   const [pageGoTo, setPageGoTo] = useState("1");
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("Todas");
+  const [filterFonte, setFilterFonte] = useState("Todas");
   const [showForm, setShowForm] = useState(false);
   const [showLatexImport, setShowLatexImport] = useState(false);
   const [auditQuestionId, setAuditQuestionId] = useState<number | null>(null);
@@ -993,6 +994,7 @@ export default function AdminQuestoes() {
     page, pageSize: 20,
     conteudo: search || undefined,
     tag: filterTag !== "Todas" ? filterTag : undefined,
+    fonte: filterFonte !== "Todas" ? filterFonte : undefined,
     activeOnly: false,
     orderBy: "ano",
     orderDir: "asc",
@@ -1469,6 +1471,19 @@ export default function AdminQuestoes() {
             onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
         </div>
 
+        {/* Filtro por fonte */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {["Todas", "ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET"].map((f) => (
+            <button key={f} onClick={() => { setFilterFonte(f); setPage(1); }}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
+              style={filterFonte === f
+                ? { background: "#263238", color: "#fff" }
+                : { background: "var(--muted)", color: "var(--muted-foreground)", border: "1.5px solid var(--border)" }}>
+              {f === "Todas" ? "Todas as fontes" : f === "REPVET" ? "Rep. Vetor" : f}
+            </button>
+          ))}
+        </div>
+
         {/* Filtro por tag */}
         <div>
           <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
@@ -1491,7 +1506,8 @@ export default function AdminQuestoes() {
       {/* Contador */}
       <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
         {data?.pagination.total ?? filtered.length} questão(ões)
-        {filterTag !== "Todas" ? ` com tag "${filterTag}"` : ""}
+        {filterFonte !== "Todas" ? ` · ${filterFonte}` : ""}
+        {filterTag !== "Todas" ? ` · tag "${filterTag}"` : ""}
         {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
       </p>
 
