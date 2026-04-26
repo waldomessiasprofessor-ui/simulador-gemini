@@ -2,11 +2,16 @@ import { useState, type ReactElement } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
-  Home, BookOpen, ClipboardList, History, Dumbbell,
-  Trophy, Users, LogOut, X, FlaskConical, ChevronRight, ChevronDown,
-  User, Mail, Shield, Zap, GraduationCap, Moon, Sun, CalendarDays, Brain,
-  Star, Youtube
-} from "lucide-react";
+  House, Books, ClipboardText, ClockCounterClockwise, Barbell,
+  Trophy, Users, SignOut, X, Flask, CaretRight, CaretDown,
+  User, Envelope, ShieldCheck, Lightning, GraduationCap, Moon, Sun,
+  CalendarDots, Brain, Star, YoutubeLogo,
+} from "@phosphor-icons/react";
+
+// Pre-binds weight="duotone" so icons work as plain <Icon className="..." />
+function d(Icon: React.ElementType) {
+  return function D(props: any) { return <Icon weight="duotone" {...props} />; };
+}
 
 function useDarkMode() {
   const [dark, setDark] = useState(() =>
@@ -63,23 +68,23 @@ const NAV_TREE: TopItem[] = [
   {
     kind: "group",
     label: "Banco de Questões",
-    icon: BookOpen,
+    icon: d(Books),
     children: [
-      { kind: "link", href: "/questoes",        label: "ENEM",               icon: GraduationCap },
-      { kind: "soon", label: "Paulistas",       icon: GraduationCap },
-      { kind: "link", href: "/questoes/repvet", label: "Repositório Vetor", icon: Star },
+      { kind: "link", href: "/questoes",        label: "ENEM",              icon: d(GraduationCap) },
+      { kind: "soon", label: "Paulistas",       icon: d(GraduationCap) },
+      { kind: "link", href: "/questoes/repvet", label: "Repositório Vetor", icon: d(Star) },
     ],
   },
   {
     kind: "group",
     label: "Simulados",
-    icon: ClipboardList,
+    icon: d(ClipboardText),
     children: [
-      { kind: "link", href: "/simulado", label: "ENEM", icon: GraduationCap, badge: "Com TRI" },
+      { kind: "link", href: "/simulado", label: "ENEM", icon: d(GraduationCap), badge: "Com TRI" },
       {
         kind: "soon",
         label: "Paulistas",
-        icon: GraduationCap,
+        icon: d(GraduationCap),
         children: [
           { kind: "soon", label: "UNICAMP" },
           { kind: "soon", label: "Fuvest"  },
@@ -88,24 +93,24 @@ const NAV_TREE: TopItem[] = [
       },
     ],
   },
-  { kind: "link", href: "/trilhas",    label: "Trilhas",            icon: Youtube },
-  { kind: "link", href: "/treino",     label: "Treino Livre",       icon: Dumbbell },
-  { kind: "link", href: "/desafio",    label: "Desafio do Dia",     icon: Zap },
-  { kind: "link", href: "/agenda",     label: "Planner de Estudos", icon: CalendarDays },
-  { kind: "link", href: "/flashcards", label: "Flashcards",         icon: Brain },
-  { kind: "link", href: "/revisao",    label: "Revisão",            icon: BookOpen },
-  { kind: "link", href: "/formulas",   label: "Fórmulas",           icon: FlaskConical },
-  { kind: "link", href: "/historico",  label: "Histórico",          icon: History },
-  { kind: "link", href: "/ranking",    label: "Ranking",            icon: Trophy },
+  { kind: "link", href: "/trilhas",    label: "Trilhas",            icon: d(YoutubeLogo) },
+  { kind: "link", href: "/treino",     label: "Treino Livre",       icon: d(Barbell) },
+  { kind: "link", href: "/desafio",    label: "Desafio do Dia",     icon: d(Lightning) },
+  { kind: "link", href: "/agenda",     label: "Planner de Estudos", icon: d(CalendarDots) },
+  { kind: "link", href: "/flashcards", label: "Flashcards",         icon: d(Brain) },
+  { kind: "link", href: "/revisao",    label: "Revisão",            icon: d(Books) },
+  { kind: "link", href: "/formulas",   label: "Fórmulas",           icon: d(Flask) },
+  { kind: "link", href: "/historico",  label: "Histórico",          icon: d(ClockCounterClockwise) },
+  { kind: "link", href: "/ranking",    label: "Ranking",            icon: d(Trophy) },
 ];
 
 const ADMIN_LINKS: LinkItem[] = [
-  { kind: "link", href: "/admin/questoes",   label: "Admin — questões",   icon: Users },
-  { kind: "link", href: "/admin/usuarios",   label: "Admin — usuários",   icon: Users },
-  { kind: "link", href: "/admin/formulas",   label: "Admin — fórmulas",   icon: FlaskConical },
-  { kind: "link", href: "/admin/revise",     label: "Admin — revise",     icon: BookOpen },
-  { kind: "link", href: "/admin/flashcards", label: "Admin — flashcards", icon: Brain },
-  { kind: "link", href: "/admin/trilhas",    label: "Admin — trilhas",    icon: Youtube },
+  { kind: "link", href: "/admin/questoes",   label: "Admin — questões",   icon: d(Users) },
+  { kind: "link", href: "/admin/usuarios",   label: "Admin — usuários",   icon: d(Users) },
+  { kind: "link", href: "/admin/formulas",   label: "Admin — fórmulas",   icon: d(Flask) },
+  { kind: "link", href: "/admin/revise",     label: "Admin — revise",     icon: d(Books) },
+  { kind: "link", href: "/admin/flashcards", label: "Admin — flashcards", icon: d(Brain) },
+  { kind: "link", href: "/admin/trilhas",    label: "Admin — trilhas",    icon: d(YoutubeLogo) },
 ];
 
 // =============================================================================
@@ -184,8 +189,8 @@ function GroupMenu({ item, location, onClose, startOpen }: {
         <Icon className="h-4 w-4 flex-shrink-0" />
         <span className="flex-1 text-left">{item.label}</span>
         {open
-          ? <ChevronDown className="h-3.5 w-3.5" />
-          : <ChevronRight className="h-3.5 w-3.5" />}
+          ? <CaretDown className="h-3.5 w-3.5" />
+          : <CaretRight className="h-3.5 w-3.5" />}
       </button>
       {open && (
         <div className="ml-3 mt-1 space-y-0.5 border-l-2 pl-2" style={{ borderColor: "#B2DFDB" }}>
@@ -219,7 +224,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
         <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border)" }}>
           <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Meu perfil</p>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>
-            <X className="h-4 w-4" />
+            <X size={16} />
           </button>
         </div>
 
@@ -234,7 +239,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
             {session.role === "admin" && (
               <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full mt-1 font-semibold"
                 style={{ background: "#B45309", color: "#fff" }}>
-                <Shield className="h-3 w-3" /> Admin
+                <ShieldCheck size={12} weight="duotone" /> Admin
               </span>
             )}
           </div>
@@ -272,11 +277,11 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
 
         <div className="px-5 py-4 space-y-3 flex-1">
           <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
+            <Envelope size={16} weight="duotone" className="flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
             <p className="text-sm truncate" style={{ color: "var(--foreground)" }}>{session.email}</p>
           </div>
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
+            <User size={16} weight="duotone" className="flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
             <p className="text-sm" style={{ color: "var(--foreground)" }}>{session.role === "admin" ? "Administrador" : "Aluno"}</p>
           </div>
         </div>
@@ -285,7 +290,7 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
           <button onClick={() => logout.mutate()} disabled={logout.isPending}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold"
             style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}>
-            <LogOut className="h-4 w-4" /> Sair da conta
+            <SignOut size={16} /> Sair da conta
           </button>
         </div>
       </div>
@@ -342,12 +347,12 @@ export default function Navbar() {
             <button onClick={toggleDark} aria-label="Alternar tema"
               className="p-2 rounded-lg hover:bg-white/10 transition-colors"
               style={{ color: "rgba(255,255,255,0.85)" }}>
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {dark ? <Sun size={16} weight="duotone" /> : <Moon size={16} weight="duotone" />}
             </button>
             <Link href="/">
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-colors"
                 style={isActive("/") ? { backgroundColor: "rgba(255,255,255,0.25)", color: "#fff" } : { color: "rgba(255,255,255,0.85)" }}>
-                <Home className="h-4 w-4" />
+                <House size={16} weight="duotone" />
                 <span className="hidden sm:inline">Início</span>
               </span>
             </Link>
@@ -382,7 +387,7 @@ export default function Navbar() {
             </div>
           </div>
           <button onClick={closeSidebar} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>
-            <X className="h-4 w-4" />
+            <X size={16} />
           </button>
         </div>
 
@@ -409,7 +414,7 @@ export default function Navbar() {
                   style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   {item.label}
-                  {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+                  {active && <CaretRight className="h-3.5 w-3.5 ml-auto" />}
                 </span>
               </Link>
             );
@@ -430,7 +435,7 @@ export default function Navbar() {
                       style={active ? { background: "#E0F2F1", color: "#009688" } : { color: "var(--muted-foreground)" }}>
                       {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
                       {label}
-                      {active && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+                      {active && <CaretRight className="h-3.5 w-3.5 ml-auto" />}
                     </span>
                   </Link>
                 );
@@ -452,7 +457,7 @@ export default function Navbar() {
                 <p className="font-semibold truncate text-xs">{session.name as string}</p>
                 <p className="text-xs truncate" style={{ color: "#00695C" }}>{session.email as string}</p>
               </div>
-              <User className="h-4 w-4 ml-auto flex-shrink-0" />
+              <User size={16} weight="duotone" className="ml-auto flex-shrink-0" />
             </button>
           </div>
         )}
