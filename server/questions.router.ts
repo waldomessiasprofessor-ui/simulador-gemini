@@ -30,7 +30,7 @@ export const questionsRouter = createTRPCRouter({
   list: protectedProcedure
     .input(z.object({
       page: z.number().int().min(1).default(1),
-      pageSize: z.number().int().min(1).max(100).default(20),
+      pageSize: z.number().int().min(1).max(300).default(20),
       conteudo: z.string().optional(),
       fonte: z.string().optional(),
       tag: z.string().optional(),

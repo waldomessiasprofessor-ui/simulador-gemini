@@ -131,7 +131,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
   const { data: allData, isLoading: allLoading } = trpc.questions.list.useQuery({
     ...sharedQueryParams,
     page: 1,
-    pageSize: 500,
+    pageSize: 300,
   }, { enabled: viewMode === "individual" });
 
   const filtered = data?.questions ?? [];
