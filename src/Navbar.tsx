@@ -377,16 +377,17 @@ export default function Navbar() {
           transition: "transform 0.25s ease",
           boxShadow: sidebarOpen ? "4px 0 24px rgba(0,0,0,0.15)" : "none",
         }}>
-        <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: "1px solid var(--border)" }}>
+        <div className="flex items-center justify-between px-5 py-5"
+          style={{ background: "#263238", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
           <div className="flex items-center gap-2">
             <img src="/logo-vetor.png" alt="Prova Real" className="h-8 w-8 object-contain"
-              style={{ filter: "brightness(0) invert(1)", background: "#009688", borderRadius: 6, padding: 2 }} />
+              style={{ filter: "brightness(0) invert(1)" }} />
             <div>
-              <p className="font-black text-sm leading-none" style={{ color: "var(--foreground)" }}>VETOR</p>
-              <p className="text-xs leading-none mt-0.5" style={{ fontFamily: "var(--pr-font-serif)", fontStyle: "italic", fontWeight: 700, color: "var(--muted-foreground)" }}>Prova Real</p>
+              <p className="font-black text-sm leading-none text-white">VETOR</p>
+              <p className="text-xs leading-none mt-0.5" style={{ fontFamily: "var(--pr-font-serif)", fontStyle: "italic", fontWeight: 700, color: "rgba(255,255,255,0.72)" }}>Prova Real</p>
             </div>
           </div>
-          <button onClick={closeSidebar} className="p-1.5 rounded-lg hover:opacity-70" style={{ color: "var(--muted-foreground)" }}>
+          <button onClick={closeSidebar} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors" style={{ color: "rgba(255,255,255,0.7)" }}>
             <X size={16} />
           </button>
         </div>
