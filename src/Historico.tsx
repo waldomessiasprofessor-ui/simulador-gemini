@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import {
   CheckCircle2, XCircle, Clock, Loader2, TrendingUp,
   AlertTriangle, BookOpen, ChevronDown, ChevronUp
-} from "lucide-react";
+} from "@/icons";
 
 function formatTime(s: number | null): string {
   if (!s) return "—";

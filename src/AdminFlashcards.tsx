@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, X, Save, Loader2, Eye, EyeOff,
   Layers, ChevronRight, ChevronLeft, Brain, FileText,
-} from "lucide-react";
+} from "@/icons";
 
 // =============================================================================
 // Paleta de cores para baralhos

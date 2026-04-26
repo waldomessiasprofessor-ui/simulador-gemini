@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "./LatexRenderer";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen } from "@/icons";
 import { VideoButton } from "@/YoutubeEmbed";
 
 const DIFFICULTY_ORDER = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"];

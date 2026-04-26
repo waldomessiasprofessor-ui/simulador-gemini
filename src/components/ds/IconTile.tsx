@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/icons";
 
 export type IconTileTone = "teal" | "info" | "warn" | "purple" | "gold";
 

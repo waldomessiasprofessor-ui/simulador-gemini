@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
-import { ChevronDown, ChevronUp, Search, Loader2, BookOpen, Dumbbell, LayoutList, BookOpenCheck, ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, Loader2, BookOpen, Dumbbell, LayoutList, BookOpenCheck, ChevronLeft, ChevronRight, Eye, EyeOff } from "@/icons";
 import { VideoButton } from "@/YoutubeEmbed";
 
 const TAGS_CONTEUDO = [

@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { TRILHAS } from "@/trilhas";
-import { Loader2, Youtube, Save, Trash2, Check, AlertCircle } from "lucide-react";
+import { Loader2, Youtube, Save, Trash2, Check, AlertCircle } from "@/icons";
 
 // =============================================================================
 // Admin de trilhas — edita URL de videoaula do YouTube por lição.

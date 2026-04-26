@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
-import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock, Home } from "lucide-react";
+import { Loader2, BookOpen, ChevronRight, ChevronLeft, RotateCcw, CheckSquare, Clock, Home } from "@/icons";
 import { VideoButton } from "@/YoutubeEmbed";
 import { cn } from "@/lib/utils";
 

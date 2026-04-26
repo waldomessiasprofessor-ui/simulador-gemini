@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Loader2, X,
   BookOpen, ChevronDown, ChevronUp, FileText, ExternalLink,
-} from "lucide-react";
+} from "@/icons";
 
 type FormData = {
   titulo: string;

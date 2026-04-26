@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, ChevronDown, ChevronUp,
   Loader2, X, Save, FlaskConical, Eye, EyeOff
-} from "lucide-react";
+} from "@/icons";
 
 const SECOES_PADRAO = [
   "Álgebra", "Geometria Plana", "Geometria Analítica",

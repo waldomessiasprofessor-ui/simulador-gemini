@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Loader2, Target, TrendingUp, TrendingDown, Minus,
   Clock, CheckCircle2, ArrowLeft, Dumbbell,
-} from "lucide-react";
+} from "@/icons";
 
 type TopicStat = {
   conteudo: string;

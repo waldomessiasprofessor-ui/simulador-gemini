@@ -5,7 +5,7 @@ import { LatexRenderer } from "@/LatexRenderer";
 import {
   Loader2, BookOpen, RotateCcw, ChevronRight, Trophy,
   Brain, Layers, CheckCircle2, Clock, ArrowLeft,
-} from "lucide-react";
+} from "@/icons";
 
 // =============================================================================
 // Estilos da animação de virar card (3D flip)

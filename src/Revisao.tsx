@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, BookOpen, FileText, ChevronRight } from "lucide-react";
+import { Loader2, BookOpen, FileText, ChevronRight } from "@/icons";
 
 export default function Revisao() {
   const [, navigate] = useLocation();

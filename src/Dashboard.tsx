@@ -7,7 +7,7 @@ import {
   Loader2, Zap, Medal, BookOpen, Dumbbell,
   Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain, TrendingUp,
   CalendarDays, Sparkles
-} from "lucide-react";
+} from "@/icons";
 import { NextStepCard, StatNumber } from "@/components/ds";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import { getTrilhaByArea } from "@/trilhas";

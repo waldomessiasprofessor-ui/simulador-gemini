@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import {
   ArrowLeft, BookOpen, Sparkles, Clock, Target, ChevronRight, CheckCircle2,
   XCircle, Trophy, RotateCcw, Home, Lightbulb,
-} from "lucide-react";
+} from "@/icons";
 import { VideoButton } from "@/YoutubeEmbed";
 
 // =============================================================================

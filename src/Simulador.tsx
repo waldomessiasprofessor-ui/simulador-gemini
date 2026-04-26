@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Clock, ChevronLeft, ChevronRight, CheckSquare, Loader2, PlayCircle, Pause, RotateCcw, XCircle } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, CheckSquare, Loader2, PlayCircle, Pause, RotateCcw, XCircle } from "@/icons";
 
 function fmt(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;

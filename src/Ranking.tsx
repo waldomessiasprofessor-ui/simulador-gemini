@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { Loader2, Trophy, Medal } from "lucide-react";
+import { Loader2, Trophy, Medal } from "@/icons";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 

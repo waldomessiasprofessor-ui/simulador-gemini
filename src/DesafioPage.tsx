@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { QuestionCard, LatexRenderer } from "@/LatexRenderer";
-import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Flame, ChevronLeft, ChevronRight, BookOpen, RefreshCw } from "@/icons";
 import { VideoButton } from "@/YoutubeEmbed";
 
 type DailyQ = {

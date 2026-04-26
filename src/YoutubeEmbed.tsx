@@ -1,4 +1,4 @@
-import { PlayCircle } from "lucide-react";
+import { PlayCircle } from "@/icons";
 
 // Converte qualquer URL do YouTube para o formato embed
 export function getYouTubeEmbedUrl(url: string): string | null {

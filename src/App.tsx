@@ -24,7 +24,7 @@ import DesafioPage from "@/DesafioPage";
 import Agenda from "@/Agenda";
 import Trilha from "@/Trilha";
 import Login from "@/Login";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle } from "@/icons";
 
 // Sobe a página para o topo sempre que a rota muda (navegação SPA).
 // Sem isso, o wouter mantém o scroll da página anterior — usuário vai

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Target, Timer, BarChart2, Brain, BookOpen, Award, Zap } from "lucide-react";
+import { Loader2, Target, Timer, BarChart2, Brain, BookOpen, Award, Zap } from "@/icons";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido."),

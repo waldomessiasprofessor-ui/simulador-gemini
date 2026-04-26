@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Plus, Clock, BookOpen, ChevronDown, ChevronUp, X, Dumbbell } from "lucide-react";
+import { Loader2, Plus, Clock, BookOpen, ChevronDown, ChevronUp, X, Dumbbell } from "@/icons";
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 

@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
 import {
   Loader2, BookOpen, ChevronRight, ArrowLeft, Brain, FileText, Download, ExternalLink,
-} from "lucide-react";
+} from "@/icons";
 
 export default function Revise({ id }: { id?: number }) {
   const [, navigate] = useLocation();

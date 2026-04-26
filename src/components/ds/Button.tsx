@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/icons";
 
 export type ButtonVariant = "primary" | "valendo" | "outline" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";

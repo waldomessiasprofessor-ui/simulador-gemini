@@ -5,7 +5,7 @@ import {
   Trash2, Loader2, Search, Shield, KeyRound,
   ChevronDown, ChevronUp, X, Check, Calendar,
   PlusCircle, MinusCircle, Clock
-} from "lucide-react";
+} from "@/icons";
 
 type ActionState =
   | { type: "none" }
