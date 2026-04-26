@@ -2831,6 +2831,79 @@ var trilhasRouter = createTRPCRouter({
   })
 });
 
+// server/tutor.router.ts
+import { z as z10 } from "zod";
+import { TRPCError as TRPCError6 } from "@trpc/server";
+var SYSTEM_PROMPT = `Voc\xEA \xE9 o Tutor Vetor, um assistente especializado em matem\xE1tica para o ENEM e vestibulares brasileiros (UNICAMP, FUVEST, UNESP).
+
+Regras inviol\xE1veis:
+- Responda SEMPRE em portugu\xEAs do Brasil
+- Use LaTeX para toda express\xE3o matem\xE1tica: inline com $...$ e bloco com $$...$$
+  Exemplos: "a f\xF3rmula \xE9 $x = \\frac{-b}{2a}$" e blocos isolados com $$\\int_0^1 x^2\\,dx = \\frac{1}{3}$$
+- Seja did\xE1tico, paciente e encorajador \u2014 o aluno pode estar com dificuldade
+- Explique passo a passo; n\xE3o entregue a resposta final de imediato quando o aluno estiver tentando resolver
+- Se o aluno errar, oriente o racioc\xEDnio com perguntas guiadas antes de corrigir
+- Use exemplos concretos e analogias simples quando introduzir um conceito novo
+- Respostas objetivas: completas, mas sem enrola\xE7\xE3o
+- Foque nos conte\xFAdos do ENEM: fun\xE7\xF5es (1\xBA, 2\xBA grau, exponencial, logar\xEDtmica), geometria plana e espacial, trigonometria, probabilidade, estat\xEDstica, progress\xF5es, matem\xE1tica financeira, an\xE1lise combinat\xF3ria
+- Se perguntado sobre algo fora de matem\xE1tica/vestibular, redirecione com leveza
+
+Tom: pr\xF3ximo, motivador, como um professor particular que acredita no aluno.`;
+var tutorRouter = createTRPCRouter({
+  chat: protectedProcedure.input(
+    z10.object({
+      messages: z10.array(
+        z10.object({
+          role: z10.enum(["user", "assistant"]),
+          content: z10.string().max(4e3)
+        })
+      ).max(30),
+      // Contexto opcional: enunciado da questão que o aluno está vendo
+      context: z10.string().max(3e3).optional()
+    })
+  ).mutation(async ({ input }) => {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Tutor n\xE3o configurado. Contate o administrador."
+      });
+    }
+    const systemContent = input.context ? `${SYSTEM_PROMPT}
+
+---
+O aluno est\xE1 olhando para a seguinte quest\xE3o:
+${input.context}
+---` : SYSTEM_PROMPT;
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemContent },
+          ...input.messages
+        ],
+        max_tokens: 1024,
+        temperature: 0.65
+      })
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Erro ao contactar o tutor (${res.status}). Tente novamente.`
+      });
+    }
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content ?? "";
+    return { content };
+  })
+});
+
 // server/router.ts
 var appRouter = createTRPCRouter({
   auth: authRouter,
@@ -2841,7 +2914,8 @@ var appRouter = createTRPCRouter({
   formulas: formulasRouter,
   agenda: agendaRouter,
   flashcards: flashcardsRouter,
-  trilhas: trilhasRouter
+  trilhas: trilhasRouter,
+  tutor: tutorRouter
 });
 
 // server/index.ts

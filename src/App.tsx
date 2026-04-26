@@ -24,6 +24,7 @@ import DesafioPage from "@/DesafioPage";
 import Agenda from "@/Agenda";
 import Trilha from "@/Trilha";
 import Login from "@/Login";
+import TutorChat from "@/TutorChat";
 import { Loader2, AlertTriangle } from "@/icons";
 
 // Sobe a página para o topo sempre que a rota muda (navegação SPA).
@@ -149,6 +150,7 @@ export default function App() {
         </Switch>
       </main>
       <Footer />
+      <TutorChat />
     </div>
   );
 }
