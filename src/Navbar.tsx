@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from "react";
+import { useState, useEffect, type ReactElement } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import {
@@ -309,6 +309,22 @@ export default function Navbar() {
   const { data: session } = trpc.auth.me.useQuery();
   const [dark, toggleDark] = useDarkMode();
 
+  // Trava o scroll do body enquanto o sidebar está aberto.
+  // Elimina o rubber-band / overscroll do iOS Safari no sidebar.
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    };
+  }, [sidebarOpen]);
+
   function isActive(href: string) {
     if (href === "/") return location === "/";
     return location.startsWith(href);
@@ -393,7 +409,8 @@ export default function Navbar() {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" style={{ overscrollBehavior: "contain" }}>
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1"
+          style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}>
           {NAV_TREE.map((item, i) => {
             if (item.kind === "group") {
               return (
