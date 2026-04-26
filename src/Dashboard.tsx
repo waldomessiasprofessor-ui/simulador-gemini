@@ -13,13 +13,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarC
 import { getTrilhaByArea } from "@/trilhas";
 import { getTrilhaStats } from "@/trilhas/stats";
 
-const VESTIBULARES = [
-  { id: "ENEM",    label: "ENEM",        sub: "45 questões · TRI",        badge: "Nacional", color: "#009688", comingSoon: false },
-  { id: "FUVEST",  label: "FUVEST",      sub: "90 questões · 1ª fase",    badge: "USP",      color: "#00695C", comingSoon: true },
-  { id: "UNICAMP", label: "UNICAMP",     sub: "72 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: false },
-  { id: "UNESP",   label: "UNESP",       sub: "90 questões · 1ª fase",    badge: "Paulista", color: "#00695C", comingSoon: true },
-  { id: "REPVET",  label: "Rep. Vetor",  sub: "banco de questões Vetor",  badge: "Vetor",    color: "#1565C0", comingSoon: false },
-];
 
 // ─── DailyCard ────────────────────────────────────────────────────────────────
 function DailyCard() {
@@ -985,26 +978,11 @@ export default function Dashboard() {
           )}
         </div>
         <p style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{greeting}, {firstName}! 👋</p>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 16 }}>Escolha o vestibular e comece a treinar.</p>
-
-        {/* Vestibulares — visual apenas */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {VESTIBULARES.map(v => (
-            <div key={v.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-              <span style={{
-                padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
-                background: "rgba(255,255,255,0.15)", color: "#fff",
-                opacity: v.comingSoon ? 0.5 : 1,
-              }}>
-                {v.label}
-              </span>
-              {v.comingSoon
-                ? <span style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", fontWeight: 600, letterSpacing: "0.05em" }}>Em breve!</span>
-                : <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{v.sub}</span>
-              }
-            </div>
-          ))}
-        </div>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)" }}>
+          {totalQuestions > 0
+            ? <><span style={{ fontWeight: 700, color: "#fff" }}>{totalQuestions.toLocaleString("pt-BR")}</span> questões do ENEM e outros Vestibulares.</>
+            : "Carregando questões…"}
+        </p>
       </div>
 
       {/* ── Próximo passo ── */}
