@@ -179,6 +179,13 @@ export default function TutorChat() {
     }
   }, [open]);
 
+  // Abre pelo menu lateral (evento customizado disparado pelo Navbar)
+  useEffect(() => {
+    function handleOpenTutor() { setOpen(true); }
+    window.addEventListener("open-tutor", handleOpenTutor);
+    return () => window.removeEventListener("open-tutor", handleOpenTutor);
+  }, []);
+
   const send = useCallback((text: string) => {
     const content = text.trim();
     if (!content || isPending) return;

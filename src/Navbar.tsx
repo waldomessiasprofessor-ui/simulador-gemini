@@ -439,6 +439,24 @@ export default function Navbar() {
             );
           })}
 
+          {/* Tutor IA */}
+          <div className="pt-3 mt-1" style={{ borderTop: "1px solid var(--border)" }}>
+            <button
+              onClick={() => {
+                closeSidebar();
+                window.dispatchEvent(new CustomEvent("open-tutor"));
+              }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{ color: "var(--foreground)" }}>
+              <Brain weight="duotone" className="h-4 w-4 flex-shrink-0" style={{ color: "#009688" }} />
+              <span className="flex-1 text-left">Tutor IA</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                style={{ background: "linear-gradient(135deg,#263238,#009688)", color: "#fff" }}>
+                IA
+              </span>
+            </button>
+          </div>
+
           {/* Área admin */}
           {session?.role === "admin" && (
             <div className="pt-3 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
