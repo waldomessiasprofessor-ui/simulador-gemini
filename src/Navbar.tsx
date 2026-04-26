@@ -369,8 +369,9 @@ export default function Navbar() {
 
       {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={closeSidebar} />}
 
-      <aside className="fixed left-0 top-0 h-full z-50 w-72 flex flex-col"
+      <aside className="fixed left-0 top-0 z-50 w-72 flex flex-col overflow-hidden"
         style={{
+          height: "100dvh",          /* altura dinâmica: exclui chrome do browser mobile */
           background: "var(--card)",
           borderRight: "1px solid var(--border)",
           transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
@@ -392,7 +393,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" style={{ overscrollBehavior: "contain" }}>
           {NAV_TREE.map((item, i) => {
             if (item.kind === "group") {
               return (
