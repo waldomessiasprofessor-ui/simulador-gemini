@@ -57,62 +57,6 @@ const LEVEL_INFO = {
 
 const LETTERS = ["A", "B", "C", "D", "E"];
 
-// ─── Mascote com fala ─────────────────────────────────────────────────────────
-
-function Mascot({ speech, animate = false }: { speech: string; animate?: boolean }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-      {/* Boneco */}
-      <div style={{
-        width: 80, height: 80, borderRadius: "50%",
-        background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        boxShadow: "0 4px 20px rgba(0,150,136,0.35)",
-        animation: animate ? "mascotBounce 0.6s ease" : "none",
-        flexShrink: 0,
-      }}>
-        <svg width="44" height="44" viewBox="0 0 32 32" fill="none">
-          <circle cx="16" cy="11" r="6" fill="white" fillOpacity="0.95" />
-          <rect x="9" y="19" width="14" height="9" rx="4" fill="white" fillOpacity="0.95" />
-          <circle cx="13.5" cy="10.5" r="1" fill="#009688" />
-          <circle cx="18.5" cy="10.5" r="1" fill="#009688" />
-          <path d="M13 13.5 Q16 15.5 19 13.5" stroke="#009688" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-        </svg>
-      </div>
-      {/* Balão de fala */}
-      <div style={{
-        background: "var(--card)",
-        border: "2px solid var(--border)",
-        borderRadius: 16,
-        padding: "12px 16px",
-        maxWidth: 300,
-        textAlign: "center",
-        fontSize: 14,
-        lineHeight: 1.5,
-        color: "var(--foreground)",
-        position: "relative",
-      }}>
-        {/* Triângulo apontando para cima */}
-        <div style={{
-          position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)",
-          width: 0, height: 0,
-          borderLeft: "8px solid transparent",
-          borderRight: "8px solid transparent",
-          borderBottom: "10px solid var(--border)",
-        }} />
-        <div style={{
-          position: "absolute", top: -7, left: "50%", transform: "translateX(-50%)",
-          width: 0, height: 0,
-          borderLeft: "7px solid transparent",
-          borderRight: "7px solid transparent",
-          borderBottom: "9px solid var(--card)",
-        }} />
-        {speech}
-      </div>
-    </div>
-  );
-}
-
 // ─── Tela de boas-vindas ──────────────────────────────────────────────────────
 
 function WelcomeScreen({ name, onStart, onSkip }: { name: string; onStart: () => void; onSkip?: () => void }) {
@@ -126,11 +70,9 @@ function WelcomeScreen({ name, onStart, onSkip }: { name: string; onStart: () =>
       opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)",
       transition: "opacity 0.5s ease, transform 0.5s ease",
     }}>
-      <Mascot speech={`Olá, ${name.split(" ")[0]}! 👋 Sou o Tutor Vetor. Vou te ajudar a descobrir seu nível de matemática para personalizar seus estudos.`} animate />
-
       <div style={{ textAlign: "center" }}>
         <h1 style={{ fontSize: 24, fontWeight: 900, color: "var(--foreground)", margin: "0 0 8px" }}>
-          Diagnóstico inicial
+          Olá, {name.split(" ")[0]}! 👋 Diagnóstico inicial
         </h1>
         <p style={{ fontSize: 14, color: "var(--muted-foreground)", margin: 0, maxWidth: 300 }}>
           São <strong>20 questões</strong> de múltipla escolha com dificuldade crescente.
@@ -202,7 +144,14 @@ function ProfileForm({ onNext }: { onNext: (city: string, edu: string) => void }
       opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)",
       transition: "opacity 0.4s ease, transform 0.4s ease",
     }}>
-      <Mascot speech="Antes de começar, me conta um pouco sobre você! 😊" />
+      <div style={{ textAlign: "center", marginBottom: 4 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--foreground)", margin: "0 0 4px" }}>
+          Antes de começar… 😊
+        </h2>
+        <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: 0 }}>
+          Me conta um pouco sobre você!
+        </p>
+      </div>
 
       <div style={{ width: "100%", maxWidth: 360 }}>
         {/* Cidade */}
@@ -461,8 +410,6 @@ function ResultScreen({
     setConfetti(pieces);
   }, []);
 
-  const pct = Math.round((correct / total) * 100);
-
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
@@ -502,26 +449,6 @@ function ResultScreen({
         <h2 style={{ fontSize: 32, fontWeight: 900, margin: 0, color: info.color }}>
           {info.label}
         </h2>
-      </div>
-
-      {/* Score */}
-      <div style={{
-        display: "flex", gap: 16, width: "100%", maxWidth: 320,
-      }}>
-        <div style={{
-          flex: 1, padding: "16px", borderRadius: 16,
-          background: "var(--card)", border: "2px solid var(--border)",
-        }}>
-          <p style={{ fontSize: 28, fontWeight: 900, margin: 0, color: info.color }}>{correct}/{total}</p>
-          <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "4px 0 0" }}>questões corretas</p>
-        </div>
-        <div style={{
-          flex: 1, padding: "16px", borderRadius: 16,
-          background: "var(--card)", border: "2px solid var(--border)",
-        }}>
-          <p style={{ fontSize: 28, fontWeight: 900, margin: 0, color: info.color }}>{pct}%</p>
-          <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "4px 0 0" }}>aproveitamento</p>
-        </div>
       </div>
 
       {/* Mensagem */}
