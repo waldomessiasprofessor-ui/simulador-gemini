@@ -64,6 +64,12 @@ var users = mysqlTable("users", {
   active: boolean("active").notNull().default(true),
   // Controlo de assinatura — null = sem expiração (admin/free)
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  // Diagnóstico inicial
+  city: varchar("city", { length: 100 }),
+  educationLevel: varchar("education_level", { length: 80 }),
+  diagnosisLevel: mysqlEnum("diagnosis_level", ["iniciante", "intermediario", "avancado"]),
+  diagnosisScore: int("diagnosis_score"),
+  diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 var questions = mysqlTable(
@@ -2172,7 +2178,11 @@ var authRouter = createTRPCRouter({
       email: users.email,
       role: users.role,
       subscriptionExpiresAt: users.subscriptionExpiresAt,
-      active: users.active
+      active: users.active,
+      diagnosisLevel: users.diagnosisLevel,
+      diagnosisScore: users.diagnosisScore,
+      city: users.city,
+      educationLevel: users.educationLevel
     }).from(users).where(eq3(users.id, Number(ctx.user.id))).limit(1);
     if (!user || !user.active) return null;
     return user;
@@ -2224,7 +2234,7 @@ var authRouter = createTRPCRouter({
 
 // server/users.router.ts
 import { z as z4 } from "zod";
-import { eq as eq4 } from "drizzle-orm";
+import { eq as eq4, asc as asc2, sql as sql3 } from "drizzle-orm";
 import { TRPCError as TRPCError5 } from "@trpc/server";
 var usersRouter = createTRPCRouter({
   // Lista todos os utilizadores com status de assinatura
@@ -2293,12 +2303,69 @@ var usersRouter = createTRPCRouter({
     await ctx.db.delete(simulations).where(eq4(simulations.userId, input.id));
     await ctx.db.delete(users).where(eq4(users.id, input.id));
     return { success: true };
+  }),
+  // ── Diagnóstico inicial ─────────────────────────────────────────────────────
+  /** Retorna 20 questões ordenadas por dificuldade (param_b crescente) para o diagnóstico */
+  getDiagnosticQuestions: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db.select({
+      id: questions.id,
+      enunciado: questions.enunciado,
+      alternativas: questions.alternativas,
+      url_imagem: questions.url_imagem,
+      conteudo_principal: questions.conteudo_principal,
+      param_b: questions.param_b
+    }).from(questions).where(eq4(questions.active, true)).orderBy(asc2(questions.param_b), sql3`RAND()`).limit(100);
+    const bucketSize = Math.floor(rows.length / 5);
+    const selected = [];
+    for (let b = 0; b < 5; b++) {
+      const start = b * bucketSize;
+      const end = b === 4 ? rows.length : start + bucketSize;
+      const bucket = rows.slice(start, end);
+      const shuffled = bucket.sort(() => Math.random() - 0.5).slice(0, 4);
+      selected.push(...shuffled);
+    }
+    selected.sort((a, b) => (a.param_b ?? 0) - (b.param_b ?? 0));
+    return selected.map(({ id, enunciado, alternativas, url_imagem, conteudo_principal }) => ({
+      id,
+      enunciado,
+      alternativas,
+      url_imagem,
+      conteudo_principal
+    }));
+  }),
+  /** Valida respostas e salva resultado do diagnóstico */
+  completeDiagnosis: protectedProcedure.input(z4.object({
+    city: z4.string().min(2).max(100),
+    educationLevel: z4.string().min(2).max(80),
+    answers: z4.record(z4.string(), z4.string())
+    // { questionId: letraEscolhida }
+  })).mutation(async ({ ctx, input }) => {
+    const userId = ctx.user.id;
+    const questionIds = Object.keys(input.answers).map(Number).filter(Boolean);
+    if (questionIds.length === 0) throw new TRPCError5({ code: "BAD_REQUEST", message: "Nenhuma resposta enviada." });
+    const qRows = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito }).from(questions).where(sql3`${questions.id} IN ${questionIds}`);
+    const gabMap = new Map(qRows.map((q) => [q.id, q.gabarito]));
+    let correct = 0;
+    for (const [idStr, chosen] of Object.entries(input.answers)) {
+      if (gabMap.get(Number(idStr)) === chosen) correct++;
+    }
+    const total = questionIds.length;
+    const pct = total > 0 ? correct / total : 0;
+    const level = pct >= 0.75 ? "avancado" : pct >= 0.4 ? "intermediario" : "iniciante";
+    await ctx.db.update(users).set({
+      city: input.city,
+      educationLevel: input.educationLevel,
+      diagnosisLevel: level,
+      diagnosisScore: correct,
+      diagnosisCompletedAt: /* @__PURE__ */ new Date()
+    }).where(eq4(users.id, userId));
+    return { level, correct, total };
   })
 });
 
 // server/review.router.ts
 import { z as z5 } from "zod";
-import { eq as eq5, and as and3, desc as desc3, sql as sql3 } from "drizzle-orm";
+import { eq as eq5, and as and3, desc as desc3, sql as sql4 } from "drizzle-orm";
 var QuestaoSchema = z5.object({
   enunciado: z5.string().min(5),
   opcoes: z5.array(z5.string()).length(4),
@@ -2318,7 +2385,7 @@ var reviewRouter = createTRPCRouter({
     const offset = (input.page - 1) * input.pageSize;
     const [rows, [{ count }]] = await Promise.all([
       ctx.db.select().from(reviewContents).orderBy(desc3(reviewContents.createdAt)).limit(input.pageSize).offset(offset),
-      ctx.db.select({ count: sql3`COUNT(*)` }).from(reviewContents)
+      ctx.db.select({ count: sql4`COUNT(*)` }).from(reviewContents)
     ]);
     return { items: rows, total: Number(count), page: input.page, pageSize: input.pageSize };
   }),
@@ -2370,7 +2437,7 @@ var reviewRouter = createTRPCRouter({
     }
     const seen = await ctx.db.select({ contentId: dailyReviews.contentId }).from(dailyReviews).where(eq5(dailyReviews.userId, userId));
     const seenIds = seen.map((s) => s.contentId);
-    const allActive = await ctx.db.select().from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(sql3`RAND()`).limit(50);
+    const allActive = await ctx.db.select().from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(sql4`RAND()`).limit(50);
     const unseen = allActive.filter((c) => !seenIds.includes(c.id));
     const chosen = unseen.length > 0 ? unseen[0] : allActive[0];
     if (!chosen) return { review: null, content: null };
@@ -2441,11 +2508,11 @@ var reviewRouter = createTRPCRouter({
 
 // server/formulas.router.ts
 import { z as z6 } from "zod";
-import { eq as eq6, asc as asc2 } from "drizzle-orm";
+import { eq as eq6, asc as asc3 } from "drizzle-orm";
 var formulasRouter = createTRPCRouter({
   // Listagem para todos os alunos — agrupa por secao
   list: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db.select().from(formulas).where(eq6(formulas.active, true)).orderBy(asc2(formulas.secao), asc2(formulas.ordem), asc2(formulas.id));
+    const rows = await ctx.db.select().from(formulas).where(eq6(formulas.active, true)).orderBy(asc3(formulas.secao), asc3(formulas.ordem), asc3(formulas.id));
     const grouped = {};
     for (const f of rows) {
       if (!grouped[f.secao]) grouped[f.secao] = { cor: f.cor, formulas: [] };
@@ -2455,7 +2522,7 @@ var formulasRouter = createTRPCRouter({
   }),
   // Admin: listagem completa (incluindo inactivas)
   listAll: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(formulas).orderBy(asc2(formulas.secao), asc2(formulas.ordem));
+    return ctx.db.select().from(formulas).orderBy(asc3(formulas.secao), asc3(formulas.ordem));
   }),
   // Admin: criar fórmula
   create: adminProcedure.input(z6.object({
@@ -2492,7 +2559,7 @@ var formulasRouter = createTRPCRouter({
 });
 
 // server/agenda.router.ts
-import { eq as eq7, sql as sql4, and as and4 } from "drizzle-orm";
+import { eq as eq7, sql as sql5, and as and4 } from "drizzle-orm";
 import { z as z7 } from "zod";
 var ENEM_TOPICS = [
   { topic: "Grandezas Proporcionais", weight: 0.25 },
@@ -2564,8 +2631,8 @@ var agendaRouter = createTRPCRouter({
   getTopicStats: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db.select({
       topic: questions.conteudo_principal,
-      total: sql4`COUNT(*)`,
-      correct: sql4`SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END)`
+      total: sql5`COUNT(*)`,
+      correct: sql5`SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END)`
     }).from(simulationAnswers).innerJoin(simulations, eq7(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq7(simulationAnswers.questionId, questions.id)).where(eq7(simulations.userId, ctx.user.id)).groupBy(questions.conteudo_principal);
     const accuracy = {};
     for (const r of rows) {
@@ -2588,7 +2655,7 @@ var agendaRouter = createTRPCRouter({
 
 // server/flashcards.router.ts
 import { z as z8 } from "zod";
-import { eq as eq8, and as and5, asc as asc3, inArray as inArray3, sql as sql5 } from "drizzle-orm";
+import { eq as eq8, and as and5, asc as asc4, inArray as inArray3, sql as sql6 } from "drizzle-orm";
 function applySM2(quality, prev) {
   let { easinessFactor, interval, repetitions } = prev;
   easinessFactor = Math.max(
@@ -2611,8 +2678,8 @@ function applySM2(quality, prev) {
 var flashcardsRouter = createTRPCRouter({
   // ── Decks (admin) ─────────────────────────────────────────────────────────
   listAllDecks: adminProcedure.query(async () => {
-    const decks = await db.select().from(flashcardDecks).orderBy(asc3(flashcardDecks.createdAt));
-    const counts = await db.select({ deckId: flashcards.deckId, count: sql5`COUNT(*)` }).from(flashcards).groupBy(flashcards.deckId);
+    const decks = await db.select().from(flashcardDecks).orderBy(asc4(flashcardDecks.createdAt));
+    const counts = await db.select({ deckId: flashcards.deckId, count: sql6`COUNT(*)` }).from(flashcards).groupBy(flashcards.deckId);
     const countMap = new Map(counts.map((r) => [r.deckId, Number(r.count)]));
     return decks.map((d) => ({ ...d, cardCount: countMap.get(d.id) ?? 0 }));
   }),
@@ -2643,7 +2710,7 @@ var flashcardsRouter = createTRPCRouter({
   }),
   // ── Cards (admin) ─────────────────────────────────────────────────────────
   listCards: adminProcedure.input(z8.object({ deckId: z8.number() })).query(async ({ input }) => {
-    return db.select().from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(asc3(flashcards.orderIndex), asc3(flashcards.createdAt));
+    return db.select().from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(asc4(flashcards.orderIndex), asc4(flashcards.createdAt));
   }),
   createCard: adminProcedure.input(z8.object({
     deckId: z8.number(),
@@ -2652,7 +2719,7 @@ var flashcardsRouter = createTRPCRouter({
     frontImage: z8.string().url().nullable().optional(),
     backImage: z8.string().url().nullable().optional()
   })).mutation(async ({ input }) => {
-    const last = await db.select({ idx: flashcards.orderIndex }).from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(sql5`order_index DESC`).limit(1);
+    const last = await db.select({ idx: flashcards.orderIndex }).from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(sql6`order_index DESC`).limit(1);
     const orderIndex = last.length > 0 ? last[0].idx + 1 : 0;
     const [res] = await db.insert(flashcards).values({
       deckId: input.deckId,
@@ -2682,7 +2749,7 @@ var flashcardsRouter = createTRPCRouter({
   listDecks: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
     const now = /* @__PURE__ */ new Date();
-    const decks = await db.select().from(flashcardDecks).where(eq8(flashcardDecks.active, true)).orderBy(asc3(flashcardDecks.createdAt));
+    const decks = await db.select().from(flashcardDecks).where(eq8(flashcardDecks.active, true)).orderBy(asc4(flashcardDecks.createdAt));
     const result = await Promise.all(decks.map(async (deck) => {
       const cards = await db.select({ id: flashcards.id }).from(flashcards).where(and5(eq8(flashcards.deckId, deck.id), eq8(flashcards.active, true)));
       const totalCards = cards.length;
@@ -2706,7 +2773,7 @@ var flashcardsRouter = createTRPCRouter({
     const userId = ctx.user.id;
     const now = /* @__PURE__ */ new Date();
     const [deck] = await db.select().from(flashcardDecks).where(eq8(flashcardDecks.id, input.deckId)).limit(1);
-    const allCards = await db.select().from(flashcards).where(and5(eq8(flashcards.deckId, input.deckId), eq8(flashcards.active, true))).orderBy(asc3(flashcards.orderIndex), asc3(flashcards.createdAt));
+    const allCards = await db.select().from(flashcards).where(and5(eq8(flashcards.deckId, input.deckId), eq8(flashcards.active, true))).orderBy(asc4(flashcards.orderIndex), asc4(flashcards.createdAt));
     if (allCards.length === 0) {
       return { deck: deck ?? null, cards: [], totalInDeck: 0, dueCount: 0, newCount: 0 };
     }
@@ -2834,7 +2901,7 @@ var trilhasRouter = createTRPCRouter({
 // server/tutor.router.ts
 import { z as z10 } from "zod";
 import { TRPCError as TRPCError6 } from "@trpc/server";
-import { eq as eq10, and as and7, desc as desc4, sql as sql6, inArray as inArray4 } from "drizzle-orm";
+import { eq as eq10, and as and7, desc as desc4, sql as sql7, inArray as inArray4 } from "drizzle-orm";
 var SYSTEM_PROMPT = `Voc\xEA \xE9 o Tutor Vetor, um assistente especializado em matem\xE1tica para o ENEM e vestibulares brasileiros (UNICAMP, FUVEST, UNESP).
 
 Regras inviol\xE1veis:
@@ -2885,14 +2952,14 @@ async function collectStudentData(ctx) {
     totalQuestions: simulations.totalQuestions,
     totalTimeSeconds: simulations.totalTimeSeconds,
     completedAt: simulations.completedAt
-  }).from(simulations).where(and7(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql6`${simulations.stage} > 0`)).orderBy(desc4(simulations.completedAt)).limit(10);
+  }).from(simulations).where(and7(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql7`${simulations.stage} > 0`)).orderBy(desc4(simulations.completedAt)).limit(10);
   const simRows = await ctx.db.select({
     conteudo: questions.conteudo_principal,
     tags: questions.tags,
     isCorrect: simulationAnswers.isCorrect
   }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq10(simulationAnswers.questionId, questions.id)).where(and7(
     eq10(simulations.userId, userId),
-    sql6`${simulationAnswers.isCorrect} IS NOT NULL`
+    sql7`${simulationAnswers.isCorrect} IS NOT NULL`
   ));
   const areaMap = /* @__PURE__ */ new Map();
   for (const r of simRows) {
@@ -2931,10 +2998,10 @@ async function collectStudentData(ctx) {
       }
     }
   }
-  const allAnswered = await ctx.db.select({ isCorrect: simulationAnswers.isCorrect }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and7(eq10(simulations.userId, userId), sql6`${simulationAnswers.isCorrect} IS NOT NULL`));
+  const allAnswered = await ctx.db.select({ isCorrect: simulationAnswers.isCorrect }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and7(eq10(simulations.userId, userId), sql7`${simulationAnswers.isCorrect} IS NOT NULL`));
   const totalAnswered = allAnswered.length;
   const totalCorrect = allAnswered.filter((a) => a.isCorrect).length;
-  const answered = await ctx.db.select({ answeredAt: simulationAnswers.answeredAt }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and7(eq10(simulations.userId, userId), sql6`${simulationAnswers.answeredAt} IS NOT NULL`));
+  const answered = await ctx.db.select({ answeredAt: simulationAnswers.answeredAt }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and7(eq10(simulations.userId, userId), sql7`${simulationAnswers.answeredAt} IS NOT NULL`));
   function dayKey(d) {
     if (!d) return "";
     const dt = typeof d === "string" ? /* @__PURE__ */ new Date(d + "T12:00:00") : new Date(d);

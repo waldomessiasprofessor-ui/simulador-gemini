@@ -29,6 +29,10 @@ export const authRouter = createTRPCRouter({
         role: users.role,
         subscriptionExpiresAt: users.subscriptionExpiresAt,
         active: users.active,
+        diagnosisLevel: users.diagnosisLevel,
+        diagnosisScore: users.diagnosisScore,
+        city: users.city,
+        educationLevel: users.educationLevel,
       })
       .from(users)
       .where(eq(users.id, Number(ctx.user.id)))

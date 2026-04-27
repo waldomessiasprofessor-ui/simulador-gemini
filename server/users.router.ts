@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, asc, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, adminProcedure } from "./trpc";
-import { users, simulations, simulationAnswers } from "./schema";
+import { createTRPCRouter, adminProcedure, protectedProcedure } from "./trpc";
+import { users, simulations, simulationAnswers, questions } from "./schema";
 import { hashPassword } from "./auth";
 
 export const usersRouter = createTRPCRouter({
@@ -124,5 +124,84 @@ export const usersRouter = createTRPCRouter({
       await ctx.db.delete(simulations).where(eq(simulations.userId, input.id));
       await ctx.db.delete(users).where(eq(users.id, input.id));
       return { success: true };
+    }),
+
+  // ── Diagnóstico inicial ─────────────────────────────────────────────────────
+
+  /** Retorna 20 questões ordenadas por dificuldade (param_b crescente) para o diagnóstico */
+  getDiagnosticQuestions: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db
+      .select({
+        id: questions.id,
+        enunciado: questions.enunciado,
+        alternativas: questions.alternativas,
+        url_imagem: questions.url_imagem,
+        conteudo_principal: questions.conteudo_principal,
+        param_b: questions.param_b,
+      })
+      .from(questions)
+      .where(eq(questions.active, true))
+      .orderBy(asc(questions.param_b), sql`RAND()`)
+      .limit(100); // busca mais, depois sorteia mantendo ordem de dificuldade
+
+    // Divide em 5 faixas de dificuldade e sorteia 4 de cada faixa
+    const bucketSize = Math.floor(rows.length / 5);
+    const selected: typeof rows = [];
+    for (let b = 0; b < 5; b++) {
+      const start = b * bucketSize;
+      const end = b === 4 ? rows.length : start + bucketSize;
+      const bucket = rows.slice(start, end);
+      // embaralha o bucket e pega 4
+      const shuffled = bucket.sort(() => Math.random() - 0.5).slice(0, 4);
+      selected.push(...shuffled);
+    }
+    // Ordena os 20 selecionados de mais fácil para mais difícil
+    selected.sort((a, b) => (a.param_b ?? 0) - (b.param_b ?? 0));
+
+    return selected.map(({ id, enunciado, alternativas, url_imagem, conteudo_principal }) => ({
+      id, enunciado, alternativas, url_imagem, conteudo_principal,
+    }));
+  }),
+
+  /** Valida respostas e salva resultado do diagnóstico */
+  completeDiagnosis: protectedProcedure
+    .input(z.object({
+      city: z.string().min(2).max(100),
+      educationLevel: z.string().min(2).max(80),
+      answers: z.record(z.string(), z.string()), // { questionId: letraEscolhida }
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+      const questionIds = Object.keys(input.answers).map(Number).filter(Boolean);
+
+      if (questionIds.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "Nenhuma resposta enviada." });
+
+      // Busca gabaritos no servidor
+      const qRows = await ctx.db
+        .select({ id: questions.id, gabarito: questions.gabarito })
+        .from(questions)
+        .where(sql`${questions.id} IN ${questionIds}`);
+
+      const gabMap = new Map(qRows.map((q) => [q.id, q.gabarito]));
+      let correct = 0;
+      for (const [idStr, chosen] of Object.entries(input.answers)) {
+        if (gabMap.get(Number(idStr)) === chosen) correct++;
+      }
+
+      const total = questionIds.length;
+      const pct = total > 0 ? correct / total : 0;
+      const level =
+        pct >= 0.75 ? "avancado" :
+        pct >= 0.40 ? "intermediario" : "iniciante";
+
+      await ctx.db.update(users).set({
+        city: input.city,
+        educationLevel: input.educationLevel,
+        diagnosisLevel: level as any,
+        diagnosisScore: correct,
+        diagnosisCompletedAt: new Date(),
+      }).where(eq(users.id, userId));
+
+      return { level, correct, total };
     }),
 });

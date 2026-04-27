@@ -25,6 +25,12 @@ export const users = mysqlTable("users", {
   active: boolean("active").notNull().default(true),
   // Controlo de assinatura — null = sem expiração (admin/free)
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  // Diagnóstico inicial
+  city: varchar("city", { length: 100 }),
+  educationLevel: varchar("education_level", { length: 80 }),
+  diagnosisLevel: mysqlEnum("diagnosis_level", ["iniciante", "intermediario", "avancado"]),
+  diagnosisScore: int("diagnosis_score"),
+  diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -22,6 +22,7 @@ import Agenda from "@/Agenda";
 import Trilha from "@/Trilha";
 import Login from "@/Login";
 import TutorChat from "@/TutorChat";
+import Diagnostico from "@/Diagnostico";
 import { Loader2, AlertTriangle } from "@/icons";
 
 // Sobe a página para o topo sempre que a rota muda (navegação SPA).
@@ -80,6 +81,17 @@ export default function App() {
   );
 
   const isAdmin = session.role === "admin";
+  const utils = trpc.useUtils();
+
+  // Primeiro acesso: redireciona para diagnóstico se não foi feito
+  if (!session.diagnosisLevel && session.role !== "admin") {
+    return (
+      <Diagnostico
+        session={session}
+        onComplete={() => utils.auth.me.invalidate()}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
