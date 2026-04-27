@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
+import { LatexRenderer } from "@/LatexRenderer";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -356,12 +357,9 @@ function QuizScreen({
           {q.conteudo_principal}
         </div>
 
-        <p style={{
-          fontSize: 15, lineHeight: 1.65, color: "var(--foreground)",
-          marginBottom: 16, whiteSpace: "pre-wrap",
-        }}>
-          {q.enunciado}
-        </p>
+        <div style={{ marginBottom: 16 }}>
+          <LatexRenderer fontSize="sm">{q.enunciado}</LatexRenderer>
+        </div>
 
         {q.url_imagem && (
           <img src={q.url_imagem} alt="Figura da questão"
@@ -408,7 +406,9 @@ function QuizScreen({
                 }}>
                   {letter}
                 </span>
-                <span style={{ paddingTop: 4 }}>{text}</span>
+                <span style={{ paddingTop: 4, flex: 1 }}>
+                  <LatexRenderer fontSize="sm">{text}</LatexRenderer>
+                </span>
               </button>
             );
           })}
