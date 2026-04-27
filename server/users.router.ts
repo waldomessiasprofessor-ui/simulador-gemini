@@ -128,37 +128,87 @@ export const usersRouter = createTRPCRouter({
 
   // ── Diagnóstico inicial ─────────────────────────────────────────────────────
 
-  /** Retorna 20 questões ordenadas por dificuldade (param_b crescente) para o diagnóstico */
+  /** Retorna 20 questões para o diagnóstico em 3 faixas de dificuldade:
+   *  1-10  → questões fáceis (param_b ≤ -0.5): base sólida, estilo trilhas
+   *  11-15 → média dificuldade com potências, radicais e frações (param_b -0.5 a 0.5)
+   *  16-20 → difíceis do banco ENEM/REPVET (param_b > 0.5)
+   */
   getDiagnosticQuestions: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db
-      .select({
-        id: questions.id,
-        enunciado: questions.enunciado,
-        alternativas: questions.alternativas,
-        url_imagem: questions.url_imagem,
-        conteudo_principal: questions.conteudo_principal,
-        param_b: questions.param_b,
-      })
+    const cols = {
+      id: questions.id,
+      enunciado: questions.enunciado,
+      alternativas: questions.alternativas,
+      url_imagem: questions.url_imagem,
+      conteudo_principal: questions.conteudo_principal,
+      param_b: questions.param_b,
+    };
+
+    // ── Faixa 1: 10 questões fáceis (param_b ≤ -0.5) ──────────────────────────
+    const easy = await ctx.db
+      .select(cols)
       .from(questions)
-      .where(eq(questions.active, true))
-      .orderBy(asc(questions.param_b), sql`RAND()`)
-      .limit(100); // busca mais, depois sorteia mantendo ordem de dificuldade
+      .where(and(eq(questions.active, true), sql`${questions.param_b} <= -0.5`))
+      .orderBy(sql`RAND()`)
+      .limit(10);
 
-    // Divide em 5 faixas de dificuldade e sorteia 4 de cada faixa
-    const bucketSize = Math.floor(rows.length / 5);
-    const selected: typeof rows = [];
-    for (let b = 0; b < 5; b++) {
-      const start = b * bucketSize;
-      const end = b === 4 ? rows.length : start + bucketSize;
-      const bucket = rows.slice(start, end);
-      // embaralha o bucket e pega 4
-      const shuffled = bucket.sort(() => Math.random() - 0.5).slice(0, 4);
-      selected.push(...shuffled);
-    }
-    // Ordena os 20 selecionados de mais fácil para mais difícil
-    selected.sort((a, b) => (a.param_b ?? 0) - (b.param_b ?? 0));
+    // ── Faixa 2: 5 questões médias sobre potências / radicais / frações ────────
+    const midTopics = [
+      "Potências e raízes", "Frações", "Operações com Frações",
+      "Operações com frações", "Aritmética", "Notação científica",
+      "Conjuntos numéricos", "Conjuntos Numéricos",
+    ];
+    const midConditions = midTopics.map(t => sql`${questions.conteudo_principal} = ${t}`);
+    // também aceita se tags contiver alguma das palavras-chave
+    const tagKeywords = ["potênci", "radical", "raiz", "fração", "frações"];
+    const tagConditions = tagKeywords.map(k => sql`JSON_SEARCH(LOWER(${questions.tags}), 'one', ${`%${k}%`}) IS NOT NULL`);
 
-    return selected.map(({ id, enunciado, alternativas, url_imagem, conteudo_principal }) => ({
+    const mid = await ctx.db
+      .select(cols)
+      .from(questions)
+      .where(
+        and(
+          eq(questions.active, true),
+          sql`${questions.param_b} > -0.5 AND ${questions.param_b} <= 0.5`,
+          sql`(${sql.join([...midConditions, ...tagConditions], sql` OR `)})`,
+        )
+      )
+      .orderBy(sql`RAND()`)
+      .limit(5);
+
+    // ── Faixa 3: 5 questões difíceis ENEM/REPVET (param_b > 0.5) ──────────────
+    const hard = await ctx.db
+      .select(cols)
+      .from(questions)
+      .where(
+        and(
+          eq(questions.active, true),
+          sql`${questions.param_b} > 0.5`,
+          sql`${questions.fonte} IN ('ENEM', 'REPVET')`,
+        )
+      )
+      .orderBy(sql`RAND()`)
+      .limit(5);
+
+    // Fallbacks: se alguma faixa não tiver questões suficientes, completa com genéricas
+    const fallback = async (needed: number, exclude: number[]) => {
+      if (needed <= 0) return [];
+      return ctx.db.select(cols).from(questions)
+        .where(and(eq(questions.active, true), sql`${questions.id} NOT IN (${exclude.join(",") || 0})`))
+        .orderBy(sql`RAND()`).limit(needed);
+    };
+
+    const usedIds = [...easy, ...mid, ...hard].map(q => q.id);
+    const easyFill  = easy.length  < 10 ? await fallback(10 - easy.length,  usedIds) : [];
+    const midFill   = mid.length   < 5  ? await fallback(5  - mid.length,   [...usedIds, ...easyFill.map(q => q.id)]) : [];
+    const hardFill  = hard.length  < 5  ? await fallback(5  - hard.length,  [...usedIds, ...easyFill.map(q => q.id), ...midFill.map(q => q.id)]) : [];
+
+    const final = [
+      ...[...easy, ...easyFill].slice(0, 10),
+      ...[...mid,  ...midFill ].slice(0, 5),
+      ...[...hard, ...hardFill].slice(0, 5),
+    ];
+
+    return final.map(({ id, enunciado, alternativas, url_imagem, conteudo_principal }) => ({
       id, enunciado, alternativas, url_imagem, conteudo_principal,
     }));
   }),
