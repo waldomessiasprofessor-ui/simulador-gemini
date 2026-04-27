@@ -19,6 +19,7 @@ export const usersRouter = createTRPCRouter({
           role: users.role,
           active: users.active,
           subscriptionExpiresAt: users.subscriptionExpiresAt,
+          diagnosisLevel: users.diagnosisLevel,
           createdAt: users.createdAt,
         })
         .from(users)
@@ -213,15 +214,17 @@ export const usersRouter = createTRPCRouter({
     }));
   }),
 
-  /** Reseta o diagnóstico para o aluno refazer */
-  resetDiagnosis: protectedProcedure.mutation(async ({ ctx }) => {
-    await ctx.db.update(users).set({
-      diagnosisLevel: null as any,
-      diagnosisScore: null as any,
-      diagnosisCompletedAt: null as any,
-    }).where(eq(users.id, ctx.user.id));
-    return { success: true };
-  }),
+  /** Admin: reseta o diagnóstico de um aluno específico (para testes) */
+  adminResetDiagnosis: adminProcedure
+    .input(z.object({ userId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.update(users).set({
+        diagnosisLevel: null as any,
+        diagnosisScore: null as any,
+        diagnosisCompletedAt: null as any,
+      }).where(eq(users.id, input.userId));
+      return { success: true };
+    }),
 
   /** Valida respostas e salva resultado do diagnóstico */
   completeDiagnosis: protectedProcedure

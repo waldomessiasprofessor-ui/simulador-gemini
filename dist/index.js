@@ -2246,6 +2246,7 @@ var usersRouter = createTRPCRouter({
       role: users.role,
       active: users.active,
       subscriptionExpiresAt: users.subscriptionExpiresAt,
+      diagnosisLevel: users.diagnosisLevel,
       createdAt: users.createdAt
     }).from(users).orderBy(users.createdAt);
     const now = /* @__PURE__ */ new Date();
@@ -2368,13 +2369,13 @@ var usersRouter = createTRPCRouter({
       conteudo_principal
     }));
   }),
-  /** Reseta o diagnóstico para o aluno refazer */
-  resetDiagnosis: protectedProcedure.mutation(async ({ ctx }) => {
+  /** Admin: reseta o diagnóstico de um aluno específico (para testes) */
+  adminResetDiagnosis: adminProcedure.input(z4.object({ userId: z4.number().int().positive() })).mutation(async ({ ctx, input }) => {
     await ctx.db.update(users).set({
       diagnosisLevel: null,
       diagnosisScore: null,
       diagnosisCompletedAt: null
-    }).where(eq4(users.id, ctx.user.id));
+    }).where(eq4(users.id, input.userId));
     return { success: true };
   }),
   /** Valida respostas e salva resultado do diagnóstico */

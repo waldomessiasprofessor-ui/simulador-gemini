@@ -1239,9 +1239,6 @@ export default function Dashboard() {
   const abandon = trpc.simulations.abandon?.useMutation?.({
     onSuccess: () => { utils.simulations.getActive.invalidate(); navigate("/simulado"); },
   });
-  const resetDiagnosis = trpc.users.resetDiagnosis.useMutation({
-    onSuccess: () => utils.auth.me.invalidate(),
-  });
 
   // Toast de conquista ao chegar no dashboard pela primeira vez após diagnóstico
   useEffect(() => {
@@ -1359,25 +1356,9 @@ export default function Dashboard() {
                 <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", margin: 0 }}>no diagnóstico</p>
               </div>
             </div>
-            <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <div>
-                <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "0 0 2px" }}>{info.advice}</p>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "#009688", margin: 0 }}>Próximo foco: {info.next}</p>
-              </div>
-              <button
-                onClick={() => {
-                  if (confirm("Refazer o diagnóstico vai redefinir seu nível atual. Continuar?")) {
-                    resetDiagnosis.mutate();
-                  }
-                }}
-                disabled={resetDiagnosis.isPending}
-                style={{
-                  flexShrink: 0, padding: "6px 12px", borderRadius: 10, border: "1.5px solid var(--border)",
-                  background: "var(--background)", color: "var(--muted-foreground)",
-                  fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
-                }}>
-                🔄 Refazer
-              </button>
+            <div style={{ padding: "12px 16px" }}>
+              <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "0 0 2px" }}>{info.advice}</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "#009688", margin: 0 }}>Próximo foco: {info.next}</p>
             </div>
           </div>
         );

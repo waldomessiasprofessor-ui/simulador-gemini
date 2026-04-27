@@ -4,8 +4,9 @@ import { toast } from "sonner";
 import {
   Trash2, Loader2, Search, Shield, KeyRound,
   ChevronDown, ChevronUp, X, Check, Calendar,
-  PlusCircle, MinusCircle, Clock
+  PlusCircle, MinusCircle, Clock, RotateCcw
 } from "@/icons";
+import LevelBadge, { type DiagnosisLevel } from "@/LevelBadge";
 
 type ActionState =
   | { type: "none" }
@@ -52,6 +53,11 @@ export default function AdminUsuarios() {
 
   const revokeMutation = trpc.users.revokeSubscription.useMutation({
     onSuccess: () => { toast.success("Assinatura revogada."); utils.users.list.invalidate(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const resetDiagnosisMutation = trpc.users.adminResetDiagnosis.useMutation({
+    onSuccess: () => { toast.success("Diagnóstico resetado. O aluno verá o fluxo novamente."); utils.users.list.invalidate(); },
     onError: (e) => toast.error(e.message),
   });
 
@@ -139,6 +145,10 @@ export default function AdminUsuarios() {
                         {u.role === "admin" && <Shield className="h-3 w-3" />}
                         {statusCfg.label}
                       </span>
+                      {(u as any).diagnosisLevel
+                        ? <LevelBadge level={(u as any).diagnosisLevel as DiagnosisLevel} size="sm" />
+                        : <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "#F1F5F9", color: "var(--muted-foreground)" }}>Sem diagnóstico</span>
+                      }
                       {u.daysRemaining !== null && (
                         <span className="text-xs" style={{ color: u.daysRemaining <= 30 ? "#E65100" : "#64748B" }}>
                           {u.daysRemaining <= 30
@@ -173,6 +183,14 @@ export default function AdminUsuarios() {
                         className="p-2 rounded-lg transition-colors" title="Excluir"
                         style={{ background: isConfirmingDelete ? "#FFEBEE" : "transparent" }}>
                         <Trash2 className="h-4 w-4" style={{ color: "#DC2626" }} />
+                      </button>
+                      <button
+                        onClick={() => resetDiagnosisMutation.mutate({ userId: u.id })}
+                        disabled={resetDiagnosisMutation.isPending}
+                        className="p-2 rounded-lg transition-colors"
+                        title="Resetar diagnóstico"
+                        style={{ color: "#D97706" }}>
+                        <RotateCcw className="h-4 w-4" />
                       </button>
                       <button onClick={() => setExpandedId(isExpanded ? null : u.id)}
                         className="p-2 rounded-lg" style={{ color: "var(--muted-foreground)" }}>
