@@ -115,7 +115,7 @@ function Mascot({ speech, animate = false }: { speech: string; animate?: boolean
 
 // ─── Tela de boas-vindas ──────────────────────────────────────────────────────
 
-function WelcomeScreen({ name, onStart }: { name: string; onStart: () => void }) {
+function WelcomeScreen({ name, onStart, onSkip }: { name: string; onStart: () => void; onSkip?: () => void }) {
   const [show, setShow] = useState(false);
   useEffect(() => { setTimeout(() => setShow(true), 100); }, []);
 
@@ -156,21 +156,33 @@ function WelcomeScreen({ name, onStart }: { name: string; onStart: () => void })
         ))}
       </div>
 
-      <button
-        onClick={onStart}
-        style={{
-          width: "100%", maxWidth: 320,
-          padding: "16px", borderRadius: 16, border: "none", cursor: "pointer",
-          background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
-          color: "#fff", fontSize: 16, fontWeight: 800,
-          boxShadow: "0 4px 16px rgba(0,150,136,0.4)",
-          transition: "transform 0.15s, box-shadow 0.15s",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,150,136,0.5)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,150,136,0.4)"; }}
-      >
-        Começar diagnóstico 🚀
-      </button>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 320 }}>
+        <button
+          onClick={onStart}
+          style={{
+            width: "100%", padding: "16px", borderRadius: 16, border: "none", cursor: "pointer",
+            background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
+            color: "#fff", fontSize: 16, fontWeight: 800,
+            boxShadow: "0 4px 16px rgba(0,150,136,0.4)",
+            transition: "transform 0.15s, box-shadow 0.15s",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,150,136,0.5)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,150,136,0.4)"; }}
+        >
+          Começar diagnóstico 🚀
+        </button>
+        {onSkip && (
+          <button
+            onClick={onSkip}
+            style={{
+              width: "100%", padding: "12px", borderRadius: 14, cursor: "pointer",
+              background: "transparent", border: "1.5px solid var(--border)",
+              color: "var(--muted-foreground)", fontSize: 13, fontWeight: 600,
+            }}>
+            Pular por agora
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -542,9 +554,10 @@ function ResultScreen({
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
-export default function Diagnostico({ session, onComplete }: {
+export default function Diagnostico({ session, onComplete, onSkip }: {
   session: { name: string };
   onComplete: () => void;
+  onSkip?: () => void;
 }) {
   const [step, setStep] = useState<Step>("welcome");
   const [city, setCity] = useState("");
@@ -622,7 +635,7 @@ export default function Diagnostico({ session, onComplete }: {
         {/* Conteúdo */}
         <div style={{ flex: 1, maxWidth: 480, margin: "0 auto", width: "100%" }}>
           {step === "welcome" && (
-            <WelcomeScreen name={session.name} onStart={() => setStep("form")} />
+            <WelcomeScreen name={session.name} onStart={() => setStep("form")} onSkip={onSkip} />
           )}
 
           {step === "form" && (
