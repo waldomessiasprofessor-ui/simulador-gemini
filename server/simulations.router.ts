@@ -1304,18 +1304,28 @@ export const simulationsRouter = createTRPCRouter({
         .limit(1);
 
       const newAnswers = { ...(challenge.answers as Record<string, string>), [input.questionId]: input.selectedAnswer.toUpperCase() };
-      const allAnswered = challenge.questionIds.every((id) => newAnswers[id]);
-      const correctCount = challenge.questionIds.filter((id) => {
-        const [qData] = [{ gabarito: q?.gabarito }];
-        return newAnswers[id] === (newAnswers[id] ? q?.gabarito : null);
-      }).length;
+      const allAnswered = challenge.questionIds.every((id: number) => newAnswers[id]);
 
-      // Calcula acertos corretamente
+      // Se todas as questões foram respondidas, busca os gabaritos de todas elas
+      // para calcular correctCount correto (não só o da questão atual).
+      let correctCount: number | undefined;
+      if (allAnswered) {
+        const allQs = await ctx.db
+          .select({ id: questions.id, gabarito: questions.gabarito })
+          .from(questions)
+          .where(inArray(questions.id, challenge.questionIds));
+        correctCount = allQs.filter((qq) => newAnswers[qq.id] === qq.gabarito).length;
+      }
+
       await ctx.db
         .update(dailyChallenges)
         .set({
           answers: newAnswers,
-          ...(allAnswered ? { completed: true, completedAt: new Date() } : {}),
+          ...(allAnswered ? {
+            completed: true,
+            completedAt: new Date(),
+            correctCount,
+          } : {}),
         })
         .where(eq(dailyChallenges.id, input.challengeId));
 
@@ -1596,29 +1606,34 @@ export const simulationsRouter = createTRPCRouter({
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 62);
 
-    // Simulados + treino livre completos
-    const simRows = await ctx.db
+    // ── Fonte 1: simulationAnswers por data de resposta (consistente com getStats) ─
+    // Usa answeredAt (data de cada resposta individual), não completedAt do simulado.
+    // Isso garante que questões respondidas hoje apareçam no calendário hoje,
+    // mesmo que o simulado ainda não tenha sido finalizado.
+    const answerRows = await ctx.db
       .select({
-        date: sql<string>`DATE(${simulations.completedAt})`,
-        correct: sql<number>`COALESCE(SUM(${simulations.correctCount}), 0)`,
-        total:   sql<number>`COALESCE(SUM(${simulations.totalQuestions}), 0)`,
+        date:    sql<string>`DATE(${simulationAnswers.answeredAt})`,
+        correct: sql<number>`COALESCE(SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END), 0)`,
+        total:   sql<number>`COUNT(*)`,
       })
-      .from(simulations)
+      .from(simulationAnswers)
+      .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
       .where(
         and(
           eq(simulations.userId, userId),
-          eq(simulations.status, "completed"),
-          gte(simulations.completedAt, cutoff),
+          sql`${simulationAnswers.answeredAt} IS NOT NULL`,
+          sql`${simulationAnswers.isCorrect} IS NOT NULL`,
+          gte(simulationAnswers.answeredAt, cutoff),
         )
       )
-      .groupBy(sql`DATE(${simulations.completedAt})`);
+      .groupBy(sql`DATE(${simulationAnswers.answeredAt})`);
 
-    // Desafios diários
+    // ── Fonte 2: desafios diários (não passam por simulationAnswers) ──────────
     const chalRows = await ctx.db
       .select({
         date:    sql<string>`${dailyChallenges.challengeDate}`,
         correct: sql<number>`COALESCE(SUM(${dailyChallenges.correctCount}), 0)`,
-        total:   sql<number>`COALESCE(SUM(CASE WHEN ${dailyChallenges.completed} THEN 1 ELSE 0 END) * 5, 0)`,
+        total:   sql<number>`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`,
       })
       .from(dailyChallenges)
       .where(
@@ -1630,14 +1645,15 @@ export const simulationsRouter = createTRPCRouter({
       )
       .groupBy(dailyChallenges.challengeDate);
 
-    // Merge por data
+    // ── Merge por data ────────────────────────────────────────────────────────
     const map = new Map<string, { correct: number; wrong: number }>();
-    for (const r of simRows) {
-      const key = r.date;
-      const prev = map.get(key) ?? { correct: 0, wrong: 0 };
+
+    for (const r of answerRows) {
+      if (!r.date) continue;
+      const prev = map.get(r.date) ?? { correct: 0, wrong: 0 };
       const c = Number(r.correct);
       const t = Number(r.total);
-      map.set(key, { correct: prev.correct + c, wrong: prev.wrong + (t - c) });
+      map.set(r.date, { correct: prev.correct + c, wrong: prev.wrong + Math.max(0, t - c) });
     }
     for (const r of chalRows) {
       const key = typeof r.date === "string" ? r.date : new Date(r.date as any).toISOString().slice(0, 10);

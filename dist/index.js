@@ -1884,13 +1884,18 @@ var simulationsRouter = createTRPCRouter({
     const [q] = await ctx.db.select({ gabarito: questions.gabarito }).from(questions).where(eq2(questions.id, input.questionId)).limit(1);
     const newAnswers = { ...challenge.answers, [input.questionId]: input.selectedAnswer.toUpperCase() };
     const allAnswered = challenge.questionIds.every((id) => newAnswers[id]);
-    const correctCount = challenge.questionIds.filter((id) => {
-      const [qData] = [{ gabarito: q?.gabarito }];
-      return newAnswers[id] === (newAnswers[id] ? q?.gabarito : null);
-    }).length;
+    let correctCount;
+    if (allAnswered) {
+      const allQs = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito }).from(questions).where(inArray2(questions.id, challenge.questionIds));
+      correctCount = allQs.filter((qq) => newAnswers[qq.id] === qq.gabarito).length;
+    }
     await ctx.db.update(dailyChallenges).set({
       answers: newAnswers,
-      ...allAnswered ? { completed: true, completedAt: /* @__PURE__ */ new Date() } : {}
+      ...allAnswered ? {
+        completed: true,
+        completedAt: /* @__PURE__ */ new Date(),
+        correctCount
+      } : {}
     }).where(eq2(dailyChallenges.id, input.challengeId));
     return { ok: true, isCorrect: input.selectedAnswer.toUpperCase() === q?.gabarito };
   }),
@@ -2077,21 +2082,22 @@ var simulationsRouter = createTRPCRouter({
     const userId = ctx.user.id;
     const cutoff = /* @__PURE__ */ new Date();
     cutoff.setDate(cutoff.getDate() - 62);
-    const simRows = await ctx.db.select({
-      date: sql2`DATE(${simulations.completedAt})`,
-      correct: sql2`COALESCE(SUM(${simulations.correctCount}), 0)`,
-      total: sql2`COALESCE(SUM(${simulations.totalQuestions}), 0)`
-    }).from(simulations).where(
+    const answerRows = await ctx.db.select({
+      date: sql2`DATE(${simulationAnswers.answeredAt})`,
+      correct: sql2`COALESCE(SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END), 0)`,
+      total: sql2`COUNT(*)`
+    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).where(
       and2(
         eq2(simulations.userId, userId),
-        eq2(simulations.status, "completed"),
-        gte(simulations.completedAt, cutoff)
+        sql2`${simulationAnswers.answeredAt} IS NOT NULL`,
+        sql2`${simulationAnswers.isCorrect} IS NOT NULL`,
+        gte(simulationAnswers.answeredAt, cutoff)
       )
-    ).groupBy(sql2`DATE(${simulations.completedAt})`);
+    ).groupBy(sql2`DATE(${simulationAnswers.answeredAt})`);
     const chalRows = await ctx.db.select({
       date: sql2`${dailyChallenges.challengeDate}`,
       correct: sql2`COALESCE(SUM(${dailyChallenges.correctCount}), 0)`,
-      total: sql2`COALESCE(SUM(CASE WHEN ${dailyChallenges.completed} THEN 1 ELSE 0 END) * 5, 0)`
+      total: sql2`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`
     }).from(dailyChallenges).where(
       and2(
         eq2(dailyChallenges.userId, userId),
@@ -2100,12 +2106,12 @@ var simulationsRouter = createTRPCRouter({
       )
     ).groupBy(dailyChallenges.challengeDate);
     const map = /* @__PURE__ */ new Map();
-    for (const r of simRows) {
-      const key = r.date;
-      const prev = map.get(key) ?? { correct: 0, wrong: 0 };
+    for (const r of answerRows) {
+      if (!r.date) continue;
+      const prev = map.get(r.date) ?? { correct: 0, wrong: 0 };
       const c = Number(r.correct);
       const t2 = Number(r.total);
-      map.set(key, { correct: prev.correct + c, wrong: prev.wrong + (t2 - c) });
+      map.set(r.date, { correct: prev.correct + c, wrong: prev.wrong + Math.max(0, t2 - c) });
     }
     for (const r of chalRows) {
       const key = typeof r.date === "string" ? r.date : new Date(r.date).toISOString().slice(0, 10);
