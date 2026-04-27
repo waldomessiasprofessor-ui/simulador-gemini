@@ -12,6 +12,7 @@ import { NextStepCard, StatNumber } from "@/components/ds";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import { getTrilhaByArea } from "@/trilhas";
 import { getTrilhaStats } from "@/trilhas/stats";
+import LevelBadge, { type DiagnosisLevel } from "@/LevelBadge";
 
 
 // ─── DailyCard ────────────────────────────────────────────────────────────────
@@ -1238,6 +1239,24 @@ export default function Dashboard() {
   const abandon = trpc.simulations.abandon?.useMutation?.({
     onSuccess: () => { utils.simulations.getActive.invalidate(); navigate("/simulado"); },
   });
+  const resetDiagnosis = trpc.users.resetDiagnosis.useMutation({
+    onSuccess: () => utils.auth.me.invalidate(),
+  });
+
+  // Toast de conquista ao chegar no dashboard pela primeira vez após diagnóstico
+  useEffect(() => {
+    const key = "diagnosis_toast_shown";
+    const level = (session as any)?.diagnosisLevel;
+    const shown = sessionStorage.getItem(key);
+    if (level && !shown) {
+      sessionStorage.setItem(key, "1");
+      const labels: Record<string, string> = { iniciante: "🌱 Iniciante", intermediario: "⚡ Intermediário", avancado: "🚀 Avançado" };
+      toast.success(`Conquista desbloqueada: Nível ${labels[level] ?? level}!`, {
+        description: "Seu diagnóstico foi registrado. O Tutor Vetor já sabe seu nível.",
+        duration: 5000,
+      });
+    }
+  }, [session]);
 
   const firstName = (session?.name as string)?.split(" ")[0] ?? "Aluno";
   const hour = new Date().getHours();
@@ -1302,6 +1321,67 @@ export default function Dashboard() {
             : "Carregando questões…"}
         </p>
       </div>
+
+      {/* ── Card de diagnóstico ── */}
+      {(session as any)?.diagnosisLevel && (() => {
+        const level = (session as any).diagnosisLevel as DiagnosisLevel;
+        const score = (session as any).diagnosisScore ?? 0;
+        const INFO = {
+          iniciante:     { advice: "Comece pelas Trilhas de Matemática Básica.", next: "Álgebra e Funções" },
+          intermediario: { advice: "Foque nos simulados e nas áreas mais fracas.", next: "Geometria e Trigonometria" },
+          avancado:      { advice: "Afine sua nota com simulados TRI completos.", next: "Questões difíceis ENEM" },
+        };
+        const info = INFO[level];
+        return (
+          <div style={{
+            borderRadius: 20, overflow: "hidden",
+            border: "1.5px solid var(--border)",
+            background: "var(--card)",
+          }}>
+            <div style={{
+              background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
+              padding: "14px 16px",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 28 }}>
+                  {{ iniciante: "🌱", intermediario: "⚡", avancado: "🚀" }[level]}
+                </span>
+                <div>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Seu nível</p>
+                  <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0 }}>
+                    {{ iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" }[level]}
+                  </p>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", margin: 0 }}>{score}/20</p>
+                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", margin: 0 }}>no diagnóstico</p>
+              </div>
+            </div>
+            <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div>
+                <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "0 0 2px" }}>{info.advice}</p>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "#009688", margin: 0 }}>Próximo foco: {info.next}</p>
+              </div>
+              <button
+                onClick={() => {
+                  if (confirm("Refazer o diagnóstico vai redefinir seu nível atual. Continuar?")) {
+                    resetDiagnosis.mutate();
+                  }
+                }}
+                disabled={resetDiagnosis.isPending}
+                style={{
+                  flexShrink: 0, padding: "6px 12px", borderRadius: 10, border: "1.5px solid var(--border)",
+                  background: "var(--background)", color: "var(--muted-foreground)",
+                  fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
+                }}>
+                🔄 Refazer
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Próximo passo ── */}
       <NextStepCard

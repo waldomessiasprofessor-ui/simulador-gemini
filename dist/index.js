@@ -2368,6 +2368,15 @@ var usersRouter = createTRPCRouter({
       conteudo_principal
     }));
   }),
+  /** Reseta o diagnóstico para o aluno refazer */
+  resetDiagnosis: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.db.update(users).set({
+      diagnosisLevel: null,
+      diagnosisScore: null,
+      diagnosisCompletedAt: null
+    }).where(eq4(users.id, ctx.user.id));
+    return { success: true };
+  }),
   /** Valida respostas e salva resultado do diagnóstico */
   completeDiagnosis: protectedProcedure.input(z4.object({
     city: z4.string().min(2).max(100),

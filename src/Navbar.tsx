@@ -7,6 +7,7 @@ import {
   User, Envelope, ShieldCheck, Lightning, GraduationCap, Moon, Sun,
   CalendarDots, Brain, Star, YoutubeLogo,
 } from "@phosphor-icons/react";
+import LevelBadge, { type DiagnosisLevel } from "@/LevelBadge";
 
 // Pre-binds weight="duotone" so icons work as plain <Icon className="..." />
 function d(Icon: React.ElementType) {
@@ -234,12 +235,17 @@ function ProfileDrawer({ session, onClose }: { session: any; onClose: () => void
           <div className="min-w-0">
             <p className="font-bold truncate" style={{ color: "var(--foreground)" }}>{session.name}</p>
             <p className="text-xs truncate mt-0.5" style={{ color: "var(--muted-foreground)" }}>{session.email}</p>
-            {session.role === "admin" && (
-              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full mt-1 font-semibold"
-                style={{ background: "#B45309", color: "#fff" }}>
-                <ShieldCheck size={12} weight="duotone" /> Admin
-              </span>
-            )}
+            <div className="flex flex-wrap gap-1 mt-1">
+              {session.role === "admin" && (
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-semibold"
+                  style={{ background: "#B45309", color: "#fff" }}>
+                  <ShieldCheck size={12} weight="duotone" /> Admin
+                </span>
+              )}
+              {(session as any).diagnosisLevel && (
+                <LevelBadge level={(session as any).diagnosisLevel as DiagnosisLevel} size="md" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -488,11 +494,16 @@ export default function Navbar() {
                 style={{ background: "#009688", color: "#fff" }}>
                 {(session.name as string)?.[0]?.toUpperCase() ?? "U"}
               </div>
-              <div className="text-left min-w-0">
-                <p className="font-semibold truncate text-xs">{session.name as string}</p>
+              <div className="text-left min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className="font-semibold truncate text-xs">{session.name as string}</p>
+                  {(session as any).diagnosisLevel && (
+                    <LevelBadge level={(session as any).diagnosisLevel as DiagnosisLevel} size="sm" />
+                  )}
+                </div>
                 <p className="text-xs truncate" style={{ color: "#00695C" }}>{session.email as string}</p>
               </div>
-              <User size={16} weight="duotone" className="ml-auto flex-shrink-0" />
+              <User size={16} weight="duotone" className="flex-shrink-0" />
             </button>
           </div>
         )}

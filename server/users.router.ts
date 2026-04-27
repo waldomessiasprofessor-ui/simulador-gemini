@@ -213,6 +213,16 @@ export const usersRouter = createTRPCRouter({
     }));
   }),
 
+  /** Reseta o diagnóstico para o aluno refazer */
+  resetDiagnosis: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.db.update(users).set({
+      diagnosisLevel: null as any,
+      diagnosisScore: null as any,
+      diagnosisCompletedAt: null as any,
+    }).where(eq(users.id, ctx.user.id));
+    return { success: true };
+  }),
+
   /** Valida respostas e salva resultado do diagnóstico */
   completeDiagnosis: protectedProcedure
     .input(z.object({
