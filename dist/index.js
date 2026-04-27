@@ -2240,7 +2240,7 @@ var authRouter = createTRPCRouter({
 
 // server/users.router.ts
 import { z as z4 } from "zod";
-import { eq as eq4, sql as sql3, and as and3, or, inArray as inArray3 } from "drizzle-orm";
+import { eq as eq4, sql as sql3, and as and3, inArray as inArray3 } from "drizzle-orm";
 import { TRPCError as TRPCError5 } from "@trpc/server";
 var usersRouter = createTRPCRouter({
   // Lista todos os utilizadores com status de assinatura
@@ -2312,10 +2312,17 @@ var usersRouter = createTRPCRouter({
     return { success: true };
   }),
   // ── Diagnóstico inicial ─────────────────────────────────────────────────────
-  /** Retorna 20 questões para o diagnóstico em 3 faixas de dificuldade:
-   *  1-10  → questões fáceis (param_b ≤ -0.5): base sólida, estilo trilhas
-   *  11-15 → média dificuldade com potências, radicais e frações (param_b -0.5 a 0.5)
-   *  16-20 → difíceis do banco ENEM/REPVET (param_b > 0.5)
+  /** Retorna 20 questões para o diagnóstico.
+   *
+   * Estratégia:
+   *  1. Busca questões marcadas com a tag "diagnostico" (pool curado).
+   *  2. Divide em fáceis (param_b ≤ -0.5), médias (-0.5 < param_b ≤ 0.5) e
+   *     difíceis (param_b > 0.5) e sorteia aleatoriamente dentro de cada faixa,
+   *     respeitando a proporção 6/8/6 do pool atual (ou 10/5/5 se o pool for maior).
+   *  3. Se o pool "diagnostico" tiver menos de 20 questões, completa com o banco geral.
+   *
+   * Isso garante que alunos diferentes recebam questões diferentes (via RAND())
+   * quando o pool for expandido com novas questões.
    */
   getDiagnosticQuestions: protectedProcedure.query(async ({ ctx }) => {
     const cols = {
@@ -2326,51 +2333,35 @@ var usersRouter = createTRPCRouter({
       conteudo_principal: questions.conteudo_principal,
       param_b: questions.param_b
     };
-    const easy = await ctx.db.select(cols).from(questions).where(and3(eq4(questions.active, true), sql3`${questions.param_b} <= -0.5`)).orderBy(sql3`RAND()`).limit(10);
-    const midTopics = [
-      "Pot\xEAncias e ra\xEDzes",
-      "Fra\xE7\xF5es",
-      "Opera\xE7\xF5es com Fra\xE7\xF5es",
-      "Opera\xE7\xF5es com fra\xE7\xF5es",
-      "Aritm\xE9tica",
-      "Nota\xE7\xE3o cient\xEDfica",
-      "Conjuntos num\xE9ricos",
-      "Conjuntos Num\xE9ricos"
-    ];
-    const mid = await ctx.db.select(cols).from(questions).where(
+    const pool2 = await ctx.db.select(cols).from(questions).where(
       and3(
         eq4(questions.active, true),
-        sql3`${questions.param_b} > -0.5 AND ${questions.param_b} <= 0.5`,
-        or(
-          inArray3(questions.conteudo_principal, midTopics),
-          sql3`LOWER(${questions.conteudo_principal}) LIKE '%pot%'`,
-          sql3`LOWER(${questions.conteudo_principal}) LIKE '%fra%'`,
-          sql3`LOWER(${questions.conteudo_principal}) LIKE '%radic%'`,
-          sql3`LOWER(${questions.conteudo_principal}) LIKE '%raiz%'`
+        sql3`JSON_CONTAINS(${questions.tags}, '"diagnostico"')`
+      )
+    ).orderBy(sql3`RAND()`);
+    const poolEasy = pool2.filter((q) => q.param_b <= -0.5);
+    const poolMid = pool2.filter((q) => q.param_b > -0.5 && q.param_b <= 0.5);
+    const poolHard = pool2.filter((q) => q.param_b > 0.5);
+    const wantEasy = poolEasy.length >= 10 ? 10 : poolEasy.length;
+    const wantMid = poolMid.length >= 5 ? 5 : poolMid.length;
+    const wantHard = poolHard.length >= 5 ? 5 : poolHard.length;
+    const picked = [
+      ...poolEasy.slice(0, wantEasy),
+      ...poolMid.slice(0, wantMid),
+      ...poolHard.slice(0, wantHard)
+    ];
+    const needed = 20 - picked.length;
+    if (needed > 0) {
+      const excludeIds = picked.map((q) => q.id);
+      const fill = await ctx.db.select(cols).from(questions).where(
+        and3(
+          eq4(questions.active, true),
+          excludeIds.length > 0 ? sql3`${questions.id} NOT IN (${sql3.raw(excludeIds.join(","))})` : sql3`1=1`
         )
-      )
-    ).orderBy(sql3`RAND()`).limit(5);
-    const hard = await ctx.db.select(cols).from(questions).where(
-      and3(
-        eq4(questions.active, true),
-        sql3`${questions.param_b} > 0.5`,
-        sql3`${questions.fonte} IN ('ENEM', 'REPVET')`
-      )
-    ).orderBy(sql3`RAND()`).limit(5);
-    const fallback = async (needed, exclude) => {
-      if (needed <= 0) return [];
-      return ctx.db.select(cols).from(questions).where(and3(eq4(questions.active, true), sql3`${questions.id} NOT IN (${exclude.join(",") || 0})`)).orderBy(sql3`RAND()`).limit(needed);
-    };
-    const usedIds = [...easy, ...mid, ...hard].map((q) => q.id);
-    const easyFill = easy.length < 10 ? await fallback(10 - easy.length, usedIds) : [];
-    const midFill = mid.length < 5 ? await fallback(5 - mid.length, [...usedIds, ...easyFill.map((q) => q.id)]) : [];
-    const hardFill = hard.length < 5 ? await fallback(5 - hard.length, [...usedIds, ...easyFill.map((q) => q.id), ...midFill.map((q) => q.id)]) : [];
-    const final = [
-      ...[...easy, ...easyFill].slice(0, 10),
-      ...[...mid, ...midFill].slice(0, 5),
-      ...[...hard, ...hardFill].slice(0, 5)
-    ];
-    return final.map(({ id, enunciado, alternativas, url_imagem, conteudo_principal }) => ({
+      ).orderBy(sql3`RAND()`).limit(needed);
+      picked.push(...fill);
+    }
+    return picked.slice(0, 20).map(({ id, enunciado, alternativas, url_imagem, conteudo_principal }) => ({
       id,
       enunciado,
       alternativas,
