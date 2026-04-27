@@ -66,6 +66,7 @@ function SubscriptionBanner({ session }: { session: any }) {
 
 export default function App() {
   const { data: session, isLoading, isError } = trpc.auth.me.useQuery(undefined, { retry: false });
+  const utils = trpc.useUtils();
 
   if (isLoading) return (
     <div className="flex h-screen items-center justify-center" style={{ background: "#009688" }}>
@@ -81,7 +82,6 @@ export default function App() {
   );
 
   const isAdmin = session.role === "admin";
-  const utils = trpc.useUtils();
 
   // Primeiro acesso: redireciona para diagnóstico se não foi feito
   if (!session.diagnosisLevel && session.role !== "admin") {
