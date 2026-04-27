@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, asc, sql } from "drizzle-orm";
+import { eq, asc, sql, and, or, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, adminProcedure, protectedProcedure } from "./trpc";
 import { users, simulations, simulationAnswers, questions } from "./schema";
@@ -158,10 +158,6 @@ export const usersRouter = createTRPCRouter({
       "Operações com frações", "Aritmética", "Notação científica",
       "Conjuntos numéricos", "Conjuntos Numéricos",
     ];
-    const midConditions = midTopics.map(t => sql`${questions.conteudo_principal} = ${t}`);
-    // também aceita se tags contiver alguma das palavras-chave
-    const tagKeywords = ["potênci", "radical", "raiz", "fração", "frações"];
-    const tagConditions = tagKeywords.map(k => sql`JSON_SEARCH(LOWER(${questions.tags}), 'one', ${`%${k}%`}) IS NOT NULL`);
 
     const mid = await ctx.db
       .select(cols)
@@ -170,7 +166,13 @@ export const usersRouter = createTRPCRouter({
         and(
           eq(questions.active, true),
           sql`${questions.param_b} > -0.5 AND ${questions.param_b} <= 0.5`,
-          sql`(${sql.join([...midConditions, ...tagConditions], sql` OR `)})`,
+          or(
+            inArray(questions.conteudo_principal, midTopics),
+            sql`LOWER(${questions.conteudo_principal}) LIKE '%pot%'`,
+            sql`LOWER(${questions.conteudo_principal}) LIKE '%fra%'`,
+            sql`LOWER(${questions.conteudo_principal}) LIKE '%radic%'`,
+            sql`LOWER(${questions.conteudo_principal}) LIKE '%raiz%'`,
+          ),
         )
       )
       .orderBy(sql`RAND()`)
@@ -243,7 +245,7 @@ export const usersRouter = createTRPCRouter({
       const qRows = await ctx.db
         .select({ id: questions.id, gabarito: questions.gabarito })
         .from(questions)
-        .where(sql`${questions.id} IN ${questionIds}`);
+        .where(inArray(questions.id, questionIds));
 
       const gabMap = new Map(qRows.map((q) => [q.id, q.gabarito]));
       let correct = 0;

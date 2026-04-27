@@ -356,7 +356,7 @@ var adminProcedure = t.procedure.use(isAdmin);
 
 // server/questions.router.ts
 import { z } from "zod";
-import { eq, and as and2, sql, asc, desc } from "drizzle-orm";
+import { eq, and, sql, asc, desc } from "drizzle-orm";
 import { TRPCError as TRPCError2 } from "@trpc/server";
 import Anthropic from "@anthropic-ai/sdk";
 var NivelDificuldadeEnum = z.enum(["Muito Baixa", "Baixa", "M\xE9dia", "Alta", "Muito Alta"]);
@@ -406,7 +406,7 @@ var questionsRouter = createTRPCRouter({
           OR JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.topic}))
         )`);
     }
-    const where = filters.length > 0 ? and2(...filters) : void 0;
+    const where = filters.length > 0 ? and(...filters) : void 0;
     const orderColumn = orderBy === "conteudo_principal" ? questions.conteudo_principal : orderBy === "nivel_dificuldade" ? questions.nivel_dificuldade : orderBy === "createdAt" ? questions.createdAt : orderBy === "ano" ? questions.ano : questions.id;
     const orderFn = orderDir === "asc" ? asc : desc;
     const orderClauses = orderBy === "id" ? [orderFn(questions.id)] : [orderFn(orderColumn), asc(questions.id)];
@@ -685,7 +685,7 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
   // ─── Estatísticas de auditoria ────────────────────────────────────────────
   getAuditStats: adminProcedure.query(async ({ ctx }) => {
     const [{ total }] = await ctx.db.select({ total: sql`COUNT(*)` }).from(questions).where(eq(questions.active, true));
-    const [{ auditadas }] = await ctx.db.select({ auditadas: sql`COUNT(*)` }).from(questions).where(and2(eq(questions.active, true), eq(questions.auditada, true)));
+    const [{ auditadas }] = await ctx.db.select({ auditadas: sql`COUNT(*)` }).from(questions).where(and(eq(questions.active, true), eq(questions.auditada, true)));
     return { total: Number(total), auditadas: Number(auditadas) };
   }),
   // Marca/desmarca auditada manualmente (sem passar pelo processo de IA)
@@ -724,7 +724,7 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
 
 // server/simulations.router.ts
 import { z as z2 } from "zod";
-import { eq as eq2, and as and3, desc as desc2, sql as sql2, inArray as inArray2, gte } from "drizzle-orm";
+import { eq as eq2, and as and2, desc as desc2, sql as sql2, inArray as inArray2, gte } from "drizzle-orm";
 import { TRPCError as TRPCError3 } from "@trpc/server";
 
 // server/tri.ts
@@ -1022,7 +1022,7 @@ var STAGE_CONFIG = {
   3: { total: 45, minPass: 0, timeLimitPerQuestion: 3 * 60 }
 };
 async function drawQuestions(db2, count, excludeIds = [], fonte) {
-  const whereClause = fonte ? and3(eq2(questions.active, true), eq2(questions.fonte, fonte)) : eq2(questions.active, true);
+  const whereClause = fonte ? and2(eq2(questions.active, true), eq2(questions.fonte, fonte)) : eq2(questions.active, true);
   const rows = await db2.select({
     id: questions.id,
     conteudo_principal: questions.conteudo_principal,
@@ -1056,7 +1056,7 @@ var simulationsRouter = createTRPCRouter({
     const config = STAGE_CONFIG[stage];
     const total = fonte && fonte !== "ENEM" ? 12 : config.total;
     const [existing] = await ctx.db.select({ id: simulations.id }).from(simulations).where(
-      and3(
+      and2(
         eq2(simulations.userId, userId),
         eq2(simulations.status, "in_progress"),
         sql2`${simulations.stage} > 0`
@@ -1112,7 +1112,7 @@ var simulationsRouter = createTRPCRouter({
   ).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const [sim] = await ctx.db.select().from(simulations).where(
-      and3(
+      and2(
         eq2(simulations.id, input.simulationId),
         eq2(simulations.userId, userId),
         eq2(simulations.status, "in_progress")
@@ -1124,7 +1124,7 @@ var simulationsRouter = createTRPCRouter({
       questionId: simulationAnswers.questionId,
       gabarito: questions.gabarito
     }).from(simulationAnswers).innerJoin(questions, eq2(simulationAnswers.questionId, questions.id)).where(
-      and3(
+      and2(
         eq2(simulationAnswers.simulationId, input.simulationId),
         eq2(simulationAnswers.questionId, input.questionId)
       )
@@ -1150,7 +1150,7 @@ var simulationsRouter = createTRPCRouter({
   ).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const [sim] = await ctx.db.select().from(simulations).where(
-      and3(
+      and2(
         eq2(simulations.id, input.simulationId),
         eq2(simulations.userId, userId),
         eq2(simulations.status, "in_progress")
@@ -1230,7 +1230,7 @@ var simulationsRouter = createTRPCRouter({
   getActive: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
     const [sim] = await ctx.db.select().from(simulations).where(
-      and3(eq2(simulations.userId, userId), eq2(simulations.status, "in_progress"))
+      and2(eq2(simulations.userId, userId), eq2(simulations.status, "in_progress"))
     ).limit(1);
     if (!sim) return null;
     const answers = await ctx.db.select({
@@ -1281,7 +1281,7 @@ var simulationsRouter = createTRPCRouter({
   getResult: protectedProcedure.input(z2.object({ simulationId: z2.number().int().positive() })).query(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const [sim] = await ctx.db.select().from(simulations).where(
-      and3(
+      and2(
         eq2(simulations.id, input.simulationId),
         eq2(simulations.userId, userId),
         eq2(simulations.status, "completed")
@@ -1364,7 +1364,7 @@ var simulationsRouter = createTRPCRouter({
       totalQuestions: simulations.totalQuestions,
       totalTimeSeconds: simulations.totalTimeSeconds,
       completedAt: simulations.completedAt
-    }).from(simulations).where(and3(...filters)).orderBy(desc2(simulations.completedAt)).limit(input.limit);
+    }).from(simulations).where(and2(...filters)).orderBy(desc2(simulations.completedAt)).limit(input.limit);
     return rows;
   }),
   // ---------------------------------------------------------------------------
@@ -1380,7 +1380,7 @@ var simulationsRouter = createTRPCRouter({
       totalQuestions: simulations.totalQuestions,
       completedAt: simulations.completedAt
     }).from(simulations).where(
-      and3(eq2(simulations.userId, userId), eq2(simulations.status, "completed"))
+      and2(eq2(simulations.userId, userId), eq2(simulations.status, "completed"))
     ).orderBy(desc2(simulations.completedAt));
     const stageStats = [1, 2, 3].map((stage) => {
       const attempts = completed.filter((s) => s.stage === stage);
@@ -1420,7 +1420,7 @@ var simulationsRouter = createTRPCRouter({
       answeredAt: simulationAnswers.answeredAt,
       isCorrect: simulationAnswers.isCorrect
     }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).where(
-      and3(
+      and2(
         eq2(simulations.userId, userId),
         sql2`${simulationAnswers.answeredAt} IS NOT NULL`
       )
@@ -1437,7 +1437,7 @@ var simulationsRouter = createTRPCRouter({
       completedAt: simulations.completedAt,
       totalQuestions: simulations.totalQuestions,
       correctCount: simulations.correctCount
-    }).from(simulations).where(and3(eq2(simulations.userId, userId), eq2(simulations.status, "completed"))).orderBy(desc2(simulations.completedAt));
+    }).from(simulations).where(and2(eq2(simulations.userId, userId), eq2(simulations.status, "completed"))).orderBy(desc2(simulations.completedAt));
     const startOfWeek = new Date(now);
     startOfWeek.setHours(0, 0, 0, 0);
     const dayOfWeek = startOfWeek.getDay();
@@ -1525,7 +1525,7 @@ var simulationsRouter = createTRPCRouter({
       correctCount: simulations.correctCount,
       completedAt: simulations.completedAt,
       userName: users.name
-    }).from(simulations).innerJoin(users, eq2(simulations.userId, users.id)).where(and3(eq2(simulations.stage, 3), eq2(simulations.status, "completed"))).orderBy(desc2(simulations.score)).limit(100);
+    }).from(simulations).innerJoin(users, eq2(simulations.userId, users.id)).where(and2(eq2(simulations.stage, 3), eq2(simulations.status, "completed"))).orderBy(desc2(simulations.score)).limit(100);
     const bestByUser = /* @__PURE__ */ new Map();
     for (const row of rows) {
       const existing = bestByUser.get(row.userId);
@@ -1559,7 +1559,7 @@ var simulationsRouter = createTRPCRouter({
       tags: questions.tags,
       isCorrect: simulationAnswers.isCorrect,
       timeSpent: simulationAnswers.timeSpentSeconds
-    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq2(simulationAnswers.questionId, questions.id)).where(and3(
+    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq2(simulationAnswers.questionId, questions.id)).where(and2(
       eq2(simulations.userId, userId),
       sql2`${simulationAnswers.isCorrect} IS NOT NULL`
     ));
@@ -1580,7 +1580,7 @@ var simulationsRouter = createTRPCRouter({
       answers: dailyChallenges.answers,
       questionIds: dailyChallenges.questionIds,
       completed: dailyChallenges.completed
-    }).from(dailyChallenges).where(and3(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
+    }).from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
     if (challenges.length > 0) {
       const allQIds = [...new Set(challenges.flatMap((c) => c.questionIds))];
       if (allQIds.length > 0) {
@@ -1648,19 +1648,19 @@ var simulationsRouter = createTRPCRouter({
       answeredCount: sql2`COUNT(*)`,
       totalTime: sql2`COALESCE(SUM(${simulationAnswers.timeSpentSeconds}), 0)`,
       timedCount: sql2`SUM(CASE WHEN ${simulationAnswers.timeSpentSeconds} > 0 THEN 1 ELSE 0 END)`
-    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).where(and3(
+    }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).where(and2(
       eq2(simulations.userId, userId),
       sql2`${simulationAnswers.isCorrect} IS NOT NULL`
     ));
     const simAnswered = Number(simAgg[0]?.answeredCount ?? 0);
     const simTimeSum = Number(simAgg[0]?.totalTime ?? 0);
     const simTimed = Number(simAgg[0]?.timedCount ?? 0);
-    const simSessionAgg = await ctx.db.select({ total: sql2`COALESCE(SUM(${simulations.totalTimeSeconds}), 0)` }).from(simulations).where(and3(eq2(simulations.userId, userId), eq2(simulations.status, "completed")));
+    const simSessionAgg = await ctx.db.select({ total: sql2`COALESCE(SUM(${simulations.totalTimeSeconds}), 0)` }).from(simulations).where(and2(eq2(simulations.userId, userId), eq2(simulations.status, "completed")));
     const simSessionTime = Number(simSessionAgg[0]?.total ?? 0);
     const dcAgg = await ctx.db.select({
       qSum: sql2`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`,
       timeSum: sql2`COALESCE(SUM(${dailyChallenges.totalTimeSeconds}), 0)`
-    }).from(dailyChallenges).where(and3(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
+    }).from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
     const dcQuestions = Number(dcAgg[0]?.qSum ?? 0);
     const dcTime = Number(dcAgg[0]?.timeSum ?? 0);
     const drAgg = await ctx.db.select({
@@ -1726,8 +1726,8 @@ var simulationsRouter = createTRPCRouter({
       conteudo_principal: questions.conteudo_principal,
       nivel_dificuldade: questions.nivel_dificuldade,
       tags: questions.tags
-    }).from(questions).where(and3(...filters)).orderBy(sql2`RAND()`).limit(input.count);
-    await ctx.db.update(simulations).set({ status: "abandoned" }).where(and3(
+    }).from(questions).where(and2(...filters)).orderBy(sql2`RAND()`).limit(input.count);
+    await ctx.db.update(simulations).set({ status: "abandoned" }).where(and2(
       eq2(simulations.userId, userId),
       eq2(simulations.status, "in_progress"),
       sql2`${simulations.stage} = 0`
@@ -1749,7 +1749,7 @@ var simulationsRouter = createTRPCRouter({
     isCorrect: z2.boolean(),
     order: z2.number().int().min(0)
   })).mutation(async ({ ctx, input }) => {
-    const [sim] = await ctx.db.select({ id: simulations.id }).from(simulations).where(and3(
+    const [sim] = await ctx.db.select({ id: simulations.id }).from(simulations).where(and2(
       eq2(simulations.id, input.simulationId),
       eq2(simulations.userId, ctx.user.id)
     )).limit(1);
@@ -1775,7 +1775,7 @@ var simulationsRouter = createTRPCRouter({
       correctCount: input.correctCount,
       totalTimeSeconds: input.totalTimeSeconds,
       completedAt: /* @__PURE__ */ new Date()
-    }).where(and3(
+    }).where(and2(
       eq2(simulations.id, input.simulationId),
       eq2(simulations.userId, ctx.user.id)
     ));
@@ -1818,7 +1818,7 @@ var simulationsRouter = createTRPCRouter({
   getDailyChallenge: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
     const today = new Date(Date.now() - 3 * 60 * 60 * 1e3).toISOString().slice(0, 10);
-    const [existing] = await ctx.db.select().from(dailyChallenges).where(and3(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.challengeDate, today))).orderBy(desc2(dailyChallenges.id)).limit(1);
+    const [existing] = await ctx.db.select().from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.challengeDate, today))).orderBy(desc2(dailyChallenges.id)).limit(1);
     if (existing) {
       const qs = await ctx.db.select({
         id: questions.id,
@@ -1879,7 +1879,7 @@ var simulationsRouter = createTRPCRouter({
     selectedAnswer: z2.string().length(1)
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
-    const [challenge] = await ctx.db.select().from(dailyChallenges).where(and3(eq2(dailyChallenges.id, input.challengeId), eq2(dailyChallenges.userId, userId))).limit(1);
+    const [challenge] = await ctx.db.select().from(dailyChallenges).where(and2(eq2(dailyChallenges.id, input.challengeId), eq2(dailyChallenges.userId, userId))).limit(1);
     if (!challenge || challenge.completed) return { ok: false };
     const [q] = await ctx.db.select({ gabarito: questions.gabarito }).from(questions).where(eq2(questions.id, input.questionId)).limit(1);
     const newAnswers = { ...challenge.answers, [input.questionId]: input.selectedAnswer.toUpperCase() };
@@ -1900,7 +1900,7 @@ var simulationsRouter = createTRPCRouter({
     totalTimeSeconds: z2.number().int().min(0).max(7200).optional()
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
-    const [challenge] = await ctx.db.select().from(dailyChallenges).where(and3(eq2(dailyChallenges.id, input.challengeId), eq2(dailyChallenges.userId, userId))).limit(1);
+    const [challenge] = await ctx.db.select().from(dailyChallenges).where(and2(eq2(dailyChallenges.id, input.challengeId), eq2(dailyChallenges.userId, userId))).limit(1);
     if (!challenge) return { ok: false };
     const answers = challenge.answers;
     const qs = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito }).from(questions).where(inArray2(questions.id, challenge.questionIds));
@@ -1986,13 +1986,13 @@ var simulationsRouter = createTRPCRouter({
       conteudo_principal: questions.conteudo_principal,
       nivel_dificuldade: questions.nivel_dificuldade
     }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq2(simulationAnswers.questionId, questions.id)).where(
-      and3(
+      and2(
         eq2(simulations.userId, userId),
         eq2(simulations.status, "completed"),
         eq2(simulationAnswers.isCorrect, false)
       )
     ).orderBy(desc2(simulationAnswers.answeredAt));
-    const completedChallenges = await ctx.db.select().from(dailyChallenges).where(and3(
+    const completedChallenges = await ctx.db.select().from(dailyChallenges).where(and2(
       eq2(dailyChallenges.userId, userId),
       eq2(dailyChallenges.completed, true)
     ));
@@ -2060,7 +2060,7 @@ var simulationsRouter = createTRPCRouter({
   abandon: protectedProcedure.input(z2.object({ simulationId: z2.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     await ctx.db.update(simulations).set({ status: "abandoned" }).where(
-      and3(
+      and2(
         eq2(simulations.id, input.simulationId),
         eq2(simulations.userId, userId),
         eq2(simulations.status, "in_progress")
@@ -2082,7 +2082,7 @@ var simulationsRouter = createTRPCRouter({
       correct: sql2`COALESCE(SUM(${simulations.correctCount}), 0)`,
       total: sql2`COALESCE(SUM(${simulations.totalQuestions}), 0)`
     }).from(simulations).where(
-      and3(
+      and2(
         eq2(simulations.userId, userId),
         eq2(simulations.status, "completed"),
         gte(simulations.completedAt, cutoff)
@@ -2093,7 +2093,7 @@ var simulationsRouter = createTRPCRouter({
       correct: sql2`COALESCE(SUM(${dailyChallenges.correctCount}), 0)`,
       total: sql2`COALESCE(SUM(CASE WHEN ${dailyChallenges.completed} THEN 1 ELSE 0 END) * 5, 0)`
     }).from(dailyChallenges).where(
-      and3(
+      and2(
         eq2(dailyChallenges.userId, userId),
         eq2(dailyChallenges.completed, true),
         gte(dailyChallenges.challengeDate, cutoff.toISOString().slice(0, 10))
@@ -2234,7 +2234,7 @@ var authRouter = createTRPCRouter({
 
 // server/users.router.ts
 import { z as z4 } from "zod";
-import { eq as eq4, sql as sql3 } from "drizzle-orm";
+import { eq as eq4, sql as sql3, and as and3, or, inArray as inArray3 } from "drizzle-orm";
 import { TRPCError as TRPCError5 } from "@trpc/server";
 var usersRouter = createTRPCRouter({
   // Lista todos os utilizadores com status de assinatura
@@ -2320,7 +2320,7 @@ var usersRouter = createTRPCRouter({
       conteudo_principal: questions.conteudo_principal,
       param_b: questions.param_b
     };
-    const easy = await ctx.db.select(cols).from(questions).where(and(eq4(questions.active, true), sql3`${questions.param_b} <= -0.5`)).orderBy(sql3`RAND()`).limit(10);
+    const easy = await ctx.db.select(cols).from(questions).where(and3(eq4(questions.active, true), sql3`${questions.param_b} <= -0.5`)).orderBy(sql3`RAND()`).limit(10);
     const midTopics = [
       "Pot\xEAncias e ra\xEDzes",
       "Fra\xE7\xF5es",
@@ -2331,18 +2331,21 @@ var usersRouter = createTRPCRouter({
       "Conjuntos num\xE9ricos",
       "Conjuntos Num\xE9ricos"
     ];
-    const midConditions = midTopics.map((t2) => sql3`${questions.conteudo_principal} = ${t2}`);
-    const tagKeywords = ["pot\xEAnci", "radical", "raiz", "fra\xE7\xE3o", "fra\xE7\xF5es"];
-    const tagConditions = tagKeywords.map((k) => sql3`JSON_SEARCH(LOWER(${questions.tags}), 'one', ${`%${k}%`}) IS NOT NULL`);
     const mid = await ctx.db.select(cols).from(questions).where(
-      and(
+      and3(
         eq4(questions.active, true),
         sql3`${questions.param_b} > -0.5 AND ${questions.param_b} <= 0.5`,
-        sql3`(${sql3.join([...midConditions, ...tagConditions], sql3` OR `)})`
+        or(
+          inArray3(questions.conteudo_principal, midTopics),
+          sql3`LOWER(${questions.conteudo_principal}) LIKE '%pot%'`,
+          sql3`LOWER(${questions.conteudo_principal}) LIKE '%fra%'`,
+          sql3`LOWER(${questions.conteudo_principal}) LIKE '%radic%'`,
+          sql3`LOWER(${questions.conteudo_principal}) LIKE '%raiz%'`
+        )
       )
     ).orderBy(sql3`RAND()`).limit(5);
     const hard = await ctx.db.select(cols).from(questions).where(
-      and(
+      and3(
         eq4(questions.active, true),
         sql3`${questions.param_b} > 0.5`,
         sql3`${questions.fonte} IN ('ENEM', 'REPVET')`
@@ -2350,7 +2353,7 @@ var usersRouter = createTRPCRouter({
     ).orderBy(sql3`RAND()`).limit(5);
     const fallback = async (needed, exclude) => {
       if (needed <= 0) return [];
-      return ctx.db.select(cols).from(questions).where(and(eq4(questions.active, true), sql3`${questions.id} NOT IN (${exclude.join(",") || 0})`)).orderBy(sql3`RAND()`).limit(needed);
+      return ctx.db.select(cols).from(questions).where(and3(eq4(questions.active, true), sql3`${questions.id} NOT IN (${exclude.join(",") || 0})`)).orderBy(sql3`RAND()`).limit(needed);
     };
     const usedIds = [...easy, ...mid, ...hard].map((q) => q.id);
     const easyFill = easy.length < 10 ? await fallback(10 - easy.length, usedIds) : [];
@@ -2388,7 +2391,7 @@ var usersRouter = createTRPCRouter({
     const userId = ctx.user.id;
     const questionIds = Object.keys(input.answers).map(Number).filter(Boolean);
     if (questionIds.length === 0) throw new TRPCError5({ code: "BAD_REQUEST", message: "Nenhuma resposta enviada." });
-    const qRows = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito }).from(questions).where(sql3`${questions.id} IN ${questionIds}`);
+    const qRows = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito }).from(questions).where(inArray3(questions.id, questionIds));
     const gabMap = new Map(qRows.map((q) => [q.id, q.gabarito]));
     let correct = 0;
     for (const [idStr, chosen] of Object.entries(input.answers)) {
@@ -2700,7 +2703,7 @@ var agendaRouter = createTRPCRouter({
 
 // server/flashcards.router.ts
 import { z as z8 } from "zod";
-import { eq as eq8, and as and6, asc as asc4, inArray as inArray3, sql as sql6 } from "drizzle-orm";
+import { eq as eq8, and as and6, asc as asc4, inArray as inArray4, sql as sql6 } from "drizzle-orm";
 function applySM2(quality, prev) {
   let { easinessFactor, interval, repetitions } = prev;
   easinessFactor = Math.max(
@@ -2800,7 +2803,7 @@ var flashcardsRouter = createTRPCRouter({
       const totalCards = cards.length;
       if (totalCards === 0) return { ...deck, totalCards: 0, dueCount: 0, newCount: 0, masteredCount: 0, studyableCount: 0 };
       const cardIds = cards.map((c) => c.id);
-      const progRows = await db.select().from(flashcardProgress).where(and6(eq8(flashcardProgress.userId, userId), inArray3(flashcardProgress.cardId, cardIds)));
+      const progRows = await db.select().from(flashcardProgress).where(and6(eq8(flashcardProgress.userId, userId), inArray4(flashcardProgress.cardId, cardIds)));
       const progressMap = new Map(progRows.map((p) => [p.cardId, p]));
       let dueCount = 0, newCount = 0, masteredCount = 0;
       for (const { id } of cards) {
@@ -2823,7 +2826,7 @@ var flashcardsRouter = createTRPCRouter({
       return { deck: deck ?? null, cards: [], totalInDeck: 0, dueCount: 0, newCount: 0 };
     }
     const cardIds = allCards.map((c) => c.id);
-    const progRows = await db.select().from(flashcardProgress).where(and6(eq8(flashcardProgress.userId, userId), inArray3(flashcardProgress.cardId, cardIds)));
+    const progRows = await db.select().from(flashcardProgress).where(and6(eq8(flashcardProgress.userId, userId), inArray4(flashcardProgress.cardId, cardIds)));
     const progressMap = new Map(progRows.map((p) => [p.cardId, p]));
     const due = [];
     const nw = [];
@@ -2946,7 +2949,7 @@ var trilhasRouter = createTRPCRouter({
 // server/tutor.router.ts
 import { z as z10 } from "zod";
 import { TRPCError as TRPCError6 } from "@trpc/server";
-import { eq as eq10, and as and8, desc as desc4, sql as sql7, inArray as inArray4 } from "drizzle-orm";
+import { eq as eq10, and as and8, desc as desc4, sql as sql7, inArray as inArray5 } from "drizzle-orm";
 var SYSTEM_PROMPT = `Voc\xEA \xE9 o Tutor Vetor, um assistente especializado em matem\xE1tica para o ENEM e vestibulares brasileiros (UNICAMP, FUVEST, UNESP).
 
 Regras inviol\xE1veis:
@@ -3025,7 +3028,7 @@ async function collectStudentData(ctx) {
   if (challenges.length > 0) {
     const allQIds = [...new Set(challenges.flatMap((c) => c.questionIds))];
     if (allQIds.length > 0) {
-      const qDetails = await ctx.db.select({ id: questions.id, conteudo: questions.conteudo_principal, tags: questions.tags, gabarito: questions.gabarito }).from(questions).where(inArray4(questions.id, allQIds));
+      const qDetails = await ctx.db.select({ id: questions.id, conteudo: questions.conteudo_principal, tags: questions.tags, gabarito: questions.gabarito }).from(questions).where(inArray5(questions.id, allQIds));
       const qMap = new Map(qDetails.map((q) => [q.id, q]));
       for (const ch of challenges) {
         const answers = ch.answers;
