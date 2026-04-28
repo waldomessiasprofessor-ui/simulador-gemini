@@ -1351,10 +1351,6 @@ export default function Dashboard() {
                   </p>
                 </div>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", margin: 0 }}>{score}/20</p>
-                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", margin: 0 }}>no diagnóstico</p>
-              </div>
             </div>
             <div style={{ padding: "12px 16px" }}>
               <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "0 0 2px" }}>{info.advice}</p>
