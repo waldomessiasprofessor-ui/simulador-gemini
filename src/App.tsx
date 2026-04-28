@@ -67,6 +67,21 @@ function SubscriptionBanner({ session }: { session: any }) {
 export default function App() {
   const { data: session, isLoading, isError } = trpc.auth.me.useQuery(undefined, { retry: false });
   const utils = trpc.useUtils();
+  const needsDiagnosis = !!session && !session.diagnosisLevel && session.role !== "admin";
+  const [diagnosisOpen, setDiagnosisOpen] = useState(false);
+  const [location, setLocation] = useLocation();
+
+  // Abre automaticamente na primeira visita se nunca fez o diagnóstico
+  useEffect(() => {
+    if (needsDiagnosis) setDiagnosisOpen(true);
+  }, [needsDiagnosis]);
+
+  // Escuta evento global para abrir o diagnóstico de qualquer lugar
+  useEffect(() => {
+    const h = () => setDiagnosisOpen(true);
+    window.addEventListener("open-diagnosis", h);
+    return () => window.removeEventListener("open-diagnosis", h);
+  }, []);
 
   if (isLoading) return (
     <div className="flex h-screen items-center justify-center" style={{ background: "#009688" }}>
@@ -82,14 +97,66 @@ export default function App() {
   );
 
   const isAdmin = session.role === "admin";
+  const hasDiagnosis = !!session.diagnosisLevel || isAdmin;
 
-  // Primeiro acesso: redireciona para diagnóstico se não foi feito
-  if (!session.diagnosisLevel && session.role !== "admin") {
+  // Rota directa /diagnostico — abre para qualquer utilizador autenticado
+  if (location === "/diagnostico") {
     return (
       <Diagnostico
         session={session}
-        onComplete={() => utils.auth.me.invalidate()}
+        onComplete={() => { utils.auth.me.invalidate(); setLocation("/"); }}
+        onSkip={() => setLocation("/")}
       />
+    );
+  }
+
+  // Overlay do diagnóstico (pode ser pulado)
+  if (diagnosisOpen && needsDiagnosis) {
+    return (
+      <Diagnostico
+        session={session}
+        onComplete={() => { utils.auth.me.invalidate(); setDiagnosisOpen(false); }}
+        onSkip={() => setDiagnosisOpen(false)}
+      />
+    );
+  }
+
+  // Componente de bloqueio para rotas que requerem diagnóstico
+  function Gate({ children }: { children: React.ReactNode }) {
+    if (hasDiagnosis) return <>{children}</>;
+    return (
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", gap: 20, padding: "60px 24px", textAlign: "center",
+      }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: "50%",
+          background: "linear-gradient(135deg, #263238, #009688)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 32,
+        }}>🔒</div>
+        <div>
+          <p style={{ fontSize: 18, fontWeight: 800, color: "var(--foreground)", margin: "0 0 8px" }}>
+            Recurso bloqueado
+          </p>
+          <p style={{ fontSize: 14, color: "var(--muted-foreground)", margin: 0, maxWidth: 300 }}>
+            Complete o diagnóstico inicial para desbloquear esta área e personalizar sua experiência.
+          </p>
+        </div>
+        <button
+          onClick={() => setDiagnosisOpen(true)}
+          style={{
+            padding: "14px 28px", borderRadius: 14, border: "none", cursor: "pointer",
+            background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
+            color: "#fff", fontSize: 15, fontWeight: 800,
+            boxShadow: "0 4px 16px rgba(0,150,136,0.4)",
+          }}>
+          Fazer diagnóstico agora 🚀
+        </button>
+        <p style={{ fontSize: 12, color: "var(--muted-foreground)" }}>
+          Leva cerca de 15 minutos · 20 questões
+        </p>
+      </div>
     );
   }
 
@@ -101,28 +168,28 @@ export default function App() {
       <main className="flex-1 container mx-auto px-4 py-6 max-w-4xl">
         <Switch>
           <Route path="/"><Dashboard /></Route>
-          <Route path="/simulado"><Simulador /></Route>
-          <Route path="/simulado/enem"><Simulador fonte="ENEM" /></Route>
-          <Route path="/simulado/unicamp"><Simulador fonte="UNICAMP" /></Route>
-          <Route path="/simulado/fuvest"><Simulador fonte="FUVEST" /></Route>
-          <Route path="/simulado/unesp"><Simulador fonte="UNESP" /></Route>
-          <Route path="/simulado/repvet"><Simulador fonte="REPVET" /></Route>
+          <Route path="/simulado"><Gate><Simulador /></Gate></Route>
+          <Route path="/simulado/enem"><Gate><Simulador fonte="ENEM" /></Gate></Route>
+          <Route path="/simulado/unicamp"><Gate><Simulador fonte="UNICAMP" /></Gate></Route>
+          <Route path="/simulado/fuvest"><Gate><Simulador fonte="FUVEST" /></Gate></Route>
+          <Route path="/simulado/unesp"><Gate><Simulador fonte="UNESP" /></Gate></Route>
+          <Route path="/simulado/repvet"><Gate><Simulador fonte="REPVET" /></Gate></Route>
           <Route path="/questoes"><Questoes fonte="ENEM" /></Route>
           <Route path="/questoes/unicamp"><Questoes fonte="UNICAMP" /></Route>
           <Route path="/questoes/fuvest"><Questoes fonte="FUVEST" /></Route>
           <Route path="/questoes/unesp"><Questoes fonte="UNESP" /></Route>
           <Route path="/questoes/repvet"><Questoes fonte="REPVET" /></Route>
           <Route path="/resultado/:id">
-            {(params) => <Resultado id={Number(params.id)} />}
+            {(params) => <Gate><Resultado id={Number(params.id)} /></Gate>}
           </Route>
           <Route path="/revise"><Redirect to="/" /></Route>
           <Route path="/revise/:id"><Redirect to="/" /></Route>
           <Route path="/revisao"><Redirect to="/" /></Route>
           <Route path="/historico"><Historico /></Route>
-          <Route path="/treino"><Treino /></Route>
-          <Route path="/ranking"><Ranking /></Route>
+          <Route path="/treino"><Gate><Treino /></Gate></Route>
+          <Route path="/ranking"><Gate><Ranking /></Gate></Route>
           <Route path="/formulas"><Formulas /></Route>
-          <Route path="/desafio"><DesafioPage /></Route>
+          <Route path="/desafio"><Gate><DesafioPage /></Gate></Route>
           <Route path="/agenda"><Agenda /></Route>
           <Route path="/trilhas"><Trilha /></Route>
           <Route path="/trilha/:areaSlug/:licaoSlug">
