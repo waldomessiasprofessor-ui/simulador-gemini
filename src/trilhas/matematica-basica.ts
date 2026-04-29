@@ -1582,5 +1582,495 @@ $$= 2(\\sqrt{3}-1) = 2\\sqrt{3} - 2$$
         },
       ],
     },
+
+    // =========================================================================
+    // Capítulo 4 — Expressões Numéricas
+    // =========================================================================
+    {
+      slug: "expressoes-numericas",
+      titulo: "Expressões Numéricas",
+      licoes: [
+
+        // =====================================================================
+        // Lição 1 — Ordem das operações
+        // =====================================================================
+        {
+          slug: "ordem-das-operacoes",
+          titulo: "Ordem das operações",
+          resumo:
+            "A hierarquia que define qual operação fazer primeiro: parênteses, potências e raízes, multiplicação e divisão, adição e subtração.",
+          duracaoMinutos: 20,
+
+          explicacao: `
+Uma **expressão numérica** é uma combinação de números e operações. Quando há mais de uma operação, existe uma **hierarquia** que determina a ordem de cálculo — ignorá-la é o erro mais frequente em prova.
+
+### A hierarquia das operações
+
+**1º — Parênteses (e colchetes, chaves):**
+Sempre calcule o que está dentro dos parênteses **primeiro**. Se houver parênteses aninhados, comece pelo mais interno.
+
+$$
+5 \\times (2 + 3) = 5 \\times 5 = 25 \\quad (\\text{não } 5 \\times 2 + 3 = 13!)
+$$
+
+**2º — Potências e raízes:**
+Depois dos parênteses, calcule potências e raízes.
+
+$$
+3 + 2^3 = 3 + 8 = 11 \\quad (\\text{não } 5^3 = 125!)
+$$
+
+**3º — Multiplicação e divisão:**
+Mesma prioridade — resolva da **esquerda para a direita**.
+
+$$
+12 \\div 3 \\times 2 = 4 \\times 2 = 8 \\quad (\\text{não } 12 \\div 6 = 2!)
+$$
+
+**4º — Adição e subtração:**
+Por último, da esquerda para a direita.
+
+$$
+10 - 3 + 4 = 7 + 4 = 11 \\quad (\\text{não } 10 - 7 = 3!)
+$$
+
+### Dica prática
+
+Ao ver uma expressão longa, **numere mentalmente** as operações na ordem correta antes de calcular qualquer coisa. Pular a hierarquia é a maior fonte de erros em expressões.
+`.trim(),
+
+          exemplos: [
+            {
+              titulo: "Exemplo 1 — Parênteses e potência",
+              problema: "Calcule $4 + 3 \\times (5 - 2)^2$.",
+              resolucao: `
+**Passo 1:** Parênteses: $5 - 2 = 3$.
+
+**Passo 2:** Potência: $3^2 = 9$.
+
+**Passo 3:** Multiplicação: $3 \\times 9 = 27$.
+
+**Passo 4:** Adição: $4 + 27 = 31$.
+
+**Resposta:** $31$.
+`.trim(),
+            },
+            {
+              titulo: "Exemplo 2 — Raiz quadrada na expressão",
+              problema: "Calcule $\\sqrt{3^2 + 4^2} + 2 \\times 3$.",
+              resolucao: `
+**Passo 1:** Potências dentro da raiz: $3^2 = 9$ e $4^2 = 16$.
+
+**Passo 2:** Adição dentro da raiz: $9 + 16 = 25$.
+
+**Passo 3:** Raiz: $\\sqrt{25} = 5$.
+
+**Passo 4:** Multiplicação: $2 \\times 3 = 6$.
+
+**Passo 5:** Adição final: $5 + 6 = 11$.
+
+**Resposta:** $11$.
+`.trim(),
+            },
+          ],
+
+          exercicios: [
+            // ── Q1 — Média ──────────────────────────────────────────────────
+            {
+              id: "exp-q1",
+              enunciado: "Qual o valor de $5 + 2 \\times 4$?",
+              alternativas: [
+                { letra: "A", texto: "$28$" },
+                { letra: "B", texto: "$13$" },
+                { letra: "C", texto: "$16$" },
+                { letra: "D", texto: "$25$" },
+                { letra: "E", texto: "$11$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "A multiplicação tem prioridade sobre a adição: $2 \\times 4 = 8$, depois $5 + 8 = 13$. O erro clássico (A) é somar primeiro: $(5+2) \\times 4 = 28$ — mas sem parênteses explícitos isso não é válido.",
+            },
+
+            // ── Q2 — Média ──────────────────────────────────────────────────
+            {
+              id: "exp-q2",
+              enunciado: "Qual o valor de $(3 + 2) \\times 4$?",
+              alternativas: [
+                { letra: "A", texto: "$14$" },
+                { letra: "B", texto: "$11$" },
+                { letra: "C", texto: "$20$" },
+                { letra: "D", texto: "$24$" },
+                { letra: "E", texto: "$9$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Os parênteses têm prioridade: $3 + 2 = 5$. Depois a multiplicação: $5 \\times 4 = 20$. Sem parênteses, seria $3 + (2 \\times 4) = 11$ — os parênteses aqui mudam completamente o resultado.",
+            },
+
+            // ── Q3 — Média ──────────────────────────────────────────────────
+            {
+              id: "exp-q3",
+              enunciado: "Qual o valor de $\\sqrt{2^2 + 12}$?",
+              alternativas: [
+                { letra: "A", texto: "$2$" },
+                { letra: "B", texto: "$\\sqrt{16}$" },
+                { letra: "C", texto: "$8$" },
+                { letra: "D", texto: "$4$" },
+                { letra: "E", texto: "$16$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "Primeiro a potência: $2^2 = 4$. Depois a soma dentro da raiz: $4 + 12 = 16$. Por fim a raiz: $\\sqrt{16} = 4$. (A alternativa B tem o mesmo valor numérico, mas a resposta pedida é $4$.)",
+            },
+
+            // ── Q4 — Média ──────────────────────────────────────────────────
+            {
+              id: "exp-q4",
+              enunciado: "Calcule $\\displaystyle \\frac{1}{2} + \\frac{1}{3}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{5}{6}$" },
+                { letra: "B", texto: "$\\dfrac{2}{5}$" },
+                { letra: "C", texto: "$\\dfrac{1}{6}$" },
+                { letra: "D", texto: "$\\dfrac{2}{3}$" },
+                { letra: "E", texto: "$\\dfrac{1}{3}$" },
+              ],
+              gabarito: "A",
+              explicacao:
+                "$\\text{MMC}(2,3) = 6$. Convertemos: $\\frac{1}{2} = \\frac{3}{6}$ e $\\frac{1}{3} = \\frac{2}{6}$. Somando: $\\frac{3+2}{6} = \\frac{5}{6}$. O erro (B) é somar numeradores e denominadores separadamente — proibido em frações.",
+            },
+
+            // ── Q5 — Média ──────────────────────────────────────────────────
+            {
+              id: "exp-q5",
+              enunciado: "Qual o valor de $12 \\div 3 + 2^2$?",
+              alternativas: [
+                { letra: "A", texto: "$5$" },
+                { letra: "B", texto: "$12$" },
+                { letra: "C", texto: "$8$" },
+                { letra: "D", texto: "$6$" },
+                { letra: "E", texto: "$16$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "Potência primeiro: $2^2 = 4$. Divisão: $12 \\div 3 = 4$. Adição: $4 + 4 = 8$. Divisão e potência têm prioridade sobre a adição — devem ser resolvidas antes.",
+            },
+
+            // ── Q6 — Difícil ─────────────────────────────────────────────────
+            {
+              id: "exp-q6",
+              enunciado:
+                "Qual o valor de $\\dfrac{(6 - 3)^2 \\times (8 \\div 4)}{2}$?",
+              alternativas: [
+                { letra: "A", texto: "$18$" },
+                { letra: "B", texto: "$4$" },
+                { letra: "C", texto: "$3$" },
+                { letra: "D", texto: "$36$" },
+                { letra: "E", texto: "$9$" },
+              ],
+              gabarito: "E",
+              explicacao:
+                "**Passo 1:** Parênteses: $6 - 3 = 3$ e $8 \\div 4 = 2$. **Passo 2:** Potência: $3^2 = 9$. **Passo 3:** Numerador: $9 \\times 2 = 18$. **Passo 4:** Divisão final: $18 \\div 2 = 9$.",
+            },
+
+            // ── Q7 — Difícil ─────────────────────────────────────────────────
+            {
+              id: "exp-q7",
+              enunciado: "Qual o valor de $4^{-1} + 2^{-1}$?",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{1}{2}$" },
+                { letra: "B", texto: "$\\dfrac{3}{4}$" },
+                { letra: "C", texto: "$\\dfrac{5}{4}$" },
+                { letra: "D", texto: "$\\dfrac{1}{8}$" },
+                { letra: "E", texto: "$\\dfrac{3}{8}$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "Expoente negativo: $4^{-1} = \\frac{1}{4}$ e $2^{-1} = \\frac{1}{2}$. Somando com $\\text{MMC}(4,2)=4$: $\\frac{1}{4} + \\frac{2}{4} = \\frac{3}{4}$.",
+            },
+
+            // ── Q8 — Difícil ─────────────────────────────────────────────────
+            {
+              id: "exp-q8",
+              enunciado: "Calcule $\\sqrt{16} \\times 3 + 2$.",
+              alternativas: [
+                { letra: "A", texto: "$50$" },
+                { letra: "B", texto: "$12$" },
+                { letra: "C", texto: "$16$" },
+                { letra: "D", texto: "$14$" },
+                { letra: "E", texto: "$8$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "Raiz primeiro: $\\sqrt{16} = 4$. Multiplicação (tem prioridade sobre a adição): $4 \\times 3 = 12$. Adição: $12 + 2 = 14$. O erro (A) seria calcular $\\sqrt{16 \\times 3 + 2}$ — mas a raiz cobre somente o 16.",
+            },
+
+            // ── Q9 — Difícil ─────────────────────────────────────────────────
+            {
+              id: "exp-q9",
+              enunciado: "Qual o valor de $\\sqrt[3]{27} - 1$?",
+              alternativas: [
+                { letra: "A", texto: "$2$" },
+                { letra: "B", texto: "$3$" },
+                { letra: "C", texto: "$6$" },
+                { letra: "D", texto: "$9$" },
+                { letra: "E", texto: "$26$" },
+              ],
+              gabarito: "A",
+              explicacao:
+                "$\\sqrt[3]{27} = 3$, pois $3^3 = 27$. Subtraindo: $3 - 1 = 2$. Cubos perfeitos para lembrar: $1^3=1$, $2^3=8$, $3^3=27$, $4^3=64$, $5^3=125$.",
+            },
+
+            // ── Q10 — Difícil ────────────────────────────────────────────────
+            {
+              id: "exp-q10",
+              enunciado: "Qual o valor de $2 \\times (3 + \\sqrt{9})$?",
+              alternativas: [
+                { letra: "A", texto: "$18$" },
+                { letra: "B", texto: "$9$" },
+                { letra: "C", texto: "$12$" },
+                { letra: "D", texto: "$6$" },
+                { letra: "E", texto: "$24$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "**Passo 1:** Dentro dos parênteses, raiz: $\\sqrt{9} = 3$. Soma: $3 + 3 = 6$. **Passo 2:** Multiplicação: $2 \\times 6 = 12$.",
+            },
+          ],
+        },
+
+        // =====================================================================
+        // Lição 2 — Expressões com raízes e potências
+        // =====================================================================
+        {
+          slug: "expressoes-com-raizes-e-potencias",
+          titulo: "Expressões com raízes e potências",
+          resumo:
+            "Expressões que combinam raízes, potências, frações e todas as operações — o nível que cai nas questões mais difíceis do ENEM e dos vestibulares.",
+          duracaoMinutos: 25,
+
+          explicacao: `
+Neste nível, as expressões combinam **vários recursos ao mesmo tempo**: raízes, potências, frações e expoentes especiais. A estratégia é sempre a mesma — **desmontar camada por camada**, seguindo a hierarquia.
+
+### Estratégia para expressões complexas
+
+1. **Identifique as camadas:** parênteses e radicais escondem sub-expressões que devem ser resolvidas primeiro.
+2. **Substitua pelo valor:** assim que resolver uma parte, escreva o número no lugar.
+3. **Não pule passos:** em expressões complexas, um erro no meio invalida tudo.
+
+### Armadilhas comuns
+
+**Armadilha 1 — Expoente negativo com fração:**
+
+$$\\left(\\frac{1}{2}\\right)^{-3} = \\left(\\frac{2}{1}\\right)^3 = 2^3 = 8 \\quad (\\text{não } -\\tfrac{1}{8}!)$$
+
+**Armadilha 2 — Potência de radical:**
+
+$$\\left(\\sqrt{a}\\right)^n = a^{n/2} \\quad \\Rightarrow \\quad \\left(\\sqrt{3}\\right)^6 = 3^3 = 27$$
+
+**Armadilha 3 — Expoente fracionário:**
+
+$$a^{m/n} = \\left(\\sqrt[n]{a}\\right)^m \\quad \\text{— resolva a raiz antes da potência!}$$
+`.trim(),
+
+          exemplos: [
+            {
+              titulo: "Exemplo 1 — Potência de radical",
+              problema: "Calcule $\\left(\\sqrt{3}\\right)^4 + 2^3 - \\sqrt[3]{8}$.",
+              resolucao: `
+**Passo 1:** $\\left(\\sqrt{3}\\right)^4 = \\left(3^{1/2}\\right)^4 = 3^2 = 9$.
+
+**Passo 2:** $2^3 = 8$.
+
+**Passo 3:** $\\sqrt[3]{8} = 2$.
+
+**Passo 4:** $9 + 8 - 2 = 15$.
+
+**Resposta:** $15$.
+`.trim(),
+            },
+            {
+              titulo: "Exemplo 2 — Fração com expoente negativo",
+              problema:
+                "Calcule $\\dfrac{3^2 + \\sqrt{16}}{\\left(\\frac{1}{2}\\right)^{-1}}$.",
+              resolucao: `
+**Passo 1:** Numerador — $3^2 = 9$ e $\\sqrt{16} = 4$. Soma: $9 + 4 = 13$.
+
+**Passo 2:** Denominador — $\\left(\\frac{1}{2}\\right)^{-1} = \\frac{2}{1} = 2$.
+
+**Passo 3:** Divisão: $\\frac{13}{2}$.
+
+**Resposta:** $\\dfrac{13}{2}$.
+`.trim(),
+            },
+          ],
+
+          exercicios: [
+            // ── Q11 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q11",
+              enunciado: "Qual o valor de $(2^3 + 2) \\times \\sqrt{9}$?",
+              alternativas: [
+                { letra: "A", texto: "$24$" },
+                { letra: "B", texto: "$30$" },
+                { letra: "C", texto: "$40$" },
+                { letra: "D", texto: "$18$" },
+                { letra: "E", texto: "$15$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "**Passo 1:** Parênteses — potência: $2^3 = 8$; soma: $8 + 2 = 10$. **Passo 2:** Raiz: $\\sqrt{9} = 3$. **Passo 3:** Multiplicação: $10 \\times 3 = 30$.",
+            },
+
+            // ── Q12 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q12",
+              enunciado: "Qual o valor de $\\sqrt[4]{625}$?",
+              alternativas: [
+                { letra: "A", texto: "$25$" },
+                { letra: "B", texto: "$125$" },
+                { letra: "C", texto: "$\\sqrt{5}$" },
+                { letra: "D", texto: "$5$" },
+                { letra: "E", texto: "$4$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "Como $5^4 = 625$, temos $\\sqrt[4]{625} = \\sqrt[4]{5^4} = 5$. Quartas potências perfeitas para lembrar: $2^4=16$, $3^4=81$, $4^4=256$, $5^4=625$.",
+            },
+
+            // ── Q13 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q13",
+              enunciado: "Calcule $\\left(\\dfrac{3}{2}\\right)^2$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{9}{4}$" },
+                { letra: "B", texto: "$\\dfrac{3}{2}$" },
+                { letra: "C", texto: "$\\dfrac{3}{4}$" },
+                { letra: "D", texto: "$\\dfrac{9}{2}$" },
+                { letra: "E", texto: "$\\dfrac{4}{9}$" },
+              ],
+              gabarito: "A",
+              explicacao:
+                "A potência de uma fração distribui para numerador e denominador: $\\left(\\frac{3}{2}\\right)^2 = \\frac{3^2}{2^2} = \\frac{9}{4}$. O erro (D) é elevar apenas o numerador.",
+            },
+
+            // ── Q14 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q14",
+              enunciado:
+                "Calcule $\\displaystyle \\frac{5}{6} + \\frac{7}{9}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{12}{15}$" },
+                { letra: "B", texto: "$\\dfrac{5}{3}$" },
+                { letra: "C", texto: "$\\dfrac{29}{18}$" },
+                { letra: "D", texto: "$\\dfrac{11}{15}$" },
+                { letra: "E", texto: "$\\dfrac{43}{18}$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "$\\text{MMC}(6,9) = 18$. Convertemos: $\\frac{5}{6} = \\frac{15}{18}$ e $\\frac{7}{9} = \\frac{14}{18}$. Somando: $\\frac{15+14}{18} = \\frac{29}{18}$.",
+            },
+
+            // ── Q15 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q15",
+              enunciado: "Qual o valor de $\\left(\\dfrac{1}{2}\\right)^{-3}$?",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{1}{8}$" },
+                { letra: "B", texto: "$-8$" },
+                { letra: "C", texto: "$\\dfrac{1}{2}$" },
+                { letra: "D", texto: "$3$" },
+                { letra: "E", texto: "$8$" },
+              ],
+              gabarito: "E",
+              explicacao:
+                "Expoente negativo inverte a fração e torna o expoente positivo: $\\left(\\frac{1}{2}\\right)^{-3} = \\left(\\frac{2}{1}\\right)^3 = 2^3 = 8$. O erro (A) seria ignorar o sinal negativo do expoente.",
+            },
+
+            // ── Q16 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q16",
+              enunciado: "Calcule $\\dfrac{2^3 + 5}{2^2}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{3}{2}$" },
+                { letra: "B", texto: "$\\dfrac{13}{4}$" },
+                { letra: "C", texto: "$3$" },
+                { letra: "D", texto: "$\\dfrac{13}{8}$" },
+                { letra: "E", texto: "$2$" },
+              ],
+              gabarito: "B",
+              explicacao:
+                "**Numerador:** $2^3 + 5 = 8 + 5 = 13$. **Denominador:** $2^2 = 4$. **Fração:** $\\frac{13}{4}$. Como $\\text{mdc}(13,4)=1$, já está na forma irredutível.",
+            },
+
+            // ── Q17 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q17",
+              enunciado:
+                "Calcule $\\dfrac{9}{4} \\div \\dfrac{3}{2}$.",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{27}{8}$" },
+                { letra: "B", texto: "$\\dfrac{2}{3}$" },
+                { letra: "C", texto: "$\\dfrac{9}{8}$" },
+                { letra: "D", texto: "$\\dfrac{3}{2}$" },
+                { letra: "E", texto: "$\\dfrac{4}{3}$" },
+              ],
+              gabarito: "D",
+              explicacao:
+                "Divisão: manter a primeira, inverter a segunda e multiplicar. $\\frac{9}{4} \\div \\frac{3}{2} = \\frac{9}{4} \\times \\frac{2}{3} = \\frac{18}{12} = \\frac{3}{2}$.",
+            },
+
+            // ── Q18 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q18",
+              enunciado: "Qual o valor de $\\left(\\sqrt{3}\\right)^6$?",
+              alternativas: [
+                { letra: "A", texto: "$27$" },
+                { letra: "B", texto: "$9$" },
+                { letra: "C", texto: "$6\\sqrt{3}$" },
+                { letra: "D", texto: "$3\\sqrt{3}$" },
+                { letra: "E", texto: "$3$" },
+              ],
+              gabarito: "A",
+              explicacao:
+                "$\\left(\\sqrt{3}\\right)^6 = \\left(3^{1/2}\\right)^6 = 3^{(1/2) \\times 6} = 3^3 = 27$. A potência de potência multiplica os expoentes: $\\frac{1}{2} \\times 6 = 3$.",
+            },
+
+            // ── Q19 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q19",
+              enunciado:
+                "Calcule $\\left(3^2 + 4^2\\right)^{1/2} \\times \\sqrt{25}$.",
+              alternativas: [
+                { letra: "A", texto: "$5$" },
+                { letra: "B", texto: "$100$" },
+                { letra: "C", texto: "$25$" },
+                { letra: "D", texto: "$50$" },
+                { letra: "E", texto: "$\\sqrt{5}$" },
+              ],
+              gabarito: "C",
+              explicacao:
+                "**Passo 1:** $3^2 = 9$, $4^2 = 16$; soma: $25$. **Passo 2:** $(25)^{1/2} = 5$ (o famoso triângulo 3-4-5). **Passo 3:** $\\sqrt{25} = 5$. **Passo 4:** $5 \\times 5 = 25$.",
+            },
+
+            // ── Q20 — Complexo ───────────────────────────────────────────────
+            {
+              id: "exp-q20",
+              enunciado:
+                "Qual o valor de $\\dfrac{6}{5} \\times (1 + \\sqrt{9})$?",
+              alternativas: [
+                { letra: "A", texto: "$\\dfrac{6}{5}$" },
+                { letra: "B", texto: "$\\dfrac{18}{5}$" },
+                { letra: "C", texto: "$4$" },
+                { letra: "D", texto: "$\\dfrac{12}{5}$" },
+                { letra: "E", texto: "$\\dfrac{24}{5}$" },
+              ],
+              gabarito: "E",
+              explicacao:
+                "**Passo 1:** Parênteses — raiz: $\\sqrt{9} = 3$; soma: $1 + 3 = 4$. **Passo 2:** Multiplicação: $\\frac{6}{5} \\times 4 = \\frac{24}{5}$.",
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
