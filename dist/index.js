@@ -2398,22 +2398,29 @@ var usersRouter = createTRPCRouter({
     const userId = ctx.user.id;
     const questionIds = Object.keys(input.answers).map(Number).filter(Boolean);
     if (questionIds.length === 0) throw new TRPCError5({ code: "BAD_REQUEST", message: "Nenhuma resposta enviada." });
-    const qRows = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito }).from(questions).where(inArray3(questions.id, questionIds));
-    const gabMap = new Map(qRows.map((q) => [q.id, q.gabarito]));
+    const qRows = await ctx.db.select({ id: questions.id, gabarito: questions.gabarito, conteudo: questions.conteudo_principal }).from(questions).where(inArray3(questions.id, questionIds));
+    const gabMap = new Map(qRows.map((q) => [q.id, { gabarito: q.gabarito, conteudo: q.conteudo }]));
     let correct = 0;
+    const results = [];
     for (const [idStr, chosen] of Object.entries(input.answers)) {
-      if (gabMap.get(Number(idStr)) === chosen) correct++;
+      const qid = Number(idStr);
+      const qInfo = gabMap.get(qid);
+      const isCorrect = qInfo?.gabarito === chosen;
+      if (isCorrect) correct++;
+      results.push({ questionId: qid, conteudo: qInfo?.conteudo ?? "Matem\xE1tica", isCorrect });
     }
     const total = questionIds.length;
     const level = correct >= 17 ? "genio" : correct >= 13 ? "expert" : correct >= 9 ? "calculista" : correct >= 4 ? "aprendiz" : "curioso";
+    const xpEarned = correct * 2;
     await ctx.db.update(users).set({
       city: input.city,
       educationLevel: input.educationLevel,
       diagnosisLevel: level,
       diagnosisScore: correct,
-      diagnosisCompletedAt: /* @__PURE__ */ new Date()
+      diagnosisCompletedAt: /* @__PURE__ */ new Date(),
+      xp: sql3`xp + ${xpEarned}`
     }).where(eq4(users.id, userId));
-    return { level, correct, total };
+    return { level, correct, total, xpEarned, results };
   }),
   // ---------------------------------------------------------------------------
   // Adiciona XP ao aluno (chamado pelo frontend para ações diversas)

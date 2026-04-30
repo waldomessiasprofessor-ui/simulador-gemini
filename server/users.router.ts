@@ -230,16 +230,21 @@ export const usersRouter = createTRPCRouter({
 
       if (questionIds.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "Nenhuma resposta enviada." });
 
-      // Busca gabaritos no servidor
+      // Busca gabaritos + tópico no servidor
       const qRows = await ctx.db
-        .select({ id: questions.id, gabarito: questions.gabarito })
+        .select({ id: questions.id, gabarito: questions.gabarito, conteudo: questions.conteudo_principal })
         .from(questions)
         .where(inArray(questions.id, questionIds));
 
-      const gabMap = new Map(qRows.map((q) => [q.id, q.gabarito]));
+      const gabMap = new Map(qRows.map((q) => [q.id, { gabarito: q.gabarito, conteudo: q.conteudo }]));
       let correct = 0;
+      const results: Array<{ questionId: number; conteudo: string; isCorrect: boolean }> = [];
       for (const [idStr, chosen] of Object.entries(input.answers)) {
-        if (gabMap.get(Number(idStr)) === chosen) correct++;
+        const qid = Number(idStr);
+        const qInfo = gabMap.get(qid);
+        const isCorrect = qInfo?.gabarito === chosen;
+        if (isCorrect) correct++;
+        results.push({ questionId: qid, conteudo: qInfo?.conteudo ?? "Matemática", isCorrect });
       }
 
       const total = questionIds.length;
@@ -250,15 +255,19 @@ export const usersRouter = createTRPCRouter({
         correct >= 9  ? "calculista" :
         correct >= 4  ? "aprendiz" : "curioso";
 
+      // XP: 2 pontos por acerto no diagnóstico
+      const xpEarned = correct * 2;
+
       await ctx.db.update(users).set({
         city: input.city,
         educationLevel: input.educationLevel,
         diagnosisLevel: level as any,
         diagnosisScore: correct,
         diagnosisCompletedAt: new Date(),
+        xp: sql`xp + ${xpEarned}`,
       }).where(eq(users.id, userId));
 
-      return { level, correct, total };
+      return { level, correct, total, xpEarned, results };
     }),
 
   // ---------------------------------------------------------------------------

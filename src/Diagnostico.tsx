@@ -355,103 +355,221 @@ function QuizScreen({
 
 // ─── Tela de resultado ────────────────────────────────────────────────────────
 
+interface QuestionResult {
+  questionId: number;
+  conteudo: string;
+  isCorrect: boolean;
+}
+
 function ResultScreen({
   level,
   correct,
   total,
+  xpEarned,
+  results,
   name,
   onDone,
 }: {
   level: string;
   correct: number;
   total: number;
+  xpEarned: number;
+  results: QuestionResult[];
   name: string;
   onDone: () => void;
 }) {
   const info = LEVEL_INFO[level] ?? LEVEL_INFO["curioso"];
   const [show, setShow] = useState(false);
-  const [confetti, setConfetti] = useState<Array<{ x: number; color: string; delay: number; dur: number }>>([]);
+  const [flipped, setFlipped] = useState(false);
+  const [confetti, setConfetti] = useState<Array<{ x: number; y: number; color: string; delay: number; dur: number; shape: string }>>([]);
 
   useEffect(() => {
     setTimeout(() => setShow(true), 100);
-    // Gera confete
-    const pieces = Array.from({ length: 30 }, (_, i) => ({
+  }, []);
+
+  function handleUnlock() {
+    // Gera confete ao desbloquear
+    const pieces = Array.from({ length: 50 }, (_, i) => ({
       x: Math.random() * 100,
-      color: ["#009688", "#4DB6AC", "#FCD34D", "#F87171", "#818CF8"][i % 5],
-      delay: Math.random() * 1.5,
-      dur: 1.5 + Math.random() * 1.5,
+      y: -10 - Math.random() * 20,
+      color: ["#009688", "#4DB6AC", "#FCD34D", "#F87171", "#818CF8", "#34D399", "#FBBF24"][i % 7],
+      delay: Math.random() * 0.8,
+      dur: 1.8 + Math.random() * 1.2,
+      shape: i % 3 === 0 ? "50%" : "2px",
     }));
     setConfetti(pieces);
-  }, []);
+    setFlipped(true);
+  }
 
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
-      gap: 24, padding: "40px 24px", textAlign: "center",
-      opacity: show ? 1 : 0, transform: show ? "scale(1)" : "scale(0.95)",
-      transition: "all 0.5s cubic-bezier(0.34,1.56,0.64,1)",
-      position: "relative",
+      gap: 20, padding: "28px 20px 40px", textAlign: "center",
+      opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)",
+      transition: "all 0.5s ease",
+      position: "relative", maxWidth: 480, margin: "0 auto",
     }}>
-      {/* Confete CSS */}
-      <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-        {confetti.map((c, i) => (
-          <div key={i} style={{
-            position: "absolute", top: "-10px", left: `${c.x}%`,
-            width: 8, height: 8, borderRadius: 2,
-            background: c.color,
-            animation: `confettiFall ${c.dur}s ${c.delay}s ease-in forwards`,
-          }} />
-        ))}
-      </div>
 
-      {/* Badge de nível */}
-      <div style={{
-        width: 100, height: 100, borderRadius: "50%",
-        background: info.bg, border: `4px solid ${info.border}`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 48,
-        animation: "mascotBounce 0.8s ease",
-        boxShadow: `0 8px 32px ${info.color}30`,
-      }}>
-        {info.emoji}
-      </div>
+      {/* ── Confete ── */}
+      {flipped && (
+        <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 100 }}>
+          {confetti.map((c, i) => (
+            <div key={i} style={{
+              position: "absolute", top: `${c.y}%`, left: `${c.x}%`,
+              width: 9, height: 9, borderRadius: c.shape,
+              background: c.color,
+              animation: `confettiFall ${c.dur}s ${c.delay}s ease-in forwards`,
+            }} />
+          ))}
+        </div>
+      )}
 
-      <div>
-        <p style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--muted-foreground)", margin: "0 0 6px" }}>
-          Seu nível de conhecimento
-        </p>
-        <h2 style={{ fontSize: 32, fontWeight: 900, margin: "0 0 4px", color: info.color }}>
-          {info.label}
+      {/* ── Placar ── */}
+      <div style={{ textAlign: "center" }}>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: "var(--foreground)", margin: "0 0 4px" }}>
+          Diagnóstico concluído! 🎯
         </h2>
-        <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: 0 }}>
-          {correct} de {total} acertos · {info.scoreRange}
+        <p style={{ fontSize: 14, color: "var(--muted-foreground)", margin: 0 }}>
+          {correct} de {total} acertos · +{xpEarned} XP ganhos
         </p>
       </div>
 
-      {/* Mensagem */}
+      {/* ── Relatório questão a questão ── */}
       <div style={{
-        padding: "16px", borderRadius: 16, maxWidth: 320, width: "100%",
-        background: info.bg, border: `2px solid ${info.border}`,
+        width: "100%", borderRadius: 16, overflow: "hidden",
+        border: "1.5px solid var(--border)", background: "var(--card)",
       }}>
-        <p style={{ fontSize: 14, lineHeight: 1.55, margin: "0 0 8px", color: info.color, fontWeight: 600 }}>
-          {info.msg}
-        </p>
-        <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: "var(--muted-foreground)" }}>
-          💡 {info.advice}
-        </p>
+        <div style={{
+          padding: "10px 14px", background: "var(--muted)",
+          borderBottom: "1px solid var(--border)",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Relatório de desempenho
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 700 }}>
+            <span style={{ color: "#16A34A" }}>✅ {correct}</span>
+            <span style={{ color: "var(--muted-foreground)", margin: "0 4px" }}>·</span>
+            <span style={{ color: "#DC2626" }}>❌ {total - correct}</span>
+          </span>
+        </div>
+        <div style={{ maxHeight: 280, overflowY: "auto" }}>
+          {results.map((r, idx) => (
+            <div key={r.questionId} style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "10px 14px",
+              borderBottom: idx < results.length - 1 ? "1px solid var(--border)" : "none",
+              background: r.isCorrect ? "#F0FDF4" : "#FFF1F2",
+            }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{r.isCorrect ? "✅" : "❌"}</span>
+              <div style={{ flex: 1, textAlign: "left" }}>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "var(--foreground)" }}>
+                  Questão {idx + 1}
+                </p>
+                <p style={{ margin: 0, fontSize: 11, color: "var(--muted-foreground)" }}>
+                  {r.conteudo}
+                </p>
+              </div>
+              <span style={{
+                fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                background: r.isCorrect ? "#DCFCE7" : "#FFE4E6",
+                color: r.isCorrect ? "#16A34A" : "#DC2626",
+              }}>
+                {r.isCorrect ? "Acerto" : "Erro"}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <button
-        onClick={onDone}
-        style={{
-          width: "100%", maxWidth: 320, padding: "16px", borderRadius: 16,
-          border: "none", cursor: "pointer",
-          background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
-          color: "#fff", fontSize: 16, fontWeight: 800,
-          boxShadow: "0 4px 16px rgba(0,150,136,0.4)",
+      {/* ── Card flip ── */}
+      <div style={{ width: "100%", maxWidth: 340, perspective: "1000px" }}>
+        <div style={{
+          position: "relative",
+          width: "100%", height: flipped ? "auto" : 0,
+          transition: "height 0.1s",
         }}>
-        Ir para o início 🎉
-      </button>
+          {/* Flip container */}
+          <div style={{
+            transformStyle: "preserve-3d",
+            transition: "transform 0.7s cubic-bezier(0.34,1.56,0.64,1)",
+            transform: flipped ? "rotateY(0deg)" : "rotateY(180deg)",
+          }}>
+            {/* Frente (revelada após flip) */}
+            {flipped && (
+              <div style={{
+                padding: "28px 20px", borderRadius: 20,
+                background: `linear-gradient(135deg, ${info.bg} 0%, #fff 100%)`,
+                border: `3px solid ${info.border}`,
+                textAlign: "center",
+                boxShadow: `0 8px 32px ${info.color}30`,
+                animation: "mascotBounce 0.8s ease",
+              }}>
+                <div style={{ fontSize: 56, marginBottom: 12 }}>{info.emoji}</div>
+                <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--muted-foreground)", margin: "0 0 6px" }}>
+                  Seu nível é
+                </p>
+                <h2 style={{ fontSize: 34, fontWeight: 900, margin: "0 0 8px", color: info.color }}>
+                  {info.label}
+                </h2>
+                <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: "0 0 16px" }}>
+                  {info.scoreRange}
+                </p>
+                <div style={{
+                  padding: "12px 16px", borderRadius: 12,
+                  background: "rgba(255,255,255,0.7)", border: `1.5px solid ${info.border}`,
+                }}>
+                  <p style={{ fontSize: 13, color: info.color, fontWeight: 600, margin: "0 0 6px", lineHeight: 1.45 }}>
+                    {info.msg}
+                  </p>
+                  <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: 0, lineHeight: 1.45 }}>
+                    💡 {info.advice}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Botão Desbloquear / Ir para o início ── */}
+      {!flipped ? (
+        <button
+          onClick={handleUnlock}
+          style={{
+            width: "100%", maxWidth: 340, padding: "16px", borderRadius: 16,
+            border: "none", cursor: "pointer",
+            background: "linear-gradient(135deg, #7C3AED 0%, #009688 100%)",
+            color: "#fff", fontSize: 16, fontWeight: 800,
+            boxShadow: "0 4px 20px rgba(124,58,237,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+            transition: "transform 0.15s, box-shadow 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.02)";
+            e.currentTarget.style.boxShadow = "0 6px 24px rgba(124,58,237,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.boxShadow = "0 4px 20px rgba(124,58,237,0.4)";
+          }}>
+          <span style={{ fontSize: 20 }}>🎊</span>
+          Desbloquear conquista
+        </button>
+      ) : (
+        <button
+          onClick={onDone}
+          style={{
+            width: "100%", maxWidth: 340, padding: "16px", borderRadius: 16,
+            border: "none", cursor: "pointer",
+            background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
+            color: "#fff", fontSize: 16, fontWeight: 800,
+            boxShadow: "0 4px 16px rgba(0,150,136,0.4)",
+            marginTop: 8,
+          }}>
+          Ir para o início 🚀
+        </button>
+      )}
     </div>
   );
 }
@@ -466,12 +584,24 @@ export default function Diagnostico({ session, onComplete, onSkip }: {
   const [step, setStep] = useState<Step>("welcome");
   const [city, setCity] = useState("");
   const [edu, setEdu] = useState("");
-  const [result, setResult] = useState<{ level: string; correct: number; total: number } | null>(null);
+  const [result, setResult] = useState<{
+    level: string;
+    correct: number;
+    total: number;
+    xpEarned: number;
+    results: QuestionResult[];
+  } | null>(null);
 
   const { data: questions, isLoading } = trpc.users.getDiagnosticQuestions.useQuery();
   const completeMutation = trpc.users.completeDiagnosis.useMutation({
     onSuccess: (data) => {
-      setResult({ level: data.level as keyof typeof LEVEL_INFO, correct: data.correct, total: data.total });
+      setResult({
+        level: data.level as keyof typeof LEVEL_INFO,
+        correct: data.correct,
+        total: data.total,
+        xpEarned: data.xpEarned,
+        results: data.results,
+      });
       setStep("result");
     },
   });
@@ -580,6 +710,8 @@ export default function Diagnostico({ session, onComplete, onSkip }: {
               level={result.level}
               correct={result.correct}
               total={result.total}
+              xpEarned={result.xpEarned}
+              results={result.results}
               name={session.name}
               onDone={onComplete}
             />
