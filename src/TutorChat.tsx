@@ -15,11 +15,20 @@ interface Message {
 function TutorIcon({ size = 26 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="11" r="6" fill="white" fillOpacity="0.95" />
-      <rect x="9" y="19" width="14" height="9" rx="4" fill="white" fillOpacity="0.95" />
-      <circle cx="13.5" cy="10.5" r="1" fill="#009688" />
-      <circle cx="18.5" cy="10.5" r="1" fill="#009688" />
-      <path d="M13 13.5 Q16 15.5 19 13.5" stroke="#009688" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      {/* Antena */}
+      <line x1="16" y1="2" x2="16" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="16" cy="2" r="1.5" fill="white" />
+      {/* Cabeça */}
+      <rect x="6" y="6" width="20" height="14" rx="4" fill="white" fillOpacity="0.95" />
+      {/* Olhos */}
+      <rect x="10" y="11" width="4" height="4" rx="1" fill="#009688" />
+      <rect x="18" y="11" width="4" height="4" rx="1" fill="#009688" />
+      {/* Boca */}
+      <rect x="11" y="17" width="10" height="1.5" rx="0.75" fill="#009688" fillOpacity="0.5" />
+      {/* Corpo */}
+      <rect x="9" y="21" width="14" height="8" rx="3" fill="white" fillOpacity="0.85" />
+      {/* Botão central */}
+      <circle cx="16" cy="25" r="1.5" fill="#009688" fillOpacity="0.6" />
     </svg>
   );
 }

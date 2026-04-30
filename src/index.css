@@ -517,6 +517,11 @@ body {
   :root { --logo-filter: brightness(0) invert(1); }
 }
 
+/* Logo sempre branca independente do tema */
+img[src="/logo-vetor.png"] {
+  filter: brightness(0) invert(1) !important;
+}
+
 /* =====================================================================
    VETOR DESIGN SYSTEM — Utility classes (Fase 1)
    Opt-in: só afetam quem usar a classe. Não quebram nada existente.

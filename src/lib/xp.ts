@@ -16,9 +16,9 @@ export interface XpLevel {
 
 export const XP_LEVELS: XpLevel[] = [
   {
-    slug: "baby-math",
-    label: "Baby Math",
-    emoji: "🍼",
+    slug: "perseverante",
+    label: "Perseverante",
+    emoji: "💪",
     color: "#64748B",
     bg: "#F1F5F9",
     min: 0,

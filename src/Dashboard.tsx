@@ -1334,7 +1334,7 @@ export default function Dashboard() {
           curioso:    { advice: "Comece pelas Trilhas de Matemática Básica.", next: "Frações e Operações" },
           aprendiz:   { advice: "Reforce os fundamentos com Trilhas e desafios diários.", next: "Potenciação e Radiciação" },
           calculista: { advice: "Foque nos temas com menor desempenho.", next: "Álgebra e Funções" },
-          expert:     { advice: "Pratique simulados completos para afinar os pontos.", next: "Geometria e Trigonometria" },
+          expert:     { advice: "Pratique simulados para aumentar XP.", next: "Geometria e Trigonometria" },
           genio:      { advice: "Afine sua nota com simulados TRI completos.", next: "Questões difíceis ENEM" },
         };
 
