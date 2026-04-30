@@ -262,6 +262,8 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [leituraFeita, setLeituraFeita] = useState(false);
   const startRef = useRef<number>(Date.now());
+  const addXpMutation = trpc.users.addXp.useMutation();
+  const xpGivenRef = useRef(false);
 
   const total = licao.exercicios.length;
   const currentEx = licao.exercicios[idx];
@@ -296,6 +298,11 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
         lastScorePct: pct,
         totalTimeSec: elapsed,
       });
+      // Concede 20 XP ao completar uma lição (uma vez por lição)
+      if (!xpGivenRef.current) {
+        xpGivenRef.current = true;
+        addXpMutation.mutate({ source: "trilha", amount: 20 });
+      }
       setFase("resumo");
     }
   }

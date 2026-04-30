@@ -31,6 +31,7 @@ export const authRouter = createTRPCRouter({
         active: users.active,
         diagnosisLevel: users.diagnosisLevel,
         diagnosisScore: users.diagnosisScore,
+        xp: users.xp,
         city: users.city,
         educationLevel: users.educationLevel,
       })

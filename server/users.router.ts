@@ -243,10 +243,12 @@ export const usersRouter = createTRPCRouter({
       }
 
       const total = questionIds.length;
-      const pct = total > 0 ? correct / total : 0;
+      // Classifica em 5 níveis baseado no número absoluto de acertos (0-20)
       const level =
-        pct >= 0.75 ? "avancado" :
-        pct >= 0.40 ? "intermediario" : "iniciante";
+        correct >= 17 ? "genio" :
+        correct >= 13 ? "expert" :
+        correct >= 9  ? "calculista" :
+        correct >= 4  ? "aprendiz" : "curioso";
 
       await ctx.db.update(users).set({
         city: input.city,
@@ -257,5 +259,21 @@ export const usersRouter = createTRPCRouter({
       }).where(eq(users.id, userId));
 
       return { level, correct, total };
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Adiciona XP ao aluno (chamado pelo frontend para ações diversas)
+  // ---------------------------------------------------------------------------
+  addXp: protectedProcedure
+    .input(z.object({
+      source: z.enum(["tutor", "trilha", "login", "flashcard"]),
+      amount: z.number().int().min(1).max(100),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(users)
+        .set({ xp: sql`xp + ${input.amount}` })
+        .where(eq(users.id, ctx.user.id));
+      return { success: true };
     }),
 });

@@ -316,6 +316,11 @@ export const simulationsRouter = createTRPCRouter({
       // --- Verifica progressão de etapa ---
       const stageResult = checkStagePass(stage, correctCount);
 
+      // --- Calcula XP do simulado ---
+      const xpEarned = stage === 3
+        ? Math.round((score ?? 0) / 10)           // TRI: até 100 XP (score 0-1000)
+        : correctCount * 2;                        // Etapas 1&2: 2 XP por acerto
+
       // --- Actualiza simulado como concluído ---
       await ctx.db
         .update(simulations)
@@ -328,6 +333,11 @@ export const simulationsRouter = createTRPCRouter({
           completedAt: new Date(),
         })
         .where(eq(simulations.id, input.simulationId));
+
+      // --- Credita XP ao aluno ---
+      if (xpEarned > 0) {
+        await ctx.db.update(users).set({ xp: sql`xp + ${xpEarned}` }).where(eq(users.id, userId));
+      }
 
       // --- Monta feedback por questão com tempo ---
       const avgTime =
@@ -1143,6 +1153,11 @@ export const simulationsRouter = createTRPCRouter({
           eq(simulations.userId, ctx.user.id),
         ));
 
+      // Credita 1 XP por acerto no treino
+      if (input.correctCount > 0) {
+        await ctx.db.update(users).set({ xp: sql`xp + ${input.correctCount}` }).where(eq(users.id, ctx.user.id));
+      }
+
       return { success: true };
     }),
 
@@ -1368,6 +1383,9 @@ export const simulationsRouter = createTRPCRouter({
           ...(input.totalTimeSeconds !== undefined ? { totalTimeSeconds: input.totalTimeSeconds } : {}),
         })
         .where(eq(dailyChallenges.id, input.challengeId));
+
+      // Credita 15 XP pelo desafio diário
+      await ctx.db.update(users).set({ xp: sql`xp + 15` }).where(eq(users.id, userId));
 
       return { ok: true, correctCount, total: challenge.questionIds.length };
     }),

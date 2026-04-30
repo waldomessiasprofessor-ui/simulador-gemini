@@ -128,6 +128,10 @@ export default function TutorChat() {
   const inputRef   = useRef<HTMLTextAreaElement>(null);
   const isFirst    = messages.length === 0;
 
+  // XP: concede 3 XP na primeira mensagem de cada sessão do tutor
+  const addXpMutation = trpc.users.addXp.useMutation();
+  const xpGivenRef = useRef(false);
+
   const chatMutation = trpc.tutor.chat.useMutation({
     onSuccess: (data) => {
       setMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
@@ -193,6 +197,11 @@ export default function TutorChat() {
     const next = [...messages, newMsg];
     setMessages(next);
     setInput("");
+    // Concede XP uma vez por sessão ao usar o tutor
+    if (!xpGivenRef.current) {
+      xpGivenRef.current = true;
+      addXpMutation.mutate({ source: "tutor", amount: 3 });
+    }
     chatMutation.mutate({ messages: next });
   }, [messages, chatMutation, isPending]);
 

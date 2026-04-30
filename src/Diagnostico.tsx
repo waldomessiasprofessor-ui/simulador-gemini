@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
+import { DIAGNOSIS_LEVELS } from "@/lib/xp";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -25,35 +26,8 @@ const EDUCATION_OPTIONS = [
   { value: "Ensino Superior", emoji: "🏛️", label: "Ensino Superior" },
 ];
 
-const LEVEL_INFO = {
-  iniciante: {
-    emoji: "🌱",
-    label: "Iniciante",
-    color: "#16A34A",
-    bg: "#DCFCE7",
-    border: "#86EFAC",
-    msg: "Ótimo começo! Cada grande matemático começou do zero. Vamos construir sua base juntos, passo a passo.",
-    advice: "Comece pelas Trilhas de Matemática Básica e use o Tutor IA sempre que travar.",
-  },
-  intermediario: {
-    emoji: "⚡",
-    label: "Intermediário",
-    color: "#D97706",
-    bg: "#FEF9C3",
-    border: "#FDE047",
-    msg: "Você já tem uma base sólida! Com foco nas suas lacunas, o ENEM está ao seu alcance.",
-    advice: "Foque nas Trilhas das áreas com menor desempenho e pratique com simulados.",
-  },
-  avancado: {
-    emoji: "🚀",
-    label: "Avançado",
-    color: "#7C3AED",
-    bg: "#F3E8FF",
-    border: "#C4B5FD",
-    msg: "Impressionante! Você domina o conteúdo de matemática em nível avançado.",
-    advice: "Faça os simulados com TRI para afinar sua nota e alcance os 900+ pontos.",
-  },
-};
+// Reutiliza DIAGNOSIS_LEVELS de src/lib/xp.ts
+const LEVEL_INFO = DIAGNOSIS_LEVELS;
 
 const LETTERS = ["A", "B", "C", "D", "E"];
 
@@ -388,13 +362,13 @@ function ResultScreen({
   name,
   onDone,
 }: {
-  level: keyof typeof LEVEL_INFO;
+  level: string;
   correct: number;
   total: number;
   name: string;
   onDone: () => void;
 }) {
-  const info = LEVEL_INFO[level];
+  const info = LEVEL_INFO[level] ?? LEVEL_INFO["curioso"];
   const [show, setShow] = useState(false);
   const [confetti, setConfetti] = useState<Array<{ x: number; color: string; delay: number; dur: number }>>([]);
 
@@ -444,11 +418,14 @@ function ResultScreen({
 
       <div>
         <p style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--muted-foreground)", margin: "0 0 6px" }}>
-          Seu nível
+          Seu nível de conhecimento
         </p>
-        <h2 style={{ fontSize: 32, fontWeight: 900, margin: 0, color: info.color }}>
+        <h2 style={{ fontSize: 32, fontWeight: 900, margin: "0 0 4px", color: info.color }}>
           {info.label}
         </h2>
+        <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: 0 }}>
+          {correct} de {total} acertos · {info.scoreRange}
+        </p>
       </div>
 
       {/* Mensagem */}
@@ -489,7 +466,7 @@ export default function Diagnostico({ session, onComplete, onSkip }: {
   const [step, setStep] = useState<Step>("welcome");
   const [city, setCity] = useState("");
   const [edu, setEdu] = useState("");
-  const [result, setResult] = useState<{ level: keyof typeof LEVEL_INFO; correct: number; total: number } | null>(null);
+  const [result, setResult] = useState<{ level: string; correct: number; total: number } | null>(null);
 
   const { data: questions, isLoading } = trpc.users.getDiagnosticQuestions.useQuery();
   const completeMutation = trpc.users.completeDiagnosis.useMutation({

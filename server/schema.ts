@@ -28,8 +28,9 @@ export const users = mysqlTable("users", {
   // Diagnóstico inicial
   city: varchar("city", { length: 100 }),
   educationLevel: varchar("education_level", { length: 80 }),
-  diagnosisLevel: mysqlEnum("diagnosis_level", ["iniciante", "intermediario", "avancado"]),
+  diagnosisLevel: mysqlEnum("diagnosis_level", ["curioso", "aprendiz", "calculista", "expert", "genio"]),
   diagnosisScore: int("diagnosis_score"),
+  xp: int("xp").notNull().default(0),
   diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

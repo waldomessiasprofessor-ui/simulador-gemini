@@ -13,6 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarC
 import { getTrilhaByArea } from "@/trilhas";
 import { getTrilhaStats } from "@/trilhas/stats";
 import LevelBadge, { type DiagnosisLevel } from "@/LevelBadge";
+import { DIAGNOSIS_LEVELS, getXpLevel, getXpProgress, getNextLevelXp } from "@/lib/xp";
 
 
 // ─── DailyCard ────────────────────────────────────────────────────────────────
@@ -1247,8 +1248,9 @@ export default function Dashboard() {
     const shown = sessionStorage.getItem(key);
     if (level && !shown) {
       sessionStorage.setItem(key, "1");
-      const labels: Record<string, string> = { iniciante: "🌱 Iniciante", intermediario: "⚡ Intermediário", avancado: "🚀 Avançado" };
-      toast.success(`Conquista desbloqueada: Nível ${labels[level] ?? level}!`, {
+      const diagInfo = DIAGNOSIS_LEVELS[level as string];
+      const label = diagInfo ? `${diagInfo.emoji} ${diagInfo.label}` : level;
+      toast.success(`Diagnóstico concluído: ${label}!`, {
         description: "Seu diagnóstico foi registrado. O Tutor Vetor já sabe seu nível.",
         duration: 5000,
       });
@@ -1319,42 +1321,100 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* ── Card de diagnóstico ── */}
-      {(session as any)?.diagnosisLevel && (() => {
-        const level = (session as any).diagnosisLevel as DiagnosisLevel;
-        const score = (session as any).diagnosisScore ?? 0;
-        const INFO = {
-          iniciante:     { advice: "Comece pelas Trilhas de Matemática Básica.", next: "Álgebra e Funções" },
-          intermediario: { advice: "Foque nos simulados e nas áreas mais fracas.", next: "Geometria e Trigonometria" },
-          avancado:      { advice: "Afine sua nota com simulados TRI completos.", next: "Questões difíceis ENEM" },
+      {/* ── Card de Nível (Diagnóstico + XP) ── */}
+      {(() => {
+        const xp: number = (session as any)?.xp ?? 0;
+        const xpLevel = getXpLevel(xp);
+        const xpProgress = getXpProgress(xp);
+        const nextXp = getNextLevelXp(xp);
+        const diagLevel = (session as any)?.diagnosisLevel as string | undefined;
+        const diagInfo = diagLevel ? DIAGNOSIS_LEVELS[diagLevel] : null;
+
+        const DIAG_ADVICE: Record<string, { advice: string; next: string }> = {
+          curioso:    { advice: "Comece pelas Trilhas de Matemática Básica.", next: "Frações e Operações" },
+          aprendiz:   { advice: "Reforce os fundamentos com Trilhas e desafios diários.", next: "Potenciação e Radiciação" },
+          calculista: { advice: "Foque nos temas com menor desempenho.", next: "Álgebra e Funções" },
+          expert:     { advice: "Pratique simulados completos para afinar os pontos.", next: "Geometria e Trigonometria" },
+          genio:      { advice: "Afine sua nota com simulados TRI completos.", next: "Questões difíceis ENEM" },
         };
-        const info = INFO[level];
+
         return (
-          <div style={{
-            borderRadius: 20, overflow: "hidden",
-            border: "1.5px solid var(--border)",
-            background: "var(--card)",
-          }}>
+          <div style={{ borderRadius: 20, overflow: "hidden", border: "1.5px solid var(--border)", background: "var(--card)" }}>
+            {/* XP Bar Header */}
             <div style={{
-              background: "linear-gradient(135deg, #263238 0%, #009688 100%)",
+              background: "linear-gradient(135deg, #1E293B 0%, #334155 100%)",
               padding: "14px 16px",
-              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 28 }}>
-                  {{ iniciante: "🌱", intermediario: "⚡", avancado: "🚀" }[level]}
-                </span>
-                <div>
-                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Seu nível</p>
-                  <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0 }}>
-                    {{ iniciante: "Iniciante", intermediario: "Intermediário", avancado: "Avançado" }[level]}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 22 }}>{xpLevel.emoji}</span>
+                  <div>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Nível XP</p>
+                    <p style={{ fontSize: 17, fontWeight: 900, color: "#fff", margin: 0 }}>{xpLevel.label}</p>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p style={{ fontSize: 20, fontWeight: 900, color: "#fff", margin: 0 }}>{xp}</p>
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", margin: 0 }}>
+                    {nextXp ? `/${nextXp} XP` : "MAX"}
                   </p>
                 </div>
               </div>
+              {/* Barra de progresso XP */}
+              <div style={{ height: 8, borderRadius: 8, background: "rgba(255,255,255,0.15)", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: 8,
+                  background: "linear-gradient(90deg, #009688, #4DB6AC)",
+                  width: `${xpProgress}%`,
+                  transition: "width 0.6s ease",
+                }} />
+              </div>
+              {nextXp && (
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", margin: "4px 0 0", textAlign: "right" }}>
+                  {nextXp - xp} XP para {(() => {
+                    const { getXpLevel: gxl } = { getXpLevel };
+                    const idx = [0,100,350,650,900].findIndex((m,i,a) => xp >= m && (i === a.length-1 || xp < a[i+1]));
+                    const nextLabels = ["Explorador 🗺️", "Desafiador ⚔️", "Dominador 🔥", "Lendário 👑"];
+                    return nextLabels[idx] ?? "próximo nível";
+                  })()}
+                </p>
+              )}
             </div>
-            <div style={{ padding: "12px 16px" }}>
-              <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "0 0 2px" }}>{info.advice}</p>
-              <p style={{ fontSize: 12, fontWeight: 600, color: "#009688", margin: 0 }}>Próximo foco: {info.next}</p>
+
+            {/* Diagnóstico (se disponível) */}
+            {diagInfo && (
+              <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: diagInfo.bg, border: `2px solid ${diagInfo.border}`,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
+                }}>{diagInfo.emoji}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: 0, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    Nível de conhecimento · <span style={{ color: diagInfo.color }}>{diagInfo.label}</span>
+                  </p>
+                  <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: "2px 0 0" }}>
+                    {DIAG_ADVICE[diagLevel!]?.advice ?? diagInfo.advice}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Ações que rendem XP */}
+            <div style={{ borderTop: "1px solid var(--border)", padding: "10px 16px", display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {[
+                { label: "Desafio diário", xp: "+15 XP" },
+                { label: "Simulado TRI", xp: "+100 XP" },
+                { label: "Trilha", xp: "+20 XP" },
+                { label: "Treino", xp: "+1 XP/acerto" },
+              ].map(({ label, xp: reward }) => (
+                <span key={label} style={{
+                  fontSize: 11, fontWeight: 600, borderRadius: 8, padding: "3px 8px",
+                  background: "var(--muted)", color: "var(--muted-foreground)", whiteSpace: "nowrap",
+                }}>
+                  {label} <span style={{ color: "#009688" }}>{reward}</span>
+                </span>
+              ))}
             </div>
           </div>
         );

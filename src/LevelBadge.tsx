@@ -1,19 +1,14 @@
 // Seal de nível reutilizável — aparece ao lado do nome do aluno
 // em qualquer lugar da UI.
+import { DIAGNOSIS_LEVELS } from "@/lib/xp";
 
-export type DiagnosisLevel = "iniciante" | "intermediario" | "avancado";
+export type DiagnosisLevel = "curioso" | "aprendiz" | "calculista" | "expert" | "genio";
 
 interface Props {
   level: DiagnosisLevel;
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
 }
-
-const INFO: Record<DiagnosisLevel, { emoji: string; label: string; color: string; bg: string; border: string }> = {
-  iniciante:     { emoji: "🌱", label: "Iniciante",     color: "#16A34A", bg: "#DCFCE7", border: "#86EFAC" },
-  intermediario: { emoji: "⚡", label: "Intermediário", color: "#D97706", bg: "#FEF9C3", border: "#FDE047" },
-  avancado:      { emoji: "🚀", label: "Avançado",      color: "#7C3AED", bg: "#F3E8FF", border: "#C4B5FD" },
-};
 
 const SIZES = {
   sm: { fontSize: 10, padding: "2px 6px", emojiSize: 11, borderRadius: 6, gap: 3 },
@@ -22,7 +17,7 @@ const SIZES = {
 };
 
 export default function LevelBadge({ level, size = "sm", showLabel = true }: Props) {
-  const info = INFO[level];
+  const info = DIAGNOSIS_LEVELS[level] ?? DIAGNOSIS_LEVELS["curioso"];
   const s = SIZES[size];
 
   return (

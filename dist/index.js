@@ -67,8 +67,9 @@ var users = mysqlTable("users", {
   // Diagnóstico inicial
   city: varchar("city", { length: 100 }),
   educationLevel: varchar("education_level", { length: 80 }),
-  diagnosisLevel: mysqlEnum("diagnosis_level", ["iniciante", "intermediario", "avancado"]),
+  diagnosisLevel: mysqlEnum("diagnosis_level", ["curioso", "aprendiz", "calculista", "expert", "genio"]),
   diagnosisScore: int("diagnosis_score"),
+  xp: int("xp").notNull().default(0),
   diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
@@ -1189,6 +1190,7 @@ var simulationsRouter = createTRPCRouter({
       score = sim.totalQuestions && sim.totalQuestions > 0 ? Math.round(correctCount / sim.totalQuestions * 100) : 0;
     }
     const stageResult = checkStagePass(stage, correctCount);
+    const xpEarned = stage === 3 ? Math.round((score ?? 0) / 10) : correctCount * 2;
     await ctx.db.update(simulations).set({
       status: "completed",
       correctCount,
@@ -1197,6 +1199,9 @@ var simulationsRouter = createTRPCRouter({
       totalTimeSeconds: input.totalTimeSeconds,
       completedAt: /* @__PURE__ */ new Date()
     }).where(eq2(simulations.id, input.simulationId));
+    if (xpEarned > 0) {
+      await ctx.db.update(users).set({ xp: sql2`xp + ${xpEarned}` }).where(eq2(users.id, userId));
+    }
     const avgTime = answers.filter((a) => a.timeSpentSeconds != null).length > 0 ? Math.round(
       answers.reduce((s, a) => s + (a.timeSpentSeconds ?? 0), 0) / answers.length
     ) : 0;
@@ -1779,6 +1784,9 @@ var simulationsRouter = createTRPCRouter({
       eq2(simulations.id, input.simulationId),
       eq2(simulations.userId, ctx.user.id)
     ));
+    if (input.correctCount > 0) {
+      await ctx.db.update(users).set({ xp: sql2`xp + ${input.correctCount}` }).where(eq2(users.id, ctx.user.id));
+    }
     return { success: true };
   }),
   // Tópicos disponíveis para treino livre
@@ -1916,6 +1924,7 @@ var simulationsRouter = createTRPCRouter({
       completedAt: /* @__PURE__ */ new Date(),
       ...input.totalTimeSeconds !== void 0 ? { totalTimeSeconds: input.totalTimeSeconds } : {}
     }).where(eq2(dailyChallenges.id, input.challengeId));
+    await ctx.db.update(users).set({ xp: sql2`xp + 15` }).where(eq2(users.id, userId));
     return { ok: true, correctCount, total: challenge.questionIds.length };
   }),
   // ---------------------------------------------------------------------------
@@ -2187,6 +2196,7 @@ var authRouter = createTRPCRouter({
       active: users.active,
       diagnosisLevel: users.diagnosisLevel,
       diagnosisScore: users.diagnosisScore,
+      xp: users.xp,
       city: users.city,
       educationLevel: users.educationLevel
     }).from(users).where(eq3(users.id, Number(ctx.user.id))).limit(1);
@@ -2395,8 +2405,7 @@ var usersRouter = createTRPCRouter({
       if (gabMap.get(Number(idStr)) === chosen) correct++;
     }
     const total = questionIds.length;
-    const pct = total > 0 ? correct / total : 0;
-    const level = pct >= 0.75 ? "avancado" : pct >= 0.4 ? "intermediario" : "iniciante";
+    const level = correct >= 17 ? "genio" : correct >= 13 ? "expert" : correct >= 9 ? "calculista" : correct >= 4 ? "aprendiz" : "curioso";
     await ctx.db.update(users).set({
       city: input.city,
       educationLevel: input.educationLevel,
@@ -2405,6 +2414,16 @@ var usersRouter = createTRPCRouter({
       diagnosisCompletedAt: /* @__PURE__ */ new Date()
     }).where(eq4(users.id, userId));
     return { level, correct, total };
+  }),
+  // ---------------------------------------------------------------------------
+  // Adiciona XP ao aluno (chamado pelo frontend para ações diversas)
+  // ---------------------------------------------------------------------------
+  addXp: protectedProcedure.input(z4.object({
+    source: z4.enum(["tutor", "trilha", "login", "flashcard"]),
+    amount: z4.number().int().min(1).max(100)
+  })).mutation(async ({ ctx, input }) => {
+    await ctx.db.update(users).set({ xp: sql3`xp + ${input.amount}` }).where(eq4(users.id, ctx.user.id));
+    return { success: true };
   })
 });
 
