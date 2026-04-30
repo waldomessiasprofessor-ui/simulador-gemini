@@ -18,10 +18,22 @@ type TrainingQuestion = {
   nivel_dificuldade: string;
 };
 
+// Áreas macro (espelha server/macro-areas.ts) com ícone e descrição
+const AREAS = [
+  { label: "Matemática Básica",           emoji: "🔢", desc: "Frações, porcentagem, juros, proporções" },
+  { label: "Álgebra",                     emoji: "📐", desc: "Equações, sistemas, matrizes, logaritmos" },
+  { label: "Funções",                     emoji: "📈", desc: "Afim, quadrática, exponencial, logarítmica" },
+  { label: "Geometria Plana",             emoji: "⬡",  desc: "Áreas, perímetros, semelhança, analítica" },
+  { label: "Geometria Espacial",          emoji: "🎲", desc: "Volumes, sólidos, prismas, esferas" },
+  { label: "Trigonometria",               emoji: "🔺", desc: "Seno, cosseno, tangente, leis" },
+  { label: "Probabilidade e Estatística", emoji: "📊", desc: "Média, mediana, moda, probabilidade" },
+  { label: "Análise Combinatória",        emoji: "🎯", desc: "Arranjos, combinações, permutações" },
+] as const;
+
 export default function Treino() {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [count, setCount] = useState(10);
   const [questions, setQuestions] = useState<TrainingQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -51,7 +63,6 @@ export default function Treino() {
     return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
   }
 
-  const { data: topics, isLoading: loadingTopics } = trpc.simulations.getTopics.useQuery();
   const saveTrainingAnswer = trpc.simulations.saveTrainingAnswer.useMutation();
   const finishTrainingSession = trpc.simulations.finishTrainingSession.useMutation({
     onSuccess: () => {
@@ -96,7 +107,7 @@ export default function Treino() {
   }
 
   function handleStart() {
-    startTraining.mutate({ conteudo: selectedTopic ?? undefined, count });
+    startTraining.mutate({ area: selectedArea ?? undefined, count });
   }
 
   function handleFinish(qs: TrainingQuestion[], ans: Record<number, string>) {
@@ -138,40 +149,41 @@ export default function Treino() {
           <p className="text-sm opacity-80">Escolha um tópico, responda e veja o gabarito na hora.</p>
         </div>
 
-        {loadingTopics ? (
-          <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} /></div>
-        ) : (
           <div className="space-y-5">
-            {/* Tópico */}
+            {/* Área */}
             <div>
-              <p className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>Tópico</p>
+              <p className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>Área</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
-                  onClick={() => setSelectedTopic(null)}
+                  onClick={() => setSelectedArea(null)}
                   className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
                   style={{
-                    border: `1.5px solid ${selectedTopic === null ? "#009688" : "var(--border)"}`,
-                    background: selectedTopic === null ? "#E0F2F1" : "var(--card)",
-                    color: selectedTopic === null ? "#00695C" : "var(--muted-foreground)",
+                    border: `1.5px solid ${selectedArea === null ? "#009688" : "var(--border)"}`,
+                    background: selectedArea === null ? "#E0F2F1" : "var(--card)",
+                    color: selectedArea === null ? "#00695C" : "var(--muted-foreground)",
                   }}
                 >
-                  Todos os tópicos
+                  <span className="block font-semibold">🔀 Todas as áreas</span>
+                  <span className="text-xs opacity-60">Questões de todo o conteúdo</span>
                 </button>
-                {topics?.map((t) => (
-                  <button
-                    key={t.conteudo}
-                    onClick={() => setSelectedTopic(t.conteudo)}
-                    className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
-                    style={{
-                      border: `1.5px solid ${selectedTopic === t.conteudo ? "#009688" : "var(--border)"}`,
-                      background: selectedTopic === t.conteudo ? "#E0F2F1" : "var(--card)",
-                      color: selectedTopic === t.conteudo ? "#00695C" : "var(--muted-foreground)",
-                    }}
-                  >
-                    <span className="block">{t.conteudo}</span>
-                    <span className="text-xs opacity-60">{Number(t.total)} questões</span>
-                  </button>
-                ))}
+                {AREAS.map((a) => {
+                  const active = selectedArea === a.label;
+                  return (
+                    <button
+                      key={a.label}
+                      onClick={() => setSelectedArea(a.label)}
+                      className="text-left px-4 py-3 rounded-xl text-sm font-medium transition-all"
+                      style={{
+                        border: `1.5px solid ${active ? "#009688" : "var(--border)"}`,
+                        background: active ? "#E0F2F1" : "var(--card)",
+                        color: active ? "#00695C" : "var(--foreground)",
+                      }}
+                    >
+                      <span className="block font-semibold">{a.emoji} {a.label}</span>
+                      <span className="text-xs" style={{ color: "var(--muted-foreground)", opacity: 0.75 }}>{a.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -208,7 +220,6 @@ export default function Treino() {
               Começar treino
             </button>
           </div>
-        )}
       </div>
     );
   }

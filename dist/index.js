@@ -989,6 +989,11 @@ function keywordFallback(raw) {
   if (/fra[çc][aã]o|porcentagem|propor[çc][aã]o|raz[aã]o|regra de tr[eê]s|juros|financeira|aritm[eé]tica|grandeza|\bmedida/.test(t2)) return "Matem\xE1tica B\xE1sica";
   return null;
 }
+function getTopicsForArea(area) {
+  return [...new Set(
+    Object.entries(TOPIC_TO_AREA).filter(([, a]) => a === area).map(([topic]) => topic)
+  )];
+}
 function resolveArea(conteudo, tags) {
   if (conteudo) {
     const k = conteudo.trim();
@@ -1641,7 +1646,7 @@ var simulationsRouter = createTRPCRouter({
     const META_VELOCIDADE_MIN = 150;
     const META_VELOCIDADE_MAX = 360;
     const META_QUESTOES = 1e3;
-    const META_ESTUDOS = 50;
+    const META_TRILHAS = 30;
     const META_FIXACAO = 500;
     const META_DEDICACAO_HORAS = 50;
     function clamp01(x) {
@@ -1692,7 +1697,7 @@ var simulationsRouter = createTRPCRouter({
     }
     const questoesTotal = simAnswered + dcQuestions;
     const questoes = pct(questoesTotal / META_QUESTOES);
-    const estudos = pct(drCount / META_ESTUDOS);
+    const trilhas = 0;
     const fixacao = pct(fcGood / META_FIXACAO);
     const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime;
     const dedicacaoHoras = totalTimeSeconds / 3600;
@@ -1700,7 +1705,7 @@ var simulationsRouter = createTRPCRouter({
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/quest\xE3o" },
       { eixo: "Resolu\xE7\xF5es", pct: questoes, raw: questoesTotal, meta: META_QUESTOES, unidade: "resolu\xE7\xF5es" },
-      { eixo: "Estudos", pct: estudos, raw: drCount, meta: META_ESTUDOS, unidade: "textos" },
+      { eixo: "Trilhas", pct: trilhas, raw: 0, meta: META_TRILHAS, unidade: "li\xE7\xF5es" },
       { eixo: "Fixa\xE7\xE3o", pct: fixacao, raw: fcGood, meta: META_FIXACAO, unidade: "cards" },
       { eixo: "Dedica\xE7\xE3o", pct: dedicacao, raw: Math.round(dedicacaoHoras * 10) / 10, meta: META_DEDICACAO_HORAS, unidade: "horas" }
     ];
@@ -1709,16 +1714,17 @@ var simulationsRouter = createTRPCRouter({
   // TREINO LIVRE — sorteia N questões de um tópico com gabarito imediato
   // ---------------------------------------------------------------------------
   startFreeTraining: protectedProcedure.input(z2.object({
-    conteudo: z2.string().optional(),
+    area: z2.string().optional(),
+    // nome da MacroArea (ex: "Álgebra")
     count: z2.number().int().min(1).max(20).default(10)
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const filters = [eq2(questions.active, true)];
-    if (input.conteudo) {
-      filters.push(sql2`(
-          ${questions.conteudo_principal} = ${input.conteudo}
-          OR JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.conteudo}))
-        )`);
+    if (input.area && MACRO_AREAS.includes(input.area)) {
+      const topics = getTopicsForArea(input.area);
+      if (topics.length > 0) {
+        filters.push(inArray2(questions.conteudo_principal, topics));
+      }
     }
     const rows = await ctx.db.select({
       id: questions.id,

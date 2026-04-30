@@ -30,7 +30,8 @@ import {
   probabilityCorrect,
 } from "./tri";
 import type { QuestionResult } from "./tri";
-import { resolveArea, MACRO_AREAS } from "./macro-areas";
+import { resolveArea, MACRO_AREAS, getTopicsForArea } from "./macro-areas";
+import type { MacroArea } from "./macro-areas";
 
 // =============================================================================
 // Constantes de configuração das etapas
@@ -933,7 +934,7 @@ export const simulationsRouter = createTRPCRouter({
     const META_VELOCIDADE_MIN = 150; // ≤2,5 min/questão → 100%
     const META_VELOCIDADE_MAX = 360; // ≥6 min/questão → 0%
     const META_QUESTOES   = 1000;    // 1000 questões → 100%
-    const META_ESTUDOS    = 50;      // 50 textos lidos → 100%
+    const META_TRILHAS    = 30;      // 30 lições de trilha → 100% (calculado no cliente via localStorage)
     const META_FIXACAO    = 500;     // 500 flashcards c/ boa avaliação → 100%
     const META_DEDICACAO_HORAS = 50; // 50h cumulativas na plataforma → 100%
 
@@ -1022,9 +1023,11 @@ export const simulationsRouter = createTRPCRouter({
 
     const questoesTotal = simAnswered + dcQuestions;
     const questoes = pct(questoesTotal / META_QUESTOES);
-    const estudos  = pct(drCount / META_ESTUDOS);
+    // Trilhas: calculado no cliente via localStorage — servidor retorna 0 como base
+    const trilhas  = 0;
     const fixacao  = pct(fcGood / META_FIXACAO);
 
+    // Dedicação inclui tempo do Revise (drTime) para não perder o histórico
     const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime;
     const dedicacaoHoras   = totalTimeSeconds / 3600;
     const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
@@ -1032,7 +1035,7 @@ export const simulationsRouter = createTRPCRouter({
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/questão" },
       { eixo: "Resoluções", pct: questoes,   raw: questoesTotal,                         meta: META_QUESTOES,           unidade: "resoluções" },
-      { eixo: "Estudos",    pct: estudos,    raw: drCount,                               meta: META_ESTUDOS,            unidade: "textos" },
+      { eixo: "Trilhas",    pct: trilhas,    raw: 0,                                     meta: META_TRILHAS,            unidade: "lições" },
       { eixo: "Fixação",    pct: fixacao,    raw: fcGood,                                meta: META_FIXACAO,            unidade: "cards" },
       { eixo: "Dedicação",  pct: dedicacao,  raw: Math.round(dedicacaoHoras * 10) / 10,  meta: META_DEDICACAO_HORAS,    unidade: "horas" },
     ];
@@ -1043,19 +1046,18 @@ export const simulationsRouter = createTRPCRouter({
   // ---------------------------------------------------------------------------
   startFreeTraining: protectedProcedure
     .input(z.object({
-      conteudo: z.string().optional(),
+      area: z.string().optional(),  // nome da MacroArea (ex: "Álgebra")
       count: z.number().int().min(1).max(20).default(10),
     }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       const filters: any[] = [eq(questions.active, true)];
-      if (input.conteudo) {
-        // Match flexível: conteudo_principal ou tags — mesma regra do getTopics
-        // para que o count mostrado e o número de questões sorteadas batam.
-        filters.push(sql`(
-          ${questions.conteudo_principal} = ${input.conteudo}
-          OR JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.conteudo}))
-        )`);
+      if (input.area && (MACRO_AREAS as readonly string[]).includes(input.area)) {
+        // Filtra por todos os conteudo_principal que pertencem à área macro
+        const topics = getTopicsForArea(input.area as MacroArea);
+        if (topics.length > 0) {
+          filters.push(inArray(questions.conteudo_principal, topics));
+        }
       }
 
       const rows = await ctx.db

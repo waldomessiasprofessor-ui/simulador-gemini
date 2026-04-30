@@ -224,6 +224,16 @@ function keywordFallback(raw: string): MacroArea | null {
   return null;
 }
 
+// Retorna todos os conteudo_principal que pertencem a uma área macro.
+// Usado pelo startFreeTraining para filtrar questões por área.
+export function getTopicsForArea(area: MacroArea): string[] {
+  return [...new Set(
+    Object.entries(TOPIC_TO_AREA)
+      .filter(([, a]) => a === area)
+      .map(([topic]) => topic),
+  )];
+}
+
 // Determina a UMA área macro a creditar a uma questão. Prioridade:
 // 1. conteudo_principal (mapa explícito → fallback)
 // 2. tags, na ordem (mapa explícito → fallback)

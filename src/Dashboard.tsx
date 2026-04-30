@@ -73,7 +73,10 @@ function DailyCard() {
             <Flame className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-sm" style={{ color: "#00695C" }}>Desafio de Hoje</p>
+            <div className="flex items-center gap-2">
+              <p className="font-bold text-sm" style={{ color: "#00695C" }}>Desafio de Hoje</p>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#009688", background: "rgba(0,150,136,0.12)", borderRadius: 6, padding: "1px 6px" }}>+15 XP</span>
+            </div>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               Resolva três questões escolhidas por nós para manter o cérebro ativo
             </p>
@@ -315,7 +318,7 @@ function RadarPerformance() {
     // Cada lição concluída na trilha equivale a +0,5h de dedicação
     // (complementa o tempo real já somado via totalTimeSec).
     const licoesBonusHoras = t.lessonsCompleted * 0.5;
-    if (extraHoras === 0 && extraQuestoes === 0 && extraLeituras === 0 && licoesBonusHoras === 0) return rawData;
+    if (extraHoras === 0 && extraQuestoes === 0 && t.lessonsCompleted === 0 && licoesBonusHoras === 0) return rawData;
     return rawData.map((d) => {
       if (d.eixo === "Dedicação") {
         const baseRaw = Number(d.raw ?? 0);
@@ -329,9 +332,8 @@ function RadarPerformance() {
         const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
         return { ...d, pct: newPct, raw: newRaw };
       }
-      if (d.eixo === "Estudos" && extraLeituras > 0) {
-        const baseRaw = Number(d.raw ?? 0);
-        const newRaw = baseRaw + extraLeituras;
+      if (d.eixo === "Trilhas") {
+        const newRaw = t.lessonsCompleted;
         const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
         return { ...d, pct: newPct, raw: newRaw };
       }
@@ -381,6 +383,7 @@ function RadarPerformance() {
       return `${min}min${sec > 0 ? ` ${sec}s` : ""}/questão`;
     }
     if (d.eixo === "Dedicação") return `${d.raw}h de ${d.meta}h`;
+    if (d.eixo === "Trilhas") return `${d.raw} de ${d.meta} lições concluídas`;
     return `${d.raw} de ${d.meta} ${d.unidade}`;
   }
 
@@ -1400,22 +1403,6 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Ações que rendem XP */}
-            <div style={{ borderTop: "1px solid var(--border)", padding: "10px 16px", display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {[
-                { label: "Desafio diário", xp: "+15 XP" },
-                { label: "Simulado TRI", xp: "+100 XP" },
-                { label: "Trilha", xp: "+20 XP" },
-                { label: "Treino", xp: "+1 XP/acerto" },
-              ].map(({ label, xp: reward }) => (
-                <span key={label} style={{
-                  fontSize: 11, fontWeight: 600, borderRadius: 8, padding: "3px 8px",
-                  background: "var(--muted)", color: "var(--muted-foreground)", whiteSpace: "nowrap",
-                }}>
-                  {label} <span style={{ color: "#009688" }}>{reward}</span>
-                </span>
-              ))}
-            </div>
           </div>
         );
       })()}
@@ -1485,7 +1472,10 @@ export default function Dashboard() {
                 <Dumbbell className="h-5 w-5" style={{ color: "#009688" }} />
               </div>
               <div>
-                <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino Livre</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Treino Livre</p>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#009688", background: "rgba(0,150,136,0.1)", borderRadius: 6, padding: "1px 6px" }}>+1 XP/acerto</span>
+                </div>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                   Selecione a quantidade de questões e o tempo para aumentar a sua performance na resolução de questões
                 </p>
@@ -1553,6 +1543,7 @@ export default function Dashboard() {
                   <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 11, padding: "1px 8px", borderRadius: 20, fontWeight: 600 }}>
                     {vestibularSelecionado === "ENEM" ? "TRI" : "Acertos"}
                   </span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#4DB6AC", background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "1px 6px" }}>+100 XP</span>
                 </div>
                 <p style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
                   {active ? "Simulado em andamento — continuar" : "Simule o ENEM com 45 questões de Matemática e correção com TRI"}
