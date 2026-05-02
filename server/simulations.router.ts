@@ -51,8 +51,10 @@ type Stage = 1 | 2 | 3;
 
 /** Sorteia N questões aleatórias activas do banco */
 async function drawQuestions(db: any, count: number, excludeIds: number[] = [], fonte?: string) {
-  const whereClause = fonte
-    ? and(eq(questions.active, true), eq(questions.fonte, fonte))
+  // "CONCURSO" usa o pool geral (todas as questões ativas) — sem filtro de fonte
+  const effectiveFonte = fonte === "CONCURSO" ? undefined : fonte;
+  const whereClause = effectiveFonte
+    ? and(eq(questions.active, true), eq(questions.fonte, effectiveFonte))
     : eq(questions.active, true);
 
   const rows = await db
@@ -108,7 +110,8 @@ export const simulationsRouter = createTRPCRouter({
       const { stage, fonte } = input;
       const userId = ctx.user.id;
       const config = STAGE_CONFIG[stage];
-      const total = fonte && fonte !== "ENEM" ? 12 : config.total;
+      // ENEM e CONCURSO usam 45 questões; outros vestibulares usam 12
+      const total = (fonte && fonte !== "ENEM" && fonte !== "CONCURSO") ? 12 : config.total;
 
       // --- Verifica se já existe simulado em andamento (exclui treino livre stage=0) ---
       const [existing] = await ctx.db

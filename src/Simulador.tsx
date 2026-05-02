@@ -10,11 +10,12 @@ function fmt(s: number) {
 }
 
 const VESTIBULAR_INFO: Record<string, { label: string; desc: string; total: number }> = {
-  ENEM:    { label: "Simulado ENEM",    desc: "45 questões de Matemática com correção pela Teoria de Resposta ao Item — a mesma metodologia usada pelo INEP.", total: 45 },
-  UNICAMP: { label: "Simulado UNICAMP", desc: "Questões de Matemática no estilo da 1ª fase da UNICAMP — múltipla escolha, com 4 alternativas.", total: 45 },
-  FUVEST:  { label: "Simulado FUVEST",  desc: "Questões de Matemática no estilo da 1ª fase da FUVEST — múltipla escolha.", total: 45 },
-  UNESP:   { label: "Simulado UNESP",   desc: "Questões de Matemática no estilo da 1ª fase da UNESP — múltipla escolha.", total: 45 },
-  REPVET:  { label: "Repositório Vetor", desc: "Questões do banco Vetor para prática e revisão de conteúdos do vestibular — múltipla escolha.", total: 45 },
+  ENEM:      { label: "Simulado ENEM",             desc: "45 questões de Matemática com correção pela Teoria de Resposta ao Item — a mesma metodologia usada pelo INEP.", total: 45 },
+  UNICAMP:   { label: "Simulado UNICAMP",           desc: "Questões de Matemática no estilo da 1ª fase da UNICAMP — múltipla escolha, com 4 alternativas.", total: 45 },
+  FUVEST:    { label: "Simulado FUVEST",            desc: "Questões de Matemática no estilo da 1ª fase da FUVEST — múltipla escolha.", total: 45 },
+  UNESP:     { label: "Simulado UNESP",             desc: "Questões de Matemática no estilo da 1ª fase da UNESP — múltipla escolha.", total: 45 },
+  REPVET:    { label: "Banco Geral de Vestibulares", desc: "Questões variadas de múltiplos vestibulares brasileiros — ótimo para revisão ampla.", total: 45 },
+  CONCURSO:  { label: "Simulado Concursos",         desc: "Questões de Matemática e raciocínio lógico para concursos públicos e processos seletivos.", total: 45 },
 };
 
 export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {

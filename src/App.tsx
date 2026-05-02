@@ -174,6 +174,7 @@ export default function App() {
           <Route path="/simulado/fuvest"><Gate><Simulador fonte="FUVEST" /></Gate></Route>
           <Route path="/simulado/unesp"><Gate><Simulador fonte="UNESP" /></Gate></Route>
           <Route path="/simulado/repvet"><Gate><Simulador fonte="REPVET" /></Gate></Route>
+          <Route path="/simulado/concurso"><Gate><Simulador fonte="CONCURSO" /></Gate></Route>
           <Route path="/questoes"><Questoes fonte="ENEM" /></Route>
           <Route path="/questoes/unicamp"><Questoes fonte="UNICAMP" /></Route>
           <Route path="/questoes/fuvest"><Questoes fonte="FUVEST" /></Route>

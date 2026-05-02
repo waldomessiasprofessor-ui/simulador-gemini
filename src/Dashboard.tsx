@@ -6,7 +6,7 @@ import {
   Flame, Trophy, CheckCircle2, XCircle, ChevronRight,
   Loader2, Zap, Medal, BookOpen, Dumbbell,
   Clock, Swords, Star, PartyPopper, BarChart2, FlaskConical, Brain, TrendingUp,
-  CalendarDays, Sparkles
+  CalendarDays, Sparkles, X
 } from "@/icons";
 import { NextStepCard, StatNumber } from "@/components/ds";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
@@ -14,6 +14,118 @@ import { getTrilhaByArea } from "@/trilhas";
 import { getTrilhaStats } from "@/trilhas/stats";
 import LevelBadge, { type DiagnosisLevel } from "@/LevelBadge";
 import { DIAGNOSIS_LEVELS, getXpLevel, getXpProgress, getNextLevelXp } from "@/lib/xp";
+
+// ─── Catálogo de provas ───────────────────────────────────────────────────────
+interface ExamEntry {
+  key: string;
+  label: string;
+  shortLabel: string;
+  desc: string;
+  badge?: string;
+  scoring: "TRI" | "Acertos";
+}
+interface ExamCategory { category: string; icon: string; color: string; exams: ExamEntry[] }
+
+const EXAM_CATALOG: ExamCategory[] = [
+  {
+    category: "ENEM",
+    icon: "🏛️",
+    color: "#009688",
+    exams: [
+      { key: "ENEM", label: "ENEM", shortLabel: "ENEM", desc: "45 questões com correção pela Teoria de Resposta ao Item (TRI) — metodologia oficial do INEP.", badge: "TRI", scoring: "TRI" },
+    ],
+  },
+  {
+    category: "Vestibulares",
+    icon: "🎓",
+    color: "#7C3AED",
+    exams: [
+      { key: "FUVEST",  label: "FUVEST",       shortLabel: "FUVEST",  desc: "1ª fase — questões no estilo da Fundação Universitária para o Vestibular (USP).", scoring: "Acertos" },
+      { key: "UNICAMP", label: "UNICAMP",       shortLabel: "UNICAMP", desc: "1ª fase — questões no estilo do Vestibular da Universidade Estadual de Campinas.", scoring: "Acertos" },
+      { key: "UNESP",   label: "UNESP",         shortLabel: "UNESP",   desc: "1ª fase — questões no estilo do Vestibular da Universidade Estadual Paulista.", scoring: "Acertos" },
+      { key: "REPVET",  label: "Banco Geral",   shortLabel: "Geral",   desc: "Questões variadas de múltiplos vestibulares brasileiros — ótimo para revisão ampla.", scoring: "Acertos" },
+    ],
+  },
+  {
+    category: "Concursos",
+    icon: "📋",
+    color: "#D97706",
+    exams: [
+      { key: "CONCURSO", label: "Concursos Públicos", shortLabel: "Concursos", desc: "Matemática e raciocínio lógico para processos seletivos, concursos federais, estaduais e municipais.", scoring: "Acertos" },
+    ],
+  },
+];
+
+const ALL_EXAMS: Record<string, ExamEntry> = Object.fromEntries(
+  EXAM_CATALOG.flatMap(c => c.exams).map(e => [e.key, e])
+);
+
+// ─── Seletor de prova ─────────────────────────────────────────────────────────
+function ExamSelector({ selected, onSelect, onClose }: {
+  selected: string;
+  onSelect: (key: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.45)" }} />
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 71,
+        maxWidth: 480, margin: "0 auto",
+        background: "var(--background)",
+        borderRadius: "20px 20px 0 0",
+        boxShadow: "0 -8px 40px rgba(0,0,0,0.2)",
+        overflow: "hidden",
+        maxHeight: "85dvh", overflowY: "auto",
+      }}>
+        {/* Handle + Header */}
+        <div style={{ padding: "12px 16px 0", position: "sticky", top: 0, background: "var(--background)", zIndex: 1 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: "var(--border)", margin: "0 auto 12px" }} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <p style={{ fontWeight: 800, fontSize: 15, color: "var(--foreground)", margin: 0 }}>Escolha a prova</p>
+            <button onClick={onClose} style={{ background: "var(--muted)", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)" }}>
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+        {/* Categorias */}
+        <div style={{ padding: "0 16px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+          {EXAM_CATALOG.map(cat => (
+            <div key={cat.category}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                <span style={{ fontSize: 15 }}>{cat.icon}</span>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: cat.color, margin: 0 }}>{cat.category}</p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {cat.exams.map(exam => {
+                  const active = selected === exam.key;
+                  return (
+                    <button key={exam.key} onClick={() => { onSelect(exam.key); onClose(); }}
+                      style={{
+                        textAlign: "left", padding: "12px 14px", borderRadius: 14,
+                        border: `2px solid ${active ? cat.color : "var(--border)"}`,
+                        background: active ? `${cat.color}12` : "var(--card)",
+                        cursor: "pointer", transition: "all 0.15s",
+                      }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
+                        <p style={{ fontWeight: 700, fontSize: 14, color: active ? cat.color : "var(--foreground)", margin: 0 }}>{exam.label}</p>
+                        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                          {exam.badge && <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 6, background: active ? cat.color : "var(--muted)", color: active ? "#fff" : "var(--muted-foreground)" }}>{exam.badge}</span>}
+                          {active && <span style={{ fontSize: 14 }}>✓</span>}
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 12, color: "var(--muted-foreground)", margin: 0, lineHeight: 1.4 }}>{exam.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
 
 
 // ─── DailyCard ────────────────────────────────────────────────────────────────
@@ -1231,7 +1343,15 @@ function AgendaCard({ navigate }: { navigate: (to: string) => void }) {
 // ─── Dashboard principal ──────────────────────────────────────────────────────
 export default function Dashboard() {
   const [, navigate] = useLocation();
-  const vestibularSelecionado = "ENEM";
+  const [vestibularSelecionado, setVestibularSelecionado] = useState<string>(
+    () => localStorage.getItem("vestibular_selected") ?? "ENEM"
+  );
+  const [showExamSelector, setShowExamSelector] = useState(false);
+
+  function selectExam(key: string) {
+    setVestibularSelecionado(key);
+    localStorage.setItem("vestibular_selected", key);
+  }
 
   const { data: session } = trpc.auth.me.useQuery(undefined, { staleTime: 30_000 });
   const { data: stats } = trpc.simulations.getStats.useQuery(undefined, { staleTime: 0, refetchOnWindowFocus: true });
@@ -1285,9 +1405,9 @@ export default function Dashboard() {
         onPrimary: () => navigate("/desafio"),
       }
     : {
-        stage: "Simulado completo · 45 questões",
+        stage: `Simulado completo · ${ALL_EXAMS[vestibularSelecionado]?.label ?? "ENEM"}`,
         title: "Pronto para testar seu nível?",
-        context: "Simule o ENEM com 45 questões de Matemática e veja sua pontuação estimada com TRI.",
+        context: ALL_EXAMS[vestibularSelecionado]?.desc ?? "Simule o ENEM com 45 questões de Matemática e veja sua pontuação estimada com TRI.",
         primaryLabel: "Iniciar simulado",
         onPrimary: () => navigate(`/simulado/${vestibularSelecionado.toLowerCase()}`),
       };
@@ -1526,8 +1646,32 @@ export default function Dashboard() {
       </section>
 
       {/* ── Valendo! ── */}
+      {showExamSelector && (
+        <ExamSelector
+          selected={vestibularSelecionado}
+          onSelect={selectExam}
+          onClose={() => setShowExamSelector(false)}
+        />
+      )}
       <section>
-        <p className="pr-eyebrow" style={{ paddingLeft: 4, marginBottom: 8 }}>Simulado completo</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 4, marginBottom: 8 }}>
+          <p className="pr-eyebrow">Simulado completo</p>
+          <button
+            onClick={() => setShowExamSelector(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 5,
+              background: "var(--muted)", border: "1px solid var(--border)",
+              borderRadius: 20, padding: "4px 10px", cursor: "pointer",
+              fontSize: 11, fontWeight: 700, color: "var(--foreground)",
+            }}>
+            {ALL_EXAMS[vestibularSelecionado]?.shortLabel ?? vestibularSelecionado}
+            <ChevronRight className="h-3 w-3" style={{ transform: "rotate(90deg)", opacity: 0.6 }} />
+          </button>
+        </div>
+        {(() => {
+          const exam = ALL_EXAMS[vestibularSelecionado] ?? ALL_EXAMS["ENEM"];
+          const cat = EXAM_CATALOG.find(c => c.exams.some(e => e.key === vestibularSelecionado));
+          return (
         <button
           onClick={() => navigate(active ? "/simulado" : `/simulado/${vestibularSelecionado.toLowerCase()}`)}
           className="w-full text-left rounded-2xl p-4 transition-all hover:opacity-90"
@@ -1538,21 +1682,24 @@ export default function Dashboard() {
                 <Swords className="h-5 w-5 text-white" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-bold text-sm text-white">Valendo! ⚡</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-bold text-sm text-white">{exam.label} ⚡</p>
                   <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 11, padding: "1px 8px", borderRadius: 20, fontWeight: 600 }}>
-                    {vestibularSelecionado === "ENEM" ? "TRI" : "Acertos"}
+                    {exam.scoring}
                   </span>
+                  {cat && <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "1px 6px" }}>{cat.category}</span>}
                   <span style={{ fontSize: 10, fontWeight: 700, color: "#4DB6AC", background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "1px 6px" }}>+100 XP</span>
                 </div>
                 <p style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
-                  {active ? "Simulado em andamento — continuar" : "Simule o ENEM com 45 questões de Matemática e correção com TRI"}
+                  {active ? "Simulado em andamento — continuar" : exam.desc}
                 </p>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 flex-shrink-0 text-white opacity-70" />
           </div>
         </button>
+          );
+        })()}
       </section>
 
     </div>

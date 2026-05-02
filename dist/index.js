@@ -1028,7 +1028,8 @@ var STAGE_CONFIG = {
   3: { total: 45, minPass: 0, timeLimitPerQuestion: 3 * 60 }
 };
 async function drawQuestions(db2, count, excludeIds = [], fonte) {
-  const whereClause = fonte ? and2(eq2(questions.active, true), eq2(questions.fonte, fonte)) : eq2(questions.active, true);
+  const effectiveFonte = fonte === "CONCURSO" ? void 0 : fonte;
+  const whereClause = effectiveFonte ? and2(eq2(questions.active, true), eq2(questions.fonte, effectiveFonte)) : eq2(questions.active, true);
   const rows = await db2.select({
     id: questions.id,
     conteudo_principal: questions.conteudo_principal,
@@ -1060,7 +1061,7 @@ var simulationsRouter = createTRPCRouter({
     const { stage, fonte } = input;
     const userId = ctx.user.id;
     const config = STAGE_CONFIG[stage];
-    const total = fonte && fonte !== "ENEM" ? 12 : config.total;
+    const total = fonte && fonte !== "ENEM" && fonte !== "CONCURSO" ? 12 : config.total;
     const [existing] = await ctx.db.select({ id: simulations.id }).from(simulations).where(
       and2(
         eq2(simulations.userId, userId),
