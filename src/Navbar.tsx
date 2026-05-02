@@ -57,12 +57,14 @@ interface SoonItem {
 type SubItem = LinkItem | SoonItem;
 
 // Itens que têm sub-menu (Banco de Questões, Simulados)
+interface HeaderItem { kind: "header"; label: string }
 interface GroupItem {
   kind: "group";
   label: string;
   icon: React.ElementType;
   children: SubItem[];
 }
+type SubItem = LinkItem | SoonItem | HeaderItem;
 type TopItem = GroupItem | LinkItem;
 
 const NAV_TREE: TopItem[] = [
@@ -71,9 +73,13 @@ const NAV_TREE: TopItem[] = [
     label: "Banco de Questões",
     icon: d(Books),
     children: [
-      { kind: "link", href: "/questoes",        label: "ENEM",              icon: d(GraduationCap) },
-      { kind: "soon", label: "Paulistas",       icon: d(GraduationCap) },
-      { kind: "link", href: "/questoes/repvet", label: "Repositório Vetor", icon: d(Star) },
+      { kind: "header", label: "ENEM" },
+      { kind: "link", href: "/questoes",         label: "ENEM",        icon: d(GraduationCap) },
+      { kind: "header", label: "Vestibulares" },
+      { kind: "link", href: "/questoes/fuvest",  label: "FUVEST",      icon: d(GraduationCap) },
+      { kind: "link", href: "/questoes/unicamp", label: "UNICAMP",     icon: d(GraduationCap) },
+      { kind: "link", href: "/questoes/unesp",   label: "UNESP",       icon: d(GraduationCap) },
+      { kind: "link", href: "/questoes/repvet",  label: "Banco Geral", icon: d(Star) },
     ],
   },
   {
@@ -81,17 +87,15 @@ const NAV_TREE: TopItem[] = [
     label: "Simulados",
     icon: d(ClipboardText),
     children: [
-      { kind: "link", href: "/simulado", label: "ENEM", icon: d(GraduationCap), badge: "Com TRI" },
-      {
-        kind: "soon",
-        label: "Paulistas",
-        icon: d(GraduationCap),
-        children: [
-          { kind: "soon", label: "UNICAMP" },
-          { kind: "soon", label: "Fuvest"  },
-          { kind: "soon", label: "UNESP"   },
-        ],
-      },
+      { kind: "header", label: "ENEM" },
+      { kind: "link", href: "/simulado/enem",    label: "ENEM",        icon: d(GraduationCap), badge: "TRI" },
+      { kind: "header", label: "Vestibulares" },
+      { kind: "link", href: "/simulado/fuvest",  label: "FUVEST",      icon: d(GraduationCap) },
+      { kind: "link", href: "/simulado/unicamp", label: "UNICAMP",     icon: d(GraduationCap) },
+      { kind: "link", href: "/simulado/unesp",   label: "UNESP",       icon: d(GraduationCap) },
+      { kind: "link", href: "/simulado/repvet",  label: "Banco Geral", icon: d(Star) },
+      { kind: "header", label: "Concursos" },
+      { kind: "link", href: "/simulado/concurso", label: "Concursos Públicos", icon: d(ClipboardText) },
     ],
   },
   { kind: "link", href: "/trilhas",    label: "Trilhas",            icon: d(YoutubeLogo) },
@@ -126,7 +130,17 @@ function SoonBadge() {
 }
 
 function renderSub(item: SubItem, location: string, onClose: () => void, depth = 0): ReactElement {
-  const Icon = item.icon;
+  if (item.kind === "header") {
+    return (
+      <p key={"hdr-" + item.label} style={{
+        fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em",
+        color: "var(--muted-foreground)", padding: "8px 12px 2px",
+        margin: 0, opacity: 0.7,
+      }}>{item.label}</p>
+    );
+  }
+
+  const Icon = (item as any).icon as React.ElementType | undefined;
   const pad = depth === 0 ? "pl-3" : "pl-5";
 
   if (item.kind === "soon") {

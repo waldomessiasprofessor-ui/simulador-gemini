@@ -1670,7 +1670,6 @@ export default function Dashboard() {
         </div>
         {(() => {
           const exam = ALL_EXAMS[vestibularSelecionado] ?? ALL_EXAMS["ENEM"];
-          const cat = EXAM_CATALOG.find(c => c.exams.some(e => e.key === vestibularSelecionado));
           return (
         <button
           onClick={() => navigate(active ? "/simulado" : `/simulado/${vestibularSelecionado.toLowerCase()}`)}
@@ -1687,7 +1686,6 @@ export default function Dashboard() {
                   <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", fontSize: 11, padding: "1px 8px", borderRadius: 20, fontWeight: 600 }}>
                     {exam.scoring}
                   </span>
-                  {cat && <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "1px 6px" }}>{cat.category}</span>}
                   <span style={{ fontSize: 10, fontWeight: 700, color: "#4DB6AC", background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "1px 6px" }}>+100 XP</span>
                 </div>
                 <p style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
