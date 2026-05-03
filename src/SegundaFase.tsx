@@ -42,72 +42,65 @@ const FONTE_INFO: Record<string, { label: string; desc: string }> = {
   },
 };
 
-// ─── "Como funciona?" collapsível ────────────────────────────────────────────
+// ─── "Como funciona?" collapsível — aparece UMA vez no card principal ─────────
 
 function ComoFunciona() {
   const [open, setOpen] = useState(false);
+
+  const items = [
+    {
+      emoji: "🧠",
+      title: "Recuperação ativa",
+      text: "Resolver antes de ver a resposta força seu cérebro a ativar o conhecimento armazenado — esse esforço consolida o aprendizado muito mais do que reler o conteúdo.",
+    },
+    {
+      emoji: "🔍",
+      title: "Metacognição",
+      text: "Comparar sua resolução com o gabarito e avaliar onde errou treina sua capacidade de identificar lacunas reais — você aprende a \"aprender a aprender\".",
+    },
+    {
+      emoji: "📊",
+      title: "Como pontuar honestamente",
+      text: "✅ Acertei (+3 XP): raciocínio correto e chegou ao resultado.\n🟡 Quase (+1 XP): lógica certa mas erro de cálculo ou notação.\n❌ Errei (0 XP): caminho errado ou em branco — hora de rever!",
+    },
+    {
+      emoji: "🎯",
+      title: "Por que ser honesto?",
+      text: "Marcar \"acertei\" quando errou prejudica só você. O XP reflete seu domínio real — use-o para saber o que ainda precisa de atenção.",
+    },
+  ];
+
   return (
-    <div
-      className="rounded-xl overflow-hidden"
-      style={{ border: "1px solid var(--border)", background: "var(--card)" }}
-    >
+    <div className="mt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.2)", paddingTop: 12 }}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-left hover:opacity-80 transition-opacity"
+        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
-        <Info className="h-4 w-4 flex-shrink-0" style={{ color: "#009688" }} />
-        <span className="text-sm font-semibold flex-1" style={{ color: "var(--foreground)" }}>
+        <Info className="h-4 w-4 flex-shrink-0" style={{ color: "rgba(255,255,255,0.85)" }} />
+        <span className="text-sm font-semibold" style={{ color: "rgba(255,255,255,0.9)" }}>
           Como funciona a autocorreção?
         </span>
-        {open ? (
-          <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
-        ) : (
-          <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
-        )}
+        {open
+          ? <ChevronUp className="h-4 w-4" style={{ color: "rgba(255,255,255,0.7)" }} />
+          : <ChevronDown className="h-4 w-4" style={{ color: "rgba(255,255,255,0.7)" }} />}
       </button>
 
       {open && (
-        <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
-          <p className="text-sm pt-3" style={{ color: "var(--foreground)" }}>
-            A <strong>autocorreção ativa</strong> é uma das metodologias de estudo mais eficazes comprovadas pela ciência cognitiva. Veja como funciona:
-          </p>
-          <div className="space-y-2">
-            {[
-              {
-                emoji: "🧠",
-                title: "Recuperação ativa",
-                text: "Resolver antes de ver a resposta força seu cérebro a ativar o conhecimento armazenado — esse esforço consolida o aprendizado muito mais do que reler o conteúdo.",
-              },
-              {
-                emoji: "🔍",
-                title: "Metacognição",
-                text: "Comparar sua resolução com o gabarito e avaliar onde errou treina sua capacidade de identificar lacunas reais — você aprende a \"aprender a aprender\".",
-              },
-              {
-                emoji: "📊",
-                title: "Como pontuar honestamente",
-                text: "✅ Acertei (+3 XP): raciocínio correto e chegou ao resultado certo.\n🟡 Quase (+1 XP): entendeu a lógica mas cometeu erro de cálculo ou notação.\n❌ Errei (0 XP): caminho errado ou em branco — hora de rever o conteúdo!",
-              },
-              {
-                emoji: "🎯",
-                title: "Por que ser honesto?",
-                text: "Marcar \"acertei\" quando errou prejudica só você. O XP reflete seu domínio real — use-o para identificar os temas que precisam de mais atenção.",
-              },
-            ].map(({ emoji, title, text }) => (
-              <div
-                key={title}
-                className="rounded-xl px-3 py-2.5"
-                style={{ background: "var(--muted)" }}
-              >
-                <p className="text-sm font-bold mb-0.5" style={{ color: "var(--foreground)" }}>
-                  {emoji} {title}
-                </p>
-                <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: "var(--muted-foreground)" }}>
-                  {text}
-                </p>
-              </div>
-            ))}
-          </div>
+        <div className="mt-3 space-y-2">
+          {items.map(({ emoji, title, text }) => (
+            <div
+              key={title}
+              className="rounded-xl px-3 py-2.5"
+              style={{ background: "rgba(255,255,255,0.12)" }}
+            >
+              <p className="text-sm font-bold mb-0.5" style={{ color: "#fff" }}>
+                {emoji} {title}
+              </p>
+              <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: "rgba(255,255,255,0.8)" }}>
+                {text}
+              </p>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -330,8 +323,6 @@ function QuestionRow({
                       <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#009688" }} />
                     </div>
                   )}
-                  {/* Como funciona — dentro da autocorreção */}
-                  <ComoFunciona />
                 </div>
               )}
 
@@ -458,6 +449,8 @@ export default function SegundaFase({ fonte = "UNICAMP" }: { fonte?: string }) {
             </div>
           ))}
         </div>
+        {/* Como funciona — aparece UMA VEZ, dentro do card principal */}
+        <ComoFunciona />
       </div>
 
       {/* Como funciona — visível antes de começar */}

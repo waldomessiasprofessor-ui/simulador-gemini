@@ -91,6 +91,27 @@ function normalizeImageFormats(text: string): string {
   return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, "[Imagem: $2]");
 }
 
+// Caractere PUA (Private Use Area) usado como placeholder temporário para cifrão monetário.
+// Escolhido por não aparecer em texto normal nem em LaTeX.
+const CURR_PH = "";
+
+/**
+ * Protege padrões de moeda (R$, US$, AU$, C$, €$ etc.) para que o sinal de
+ * cifrão NÃO seja confundido com delimitador LaTeX durante o parsing.
+ * Ex: "R$ 50,00" → "R 50,00"
+ */
+function protectCurrency(text: string): string {
+  // Captura prefixo de 1–3 letras maiúsculas seguido de $ (monetário)
+  // O lookbehind já filtra R$ pela letra anterior, mas este pré-processamento
+  // garante que mesmo em contextos como "$x = R$ 50" o $ de R$ não feche a expressão.
+  return text.replace(/([A-Z]{1,3})\$/g, `$1${CURR_PH}`);
+}
+
+/** Restaura o cifrão monetário nos segmentos de texto puro. */
+function restoreCurrency(text: string): string {
+  return text.replace(new RegExp(CURR_PH, "g"), "$");
+}
+
 // Divide o texto em "chunks" separando blocos de tabela Markdown do restante.
 function splitTableChunks(text: string): Array<{ isTable: boolean; content: string }> {
   const lines = text.split("\n");
@@ -121,7 +142,12 @@ function splitTableChunks(text: string): Array<{ isTable: boolean; content: stri
   return chunks;
 }
 
-function parseLatexChunk(text: string): Segment[] {
+function parseLatexChunk(rawText: string): Segment[] {
+  // Protege cifrões monetários (R$, US$, etc.) antes de rodar o parser LaTeX.
+  // Sem isso, "$x = R$ 50" capturaria "x = R" como expressão LaTeX porque o
+  // $ de R$ fecha indevidamente o delimitador aberto pelo primeiro $.
+  const text = protectCurrency(rawText);
+
   const segments: Segment[] = [];
   const combined = /\[Imagem(?::\s*(https?:\/\/[^\]]+))?\]|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\\\(([\s\S]*?)\\\)|(?<![A-Za-z])\$([^$\n]+?)\$/gi;
   let lastIndex = 0;
@@ -129,7 +155,8 @@ function parseLatexChunk(text: string): Segment[] {
 
   while ((match = combined.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      segments.push({ type: "text", content: text.slice(lastIndex, match.index) });
+      // Restaura cifrão nos segmentos de texto puro
+      segments.push({ type: "text", content: restoreCurrency(text.slice(lastIndex, match.index)) });
     }
     const full = match[0];
     if (full.toLowerCase().startsWith("[imagem")) {
@@ -144,7 +171,8 @@ function parseLatexChunk(text: string): Segment[] {
   }
 
   if (lastIndex < text.length) {
-    segments.push({ type: "text", content: text.slice(lastIndex) });
+    // Restaura cifrão no último trecho de texto
+    segments.push({ type: "text", content: restoreCurrency(text.slice(lastIndex)) });
   }
 
   return segments;
