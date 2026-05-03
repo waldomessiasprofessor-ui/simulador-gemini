@@ -21,7 +21,7 @@ import { z } from "zod";
 import { eq, and, desc, sql, inArray, gte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "./trpc";
-import { questions, simulations, simulationAnswers, users, dailyChallenges, dailyReviews, flashcardProgress } from "./schema";
+import { questions, simulations, simulationAnswers, users, dailyChallenges, dailyReviews, flashcardProgress, trilhaProgress } from "./schema";
 import type { NewSimulation, NewSimulationAnswer, NewDailyChallenge } from "./schema";
 import {
   estimateTheta,
@@ -973,7 +973,7 @@ export const simulationsRouter = createTRPCRouter({
     const META_VELOCIDADE_MIN = 150; // ≤2,5 min/questão → 100%
     const META_VELOCIDADE_MAX = 360; // ≥6 min/questão → 0%
     const META_QUESTOES   = 1000;    // 1000 questões → 100%
-    const META_TRILHAS    = 30;      // 30 lições de trilha → 100% (calculado no cliente via localStorage)
+    const META_TRILHAS    = 30;      // 30 lições de trilha → 100%
     const META_FIXACAO    = 500;     // 500 flashcards c/ boa avaliação → 100%
     const META_DEDICACAO_HORAS = 50; // 50h cumulativas na plataforma → 100%
 
@@ -1046,6 +1046,19 @@ export const simulationsRouter = createTRPCRouter({
     const fcGood = Number(fcAgg[0]?.goodCount ?? 0);
     const fcTime = Number(fcAgg[0]?.timeSum ?? 0);
 
+    // ── Fonte 5: Trilhas — lições concluídas + tempo de exercícios ───────────
+    const trilhaAgg = await ctx.db
+      .select({
+        lessonsCompleted: sql<number>`COUNT(CASE WHEN ${trilhaProgress.finishedAt} IS NOT NULL THEN 1 END)`,
+        totalTimeSec:     sql<number>`COALESCE(SUM(${trilhaProgress.totalTimeSec}), 0)`,
+        leituras:         sql<number>`SUM(CASE WHEN ${trilhaProgress.leituraConcluida} = 1 THEN 1 ELSE 0 END)`,
+      })
+      .from(trilhaProgress)
+      .where(eq(trilhaProgress.userId, userId));
+
+    const trilhaLessons = Number(trilhaAgg[0]?.lessonsCompleted ?? 0);
+    const trilhaTime    = Number(trilhaAgg[0]?.totalTimeSec    ?? 0);
+
     // ── Cálculo dos 5 eixos ──────────────────────────────────────────────────
 
     const avgSecPerQuestion = simTimed > 0 ? simTimeSum / simTimed : null;
@@ -1060,21 +1073,21 @@ export const simulationsRouter = createTRPCRouter({
       }
     }
 
+    // Questões nas trilhas também contam para Resoluções
     const questoesTotal = simAnswered + dcQuestions;
     const questoes = pct(questoesTotal / META_QUESTOES);
-    // Trilhas: calculado no cliente via localStorage — servidor retorna 0 como base
-    const trilhas  = 0;
+    const trilhas  = pct(trilhaLessons / META_TRILHAS);
     const fixacao  = pct(fcGood / META_FIXACAO);
 
-    // Dedicação inclui tempo do Revise (drTime) para não perder o histórico
-    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime;
+    // Dedicação inclui tempo de todas as fontes, agora incluindo trilhas
+    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime + trilhaTime;
     const dedicacaoHoras   = totalTimeSeconds / 3600;
     const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
 
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/questão" },
       { eixo: "Resoluções", pct: questoes,   raw: questoesTotal,                         meta: META_QUESTOES,           unidade: "resoluções" },
-      { eixo: "Trilhas",    pct: trilhas,    raw: 0,                                     meta: META_TRILHAS,            unidade: "lições" },
+      { eixo: "Trilhas",    pct: trilhas,    raw: trilhaLessons,                         meta: META_TRILHAS,            unidade: "lições" },
       { eixo: "Fixação",    pct: fixacao,    raw: fcGood,                                meta: META_FIXACAO,            unidade: "cards" },
       { eixo: "Dedicação",  pct: dedicacao,  raw: Math.round(dedicacaoHoras * 10) / 10,  meta: META_DEDICACAO_HORAS,    unidade: "horas" },
     ];

@@ -6,6 +6,7 @@ import {
   timestamp,
   mysqlEnum,
   index,
+  uniqueIndex,
   json,
   text,
   float,
@@ -416,3 +417,38 @@ export const discursiveProgress = mysqlTable(
 
 export type DiscursiveQuestion  = typeof discursiveQuestions.$inferSelect;
 export type DiscursiveProgress  = typeof discursiveProgress.$inferSelect;
+
+// =============================================================================
+// Tabela: trilha_progress — progresso do aluno por lição de trilha
+// =============================================================================
+// Persiste o que antes ficava apenas no localStorage, permitindo sincronização
+// entre dispositivos. O cliente continua usando localStorage como cache offline;
+// esta tabela é a fonte de verdade no servidor.
+//
+// Uma linha por (userId, trilhaSlug, licaoSlug) — o upsert atualiza em caso de
+// repetição.
+
+export const trilhaProgress = mysqlTable(
+  "trilha_progress",
+  {
+    id:               int("id").primaryKey().autoincrement(),
+    userId:           int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    trilhaSlug:       varchar("trilha_slug", { length: 100 }).notNull(),
+    licaoSlug:        varchar("licao_slug",  { length: 100 }).notNull(),
+    // null = nunca terminou os exercícios (só leu)
+    finishedAt:       timestamp("finished_at"),
+    lastScorePct:     int("last_score_pct"),
+    totalTimeSec:     int("total_time_sec").notNull().default(0),
+    // true quando o aluno clicou "Concluir Leitura" para esta lição
+    leituraConcluida: boolean("leitura_concluida").notNull().default(false),
+    createdAt:        timestamp("created_at").defaultNow().notNull(),
+    updatedAt:        timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => ({
+    idxUser: index("idx_trilha_prog_user").on(t.userId),
+    uniq:    uniqueIndex("uniq_trilha_user_licao").on(t.userId, t.trilhaSlug, t.licaoSlug),
+  })
+);
+
+export type TrilhaProgressRow    = typeof trilhaProgress.$inferSelect;
+export type NewTrilhaProgress    = typeof trilhaProgress.$inferInsert;

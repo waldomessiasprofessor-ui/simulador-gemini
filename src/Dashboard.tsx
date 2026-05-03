@@ -11,7 +11,6 @@ import {
 import { NextStepCard, StatNumber } from "@/components/ds";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 import { getTrilhaByArea } from "@/trilhas";
-import { getTrilhaStats } from "@/trilhas/stats";
 import LevelBadge, { type DiagnosisLevel } from "@/LevelBadge";
 import { DIAGNOSIS_LEVELS, getXpLevel, getXpProgress, getNextLevelXp } from "@/lib/xp";
 
@@ -419,39 +418,9 @@ function RadarPerformance() {
     staleTime: 0, refetchOnMount: true, refetchOnWindowFocus: true, refetchInterval: 60_000,
   });
 
-  // Incorpora estatísticas das trilhas (localStorage) nos eixos Dedicação e
-  // Questões — servidor ainda não conhece as trilhas, então fazemos no cliente.
-  const data = useMemo(() => {
-    if (!rawData) return rawData;
-    const t = getTrilhaStats();
-    const extraHoras     = t.totalTimeSec / 3600;
-    const extraQuestoes  = t.totalExercises;
-    const extraLeituras  = t.totalLeituras;
-    // Cada lição concluída na trilha equivale a +0,5h de dedicação
-    // (complementa o tempo real já somado via totalTimeSec).
-    const licoesBonusHoras = t.lessonsCompleted * 0.5;
-    if (extraHoras === 0 && extraQuestoes === 0 && t.lessonsCompleted === 0 && licoesBonusHoras === 0) return rawData;
-    return rawData.map((d) => {
-      if (d.eixo === "Dedicação") {
-        const baseRaw = Number(d.raw ?? 0);
-        const newRaw = baseRaw + extraHoras + licoesBonusHoras;
-        const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
-        return { ...d, pct: newPct, raw: Math.round(newRaw * 10) / 10 };
-      }
-      if (d.eixo === "Resoluções") {
-        const baseRaw = Number(d.raw ?? 0);
-        const newRaw = baseRaw + extraQuestoes;
-        const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
-        return { ...d, pct: newPct, raw: newRaw };
-      }
-      if (d.eixo === "Trilhas") {
-        const newRaw = t.lessonsCompleted;
-        const newPct = Math.min(100, Math.round((newRaw / d.meta) * 100));
-        return { ...d, pct: newPct, raw: newRaw };
-      }
-      return d;
-    });
-  }, [rawData, dataUpdatedAt]);
+  // Os dados de trilhas agora vêm direto do servidor (trilha_progress).
+  // Não há mais necessidade de merge client-side via localStorage.
+  const data = rawData;
 
   const [animated, setAnimated] = useState<{ eixo: string; pct: number }[]>([]);
   const rafRef = useRef<number | null>(null);

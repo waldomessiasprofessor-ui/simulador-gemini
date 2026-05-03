@@ -40,6 +40,7 @@ __export(schema_exports, {
   simulations: () => simulations,
   simulationsRelations: () => simulationsRelations,
   studySchedule: () => studySchedule,
+  trilhaProgress: () => trilhaProgress,
   trilhaVideos: () => trilhaVideos,
   users: () => users,
   usersRelations: () => usersRelations
@@ -52,6 +53,7 @@ import {
   timestamp,
   mysqlEnum,
   index,
+  uniqueIndex,
   json,
   text,
   float
@@ -346,6 +348,27 @@ var discursiveProgress = mysqlTable(
   },
   (t2) => ({
     idxUserQ: index("idx_disc_prog_user_q").on(t2.userId, t2.questionId)
+  })
+);
+var trilhaProgress = mysqlTable(
+  "trilha_progress",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    trilhaSlug: varchar("trilha_slug", { length: 100 }).notNull(),
+    licaoSlug: varchar("licao_slug", { length: 100 }).notNull(),
+    // null = nunca terminou os exercícios (só leu)
+    finishedAt: timestamp("finished_at"),
+    lastScorePct: int("last_score_pct"),
+    totalTimeSec: int("total_time_sec").notNull().default(0),
+    // true quando o aluno clicou "Concluir Leitura" para esta lição
+    leituraConcluida: boolean("leitura_concluida").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull()
+  },
+  (t2) => ({
+    idxUser: index("idx_trilha_prog_user").on(t2.userId),
+    uniq: uniqueIndex("uniq_trilha_user_licao").on(t2.userId, t2.trilhaSlug, t2.licaoSlug)
   })
 );
 
@@ -1754,6 +1777,13 @@ var simulationsRouter = createTRPCRouter({
     }).from(flashcardProgress).where(eq2(flashcardProgress.userId, userId));
     const fcGood = Number(fcAgg[0]?.goodCount ?? 0);
     const fcTime = Number(fcAgg[0]?.timeSum ?? 0);
+    const trilhaAgg = await ctx.db.select({
+      lessonsCompleted: sql2`COUNT(CASE WHEN ${trilhaProgress.finishedAt} IS NOT NULL THEN 1 END)`,
+      totalTimeSec: sql2`COALESCE(SUM(${trilhaProgress.totalTimeSec}), 0)`,
+      leituras: sql2`SUM(CASE WHEN ${trilhaProgress.leituraConcluida} = 1 THEN 1 ELSE 0 END)`
+    }).from(trilhaProgress).where(eq2(trilhaProgress.userId, userId));
+    const trilhaLessons = Number(trilhaAgg[0]?.lessonsCompleted ?? 0);
+    const trilhaTime = Number(trilhaAgg[0]?.totalTimeSec ?? 0);
     const avgSecPerQuestion = simTimed > 0 ? simTimeSum / simTimed : null;
     let velocidade = 0;
     if (avgSecPerQuestion !== null) {
@@ -1766,15 +1796,15 @@ var simulationsRouter = createTRPCRouter({
     }
     const questoesTotal = simAnswered + dcQuestions;
     const questoes = pct(questoesTotal / META_QUESTOES);
-    const trilhas = 0;
+    const trilhas = pct(trilhaLessons / META_TRILHAS);
     const fixacao = pct(fcGood / META_FIXACAO);
-    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime;
+    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime + trilhaTime;
     const dedicacaoHoras = totalTimeSeconds / 3600;
     const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/quest\xE3o" },
       { eixo: "Resolu\xE7\xF5es", pct: questoes, raw: questoesTotal, meta: META_QUESTOES, unidade: "resolu\xE7\xF5es" },
-      { eixo: "Trilhas", pct: trilhas, raw: 0, meta: META_TRILHAS, unidade: "li\xE7\xF5es" },
+      { eixo: "Trilhas", pct: trilhas, raw: trilhaLessons, meta: META_TRILHAS, unidade: "li\xE7\xF5es" },
       { eixo: "Fixa\xE7\xE3o", pct: fixacao, raw: fcGood, meta: META_FIXACAO, unidade: "cards" },
       { eixo: "Dedica\xE7\xE3o", pct: dedicacao, raw: Math.round(dedicacaoHoras * 10) / 10, meta: META_DEDICACAO_HORAS, unidade: "horas" }
     ];
@@ -2996,7 +3026,7 @@ var flashcardsRouter = createTRPCRouter({
 
 // server/trilhas.router.ts
 import { z as z9 } from "zod";
-import { and as and7, eq as eq9 } from "drizzle-orm";
+import { and as and7, eq as eq9, sql as sql7 } from "drizzle-orm";
 var slugSchema = z9.string().min(1).max(100);
 var licaoSlugSchema = z9.string().max(100).default("");
 var urlSchema = z9.string().trim().url("URL inv\xE1lida").max(512);
@@ -3041,13 +3071,63 @@ var trilhasRouter = createTRPCRouter({
   delete: adminProcedure.input(z9.object({ id: z9.number().int().positive() })).mutation(async ({ ctx, input }) => {
     await ctx.db.delete(trilhaVideos).where(eq9(trilhaVideos.id, input.id));
     return { success: true };
+  }),
+  // ── Progresso de trilha (aluno) ───────────────────────────────────────────
+  // Retorna todas as linhas de progresso do usuário logado.
+  // Usado por TrilhaIndex (para exibir checkmarks) e por Dashboard (merge com
+  // dados de performance).
+  getAllProgress: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.select().from(trilhaProgress).where(eq9(trilhaProgress.userId, ctx.user.id));
+  }),
+  // Upsert: salva (ou atualiza) o resultado de uma lição após o aluno
+  // terminar os exercícios. Mantém o melhor score se o aluno refizer.
+  saveProgress: protectedProcedure.input(z9.object({
+    trilhaSlug: z9.string().min(1).max(100),
+    licaoSlug: z9.string().min(1).max(100),
+    lastScorePct: z9.number().int().min(0).max(100),
+    totalTimeSec: z9.number().int().min(0),
+    finishedAt: z9.number()
+    // timestamp ms
+  })).mutation(async ({ ctx, input }) => {
+    const userId = ctx.user.id;
+    const finishedDate = new Date(input.finishedAt);
+    const [result] = await ctx.db.execute(sql7`
+        INSERT INTO trilha_progress
+          (user_id, trilha_slug, licao_slug, finished_at, last_score_pct, total_time_sec)
+        VALUES
+          (${userId}, ${input.trilhaSlug}, ${input.licaoSlug},
+           ${finishedDate}, ${input.lastScorePct}, ${input.totalTimeSec})
+        ON DUPLICATE KEY UPDATE
+          finished_at    = VALUES(finished_at),
+          last_score_pct = GREATEST(COALESCE(last_score_pct, 0), VALUES(last_score_pct)),
+          total_time_sec = total_time_sec + VALUES(total_time_sec),
+          updated_at     = NOW()
+      `);
+    return { ok: true };
+  }),
+  // Marca a leitura de conteúdo como concluída para uma lição.
+  saveLeitura: protectedProcedure.input(z9.object({
+    trilhaSlug: z9.string().min(1).max(100),
+    licaoSlug: z9.string().min(1).max(100)
+  })).mutation(async ({ ctx, input }) => {
+    const userId = ctx.user.id;
+    await ctx.db.execute(sql7`
+        INSERT INTO trilha_progress
+          (user_id, trilha_slug, licao_slug, leitura_concluida, total_time_sec)
+        VALUES
+          (${userId}, ${input.trilhaSlug}, ${input.licaoSlug}, 1, 0)
+        ON DUPLICATE KEY UPDATE
+          leitura_concluida = 1,
+          updated_at        = NOW()
+      `);
+    return { ok: true };
   })
 });
 
 // server/tutor.router.ts
 import { z as z10 } from "zod";
 import { TRPCError as TRPCError6 } from "@trpc/server";
-import { eq as eq10, and as and8, desc as desc4, sql as sql7, inArray as inArray5 } from "drizzle-orm";
+import { eq as eq10, and as and8, desc as desc4, sql as sql8, inArray as inArray5 } from "drizzle-orm";
 var SYSTEM_PROMPT = `Voc\xEA \xE9 o Tutor Vetor, um assistente especializado em matem\xE1tica para o ENEM e vestibulares brasileiros (UNICAMP, FUVEST, UNESP).
 
 Regras inviol\xE1veis:
@@ -3098,14 +3178,14 @@ async function collectStudentData(ctx) {
     totalQuestions: simulations.totalQuestions,
     totalTimeSeconds: simulations.totalTimeSeconds,
     completedAt: simulations.completedAt
-  }).from(simulations).where(and8(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql7`${simulations.stage} > 0`)).orderBy(desc4(simulations.completedAt)).limit(10);
+  }).from(simulations).where(and8(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql8`${simulations.stage} > 0`)).orderBy(desc4(simulations.completedAt)).limit(10);
   const simRows = await ctx.db.select({
     conteudo: questions.conteudo_principal,
     tags: questions.tags,
     isCorrect: simulationAnswers.isCorrect
   }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq10(simulationAnswers.questionId, questions.id)).where(and8(
     eq10(simulations.userId, userId),
-    sql7`${simulationAnswers.isCorrect} IS NOT NULL`
+    sql8`${simulationAnswers.isCorrect} IS NOT NULL`
   ));
   const areaMap = /* @__PURE__ */ new Map();
   for (const r of simRows) {
@@ -3144,10 +3224,10 @@ async function collectStudentData(ctx) {
       }
     }
   }
-  const allAnswered = await ctx.db.select({ isCorrect: simulationAnswers.isCorrect }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and8(eq10(simulations.userId, userId), sql7`${simulationAnswers.isCorrect} IS NOT NULL`));
+  const allAnswered = await ctx.db.select({ isCorrect: simulationAnswers.isCorrect }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and8(eq10(simulations.userId, userId), sql8`${simulationAnswers.isCorrect} IS NOT NULL`));
   const totalAnswered = allAnswered.length;
   const totalCorrect = allAnswered.filter((a) => a.isCorrect).length;
-  const answered = await ctx.db.select({ answeredAt: simulationAnswers.answeredAt }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and8(eq10(simulations.userId, userId), sql7`${simulationAnswers.answeredAt} IS NOT NULL`));
+  const answered = await ctx.db.select({ answeredAt: simulationAnswers.answeredAt }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and8(eq10(simulations.userId, userId), sql8`${simulationAnswers.answeredAt} IS NOT NULL`));
   function dayKey(d) {
     if (!d) return "";
     const dt = typeof d === "string" ? /* @__PURE__ */ new Date(d + "T12:00:00") : new Date(d);
@@ -3265,7 +3345,7 @@ Se o aluno tiver poucos dados (< 20 quest\xF5es), adapte o diagn\xF3stico para i
 
 // server/segunda-fase.router.ts
 import { z as z11 } from "zod";
-import { eq as eq11, and as and9, desc as desc5, sql as sql8, asc as asc5 } from "drizzle-orm";
+import { eq as eq11, and as and9, desc as desc5, sql as sql9, asc as asc5 } from "drizzle-orm";
 var ImagemSchema = z11.object({
   posicao: z11.string(),
   descricao: z11.string(),
@@ -3316,7 +3396,7 @@ var segundaFaseRouter = createTRPCRouter({
       xpEarned
     });
     if (xpEarned > 0) {
-      await ctx.db.update(users).set({ xp: sql8`xp + ${xpEarned}` }).where(eq11(users.id, ctx.user.id));
+      await ctx.db.update(users).set({ xp: sql9`xp + ${xpEarned}` }).where(eq11(users.id, ctx.user.id));
     }
     return { xpEarned };
   }),
@@ -3324,7 +3404,7 @@ var segundaFaseRouter = createTRPCRouter({
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db.select({
       resultado: discursiveProgress.resultado,
-      count: sql8`count(*)`.mapWith(Number)
+      count: sql9`count(*)`.mapWith(Number)
     }).from(discursiveProgress).where(eq11(discursiveProgress.userId, ctx.user.id)).groupBy(discursiveProgress.resultado);
     const stats = { acertei: 0, quase: 0, errei: 0, total: 0 };
     for (const r of rows) {

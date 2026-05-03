@@ -264,6 +264,8 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
   const startRef = useRef<number>(Date.now());
   const addXpMutation = trpc.users.addXp.useMutation();
   const xpGivenRef = useRef(false);
+  const saveProgressMutation = trpc.trilhas.saveProgress.useMutation();
+  const saveLeituraMutation  = trpc.trilhas.saveLeitura.useMutation();
 
   const total = licao.exercicios.length;
   const currentEx = licao.exercicios[idx];
@@ -292,11 +294,21 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
       const correct = licao.exercicios.filter((e) => answers[e.id] === e.gabarito).length;
       const pct = Math.round((correct / total) * 100);
       const elapsed = Math.round((Date.now() - startRef.current) / 1000);
+      const finishedAt = Date.now();
+      // localStorage (cache offline)
       saveProgress(trilha.slug, licao.slug, {
         answers,
-        finishedAt: Date.now(),
+        finishedAt,
         lastScorePct: pct,
         totalTimeSec: elapsed,
+      });
+      // DB (fonte de verdade)
+      saveProgressMutation.mutate({
+        trilhaSlug:   trilha.slug,
+        licaoSlug:    licao.slug,
+        lastScorePct: pct,
+        totalTimeSec: elapsed,
+        finishedAt,
       });
       // Concede 20 XP ao completar uma lição (uma vez por lição)
       if (!xpGivenRef.current) {
@@ -383,10 +395,13 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
           onClick={() => {
             if (leituraFeita) return;
             setLeituraFeita(true);
+            // localStorage (cache offline)
             try {
               const prev = parseInt(localStorage.getItem("trilha:leituras") || "0", 10) || 0;
               localStorage.setItem("trilha:leituras", String(prev + 1));
             } catch { /* ignora */ }
+            // DB (fonte de verdade)
+            saveLeituraMutation.mutate({ trilhaSlug: trilha.slug, licaoSlug: licao.slug });
           }}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all"
           style={{
