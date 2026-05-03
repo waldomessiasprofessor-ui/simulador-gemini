@@ -24,6 +24,7 @@ import Login from "@/Login";
 import TutorChat from "@/TutorChat";
 import Diagnostico from "@/Diagnostico";
 import SegundaFase from "@/SegundaFase";
+import AdminSegundaFase from "@/AdminSegundaFase";
 import { Loader2, AlertTriangle } from "@/icons";
 
 // Sobe a página para o topo sempre que a rota muda (navegação SPA).
@@ -217,6 +218,9 @@ export default function App() {
           </Route>
           <Route path="/admin/trilhas">
             {isAdmin ? <AdminTrilhas /> : <Redirect to="/" />}
+          </Route>
+          <Route path="/admin/segunda-fase">
+            {isAdmin ? <AdminSegundaFase /> : <Redirect to="/" />}
           </Route>
           <Route path="/flashcards/:deckId">
             {(params) => <Flashcards deckId={Number(params.deckId)} />}

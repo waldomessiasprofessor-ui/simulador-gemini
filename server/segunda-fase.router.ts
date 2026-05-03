@@ -1,10 +1,29 @@
 import { z } from "zod";
-import { createTRPCRouter as router, protectedProcedure } from "./trpc";
+import { createTRPCRouter as router, protectedProcedure, adminProcedure } from "./trpc";
 import { discursiveQuestions, discursiveProgress, users } from "./schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, asc } from "drizzle-orm";
+
+const ImagemSchema = z.object({
+  posicao:  z.string(),
+  descricao: z.string(),
+  url:      z.string().optional(),
+});
+
+const DiscursiveBaseSchema = z.object({
+  fonte:              z.string().default("UNICAMP"),
+  ano:                z.number().int().optional(),
+  numero_prova:       z.number().int().optional(),
+  conteudo_principal: z.string().min(1),
+  tags:               z.array(z.string()).default([]),
+  nivel_dificuldade:  z.enum(["Muito Baixa","Baixa","Média","Alta","Muito Alta"]).default("Média"),
+  enunciado:          z.string().min(1),
+  imagens:            z.array(ImagemSchema).default([]),
+  resolucao:          z.string().min(1),
+});
 
 export const segundaFaseRouter = router({
-  // Lista questões dissertativas (com último resultado do aluno)
+
+  // ── Aluno: lista questões ativas com último resultado ──────────────────────
   getQuestions: protectedProcedure
     .input(z.object({ fonte: z.string().optional() }))
     .query(async ({ ctx, input }) => {
@@ -21,7 +40,6 @@ export const segundaFaseRouter = router({
 
       if (rows.length === 0) return [];
 
-      // Último resultado do aluno para cada questão
       const progress = await ctx.db
         .select()
         .from(discursiveProgress)
@@ -39,14 +57,12 @@ export const segundaFaseRouter = router({
       }));
     }),
 
-  // Salva autocorreção e concede XP
+  // ── Aluno: salva autocorreção + XP ────────────────────────────────────────
   saveProgress: protectedProcedure
-    .input(
-      z.object({
-        questionId: z.number(),
-        resultado: z.enum(["acertei", "quase", "errei"]),
-      })
-    )
+    .input(z.object({
+      questionId: z.number(),
+      resultado:  z.enum(["acertei", "quase", "errei"]),
+    }))
     .mutation(async ({ ctx, input }) => {
       const xpEarned = input.resultado === "acertei" ? 3 : input.resultado === "quase" ? 1 : 0;
 
@@ -67,12 +83,12 @@ export const segundaFaseRouter = router({
       return { xpEarned };
     }),
 
-  // Estatísticas de autocorreção do aluno
+  // ── Aluno: estatísticas de autocorreção ───────────────────────────────────
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db
       .select({
         resultado: discursiveProgress.resultado,
-        count: sql<number>`count(*)`.mapWith(Number),
+        count:     sql<number>`count(*)`.mapWith(Number),
       })
       .from(discursiveProgress)
       .where(eq(discursiveProgress.userId, ctx.user.id))
@@ -85,4 +101,45 @@ export const segundaFaseRouter = router({
     }
     return stats;
   }),
+
+  // ── Admin: lista todas as questões (ativas e inativas) ────────────────────
+  adminGetAll: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db
+      .select()
+      .from(discursiveQuestions)
+      .orderBy(discursiveQuestions.fonte, asc(discursiveQuestions.ano), asc(discursiveQuestions.numero_prova));
+  }),
+
+  // ── Admin: cria questão ───────────────────────────────────────────────────
+  adminCreate: adminProcedure
+    .input(DiscursiveBaseSchema)
+    .mutation(async ({ ctx, input }) => {
+      const [result] = await ctx.db
+        .insert(discursiveQuestions)
+        .values({ ...input, active: true });
+      return { id: (result as any).insertId as number };
+    }),
+
+  // ── Admin: atualiza questão ───────────────────────────────────────────────
+  adminUpdate: adminProcedure
+    .input(DiscursiveBaseSchema.extend({ id: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      await ctx.db
+        .update(discursiveQuestions)
+        .set(data)
+        .where(eq(discursiveQuestions.id, id));
+      return { ok: true };
+    }),
+
+  // ── Admin: ativa / desativa ────────────────────────────────────────────────
+  adminToggleActive: adminProcedure
+    .input(z.object({ id: z.number().int().positive(), active: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(discursiveQuestions)
+        .set({ active: input.active })
+        .where(eq(discursiveQuestions.id, input.id));
+      return { ok: true };
+    }),
 });

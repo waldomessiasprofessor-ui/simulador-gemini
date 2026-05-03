@@ -3241,9 +3241,25 @@ Se o aluno tiver poucos dados (< 20 quest\xF5es), adapte o diagn\xF3stico para i
 
 // server/segunda-fase.router.ts
 import { z as z11 } from "zod";
-import { eq as eq11, and as and9, desc as desc5, sql as sql8 } from "drizzle-orm";
+import { eq as eq11, and as and9, desc as desc5, sql as sql8, asc as asc5 } from "drizzle-orm";
+var ImagemSchema = z11.object({
+  posicao: z11.string(),
+  descricao: z11.string(),
+  url: z11.string().optional()
+});
+var DiscursiveBaseSchema = z11.object({
+  fonte: z11.string().default("UNICAMP"),
+  ano: z11.number().int().optional(),
+  numero_prova: z11.number().int().optional(),
+  conteudo_principal: z11.string().min(1),
+  tags: z11.array(z11.string()).default([]),
+  nivel_dificuldade: z11.enum(["Muito Baixa", "Baixa", "M\xE9dia", "Alta", "Muito Alta"]).default("M\xE9dia"),
+  enunciado: z11.string().min(1),
+  imagens: z11.array(ImagemSchema).default([]),
+  resolucao: z11.string().min(1)
+});
 var segundaFaseRouter = createTRPCRouter({
-  // Lista questões dissertativas (com último resultado do aluno)
+  // ── Aluno: lista questões ativas com último resultado ──────────────────────
   getQuestions: protectedProcedure.input(z11.object({ fonte: z11.string().optional() })).query(async ({ ctx, input }) => {
     const rows = await ctx.db.select().from(discursiveQuestions).where(
       and9(
@@ -3262,13 +3278,11 @@ var segundaFaseRouter = createTRPCRouter({
       ultimoResultado: lastResult[q.id] ?? null
     }));
   }),
-  // Salva autocorreção e concede XP
-  saveProgress: protectedProcedure.input(
-    z11.object({
-      questionId: z11.number(),
-      resultado: z11.enum(["acertei", "quase", "errei"])
-    })
-  ).mutation(async ({ ctx, input }) => {
+  // ── Aluno: salva autocorreção + XP ────────────────────────────────────────
+  saveProgress: protectedProcedure.input(z11.object({
+    questionId: z11.number(),
+    resultado: z11.enum(["acertei", "quase", "errei"])
+  })).mutation(async ({ ctx, input }) => {
     const xpEarned = input.resultado === "acertei" ? 3 : input.resultado === "quase" ? 1 : 0;
     await ctx.db.insert(discursiveProgress).values({
       userId: ctx.user.id,
@@ -3281,7 +3295,7 @@ var segundaFaseRouter = createTRPCRouter({
     }
     return { xpEarned };
   }),
-  // Estatísticas de autocorreção do aluno
+  // ── Aluno: estatísticas de autocorreção ───────────────────────────────────
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db.select({
       resultado: discursiveProgress.resultado,
@@ -3293,6 +3307,26 @@ var segundaFaseRouter = createTRPCRouter({
       stats.total += r.count;
     }
     return stats;
+  }),
+  // ── Admin: lista todas as questões (ativas e inativas) ────────────────────
+  adminGetAll: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.select().from(discursiveQuestions).orderBy(discursiveQuestions.fonte, asc5(discursiveQuestions.ano), asc5(discursiveQuestions.numero_prova));
+  }),
+  // ── Admin: cria questão ───────────────────────────────────────────────────
+  adminCreate: adminProcedure.input(DiscursiveBaseSchema).mutation(async ({ ctx, input }) => {
+    const [result] = await ctx.db.insert(discursiveQuestions).values({ ...input, active: true });
+    return { id: result.insertId };
+  }),
+  // ── Admin: atualiza questão ───────────────────────────────────────────────
+  adminUpdate: adminProcedure.input(DiscursiveBaseSchema.extend({ id: z11.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    const { id, ...data } = input;
+    await ctx.db.update(discursiveQuestions).set(data).where(eq11(discursiveQuestions.id, id));
+    return { ok: true };
+  }),
+  // ── Admin: ativa / desativa ────────────────────────────────────────────────
+  adminToggleActive: adminProcedure.input(z11.object({ id: z11.number().int().positive(), active: z11.boolean() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.update(discursiveQuestions).set({ active: input.active }).where(eq11(discursiveQuestions.id, input.id));
+    return { ok: true };
   })
 });
 

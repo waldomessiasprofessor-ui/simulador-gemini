@@ -122,7 +122,8 @@ const ADMIN_LINKS: LinkItem[] = [
   { kind: "link", href: "/admin/usuarios",   label: "Admin — usuários",   icon: d(Users) },
   { kind: "link", href: "/admin/formulas",   label: "Admin — fórmulas",   icon: d(Flask) },
   { kind: "link", href: "/admin/flashcards", label: "Admin — flashcards", icon: d(Brain) },
-  { kind: "link", href: "/admin/trilhas",    label: "Admin — trilhas",    icon: d(YoutubeLogo) },
+  { kind: "link", href: "/admin/trilhas",       label: "Admin — trilhas",       icon: d(YoutubeLogo) },
+  { kind: "link", href: "/admin/segunda-fase", label: "Admin — 2ª fase",       icon: d(Books) },
 ];
 
 // =============================================================================
