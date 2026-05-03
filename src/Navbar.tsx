@@ -88,16 +88,23 @@ const NAV_TREE: TopItem[] = [
     icon: d(ClipboardText),
     children: [
       { kind: "header", label: "ENEM" },
-      { kind: "link", href: "/simulado/enem",    label: "ENEM",        icon: d(GraduationCap), badge: "TRI" },
-      { kind: "header", label: "Vestibulares" },
-      { kind: "link", href: "/simulado/fuvest",  label: "FUVEST",      icon: d(GraduationCap) },
-      { kind: "link", href: "/simulado/unicamp", label: "UNICAMP",     icon: d(GraduationCap) },
-      { kind: "link", href: "/simulado/unesp",   label: "UNESP",       icon: d(GraduationCap) },
-      { kind: "link", href: "/simulado/repvet",  label: "Banco Geral", icon: d(Star) },
-      { kind: "header", label: "Segunda Fase" },
-      { kind: "link", href: "/segunda-fase/unicamp", label: "UNICAMP 2ª Fase", icon: d(Books), badge: "Novo" },
+      { kind: "link", href: "/simulado/enem",     label: "ENEM",              icon: d(GraduationCap), badge: "TRI" },
       { kind: "header", label: "Concursos" },
       { kind: "link", href: "/simulado/concurso", label: "Concursos Públicos", icon: d(ClipboardText) },
+    ],
+  },
+  {
+    kind: "group",
+    label: "Vestibulares",
+    icon: d(GraduationCap),
+    children: [
+      { kind: "header", label: "1ª Fase — Simulados" },
+      { kind: "link", href: "/simulado/fuvest",      label: "FUVEST",           icon: d(GraduationCap) },
+      { kind: "link", href: "/simulado/unicamp",     label: "UNICAMP",          icon: d(GraduationCap) },
+      { kind: "link", href: "/simulado/unesp",       label: "UNESP",            icon: d(GraduationCap) },
+      { kind: "link", href: "/simulado/repvet",      label: "Banco Geral",      icon: d(Star) },
+      { kind: "header", label: "2ª Fase — Dissertativas" },
+      { kind: "link", href: "/segunda-fase/unicamp", label: "UNICAMP 2ª Fase",  icon: d(Books), badge: "Novo" },
     ],
   },
   { kind: "link", href: "/trilhas",    label: "Trilhas",            icon: d(YoutubeLogo) },
@@ -351,8 +358,11 @@ export default function Navbar() {
   }
 
   // Decide quais grupos começam abertos baseado na rota atual
-  const bancoOpen = location.startsWith("/questoes");
-  const simOpen   = location.startsWith("/simulado");
+  const bancoOpen  = location.startsWith("/questoes");
+  const simOpen    = location === "/simulado/enem" || location === "/simulado/concurso";
+  const vetOpen    = location.startsWith("/simulado/fuvest") || location.startsWith("/simulado/unicamp") ||
+                     location.startsWith("/simulado/unesp")  || location.startsWith("/simulado/repvet") ||
+                     location.startsWith("/segunda-fase");
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
@@ -439,7 +449,11 @@ export default function Navbar() {
                   item={item}
                   location={location}
                   onClose={closeSidebar}
-                  startOpen={item.label === "Banco de Questões" ? bancoOpen : simOpen}
+                  startOpen={
+                    item.label === "Banco de Questões" ? bancoOpen :
+                    item.label === "Vestibulares"       ? vetOpen   :
+                    simOpen
+                  }
                 />
               );
             }
