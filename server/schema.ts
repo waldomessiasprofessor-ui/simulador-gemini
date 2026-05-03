@@ -80,6 +80,7 @@ export const simulations = mysqlTable(
     id: int("id").primaryKey().autoincrement(),
     userId: int("user_id").notNull().references(() => users.id),
     stage: int("stage").notNull().default(1),
+    fonte: varchar("fonte", { length: 50 }).notNull().default("ENEM"),
     score: float("score"),
     triTheta: float("tri_theta"),
     correctCount: int("correct_count"),

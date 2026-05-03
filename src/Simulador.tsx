@@ -21,7 +21,7 @@ const VESTIBULAR_INFO: Record<string, { label: string; desc: string; total: numb
 export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
-  const { data: active, isLoading } = trpc.simulations.getActive.useQuery(undefined, { staleTime: 0 });
+  const { data: active, isLoading } = trpc.simulations.getActive.useQuery({ fonte }, { staleTime: 0 });
   const saveAnswer = trpc.simulations.saveAnswer.useMutation();
   const finish = trpc.simulations.finish.useMutation({
     onSuccess: (d) => {

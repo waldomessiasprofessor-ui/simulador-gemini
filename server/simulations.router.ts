@@ -113,7 +113,7 @@ export const simulationsRouter = createTRPCRouter({
       // ENEM e CONCURSO usam 45 questões; outros vestibulares usam 12
       const total = (fonte && fonte !== "ENEM" && fonte !== "CONCURSO") ? 12 : config.total;
 
-      // --- Verifica se já existe simulado em andamento (exclui treino livre stage=0) ---
+      // --- Verifica conflito apenas na mesma fonte ---
       const [existing] = await ctx.db
         .select({ id: simulations.id })
         .from(simulations)
@@ -121,6 +121,7 @@ export const simulationsRouter = createTRPCRouter({
           and(
             eq(simulations.userId, userId),
             eq(simulations.status, "in_progress"),
+            eq(simulations.fonte, fonte ?? "ENEM"),
             sql`${simulations.stage} > 0`,
           )
         )
@@ -129,7 +130,7 @@ export const simulationsRouter = createTRPCRouter({
       if (existing) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "Você já tem um simulado em andamento. Finalize-o antes de iniciar outro.",
+          message: "Você já tem um simulado desta banca em andamento. Finalize-o antes de iniciar outro.",
         });
       }
 
@@ -149,6 +150,7 @@ export const simulationsRouter = createTRPCRouter({
       const newSim: NewSimulation = {
         userId,
         stage,
+        fonte: fonte ?? "ENEM",
         totalQuestions: total,
         status: "in_progress",
       };
@@ -384,14 +386,21 @@ export const simulationsRouter = createTRPCRouter({
   // ---------------------------------------------------------------------------
   // SIMULADO ACTIVO do aluno (para retomar após reload)
   // ---------------------------------------------------------------------------
-  getActive: protectedProcedure.query(async ({ ctx }) => {
+  getActive: protectedProcedure
+    .input(z.object({ fonte: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
     const userId = ctx.user.id;
+    const effectiveFonte = input.fonte ?? "ENEM";
 
     const [sim] = await ctx.db
       .select()
       .from(simulations)
       .where(
-        and(eq(simulations.userId, userId), eq(simulations.status, "in_progress"))
+        and(
+          eq(simulations.userId, userId),
+          eq(simulations.status, "in_progress"),
+          eq(simulations.fonte, effectiveFonte),
+        )
       )
       .limit(1);
 

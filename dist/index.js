@@ -115,6 +115,7 @@ var simulations = mysqlTable(
     id: int("id").primaryKey().autoincrement(),
     userId: int("user_id").notNull().references(() => users.id),
     stage: int("stage").notNull().default(1),
+    fonte: varchar("fonte", { length: 50 }).notNull().default("ENEM"),
     score: float("score"),
     triTheta: float("tri_theta"),
     correctCount: int("correct_count"),
@@ -1110,13 +1111,14 @@ var simulationsRouter = createTRPCRouter({
       and2(
         eq2(simulations.userId, userId),
         eq2(simulations.status, "in_progress"),
+        eq2(simulations.fonte, fonte ?? "ENEM"),
         sql2`${simulations.stage} > 0`
       )
     ).limit(1);
     if (existing) {
       throw new TRPCError3({
         code: "CONFLICT",
-        message: "Voc\xEA j\xE1 tem um simulado em andamento. Finalize-o antes de iniciar outro."
+        message: "Voc\xEA j\xE1 tem um simulado desta banca em andamento. Finalize-o antes de iniciar outro."
       });
     }
     const drawn = await drawQuestions(ctx.db, total, [], fonte);
@@ -1129,6 +1131,7 @@ var simulationsRouter = createTRPCRouter({
     const newSim = {
       userId,
       stage,
+      fonte: fonte ?? "ENEM",
       totalQuestions: total,
       status: "in_progress"
     };
@@ -1282,10 +1285,15 @@ var simulationsRouter = createTRPCRouter({
   // ---------------------------------------------------------------------------
   // SIMULADO ACTIVO do aluno (para retomar após reload)
   // ---------------------------------------------------------------------------
-  getActive: protectedProcedure.query(async ({ ctx }) => {
+  getActive: protectedProcedure.input(z2.object({ fonte: z2.string().optional() })).query(async ({ ctx, input }) => {
     const userId = ctx.user.id;
+    const effectiveFonte = input.fonte ?? "ENEM";
     const [sim] = await ctx.db.select().from(simulations).where(
-      and2(eq2(simulations.userId, userId), eq2(simulations.status, "in_progress"))
+      and2(
+        eq2(simulations.userId, userId),
+        eq2(simulations.status, "in_progress"),
+        eq2(simulations.fonte, effectiveFonte)
+      )
     ).limit(1);
     if (!sim) return null;
     const answers = await ctx.db.select({
