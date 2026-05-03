@@ -25,6 +25,11 @@
    ===================================================================== */
 
 :root {
+  /* Declara suporte explícito ao dark mode — impede o browser (Chrome/Edge)
+     de aplicar filtros automáticos de inversão sobre a página, o que causava
+     a logo da navbar ficar invisível no dark mode do sistema operacional. */
+  color-scheme: light dark;
+
   /* ── Brand — teal ─────────────────────────────────────────────── */
   --pr-teal:         #009688;
   --pr-teal-dark:    #00695C;
@@ -517,9 +522,10 @@ body {
   :root { --logo-filter: brightness(0) invert(1); }
 }
 
-/* Logo sempre branca independente do tema */
+/* Logo sempre branca independente do tema e do modo de cor do SO/browser */
 img[src="/logo-vetor.png"] {
   filter: brightness(0) invert(1) !important;
+  forced-color-adjust: none; /* cobre Windows High Contrast mode */
 }
 
 /* =====================================================================
