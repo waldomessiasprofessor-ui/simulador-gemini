@@ -381,10 +381,11 @@ export const discursiveQuestions = mysqlTable(
     nivel_dificuldade:  mysqlEnum("nivel_dificuldade", [
       "Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta",
     ]).notNull().default("Média"),
-    enunciado:  text("enunciado").notNull(),
-    // Array de { posicao: string; descricao: string } — onde a imagem deve aparecer
-    imagens:    json("imagens").$type<Array<{ posicao: string; descricao: string }>>().notNull().default([]),
-    resolucao:  text("resolucao").notNull(),
+    enunciado:    text("enunciado").notNull(),
+    // Array de { posicao: string; descricao: string; url?: string } — imagens referenciadas
+    imagens:      json("imagens").$type<Array<{ posicao: string; descricao: string; url?: string }>>().notNull().default([]),
+    resolucao:    text("resolucao").notNull(),
+    url_youtube:  varchar("url_youtube", { length: 500 }),
     active:     boolean("active").notNull().default(true),
     createdAt:  timestamp("created_at").defaultNow().notNull(),
   },

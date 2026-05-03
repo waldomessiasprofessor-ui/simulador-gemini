@@ -322,9 +322,10 @@ var discursiveQuestions = mysqlTable(
       "Muito Alta"
     ]).notNull().default("M\xE9dia"),
     enunciado: text("enunciado").notNull(),
-    // Array de { posicao: string; descricao: string } — onde a imagem deve aparecer
+    // Array de { posicao: string; descricao: string; url?: string } — imagens referenciadas
     imagens: json("imagens").$type().notNull().default([]),
     resolucao: text("resolucao").notNull(),
+    url_youtube: varchar("url_youtube", { length: 500 }),
     active: boolean("active").notNull().default(true),
     createdAt: timestamp("created_at").defaultNow().notNull()
   },
@@ -3279,7 +3280,8 @@ var DiscursiveBaseSchema = z11.object({
   nivel_dificuldade: z11.enum(["Muito Baixa", "Baixa", "M\xE9dia", "Alta", "Muito Alta"]).default("M\xE9dia"),
   enunciado: z11.string().min(1),
   imagens: z11.array(ImagemSchema).default([]),
-  resolucao: z11.string().min(1)
+  resolucao: z11.string().min(1),
+  url_youtube: z11.string().optional()
 });
 var segundaFaseRouter = createTRPCRouter({
   // ── Aluno: lista questões ativas com último resultado ──────────────────────

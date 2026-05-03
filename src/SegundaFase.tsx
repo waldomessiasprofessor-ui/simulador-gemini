@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
-import { Loader2, XCircle, AlertCircle, BookOpen, ChevronDown, ChevronUp, Sparkles } from "@/icons";
+import { Loader2, AlertCircle, BookOpen, ChevronDown, ChevronUp, Sparkles, Youtube, Info } from "@/icons";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -41,22 +42,98 @@ const FONTE_INFO: Record<string, { label: string; desc: string }> = {
   },
 };
 
+// ─── "Como funciona?" collapsível ────────────────────────────────────────────
+
+function ComoFunciona() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ border: "1px solid var(--border)", background: "var(--card)" }}
+    >
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-2 px-4 py-3 text-left hover:opacity-80 transition-opacity"
+      >
+        <Info className="h-4 w-4 flex-shrink-0" style={{ color: "#009688" }} />
+        <span className="text-sm font-semibold flex-1" style={{ color: "var(--foreground)" }}>
+          Como funciona a autocorreção?
+        </span>
+        {open ? (
+          <ChevronUp className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
+        ) : (
+          <ChevronDown className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
+        )}
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
+          <p className="text-sm pt-3" style={{ color: "var(--foreground)" }}>
+            A <strong>autocorreção ativa</strong> é uma das metodologias de estudo mais eficazes comprovadas pela ciência cognitiva. Veja como funciona:
+          </p>
+          <div className="space-y-2">
+            {[
+              {
+                emoji: "🧠",
+                title: "Recuperação ativa",
+                text: "Resolver antes de ver a resposta força seu cérebro a ativar o conhecimento armazenado — esse esforço consolida o aprendizado muito mais do que reler o conteúdo.",
+              },
+              {
+                emoji: "🔍",
+                title: "Metacognição",
+                text: "Comparar sua resolução com o gabarito e avaliar onde errou treina sua capacidade de identificar lacunas reais — você aprende a \"aprender a aprender\".",
+              },
+              {
+                emoji: "📊",
+                title: "Como pontuar honestamente",
+                text: "✅ Acertei (+3 XP): raciocínio correto e chegou ao resultado certo.\n🟡 Quase (+1 XP): entendeu a lógica mas cometeu erro de cálculo ou notação.\n❌ Errei (0 XP): caminho errado ou em branco — hora de rever o conteúdo!",
+              },
+              {
+                emoji: "🎯",
+                title: "Por que ser honesto?",
+                text: "Marcar \"acertei\" quando errou prejudica só você. O XP reflete seu domínio real — use-o para identificar os temas que precisam de mais atenção.",
+              },
+            ].map(({ emoji, title, text }) => (
+              <div
+                key={title}
+                className="rounded-xl px-3 py-2.5"
+                style={{ background: "var(--muted)" }}
+              >
+                <p className="text-sm font-bold mb-0.5" style={{ color: "var(--foreground)" }}>
+                  {emoji} {title}
+                </p>
+                <p className="text-xs leading-relaxed whitespace-pre-line" style={{ color: "var(--muted-foreground)" }}>
+                  {text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Card individual de questão ───────────────────────────────────────────────
+
+type QuestionData = {
+  id: number;
+  ano: number | null;
+  numero_prova: number | null;
+  conteudo_principal: string;
+  nivel_dificuldade: string;
+  enunciado: string;
+  imagens: Array<{ posicao: string; descricao: string; url?: string }>;
+  resolucao: string;
+  url_youtube?: string | null;
+  ultimoResultado: Resultado | null;
+};
 
 function QuestionRow({
   q,
   index,
 }: {
-  q: {
-    id: number;
-    numero_prova: number;
-    conteudo_principal: string;
-    nivel_dificuldade: string;
-    enunciado: string;
-    imagens: Array<{ posicao: string; descricao: string }>;
-    resolucao: string;
-    ultimoResultado: Resultado | null;
-  };
+  q: QuestionData;
   index: number;
 }) {
   const utils = trpc.useUtils();
@@ -83,6 +160,10 @@ function QuestionRow({
   const isOpen = phase !== "closed";
   const cfg = lastResult ? RESULTADO_CONFIG[lastResult] : null;
 
+  // Separar imagens com e sem URL
+  const imagensComUrl = q.imagens.filter((img) => img.url);
+  const imagensSemUrl = q.imagens.filter((img) => !img.url);
+
   return (
     <div className="card overflow-hidden" style={{ padding: 0 }}>
       {/* Cabeçalho sempre visível */}
@@ -102,7 +183,7 @@ function QuestionRow({
             {q.conteudo_principal}
           </p>
           <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-            {q.nivel_dificuldade}
+            {q.nivel_dificuldade}{q.ano ? ` · ${q.ano}` : ""}
           </p>
         </div>
         {/* Badge de último resultado */}
@@ -130,23 +211,40 @@ function QuestionRow({
             >
               Enunciado
             </p>
-            <div
-              className="text-sm leading-relaxed whitespace-pre-wrap"
-              style={{ color: "var(--foreground)" }}
-            >
-              {q.enunciado}
-            </div>
+            {/* LaTeX rendering */}
+            <LatexRenderer fontSize="sm">{q.enunciado}</LatexRenderer>
 
-            {/* Aviso de imagem pendente */}
-            {q.imagens.length > 0 && (
+            {/* Imagens com URL — mostra diretamente */}
+            {imagensComUrl.length > 0 && (
+              <div className="mt-3 space-y-3">
+                {imagensComUrl.map((img, i) => (
+                  <figure key={i} className="m-0">
+                    {img.posicao && (
+                      <p className="text-xs mb-1" style={{ color: "var(--muted-foreground)" }}>
+                        [{img.posicao}]{img.descricao ? ` — ${img.descricao}` : ""}
+                      </p>
+                    )}
+                    <img
+                      src={img.url}
+                      alt={img.descricao || `Figura ${i + 1}`}
+                      className="max-w-full rounded-xl"
+                      style={{ border: "1px solid var(--border)" }}
+                    />
+                  </figure>
+                ))}
+              </div>
+            )}
+
+            {/* Aviso de imagem sem URL ainda */}
+            {imagensSemUrl.length > 0 && (
               <div
                 className="mt-3 rounded-xl px-3 py-2.5 flex items-start gap-2 text-xs"
                 style={{ background: "#FFFBEB", border: "1px solid #FCD34D", color: "#B45309" }}
               >
                 <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold">Imagem referenciada no enunciado:</p>
-                  {q.imagens.map((img, i) => (
+                  <p className="font-bold">Imagem referenciada (ainda não disponível):</p>
+                  {imagensSemUrl.map((img, i) => (
                     <p key={i} className="mt-0.5 opacity-80">
                       [{img.posicao}] {img.descricao}
                     </p>
@@ -181,16 +279,26 @@ function QuestionRow({
                 >
                   Resolução oficial
                 </p>
-                <div
-                  className="text-sm leading-relaxed whitespace-pre-wrap"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  {q.resolucao}
-                </div>
+                {/* LaTeX rendering na resolução */}
+                <LatexRenderer fontSize="sm">{q.resolucao}</LatexRenderer>
+
+                {/* Botão YouTube se disponível */}
+                {q.url_youtube && (
+                  <a
+                    href={q.url_youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold w-full justify-center hover:opacity-85 transition-opacity"
+                    style={{ background: "#DC2626", color: "#fff" }}
+                  >
+                    <Youtube className="h-4 w-4" />
+                    Ver resolução em vídeo
+                  </a>
+                )}
               </div>
 
               {phase === "resolucao" && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p
                     className="text-xs font-bold text-center"
                     style={{ color: "var(--muted-foreground)" }}
@@ -222,6 +330,8 @@ function QuestionRow({
                       <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#009688" }} />
                     </div>
                   )}
+                  {/* Como funciona — dentro da autocorreção */}
+                  <ComoFunciona />
                 </div>
               )}
 
@@ -350,7 +460,7 @@ export default function SegundaFase({ fonte = "UNICAMP" }: { fonte?: string }) {
         </div>
       </div>
 
-      {/* Como funciona */}
+      {/* Como funciona — visível antes de começar */}
       <div
         className="rounded-xl px-4 py-3 text-sm"
         style={{ background: "var(--muted)", border: "1px solid var(--border)", color: "var(--muted-foreground)" }}
@@ -384,7 +494,7 @@ export default function SegundaFase({ fonte = "UNICAMP" }: { fonte?: string }) {
       ) : (
         <div className="space-y-3">
           {questions.map((q, i) => (
-            <QuestionRow key={q.id} q={q} index={i} />
+            <QuestionRow key={q.id} q={q as QuestionData} index={i} />
           ))}
         </div>
       )}

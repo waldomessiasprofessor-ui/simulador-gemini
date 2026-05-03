@@ -4,7 +4,7 @@ import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Save, X, Loader2,
-  ImageUp, Image as ImageIcon, ChevronDown, ChevronUp, Search,
+  ImageUp, ChevronDown, ChevronUp, Search, Youtube,
 } from "@/icons";
 
 // ─── ImgBB upload (mesma lógica do AdminQuestoes) ────────────────────────────
@@ -44,6 +44,7 @@ const emptyForm = {
   enunciado:          "",
   imagens:            [] as Imagem[],
   resolucao:          "",
+  url_youtube:        "",
 };
 
 // ─── Upload de imagem para um slot ───────────────────────────────────────────
@@ -337,6 +338,25 @@ function QuestionForm({
               placeholder={"**a)** Seja $x = ...$\n\n$$\\frac{a}{b} = c$$\n\nLogo..."}
             />
           </div>
+
+          {/* YouTube */}
+          <div>
+            <label style={labelStyle}>Vídeo de resolução (YouTube) — opcional</label>
+            <div className="flex items-center gap-2">
+              <Youtube className="h-4 w-4 flex-shrink-0" style={{ color: "#DC2626" }} />
+              <input
+                value={form.url_youtube}
+                onChange={(e) => s({ url_youtube: e.target.value })}
+                placeholder="https://www.youtube.com/watch?v=..."
+                style={{ ...inputStyle }}
+              />
+            </div>
+            {form.url_youtube && (
+              <p className="mt-1 text-xs" style={{ color: "#009688" }}>
+                ✓ URL do YouTube salva — aparecerá como botão na questão
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -424,6 +444,7 @@ export default function AdminSegundaFase() {
           enunciado:          editQ.enunciado,
           imagens:            (editQ.imagens as Imagem[]) ?? [],
           resolucao:          editQ.resolucao,
+          url_youtube:        (editQ as any).url_youtube ?? "",
         }
       : emptyForm;
 

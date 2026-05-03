@@ -19,6 +19,7 @@ const DiscursiveBaseSchema = z.object({
   enunciado:          z.string().min(1),
   imagens:            z.array(ImagemSchema).default([]),
   resolucao:          z.string().min(1),
+  url_youtube:        z.string().optional(),
 });
 
 export const segundaFaseRouter = router({
