@@ -1,5 +1,6 @@
 import type { Trilha } from "./types";
 import { matematicaBasica } from "./matematica-basica";
+import { funcoes } from "./funcoes";
 
 // =============================================================================
 // Registry de trilhas disponíveis
@@ -14,6 +15,7 @@ import { matematicaBasica } from "./matematica-basica";
 
 export const TRILHAS: Trilha[] = [
   matematicaBasica,
+  funcoes,
 ];
 
 /** Procura uma trilha pelo slug (usado em /trilha/:slug). */
