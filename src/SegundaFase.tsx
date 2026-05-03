@@ -286,7 +286,7 @@ function StatsBar({ stats }: { stats: { acertei: number; quase: number; errei: n
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function SegundaFase({ fonte = "UNICAMP" }: { fonte?: string }) {
-  const { data: questions, isLoading } = trpc.segundaFase.getQuestions.useQuery({ fonte });
+  const { data: questions, isLoading, isError } = trpc.segundaFase.getQuestions.useQuery({ fonte });
   const { data: stats } = trpc.segundaFase.getStats.useQuery();
 
   const info = FONTE_INFO[fonte] ?? FONTE_INFO["UNICAMP"];
@@ -295,6 +295,24 @@ export default function SegundaFase({ fonte = "UNICAMP" }: { fonte?: string }) {
     return (
       <div className="flex justify-center py-20">
         <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="card text-center py-12 space-y-3">
+        <p className="text-3xl">⚠️</p>
+        <p className="font-bold" style={{ color: "var(--foreground)" }}>Tabela não encontrada</p>
+        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+          Execute no servidor:<br />
+          <code className="text-xs px-2 py-1 rounded" style={{ background: "var(--muted)" }}>
+            node add-segunda-fase-tables.mjs
+          </code><br />
+          <code className="text-xs px-2 py-1 rounded mt-1 inline-block" style={{ background: "var(--muted)" }}>
+            node insert-unicamp2026-discursivas.mjs
+          </code>
+        </p>
       </div>
     );
   }

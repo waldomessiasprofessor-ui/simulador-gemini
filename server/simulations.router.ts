@@ -49,7 +49,17 @@ type Stage = 1 | 2 | 3;
 // Helpers internos
 // =============================================================================
 
-/** Sorteia N questões aleatórias activas do banco */
+/** Fisher-Yates shuffle (in-place) */
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** Sorteia N questões aleatórias activas do banco.
+ *  Usa shuffle em JS (mais confiável que ORDER BY RAND() no MySQL). */
 async function drawQuestions(db: any, count: number, excludeIds: number[] = [], fonte?: string) {
   // "CONCURSO" usa o pool geral (todas as questões ativas) — sem filtro de fonte
   const effectiveFonte = fonte === "CONCURSO" ? undefined : fonte;
@@ -57,6 +67,21 @@ async function drawQuestions(db: any, count: number, excludeIds: number[] = [], 
     ? and(eq(questions.active, true), eq(questions.fonte, effectiveFonte))
     : eq(questions.active, true);
 
+  // 1. Busca todos os IDs elegíveis
+  const allIds: { id: number }[] = await db
+    .select({ id: questions.id })
+    .from(questions)
+    .where(whereClause);
+
+  // 2. Remove excluídos e embaralha em JS
+  const eligible = shuffle(
+    allIds.map((r) => r.id).filter((id) => !excludeIds.includes(id))
+  );
+
+  const selected = eligible.slice(0, count);
+  if (selected.length === 0) return [];
+
+  // 3. Busca dados completos apenas das questões selecionadas
   const rows = await db
     .select({
       id: questions.id,
@@ -71,13 +96,11 @@ async function drawQuestions(db: any, count: number, excludeIds: number[] = [], 
       tags: questions.tags,
     })
     .from(questions)
-    .where(whereClause)
-    .orderBy(sql`RAND()`)
-    .limit(count + (excludeIds.length > 0 ? excludeIds.length : 0));
+    .where(inArray(questions.id, selected));
 
-  // Filtra excluídos em memória (mais simples que SQL dinâmico)
-  const filtered = rows.filter((q: any) => !excludeIds.includes(q.id));
-  return filtered.slice(0, count);
+  // 4. Reordena para preservar a ordem do shuffle
+  const byId = new Map(rows.map((r: any) => [r.id, r]));
+  return selected.map((id) => byId.get(id)).filter(Boolean);
 }
 
 /** Lança TRPCError NOT_FOUND padronizado */
@@ -110,8 +133,8 @@ export const simulationsRouter = createTRPCRouter({
       const { stage, fonte } = input;
       const userId = ctx.user.id;
       const config = STAGE_CONFIG[stage];
-      // ENEM e CONCURSO usam 45 questões; outros vestibulares usam 12
-      const total = (fonte && fonte !== "ENEM" && fonte !== "CONCURSO") ? 12 : config.total;
+      // ENEM e CONCURSO usam 45 questões; vestibulares usam até 20
+      const desired = (fonte && fonte !== "ENEM" && fonte !== "CONCURSO") ? 20 : config.total;
 
       // --- Verifica conflito apenas na mesma fonte ---
       const [existing] = await ctx.db
@@ -137,14 +160,18 @@ export const simulationsRouter = createTRPCRouter({
       // Etapa única: qualquer aluno pode iniciar diretamente
 
       // --- Sorteia questões ---
-      const drawn = await drawQuestions(ctx.db, total, [], fonte);
+      const drawn = await drawQuestions(ctx.db, desired, [], fonte);
+      const MIN_QUESTIONS = 3;
 
-      if (drawn.length < total) {
+      if (drawn.length < MIN_QUESTIONS) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: `Banco de questões insuficiente. Necessário: ${total}, disponível: ${drawn.length}.`,
+          message: `Banco insuficiente para este simulado. Disponível: ${drawn.length} questão(ões). Mínimo necessário: ${MIN_QUESTIONS}.`,
         });
       }
+
+      // Usa quantas questões existirem (até o máximo desejado)
+      const total = drawn.length;
 
       // --- Cria sessão de simulado ---
       const newSim: NewSimulation = {
@@ -170,7 +197,7 @@ export const simulationsRouter = createTRPCRouter({
       return {
         simulationId,
         stage,
-        totalQuestions: config.total,
+        totalQuestions: total,
         minPassRequired: config.minPass,
         timeLimitPerQuestion: config.timeLimitPerQuestion,
         questions: drawn, // sem gabarito
