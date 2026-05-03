@@ -3352,6 +3352,11 @@ var segundaFaseRouter = createTRPCRouter({
   adminToggleActive: adminProcedure.input(z11.object({ id: z11.number().int().positive(), active: z11.boolean() })).mutation(async ({ ctx, input }) => {
     await ctx.db.update(discursiveQuestions).set({ active: input.active }).where(eq11(discursiveQuestions.id, input.id));
     return { ok: true };
+  }),
+  // ── Admin: exclui questão (progresso excluído em cascata pelo FK) ───────────
+  adminDelete: adminProcedure.input(z11.object({ id: z11.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(discursiveQuestions).where(eq11(discursiveQuestions.id, input.id));
+    return { ok: true };
   })
 });
 

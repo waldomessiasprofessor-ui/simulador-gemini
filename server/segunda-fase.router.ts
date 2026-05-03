@@ -143,4 +143,14 @@ export const segundaFaseRouter = router({
         .where(eq(discursiveQuestions.id, input.id));
       return { ok: true };
     }),
+
+  // ── Admin: exclui questão (progresso excluído em cascata pelo FK) ───────────
+  adminDelete: adminProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(discursiveQuestions)
+        .where(eq(discursiveQuestions.id, input.id));
+      return { ok: true };
+    }),
 });

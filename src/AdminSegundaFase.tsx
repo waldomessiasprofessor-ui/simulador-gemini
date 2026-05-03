@@ -396,6 +396,13 @@ export default function AdminSegundaFase() {
     onSuccess: () => utils.segundaFase.adminGetAll.invalidate(),
     onError: (e) => toast.error(e.message),
   });
+  const deleteMutation = trpc.segundaFase.adminDelete.useMutation({
+    onSuccess: () => {
+      utils.segundaFase.adminGetAll.invalidate();
+      toast.success("Questão excluída.");
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   const [mode, setMode] = useState<"list" | "create" | "edit">("list");
   const [editQ, setEditQ] = useState<(typeof questions)[0] | null>(null);
@@ -564,6 +571,17 @@ export default function AdminSegundaFase() {
                       : { background: "#F0FFF4", color: "#16A34A" }}
                     title={q.active ? "Desativar" : "Ativar"}>
                     {q.active ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!confirm(`Excluir permanentemente a questão ${q.numero_prova} — ${q.fonte} ${q.ano}?\n\nEssa ação não pode ser desfeita e removerá também o progresso dos alunos.`)) return;
+                      deleteMutation.mutate({ id: q.id });
+                    }}
+                    disabled={deleteMutation.isPending}
+                    className="p-1.5 rounded-lg hover:opacity-70"
+                    style={{ background: "#FEF2F2", color: "#DC2626" }}
+                    title="Excluir permanentemente">
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                   <button onClick={() => setExpandedId(expanded ? null : q.id)}
                     className="p-1.5 rounded-lg hover:opacity-70"
