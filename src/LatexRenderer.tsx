@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import katex from "katex";
 import { cn } from "@/lib/utils";
 
@@ -96,15 +96,14 @@ function normalizeImageFormats(text: string): string {
 const CURR_PH = "";
 
 /**
- * Protege padrões de moeda (R$, US$, AU$, C$, €$ etc.) para que o sinal de
- * cifrão NÃO seja confundido com delimitador LaTeX durante o parsing.
- * Ex: "R$ 50,00" → "R 50,00"
+ * Protege padrões de moeda (R$ e US$) para que o sinal de cifrão NÃO seja
+ * confundido com delimitador LaTeX durante o parsing.
+ * Ex: "R$ 50,00" → "R 50,00"
+ * Lookbehind (?<![A-Za-z$]) evita substituir o $ de fechamento em expressões
+ * LaTeX como $D$, $A$, $f: A \to B$, etc.
  */
 function protectCurrency(text: string): string {
-  // Captura prefixo de 1–3 letras maiúsculas seguido de $ (monetário)
-  // O lookbehind já filtra R$ pela letra anterior, mas este pré-processamento
-  // garante que mesmo em contextos como "$x = R$ 50" o $ de R$ não feche a expressão.
-  return text.replace(/([A-Z]{1,3})\$/g, `$1${CURR_PH}`);
+  return text.replace(/(?<![A-Za-z$])(R|US)\$/g, `$1${CURR_PH}`);
 }
 
 /** Restaura o cifrão monetário nos segmentos de texto puro. */
