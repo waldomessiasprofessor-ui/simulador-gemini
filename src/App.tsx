@@ -23,6 +23,7 @@ import Trilha from "@/Trilha";
 import Login from "@/Login";
 import TutorChat from "@/TutorChat";
 import Diagnostico from "@/Diagnostico";
+import SegundaFase from "@/SegundaFase";
 import { Loader2, AlertTriangle } from "@/icons";
 
 // Sobe a página para o topo sempre que a rota muda (navegação SPA).
@@ -175,6 +176,8 @@ export default function App() {
           <Route path="/simulado/unesp"><Gate><Simulador fonte="UNESP" /></Gate></Route>
           <Route path="/simulado/repvet"><Gate><Simulador fonte="REPVET" /></Gate></Route>
           <Route path="/simulado/concurso"><Gate><Simulador fonte="CONCURSO" /></Gate></Route>
+          <Route path="/segunda-fase/unicamp"><Gate><SegundaFase fonte="UNICAMP" /></Gate></Route>
+          <Route path="/segunda-fase"><Gate><SegundaFase /></Gate></Route>
           <Route path="/questoes"><Questoes fonte="ENEM" /></Route>
           <Route path="/questoes/unicamp"><Questoes fonte="UNICAMP" /></Route>
           <Route path="/questoes/fuvest"><Questoes fonte="FUVEST" /></Route>

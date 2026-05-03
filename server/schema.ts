@@ -363,3 +363,54 @@ export const trilhaVideos = mysqlTable(
 
 export type TrilhaVideo    = typeof trilhaVideos.$inferSelect;
 export type NewTrilhaVideo = typeof trilhaVideos.$inferInsert;
+
+// =============================================================================
+// Tabela: discursive_questions — questões dissertativas (segunda fase)
+// =============================================================================
+
+export const discursiveQuestions = mysqlTable(
+  "discursive_questions",
+  {
+    id:                 int("id").primaryKey().autoincrement(),
+    fonte:              varchar("fonte",              { length: 50  }).notNull().default("UNICAMP"),
+    ano:                int("ano"),
+    numero_prova:       int("numero_prova"),
+    conteudo_principal: varchar("conteudo_principal", { length: 100 }).notNull(),
+    tags:               json("tags").$type<string[]>().notNull().default([]),
+    nivel_dificuldade:  mysqlEnum("nivel_dificuldade", [
+      "Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta",
+    ]).notNull().default("Média"),
+    enunciado:  text("enunciado").notNull(),
+    // Array de { posicao: string; descricao: string } — onde a imagem deve aparecer
+    imagens:    json("imagens").$type<Array<{ posicao: string; descricao: string }>>().notNull().default([]),
+    resolucao:  text("resolucao").notNull(),
+    active:     boolean("active").notNull().default(true),
+    createdAt:  timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    idxFonte:     index("idx_disc_fonte").on(t.fonte),
+    idxConteudo:  index("idx_disc_conteudo").on(t.conteudo_principal),
+  })
+);
+
+// =============================================================================
+// Tabela: discursive_progress — autocorreção do aluno por questão
+// =============================================================================
+
+export const discursiveProgress = mysqlTable(
+  "discursive_progress",
+  {
+    id:         int("id").primaryKey().autoincrement(),
+    userId:     int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    questionId: int("question_id").notNull().references(() => discursiveQuestions.id, { onDelete: "cascade" }),
+    resultado:  mysqlEnum("resultado", ["acertei", "quase", "errei"]).notNull(),
+    xpEarned:   int("xp_earned").notNull().default(0),
+    createdAt:  timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    idxUserQ: index("idx_disc_prog_user_q").on(t.userId, t.questionId),
+  })
+);
+
+export type DiscursiveQuestion  = typeof discursiveQuestions.$inferSelect;
+export type DiscursiveProgress  = typeof discursiveProgress.$inferSelect;

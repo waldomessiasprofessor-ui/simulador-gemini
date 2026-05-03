@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node import-repvet-porcentagem.mjs)",
+      "Bash(dir \"C:\\\\Users\\\\sresr\\\\simulador-gemini\\\\.claude\\\\worktrees\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(git rebase *)",
+      "Bash(git checkout *)",
+      "Bash(node import-repvet-proporcao.mjs)",
+      "Bash(npm list *)",
+      "Bash(npm install *)",
+      "Bash(grep -v \"^--$\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -vE \"^\\(from|import|type\\)$\")",
+      "Bash(grep -v '^$\\\\|^from\\\\|^import\\\\|^type ')",
+      "Bash(node -e ' const fs = require\\('\\\\''fs'\\\\''\\); const c = fs.readFileSync\\('\\\\''__TRACKED_VAR__'\\\\'', '\\\\''utf8'\\\\''\\); const m = c.match\\(/import[^{]*\\\\{\\([^}]+\\)\\\\}[^f]*from ['\\\\''\"]@\\\\/icons['\\\\''\"]/\\) || []; if \\(m[1]\\) m[1].split\\('\\\\'','\\\\''\\).forEach\\(n => { const name = n.trim\\(\\).replace\\(/type /,'\\\\'''\\\\''\\).split\\('\\\\'' as '\\\\''\\)[0].trim\\(\\); if \\(name\\) console.log\\(name\\); }\\); ' done)",
+      "Bash(cat .env)",
+      "Bash(cat .env.local)",
+      "Bash(git commit -m 'fix: render LaTeX in diagnostic quiz enunciado and alternativas *)",
+      "Bash(node seed-diagnostic-questions.mjs --dry-run)",
+      "Bash(node seed-diagnostic-questions.mjs)"
+    ]
+  }
+}

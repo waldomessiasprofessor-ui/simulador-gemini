@@ -27,6 +27,8 @@ __export(schema_exports, {
   dailyChallengesRelations: () => dailyChallengesRelations,
   dailyReviews: () => dailyReviews,
   dailyReviewsRelations: () => dailyReviewsRelations,
+  discursiveProgress: () => discursiveProgress,
+  discursiveQuestions: () => discursiveQuestions,
   flashcardDecks: () => flashcardDecks,
   flashcardProgress: () => flashcardProgress,
   flashcards: () => flashcards,
@@ -300,6 +302,48 @@ var trilhaVideos = mysqlTable(
   },
   (t2) => ({
     idxTrilhaLicao: index("idx_trilha_licao").on(t2.trilhaSlug, t2.licaoSlug)
+  })
+);
+var discursiveQuestions = mysqlTable(
+  "discursive_questions",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    fonte: varchar("fonte", { length: 50 }).notNull().default("UNICAMP"),
+    ano: int("ano"),
+    numero_prova: int("numero_prova"),
+    conteudo_principal: varchar("conteudo_principal", { length: 100 }).notNull(),
+    tags: json("tags").$type().notNull().default([]),
+    nivel_dificuldade: mysqlEnum("nivel_dificuldade", [
+      "Muito Baixa",
+      "Baixa",
+      "M\xE9dia",
+      "Alta",
+      "Muito Alta"
+    ]).notNull().default("M\xE9dia"),
+    enunciado: text("enunciado").notNull(),
+    // Array de { posicao: string; descricao: string } — onde a imagem deve aparecer
+    imagens: json("imagens").$type().notNull().default([]),
+    resolucao: text("resolucao").notNull(),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull()
+  },
+  (t2) => ({
+    idxFonte: index("idx_disc_fonte").on(t2.fonte),
+    idxConteudo: index("idx_disc_conteudo").on(t2.conteudo_principal)
+  })
+);
+var discursiveProgress = mysqlTable(
+  "discursive_progress",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    userId: int("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    questionId: int("question_id").notNull().references(() => discursiveQuestions.id, { onDelete: "cascade" }),
+    resultado: mysqlEnum("resultado", ["acertei", "quase", "errei"]).notNull(),
+    xpEarned: int("xp_earned").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull()
+  },
+  (t2) => ({
+    idxUserQ: index("idx_disc_prog_user_q").on(t2.userId, t2.questionId)
   })
 );
 
@@ -3195,6 +3239,63 @@ Se o aluno tiver poucos dados (< 20 quest\xF5es), adapte o diagn\xF3stico para i
   })
 });
 
+// server/segunda-fase.router.ts
+import { z as z11 } from "zod";
+import { eq as eq11, and as and9, desc as desc5, sql as sql8 } from "drizzle-orm";
+var segundaFaseRouter = createTRPCRouter({
+  // Lista questões dissertativas (com último resultado do aluno)
+  getQuestions: protectedProcedure.input(z11.object({ fonte: z11.string().optional() })).query(async ({ ctx, input }) => {
+    const rows = await ctx.db.select().from(discursiveQuestions).where(
+      and9(
+        eq11(discursiveQuestions.active, true),
+        input.fonte ? eq11(discursiveQuestions.fonte, input.fonte) : void 0
+      )
+    ).orderBy(discursiveQuestions.ano, discursiveQuestions.numero_prova);
+    if (rows.length === 0) return [];
+    const progress = await ctx.db.select().from(discursiveProgress).where(eq11(discursiveProgress.userId, ctx.user.id)).orderBy(desc5(discursiveProgress.createdAt));
+    const lastResult = {};
+    for (const p of progress) {
+      if (!lastResult[p.questionId]) lastResult[p.questionId] = p.resultado;
+    }
+    return rows.map((q) => ({
+      ...q,
+      ultimoResultado: lastResult[q.id] ?? null
+    }));
+  }),
+  // Salva autocorreção e concede XP
+  saveProgress: protectedProcedure.input(
+    z11.object({
+      questionId: z11.number(),
+      resultado: z11.enum(["acertei", "quase", "errei"])
+    })
+  ).mutation(async ({ ctx, input }) => {
+    const xpEarned = input.resultado === "acertei" ? 3 : input.resultado === "quase" ? 1 : 0;
+    await ctx.db.insert(discursiveProgress).values({
+      userId: ctx.user.id,
+      questionId: input.questionId,
+      resultado: input.resultado,
+      xpEarned
+    });
+    if (xpEarned > 0) {
+      await ctx.db.update(users).set({ xp: sql8`xp + ${xpEarned}` }).where(eq11(users.id, ctx.user.id));
+    }
+    return { xpEarned };
+  }),
+  // Estatísticas de autocorreção do aluno
+  getStats: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db.select({
+      resultado: discursiveProgress.resultado,
+      count: sql8`count(*)`.mapWith(Number)
+    }).from(discursiveProgress).where(eq11(discursiveProgress.userId, ctx.user.id)).groupBy(discursiveProgress.resultado);
+    const stats = { acertei: 0, quase: 0, errei: 0, total: 0 };
+    for (const r of rows) {
+      stats[r.resultado] = r.count;
+      stats.total += r.count;
+    }
+    return stats;
+  })
+});
+
 // server/router.ts
 var appRouter = createTRPCRouter({
   auth: authRouter,
@@ -3206,11 +3307,12 @@ var appRouter = createTRPCRouter({
   agenda: agendaRouter,
   flashcards: flashcardsRouter,
   trilhas: trilhasRouter,
-  tutor: tutorRouter
+  tutor: tutorRouter,
+  segundaFase: segundaFaseRouter
 });
 
 // server/index.ts
-import { eq as eq11 } from "drizzle-orm";
+import { eq as eq12 } from "drizzle-orm";
 
 // server/seed-matematica-content.ts
 var FRACOES_ARTICLE = {
@@ -4160,7 +4262,7 @@ app.get("/admin/make-admin", async (req, res) => {
   if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
   if (!email) return res.status(400).send("Forne\xE7a ?email=teu@email.com");
   try {
-    await db.update(users).set({ role: "admin" }).where(eq11(users.email, email.toLowerCase().trim()));
+    await db.update(users).set({ role: "admin" }).where(eq12(users.email, email.toLowerCase().trim()));
     res.send(`\u2705 ${email} \xE9 agora admin. Fa\xE7a logout e login novamente no site.`);
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);

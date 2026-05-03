@@ -94,6 +94,8 @@ const NAV_TREE: TopItem[] = [
       { kind: "link", href: "/simulado/unicamp", label: "UNICAMP",     icon: d(GraduationCap) },
       { kind: "link", href: "/simulado/unesp",   label: "UNESP",       icon: d(GraduationCap) },
       { kind: "link", href: "/simulado/repvet",  label: "Banco Geral", icon: d(Star) },
+      { kind: "header", label: "Segunda Fase" },
+      { kind: "link", href: "/segunda-fase/unicamp", label: "UNICAMP 2ª Fase", icon: d(Books), badge: "Novo" },
       { kind: "header", label: "Concursos" },
       { kind: "link", href: "/simulado/concurso", label: "Concursos Públicos", icon: d(ClipboardText) },
     ],
