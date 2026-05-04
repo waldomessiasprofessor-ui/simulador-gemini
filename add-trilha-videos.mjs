@@ -49,7 +49,7 @@ try {
         slug         VARCHAR(100) NOT NULL,
         titulo       VARCHAR(255) NOT NULL,
         area         VARCHAR(255) NOT NULL,
-        descricao    TEXT         NOT NULL DEFAULT '',
+        descricao    VARCHAR(4000) NOT NULL DEFAULT '',
         content_json LONGTEXT     NOT NULL,
         created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
