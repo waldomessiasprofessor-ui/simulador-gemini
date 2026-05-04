@@ -40,6 +40,7 @@ __export(schema_exports, {
   simulations: () => simulations,
   simulationsRelations: () => simulationsRelations,
   studySchedule: () => studySchedule,
+  trilhaDefinitions: () => trilhaDefinitions,
   trilhaProgress: () => trilhaProgress,
   trilhaVideos: () => trilhaVideos,
   users: () => users,
@@ -369,6 +370,23 @@ var trilhaProgress = mysqlTable(
   (t2) => ({
     idxUser: index("idx_trilha_prog_user").on(t2.userId),
     uniq: uniqueIndex("uniq_trilha_user_licao").on(t2.userId, t2.trilhaSlug, t2.licaoSlug)
+  })
+);
+var trilhaDefinitions = mysqlTable(
+  "trilha_definitions",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    slug: varchar("slug", { length: 100 }).notNull(),
+    titulo: varchar("titulo", { length: 255 }).notNull(),
+    area: varchar("area", { length: 255 }).notNull(),
+    descricao: text("descricao").notNull().default(""),
+    // Serialização completa de Capitulo[] — inclui lições, exemplos e exercícios
+    contentJson: text("content_json").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull()
+  },
+  (t2) => ({
+    uniqSlug: uniqueIndex("uniq_trilha_def_slug").on(t2.slug)
   })
 );
 
@@ -3031,6 +3049,7 @@ var slugSchema = z9.string().min(1).max(100);
 var licaoSlugSchema = z9.string().max(100).default("");
 var urlSchema = z9.string().trim().url("URL inv\xE1lida").max(512);
 var trilhasRouter = createTRPCRouter({
+  // ── Vídeos de lições (acesso público restrito ao dono) ────────────────────
   // Buscar URL de uma trilha/lição específica (retorna null se não houver).
   // Usado pela tela Trilha.tsx.
   get: protectedProcedure.input(z9.object({ trilhaSlug: slugSchema, licaoSlug: licaoSlugSchema })).query(async ({ ctx, input }) => {
@@ -3073,25 +3092,19 @@ var trilhasRouter = createTRPCRouter({
     return { success: true };
   }),
   // ── Progresso de trilha (aluno) ───────────────────────────────────────────
-  // Retorna todas as linhas de progresso do usuário logado.
-  // Usado por TrilhaIndex (para exibir checkmarks) e por Dashboard (merge com
-  // dados de performance).
   getAllProgress: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.select().from(trilhaProgress).where(eq9(trilhaProgress.userId, ctx.user.id));
   }),
-  // Upsert: salva (ou atualiza) o resultado de uma lição após o aluno
-  // terminar os exercícios. Mantém o melhor score se o aluno refizer.
   saveProgress: protectedProcedure.input(z9.object({
     trilhaSlug: z9.string().min(1).max(100),
     licaoSlug: z9.string().min(1).max(100),
     lastScorePct: z9.number().int().min(0).max(100),
     totalTimeSec: z9.number().int().min(0),
     finishedAt: z9.number()
-    // timestamp ms
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const finishedDate = new Date(input.finishedAt);
-    const [result] = await ctx.db.execute(sql7`
+    await ctx.db.execute(sql7`
         INSERT INTO trilha_progress
           (user_id, trilha_slug, licao_slug, finished_at, last_score_pct, total_time_sec)
         VALUES
@@ -3105,7 +3118,6 @@ var trilhasRouter = createTRPCRouter({
       `);
     return { ok: true };
   }),
-  // Marca a leitura de conteúdo como concluída para uma lição.
   saveLeitura: protectedProcedure.input(z9.object({
     trilhaSlug: z9.string().min(1).max(100),
     licaoSlug: z9.string().min(1).max(100)
@@ -3120,6 +3132,56 @@ var trilhasRouter = createTRPCRouter({
           leitura_concluida = 1,
           updated_at        = NOW()
       `);
+    return { ok: true };
+  }),
+  // ── Definições de conteúdo das trilhas ───────────────────────────────────
+  // O admin edita as trilhas nesta tela; o conteúdo fica no banco e tem
+  // prioridade sobre os arquivos TypeScript estáticos em src/trilhas/*.ts.
+  /** Lista os slugs + metadados de todas as definições salvas (sem contentJson). */
+  listDefinitions: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.select({
+      id: trilhaDefinitions.id,
+      slug: trilhaDefinitions.slug,
+      titulo: trilhaDefinitions.titulo,
+      area: trilhaDefinitions.area,
+      updatedAt: trilhaDefinitions.updatedAt
+    }).from(trilhaDefinitions);
+  }),
+  /** Retorna a definição completa (incluindo contentJson) de uma trilha. */
+  getDefinition: protectedProcedure.input(z9.object({ slug: slugSchema })).query(async ({ ctx, input }) => {
+    const [row] = await ctx.db.select().from(trilhaDefinitions).where(eq9(trilhaDefinitions.slug, input.slug)).limit(1);
+    return row ?? null;
+  }),
+  /** Upsert da definição completa — admin only. */
+  saveDefinition: adminProcedure.input(
+    z9.object({
+      slug: slugSchema,
+      titulo: z9.string().min(1).max(255),
+      area: z9.string().min(1).max(255),
+      descricao: z9.string().max(4e3).default(""),
+      contentJson: z9.string().min(2)
+    })
+  ).mutation(async ({ ctx, input }) => {
+    try {
+      JSON.parse(input.contentJson);
+    } catch {
+      throw new Error("contentJson inv\xE1lido");
+    }
+    await ctx.db.execute(sql7`
+        INSERT INTO trilha_definitions (slug, titulo, area, descricao, content_json)
+        VALUES (${input.slug}, ${input.titulo}, ${input.area}, ${input.descricao}, ${input.contentJson})
+        ON DUPLICATE KEY UPDATE
+          titulo       = VALUES(titulo),
+          area         = VALUES(area),
+          descricao    = VALUES(descricao),
+          content_json = VALUES(content_json),
+          updated_at   = NOW()
+      `);
+    return { ok: true };
+  }),
+  /** Remove a definição do banco (trilha volta a usar o arquivo TS estático). */
+  deleteDefinition: adminProcedure.input(z9.object({ slug: slugSchema })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(trilhaDefinitions).where(eq9(trilhaDefinitions.slug, input.slug));
     return { ok: true };
   })
 });

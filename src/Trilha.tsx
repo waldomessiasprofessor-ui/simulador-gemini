@@ -72,7 +72,31 @@ function clearProgress(trilhaSlug: string, licaoSlug: string) {
 
 export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; licaoSlug?: string }) {
   const [, navigate] = useLocation();
-  const trilha = areaSlug ? getTrilhaBySlug(areaSlug) : undefined;
+
+  // Busca a versão editada pelo admin no banco (prioridade sobre TS estático)
+  const { data: dbDef } = trpc.trilhas.getDefinition.useQuery(
+    { slug: areaSlug! },
+    { enabled: !!areaSlug, staleTime: 30_000 },
+  );
+
+  // Mescla: DB tem prioridade; fallback para arquivo TS estático
+  const trilha = useMemo<TrilhaType | undefined>(() => {
+    const staticTrilha = areaSlug ? getTrilhaBySlug(areaSlug) : undefined;
+    if (!areaSlug) return undefined;
+    if (!dbDef) return staticTrilha;
+    try {
+      const capitulos = JSON.parse(dbDef.contentJson);
+      return {
+        slug:      dbDef.slug,
+        titulo:    dbDef.titulo,
+        area:      dbDef.area,
+        descricao: dbDef.descricao ?? staticTrilha?.descricao ?? "",
+        capitulos,
+      };
+    } catch {
+      return staticTrilha;
+    }
+  }, [areaSlug, dbDef]);
 
   // Sem slug → index de todas as trilhas disponíveis
   if (!areaSlug) {

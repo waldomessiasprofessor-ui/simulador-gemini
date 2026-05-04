@@ -452,3 +452,31 @@ export const trilhaProgress = mysqlTable(
 
 export type TrilhaProgressRow    = typeof trilhaProgress.$inferSelect;
 export type NewTrilhaProgress    = typeof trilhaProgress.$inferInsert;
+
+// =============================================================================
+// Tabela: trilha_definitions — conteúdo editável das trilhas (pelo admin)
+// =============================================================================
+// Armazena a versão editada de cada trilha: metadados + capítulos/lições/
+// exemplos/exercícios serializado em JSON. Quando presente, tem prioridade
+// sobre os arquivos TypeScript estáticos em src/trilhas/*.ts.
+
+export const trilhaDefinitions = mysqlTable(
+  "trilha_definitions",
+  {
+    id:          int("id").primaryKey().autoincrement(),
+    slug:        varchar("slug",   { length: 100 }).notNull(),
+    titulo:      varchar("titulo", { length: 255 }).notNull(),
+    area:        varchar("area",   { length: 255 }).notNull(),
+    descricao:   text("descricao").notNull().default(""),
+    // Serialização completa de Capitulo[] — inclui lições, exemplos e exercícios
+    contentJson: text("content_json").notNull(),
+    createdAt:   timestamp("created_at").defaultNow().notNull(),
+    updatedAt:   timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => ({
+    uniqSlug: uniqueIndex("uniq_trilha_def_slug").on(t.slug),
+  })
+);
+
+export type TrilhaDefinition    = typeof trilhaDefinitions.$inferSelect;
+export type NewTrilhaDefinition = typeof trilhaDefinitions.$inferInsert;

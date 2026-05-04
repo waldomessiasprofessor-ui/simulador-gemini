@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { and, eq, sql } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure, adminProcedure } from "./trpc";
-import { trilhaVideos, trilhaProgress } from "./schema";
+import { trilhaVideos, trilhaProgress, trilhaDefinitions } from "./schema";
 
 // Normalização simples: aceita string vazia para "trilha inteira".
 const slugSchema = z.string().min(1).max(100);
@@ -13,6 +13,8 @@ const urlSchema = z
   .max(512);
 
 export const trilhasRouter = createTRPCRouter({
+  // ── Vídeos de lições (acesso público restrito ao dono) ────────────────────
+
   // Buscar URL de uma trilha/lição específica (retorna null se não houver).
   // Usado pela tela Trilha.tsx.
   get: protectedProcedure
@@ -79,9 +81,6 @@ export const trilhasRouter = createTRPCRouter({
 
   // ── Progresso de trilha (aluno) ───────────────────────────────────────────
 
-  // Retorna todas as linhas de progresso do usuário logado.
-  // Usado por TrilhaIndex (para exibir checkmarks) e por Dashboard (merge com
-  // dados de performance).
   getAllProgress: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db
       .select()
@@ -89,22 +88,18 @@ export const trilhasRouter = createTRPCRouter({
       .where(eq(trilhaProgress.userId, ctx.user.id));
   }),
 
-  // Upsert: salva (ou atualiza) o resultado de uma lição após o aluno
-  // terminar os exercícios. Mantém o melhor score se o aluno refizer.
   saveProgress: protectedProcedure
     .input(z.object({
       trilhaSlug:   z.string().min(1).max(100),
       licaoSlug:    z.string().min(1).max(100),
       lastScorePct: z.number().int().min(0).max(100),
       totalTimeSec: z.number().int().min(0),
-      finishedAt:   z.number(), // timestamp ms
+      finishedAt:   z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       const finishedDate = new Date(input.finishedAt);
-
-      // Tenta atualizar primeiro (mais eficiente que SELECT + INSERT)
-      const [result] = await ctx.db.execute(sql`
+      await ctx.db.execute(sql`
         INSERT INTO trilha_progress
           (user_id, trilha_slug, licao_slug, finished_at, last_score_pct, total_time_sec)
         VALUES
@@ -119,7 +114,6 @@ export const trilhasRouter = createTRPCRouter({
       return { ok: true };
     }),
 
-  // Marca a leitura de conteúdo como concluída para uma lição.
   saveLeitura: protectedProcedure
     .input(z.object({
       trilhaSlug: z.string().min(1).max(100),
@@ -136,6 +130,74 @@ export const trilhasRouter = createTRPCRouter({
           leitura_concluida = 1,
           updated_at        = NOW()
       `);
+      return { ok: true };
+    }),
+
+  // ── Definições de conteúdo das trilhas ───────────────────────────────────
+  // O admin edita as trilhas nesta tela; o conteúdo fica no banco e tem
+  // prioridade sobre os arquivos TypeScript estáticos em src/trilhas/*.ts.
+
+  /** Lista os slugs + metadados de todas as definições salvas (sem contentJson). */
+  listDefinitions: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db
+      .select({
+        id:        trilhaDefinitions.id,
+        slug:      trilhaDefinitions.slug,
+        titulo:    trilhaDefinitions.titulo,
+        area:      trilhaDefinitions.area,
+        updatedAt: trilhaDefinitions.updatedAt,
+      })
+      .from(trilhaDefinitions);
+  }),
+
+  /** Retorna a definição completa (incluindo contentJson) de uma trilha. */
+  getDefinition: protectedProcedure
+    .input(z.object({ slug: slugSchema }))
+    .query(async ({ ctx, input }) => {
+      const [row] = await ctx.db
+        .select()
+        .from(trilhaDefinitions)
+        .where(eq(trilhaDefinitions.slug, input.slug))
+        .limit(1);
+      return row ?? null;
+    }),
+
+  /** Upsert da definição completa — admin only. */
+  saveDefinition: adminProcedure
+    .input(
+      z.object({
+        slug:        slugSchema,
+        titulo:      z.string().min(1).max(255),
+        area:        z.string().min(1).max(255),
+        descricao:   z.string().max(4000).default(""),
+        contentJson: z.string().min(2),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Valida JSON antes de persistir
+      try { JSON.parse(input.contentJson); } catch {
+        throw new Error("contentJson inválido");
+      }
+      await ctx.db.execute(sql`
+        INSERT INTO trilha_definitions (slug, titulo, area, descricao, content_json)
+        VALUES (${input.slug}, ${input.titulo}, ${input.area}, ${input.descricao}, ${input.contentJson})
+        ON DUPLICATE KEY UPDATE
+          titulo       = VALUES(titulo),
+          area         = VALUES(area),
+          descricao    = VALUES(descricao),
+          content_json = VALUES(content_json),
+          updated_at   = NOW()
+      `);
+      return { ok: true };
+    }),
+
+  /** Remove a definição do banco (trilha volta a usar o arquivo TS estático). */
+  deleteDefinition: adminProcedure
+    .input(z.object({ slug: slugSchema }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(trilhaDefinitions)
+        .where(eq(trilhaDefinitions.slug, input.slug));
       return { ok: true };
     }),
 });

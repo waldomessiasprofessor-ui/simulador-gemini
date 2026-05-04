@@ -125,6 +125,21 @@ async function run() {
     `);
     console.log("✅ revise_contents");
 
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS trilha_definitions (
+        id           INT          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        slug         VARCHAR(100) NOT NULL,
+        titulo       VARCHAR(255) NOT NULL,
+        area         VARCHAR(255) NOT NULL,
+        descricao    TEXT         NOT NULL DEFAULT '',
+        content_json LONGTEXT     NOT NULL,
+        created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_trilha_def_slug (slug)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    console.log("✅ trilha_definitions");
+
     console.log("\n🎉 Banco configurado com sucesso!");
     console.log("⚠️  Lembre de voltar o start command para: npm run start");
   } finally {
