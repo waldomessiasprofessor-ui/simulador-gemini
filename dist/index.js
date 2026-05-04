@@ -2623,7 +2623,8 @@ var reviewRouter = createTRPCRouter({
   // ── Aluno: pega (ou cria) o Revise do dia ────────────────────────────────
   getDaily: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
-    const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const br = new Date(Date.now() - 3 * 60 * 60 * 1e3);
+    const today = br.toISOString().slice(0, 10);
     const [existing] = await ctx.db.select().from(dailyReviews).where(and4(eq5(dailyReviews.userId, userId), eq5(dailyReviews.reviewDate, today))).limit(1);
     if (existing) {
       const [content] = await ctx.db.select().from(reviewContents).where(eq5(reviewContents.id, existing.contentId)).limit(1);

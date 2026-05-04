@@ -100,7 +100,9 @@ export const reviewRouter = createTRPCRouter({
   // ── Aluno: pega (ou cria) o Revise do dia ────────────────────────────────
   getDaily: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
-    const today = new Date().toISOString().slice(0, 10);
+    // UTC-3 (horário de Brasília) para evitar troca de data depois das 21h
+    const br = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    const today = br.toISOString().slice(0, 10);
 
     // Verifica se já existe revisão hoje
     const [existing] = await ctx.db

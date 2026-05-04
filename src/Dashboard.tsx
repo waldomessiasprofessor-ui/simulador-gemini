@@ -762,6 +762,19 @@ function RadarTopicos() {
 
 // ─── Mini-Calendário ─────────────────────────────────────────────────────────
 
+/**
+ * Retorna a data de hoje no formato "YYYY-MM-DD" no horário LOCAL do dispositivo.
+ * Usar toISOString() é errado pois retorna UTC — depois das 21h no Brasil (UTC-3)
+ * o dia vira o seguinte, fazendo o calendário marcar o dia errado.
+ */
+function localToday(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm   = String(d.getMonth() + 1).padStart(2, "0");
+  const dd   = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 const MONTH_NAMES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const DOW_FULL    = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
 const DOW_SHORT   = ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
@@ -803,7 +816,7 @@ function DayDetail({ dateStr, act, slots, navigate, onClose }: {
   const cols = CAL_COLORS[dow];
   const daySlots = slots.filter((s) => s.dayOfWeek === dow);
   const allTopics = [...new Set(daySlots.flatMap((s) => parseTops(s.topic)))];
-  const todayStr  = new Date().toISOString().slice(0, 10);
+  const todayStr  = localToday();
   const isToday   = dateStr === todayStr;
 
   return (
@@ -890,7 +903,7 @@ function ExpandedAgenda({ activity, slots, navigate, onClose }: {
     for (let i = 0; i < 30; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
-      list.push(d.toISOString().slice(0, 10));
+      list.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
     }
     return list;
   }, []);
@@ -929,7 +942,7 @@ function ExpandedAgenda({ activity, slots, navigate, onClose }: {
           const cols = CAL_COLORS[dow];
           const daySlots = slots.filter((s: any) => s.dayOfWeek === dow);
           const allTopics = [...new Set(daySlots.flatMap((s: any) => parseTops(s.topic)))];
-          const isToday = dateStr === new Date().toISOString().slice(0, 10);
+          const isToday = dateStr === localToday();
 
           return (
             <div key={dateStr} style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
@@ -1004,7 +1017,7 @@ function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDow    = new Date(year, month, 1).getDay();
 
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = localToday();
 
   const scheduledDows = useMemo(() => new Set(slots.map((s) => s.dayOfWeek)), [slots]);
   const actMap = useMemo(() => {
