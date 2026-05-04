@@ -57,6 +57,7 @@ import {
   uniqueIndex,
   json,
   text,
+  longtext,
   float
 } from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
@@ -381,7 +382,7 @@ var trilhaDefinitions = mysqlTable(
     area: varchar("area", { length: 255 }).notNull(),
     descricao: text("descricao").notNull().default(""),
     // Serialização completa de Capitulo[] — inclui lições, exemplos e exercícios
-    contentJson: text("content_json").notNull(),
+    contentJson: longtext("content_json").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull()
   },
