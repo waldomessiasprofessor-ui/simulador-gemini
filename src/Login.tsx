@@ -329,8 +329,8 @@ export default function Login() {
               lineHeight: 1.15, color: C.fg, margin: "0.5rem 0 0.5rem",
             } as React.CSSProperties}
           >
-            Tudo que você precisa,{" "}
-            <em style={{ fontStyle: "italic", fontWeight: 800, color: C.tealDarker }}>sem ruído</em>.
+            Tudo que você precisa{" "}
+            <em style={{ fontStyle: "italic", fontWeight: 800, color: C.tealDarker }}>em um único lugar</em>.
           </h2>
           <p style={{ fontSize: "1rem", color: C.muted, margin: 0, maxWidth: "60ch" }}>
             Uma plataforma focada no aluno. Cada ferramenta tem um propósito e um momento.
