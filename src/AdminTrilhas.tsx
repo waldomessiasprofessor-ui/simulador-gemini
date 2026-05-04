@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { TRILHAS } from "@/trilhas";
 import type {
@@ -9,9 +9,11 @@ import type {
   Exercicio,
 } from "@/trilhas/types";
 import { LatexRenderer } from "@/LatexRenderer";
+import { toast } from "sonner";
 import {
   Youtube, Save, Trash2, Check, AlertCircle, Plus, Loader2, BookOpen,
   Pencil, Eye, EyeOff, ChevronDown, ChevronRight, RefreshCw, X,
+  Image as ImageIcon,
 } from "@/icons";
 
 // =============================================================================
@@ -890,55 +892,10 @@ function LicaoFullEditor({
 
         {/* ── Aba Explicação ────────────────────────────────────────── */}
         {tab === "explicacao" && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Conteúdo explicativo (suporta Markdown + LaTeX)</Label>
-              <button
-                onClick={() => setPreviewExplicacao((v) => !v)}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg"
-                style={{
-                  background: "var(--background)",
-                  border: "1.5px solid var(--border)",
-                  color: "var(--muted-foreground)",
-                }}
-              >
-                {previewExplicacao ? (
-                  <EyeOff className="h-3.5 w-3.5" />
-                ) : (
-                  <Eye className="h-3.5 w-3.5" />
-                )}
-                {previewExplicacao ? "Editar" : "Preview"}
-              </button>
-            </div>
-
-            {previewExplicacao ? (
-              <div
-                className="rounded-lg p-4 min-h-[300px] overflow-auto"
-                style={{
-                  background: "var(--background)",
-                  border: "1.5px solid var(--border)",
-                  color: "var(--foreground)",
-                  fontSize: "0.875rem",
-                }}
-              >
-                <LatexRenderer content={licao.explicacao} />
-              </div>
-            ) : (
-              <textarea
-                value={licao.explicacao}
-                onChange={(e) => onChange({ explicacao: e.target.value })}
-                rows={20}
-                className="w-full rounded-lg px-3 py-2 text-sm outline-none font-mono resize-y"
-                style={{
-                  background: "var(--background)",
-                  color: "var(--foreground)",
-                  border: "1.5px solid var(--border)",
-                  minHeight: "300px",
-                }}
-                placeholder="Escreva o conteúdo explicativo da lição..."
-              />
-            )}
-          </div>
+          <ExplicacaoEditor
+            value={licao.explicacao}
+            onChange={(v) => onChange({ explicacao: v })}
+          />
         )}
 
         {/* ── Aba Exemplos ──────────────────────────────────────────── */}
@@ -1022,6 +979,86 @@ function LicaoFullEditor({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// ExplicacaoEditor — textarea grande com upload de imagens e preview
+// =============================================================================
+
+function ExplicacaoEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [preview, setPreview] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertAtCursor(tag: string) {
+    const el = textareaRef.current;
+    if (!el) { onChange(value + tag); return; }
+    const start = el.selectionStart ?? value.length;
+    const end   = el.selectionEnd   ?? value.length;
+    const next  = value.slice(0, start) + tag + value.slice(end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + tag.length, start + tag.length);
+    });
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <Label>Conteúdo explicativo (suporta Markdown + LaTeX)</Label>
+        <div className="flex items-center gap-2">
+          {!preview && <InlineImageInsert onInsert={insertAtCursor} />}
+          <button
+            onClick={() => setPreview((v) => !v)}
+            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg"
+            style={{
+              background: "var(--background)",
+              border: "1.5px solid var(--border)",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            {preview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            {preview ? "Editar" : "Preview"}
+          </button>
+        </div>
+      </div>
+
+      {preview ? (
+        <div
+          className="rounded-lg p-4 min-h-[300px] overflow-auto"
+          style={{
+            background: "var(--background)",
+            border: "1.5px solid var(--border)",
+            color: "var(--foreground)",
+            fontSize: "0.875rem",
+          }}
+        >
+          <LatexRenderer content={value} />
+        </div>
+      ) : (
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          rows={20}
+          className="w-full rounded-lg px-3 py-2 text-sm outline-none font-mono resize-y"
+          style={{
+            background: "var(--background)",
+            color: "var(--foreground)",
+            border: "1.5px solid var(--border)",
+            minHeight: "300px",
+          }}
+          placeholder="Escreva o conteúdo explicativo da lição... Use o botão 'Inserir imagem' para adicionar imagens na posição do cursor."
+        />
+      )}
     </div>
   );
 }
@@ -1351,6 +1388,76 @@ function Textarea({
   );
 }
 
+// =============================================================================
+// Upload de imagens (ImgBB) — mesmo padrão do AdminQuestoes
+// =============================================================================
+
+const IMGBB_KEY = import.meta.env.VITE_IMGBB_API_KEY as string | undefined;
+
+async function uploadToImgBB(file: File): Promise<string> {
+  if (!IMGBB_KEY) throw new Error("Chave ImgBB não configurada (VITE_IMGBB_API_KEY).");
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const body = new FormData();
+  body.append("image", base64);
+  const res  = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error?.message ?? "Erro no upload ImgBB");
+  return data.data.url as string;
+}
+
+/** Botão que faz upload e chama onInsert com o texto `[Imagem: url]`. */
+function InlineImageInsert({ onInsert }: { onInsert: (tag: string) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        disabled={loading}
+        onClick={() => ref.current?.click()}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
+        style={{ background: "#E0F2F1", color: "#00695C", border: "1.5px solid #01738d44" }}
+        title="Fazer upload de imagem e inserir na posição do cursor"
+      >
+        {loading
+          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          : <ImageIcon className="h-3.5 w-3.5" />}
+        Inserir imagem
+      </button>
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setLoading(true);
+          try {
+            const url = await uploadToImgBB(file);
+            onInsert(`[Imagem: ${url}]`);
+            toast.success("Imagem inserida!");
+          } catch (err: any) {
+            toast.error(err.message);
+          } finally {
+            setLoading(false);
+            e.target.value = "";
+          }
+        }}
+      />
+    </>
+  );
+}
+
+// =============================================================================
+// FieldWithPreview — textarea com preview LaTeX + inserção de imagens
+// =============================================================================
+
 function FieldWithPreview({
   label,
   value,
@@ -1370,26 +1477,49 @@ function FieldWithPreview({
   placeholder?: string;
   className?: string;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  /** Insere `tag` na posição atual do cursor (ou no final se não houver foco). */
+  function insertAtCursor(tag: string) {
+    const el = textareaRef.current;
+    if (!el) { onEdit(value + tag); return; }
+    const start = el.selectionStart ?? value.length;
+    const end   = el.selectionEnd   ?? value.length;
+    const next  = value.slice(0, start) + tag + value.slice(end);
+    onEdit(next);
+    // Reposiciona cursor depois da tag inserida
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + tag.length, start + tag.length);
+    });
+  }
+
   return (
     <div className={`space-y-1 ${className}`}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <Label>{label}</Label>
-        <button
-          onClick={onTogglePreview}
-          className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg"
-          style={{
-            background: "var(--background)",
-            border: "1.5px solid var(--border)",
-            color: "var(--muted-foreground)",
-          }}
-        >
-          {preview ? (
-            <EyeOff className="h-3 w-3" />
-          ) : (
-            <Eye className="h-3 w-3" />
+        <div className="flex items-center gap-2">
+          {/* Botão de upload de imagem — só aparece no modo edição */}
+          {!preview && (
+            <InlineImageInsert onInsert={insertAtCursor} />
           )}
-          {preview ? "Editar" : "Preview"}
-        </button>
+          <button
+            onClick={onTogglePreview}
+            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg"
+            style={{
+              background: "var(--background)",
+              border: "1.5px solid var(--border)",
+              color: "var(--muted-foreground)",
+            }}
+          >
+            {preview ? (
+              <EyeOff className="h-3 w-3" />
+            ) : (
+              <Eye className="h-3 w-3" />
+            )}
+            {preview ? "Editar" : "Preview"}
+          </button>
+        </div>
       </div>
       {preview ? (
         <div
@@ -1405,6 +1535,7 @@ function FieldWithPreview({
         </div>
       ) : (
         <textarea
+          ref={textareaRef}
           value={value}
           onChange={(e) => onEdit(e.target.value)}
           rows={rows ?? 4}

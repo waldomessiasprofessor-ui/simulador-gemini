@@ -140,9 +140,9 @@ export default function Login() {
                 margin: "0.85rem 0 1.25rem", textWrap: "balance",
               } as React.CSSProperties}
             >
-              O cursinho que{" "}
-              <em style={{ fontStyle: "italic", fontWeight: 800, color: C.tealDarker }}>se molda</em>
-              {" "}a você.
+              A matemática da sua aprovação{" "}
+              <em style={{ fontStyle: "italic", fontWeight: 800, color: C.tealDarker }}>calculada com precisão</em>
+              .
             </h1>
 
             <p
@@ -152,11 +152,12 @@ export default function Login() {
                 marginBottom: "1.75rem",
               } as React.CSSProperties}
             >
-              Cada questão calibrada para suas lacunas — para que cada hora estudada
-              renda o triplo.{" "}
+              Uma plataforma de alta performance em Matemática pensada para mapear suas lacunas,
+              recalcular sua rota de estudos e maximizar sua nota através do{" "}
               <em style={{ fontStyle: "italic", fontWeight: 700, color: C.tealDarker }}>
-                Prova com calma.
+                sistema TRI oficial
               </em>
+              .
             </p>
 
             {/* Selos editoriais */}
