@@ -1193,6 +1193,7 @@ function ProximaPrioridade({ navigate }: { navigate: (to: string) => void }) {
 
   const erroPct = 100 - pior.pct;
   const urgente = pior.pct < 40;
+  const trilha  = getTrilhaByArea(pior.conteudo); // existe trilha para esse tópico?
 
   return (
     <div className="rounded-2xl p-4" style={{
@@ -1207,14 +1208,33 @@ function ProximaPrioridade({ navigate }: { navigate: (to: string) => void }) {
         <span style={{ color: urgente ? "#DC2626" : "#D97706" }}>{pior.conteudo}</span>
       </p>
       <p className="text-xs mb-3" style={{ color: "var(--muted-foreground)" }}>
-        {pior.correct} acerto{pior.correct !== 1 ? "s" : ""} em {pior.total} questões respondidas. Clique para treinar agora.
+        {urgente && trilha
+          ? "Recomendamos estudar a trilha antes de resolver questões — ela vai consolidar os conceitos."
+          : `${pior.correct} acerto${pior.correct !== 1 ? "s" : ""} em ${pior.total} questões respondidas.`}
       </p>
-      <button
-        onClick={() => navigate("/treino")}
-        className="w-full py-2 rounded-xl text-sm font-bold text-white"
-        style={{ background: urgente ? "#DC2626" : "#D97706", border: "none", cursor: "pointer" }}>
-        Treinar {pior.conteudo}
-      </button>
+
+      <div className={urgente && trilha ? "flex flex-col gap-2" : ""}>
+        {/* Botão principal — trilha (quando urgente e existe trilha) */}
+        {urgente && trilha && (
+          <button
+            onClick={() => navigate(`/trilha/${trilha.slug}`)}
+            className="w-full py-2 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
+            style={{ background: "#DC2626", border: "none", cursor: "pointer" }}>
+            <BookOpen className="h-4 w-4" />
+            Estudar a Trilha de {trilha.titulo}
+          </button>
+        )}
+
+        {/* Botão secundário — questões */}
+        <button
+          onClick={() => navigate("/treino")}
+          className="w-full py-2 rounded-xl text-sm font-bold"
+          style={urgente && trilha
+            ? { background: "transparent", border: "1.5px solid #FECACA", color: "#DC2626", cursor: "pointer" }
+            : { background: urgente ? "#DC2626" : "#D97706", border: "none", color: "#fff", cursor: "pointer" }}>
+          {urgente && trilha ? "Ir para questões" : `Treinar ${pior.conteudo}`}
+        </button>
+      </div>
     </div>
   );
 }
