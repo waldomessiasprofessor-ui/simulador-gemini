@@ -223,7 +223,9 @@ function TrilhaHub({ trilha }: { trilha: TrilhaType }) {
             <h1 className="text-xl font-black" style={{ color: "#ffffff" }}>{trilha.titulo}</h1>
           </div>
         </div>
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.92)" }}>{trilha.descricao}</p>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.92)" }}>
+          <LatexRenderer inline>{trilha.descricao}</LatexRenderer>
+        </p>
         <div className="flex gap-3 mt-4 flex-wrap">
           <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
             style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}>
@@ -264,7 +266,7 @@ function TrilhaHub({ trilha }: { trilha: TrilhaType }) {
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{st.titulo}</p>
                   <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--muted-foreground)" }}>
-                    {st.descricao}
+                    <LatexRenderer inline>{st.descricao}</LatexRenderer>
                   </p>
 
                   {/* Progresso */}
@@ -338,7 +340,7 @@ function TrilhaIndex({ trilha }: { trilha: TrilhaType }) {
           </div>
         </div>
         <p className="text-sm" style={{ color: "rgba(255,255,255,0.92)" }}>
-          {trilha.descricao}
+          <LatexRenderer inline>{trilha.descricao}</LatexRenderer>
         </p>
       </div>
 
