@@ -97,6 +97,7 @@ export const simulations = mysqlTable(
   (t) => ({
     idxUser: index("idx_user_id").on(t.userId),
     idxUserStage: index("idx_user_stage").on(t.userId, t.stage),
+    idxUserStatus: index("idx_user_status").on(t.userId, t.status),
   })
 );
 
@@ -481,3 +482,25 @@ export const trilhaDefinitions = mysqlTable(
 
 export type TrilhaDefinition    = typeof trilhaDefinitions.$inferSelect;
 export type NewTrilhaDefinition = typeof trilhaDefinitions.$inferInsert;
+
+// =============================================================================
+// Tabela: study_goals — metas semanais por aluno
+// =============================================================================
+
+export const studyGoals = mysqlTable(
+  "study_goals",
+  {
+    id:                  int("id").primaryKey().autoincrement(),
+    userId:              int("user_id").notNull().references(() => users.id),
+    questionsPerWeek:    int("questions_per_week").notNull().default(50),
+    simulationsPerWeek:  int("simulations_per_week").notNull().default(1),
+    createdAt:           timestamp("created_at").defaultNow().notNull(),
+    updatedAt:           timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => ({
+    uniqUser: uniqueIndex("uniq_study_goal_user").on(t.userId),
+  })
+);
+
+export type StudyGoal    = typeof studyGoals.$inferSelect;
+export type NewStudyGoal = typeof studyGoals.$inferInsert;

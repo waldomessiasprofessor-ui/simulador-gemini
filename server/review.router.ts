@@ -69,21 +69,36 @@ export const reviewRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // ── Aluno: lista todos os conteúdos ativos (para página de browse) ───────
-  listAll: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db
-      .select({
-        id: reviewContents.id,
-        titulo: reviewContents.titulo,
-        topico: reviewContents.topico,
-        url_pdf: reviewContents.url_pdf,
-        createdAt: reviewContents.createdAt,
-      })
-      .from(reviewContents)
-      .where(eq(reviewContents.active, true))
-      .orderBy(desc(reviewContents.createdAt));
-    return rows;
-  }),
+  // ── Aluno: lista conteúdos ativos com paginação ───────────────────────────
+  listAll: protectedProcedure
+    .input(z.object({ page: z.number().int().min(1).default(1), pageSize: z.number().int().min(1).max(50).default(20) }).optional())
+    .query(async ({ ctx, input }) => {
+      const page     = input?.page     ?? 1;
+      const pageSize = input?.pageSize ?? 20;
+      const offset   = (page - 1) * pageSize;
+
+      const [rows, [{ count }]] = await Promise.all([
+        ctx.db
+          .select({
+            id:        reviewContents.id,
+            titulo:    reviewContents.titulo,
+            topico:    reviewContents.topico,
+            url_pdf:   reviewContents.url_pdf,
+            createdAt: reviewContents.createdAt,
+          })
+          .from(reviewContents)
+          .where(eq(reviewContents.active, true))
+          .orderBy(desc(reviewContents.createdAt))
+          .limit(pageSize)
+          .offset(offset),
+        ctx.db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(reviewContents)
+          .where(eq(reviewContents.active, true)),
+      ]);
+
+      return { items: rows, total: Number(count), page, pageSize };
+    }),
 
   // ── Aluno: busca conteúdo específico por id ───────────────────────────────
   getById: protectedProcedure

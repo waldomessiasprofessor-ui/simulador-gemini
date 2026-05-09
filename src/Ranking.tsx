@@ -6,7 +6,10 @@ import { ptBR } from "date-fns/locale";
 const MEDAL_COLORS = ["#F9A825", "#9E9E9E", "#CD7F32"];
 
 export default function Ranking() {
-  const { data: ranking, isLoading } = trpc.simulations.getRanking.useQuery();
+  const { data, isLoading } = trpc.simulations.getRanking.useQuery();
+  const ranking     = data?.ranking ?? [];
+  const myPercentil = data?.myPercentile ?? null;
+  const totalRanked = data?.totalRanked  ?? 0;
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
@@ -15,7 +18,7 @@ export default function Ranking() {
   );
 
   return (
-    <div className="space-y-8 py-2">
+    <div className="space-y-4 py-2">
       {/* Header */}
       <div className="rounded-2xl px-6 py-8 text-white" style={{ background: "linear-gradient(135deg, #E65100, #BF360C)" }}>
         <div className="flex items-center gap-2 mb-3">
@@ -26,7 +29,26 @@ export default function Ranking() {
         <p className="text-sm opacity-80">Melhores notas TRI de todos os tempos.</p>
       </div>
 
-      {!ranking || ranking.length === 0 ? (
+      {/* Percentil do aluno */}
+      {myPercentil !== null && (
+        <div className="rounded-2xl p-4 flex items-center gap-4"
+          style={{ background: "var(--card)", border: "1.5px solid #B2DFDB" }}>
+          <div className="h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #009688, #4DB6AC)" }}>
+            <span className="text-white font-black text-sm">{myPercentil}%</span>
+          </div>
+          <div>
+            <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
+              Você está melhor que <span style={{ color: "#009688" }}>{myPercentil}%</span> dos alunos
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              Entre {totalRanked} aluno{totalRanked !== 1 ? "s" : ""} que completaram o simulado ENEM
+            </p>
+          </div>
+        </div>
+      )}
+
+      {ranking.length === 0 ? (
         <div className="text-center py-16" style={{ color: "var(--muted-foreground)" }}>
           <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">Nenhum aluno completou a Simulação Enem ainda.</p>

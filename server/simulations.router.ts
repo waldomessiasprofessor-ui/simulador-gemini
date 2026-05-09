@@ -103,6 +103,19 @@ async function drawQuestions(db: any, count: number, excludeIds: number[] = [], 
   return selected.map((id) => byId.get(id)).filter(Boolean);
 }
 
+/**
+ * Calcula o parâmetro c (pseudo-chute) pelo número real de alternativas válidas.
+ * ENEM/Concurso: 5 alternativas → c = 0.20
+ * UNICAMP/FUVEST/UNESP: 4 alternativas → c = 0.25
+ * Fallback: 0.20
+ */
+function guessingParam(alternativas: Record<string, any> | null | undefined): number {
+  if (!alternativas) return 0.2;
+  const validCount = Object.values(alternativas).filter((v) => v !== null && v !== "").length;
+  if (validCount < 2) return 0.2;
+  return parseFloat((1 / validCount).toFixed(4));
+}
+
 /** Lança TRPCError NOT_FOUND padronizado */
 function notFound(entity: string): never {
   throw new TRPCError({ code: "NOT_FOUND", message: `${entity} não encontrado(a).` });
@@ -311,6 +324,7 @@ export const simulationsRouter = createTRPCRouter({
           param_a: questions.param_a,
           param_b: questions.param_b,
           param_c: questions.param_c,
+          alternativas: questions.alternativas,
           gabarito: questions.gabarito,
           conteudo_principal: questions.conteudo_principal,
           nivel_dificuldade: questions.nivel_dificuldade,
@@ -328,9 +342,15 @@ export const simulationsRouter = createTRPCRouter({
 
       if (stage === 3) {
         // Etapa 3: Cálculo TRI completo
+        // c (pseudo-chute) é calculado pelo nº real de alternativas válidas:
+        // 5 alternativas (ENEM/Concurso) → c=0.20; 4 alt. (UNICAMP etc.) → c=0.25
         const triResults: QuestionResult[] = answers.map((a) => ({
           questionId: a.questionId,
-          params: { a: a.param_a, b: a.param_b, c: a.param_c },
+          params: {
+            a: a.param_a,
+            b: a.param_b,
+            c: guessingParam(a.alternativas as Record<string, any>),
+          },
           correct: a.isCorrect,
         }));
 
@@ -712,11 +732,11 @@ export const simulationsRouter = createTRPCRouter({
     const dayOfWeek = startOfWeek.getDay();
     startOfWeek.setDate(startOfWeek.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
 
-    // ── Helper: data de uma string ou Date → chave "YYYY-M-D" ─────────────
+    // ── Helper: data de uma string ou Date → chave "YYYY-MM-DD" ────────────
     function dayKey(d: Date | string | null): string {
       if (!d) return "";
       const dt = typeof d === "string" ? new Date(d + "T12:00:00") : new Date(d);
-      return `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
     }
 
     function sameDay(d: Date | string | null, ref: Date): boolean {
@@ -793,6 +813,13 @@ export const simulationsRouter = createTRPCRouter({
       ? Math.round((weeklyData.acertos / weeklyData.questoes) * 100)
       : 0;
 
+    // Simulados completos nesta semana
+    const weeklySimulations = completedSims.filter(s => {
+      if (!s.completedAt) return false;
+      const key = dayKey(s.completedAt);
+      return days.some(d => dayKey(d) === key);
+    }).length;
+
     // ── Totais gerais (vida toda) ─────────────────────────────────────────
     const allEntries = Array.from(dayMap.values());
     const totalQuestions = allEntries.reduce((s, d) => s + d.questoes, 0);
@@ -803,6 +830,7 @@ export const simulationsRouter = createTRPCRouter({
       streak,
       weeklyQuestions: weeklyData.questoes,
       weeklyAccuracy,
+      weeklySimulations,
       totalSimulations: completedSims.length,
       dailyData,
       // Gerais
@@ -838,6 +866,8 @@ export const simulationsRouter = createTRPCRouter({
       }
     }
 
+    const totalRanked = bestByUser.size;
+
     const ranking = Array.from(bestByUser.values())
       .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
       .slice(0, 20)
@@ -851,7 +881,13 @@ export const simulationsRouter = createTRPCRouter({
         isMe: r.userId === ctx.user.id,
       }));
 
-    return ranking;
+    const myEntry = ranking.find(r => r.isMe);
+    // Se o aluno está no top-20, calcula percentil exato; senão, null
+    const myPercentile = myEntry
+      ? Math.round(((totalRanked - myEntry.position) / Math.max(1, totalRanked)) * 100)
+      : null;
+
+    return { ranking, totalRanked, myPercentile };
   }),
 
   // ---------------------------------------------------------------------------

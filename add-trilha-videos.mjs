@@ -79,7 +79,30 @@ try {
     }
   }
 
-  // ── 3. Índice idx_user_status em simulations (se não existir) ────────────
+  // ── 3. Tabela study_goals — metas semanais por aluno ─────────────────────
+  const [sgRows] = await conn.query(`
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'study_goals'
+  `);
+  if (sgRows.length > 0) {
+    console.log("✅ study_goals já existe.");
+  } else {
+    await conn.query(`
+      CREATE TABLE study_goals (
+        id                   INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        user_id              INT NOT NULL,
+        questions_per_week   INT NOT NULL DEFAULT 50,
+        simulations_per_week INT NOT NULL DEFAULT 1,
+        created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_study_goal_user (user_id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+    console.log("✅ Tabela study_goals criada.");
+  }
+
+  // ── 4. Índice idx_user_status em simulations (se não existir) ────────────
   const [idxRows] = await conn.query(`
     SELECT INDEX_NAME
     FROM INFORMATION_SCHEMA.STATISTICS

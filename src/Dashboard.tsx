@@ -1002,6 +1002,183 @@ function ExpandedAgenda({ activity, slots, navigate, onClose }: {
   );
 }
 
+// ─── PontosFragos — card com tópicos de maior taxa de erro ──────────────────
+function PontosFragos({ navigate }: { navigate: (to: string) => void }) {
+  const { data } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 60_000 });
+
+  if (!data) return null;
+
+  const weak = data
+    .filter(d => d.total >= 2 && d.pct < 60)
+    .sort((a, b) => a.pct - b.pct)
+    .slice(0, 3);
+
+  if (weak.length === 0) return null;
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid #FECACA" }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#FEF2F2" }}>
+            <TrendingUp className="h-3.5 w-3.5" style={{ color: "#DC2626" }} />
+          </div>
+          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Pontos a reforçar esta semana</p>
+        </div>
+        <button onClick={() => navigate("/treino")}
+          className="text-xs font-semibold px-2.5 py-1 rounded-lg"
+          style={{ background: "#FEF2F2", color: "#DC2626" }}>
+          Treinar tudo
+        </button>
+      </div>
+      <div className="space-y-3">
+        {weak.map(d => {
+          const erroPct = 100 - d.pct;
+          const color   = d.pct < 40 ? "#DC2626" : "#D97706";
+          const bg      = d.pct < 40 ? "#FEF2F2" : "#FFFBEB";
+          return (
+            <div key={d.conteudo}>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>{d.conteudo}</p>
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: bg, color }}>
+                  {erroPct}% de erros · {d.correct}/{d.total} acertos
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--muted)" }}>
+                <div className="h-full rounded-full" style={{ width: `${erroPct}%`, background: color, transition: "width 0.6s ease" }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── MetasCard — metas semanais com barra de progresso ───────────────────────
+function MetasCard() {
+  const [editing, setEditing] = useState(false);
+  const [qInput, setQInput]   = useState("");
+  const [sInput, setSInput]   = useState("");
+
+  const { data: goal, refetch } = trpc.goals.getGoal.useQuery(undefined, { staleTime: 60_000 });
+  const { data: stats }         = trpc.simulations.getStats.useQuery(undefined, { staleTime: 0 });
+  const utils = trpc.useUtils();
+  const setGoal = trpc.goals.setGoal.useMutation({
+    onSuccess: () => {
+      refetch();
+      utils.goals.getGoal.invalidate();
+      setEditing(false);
+    },
+  });
+
+  if (!goal || !stats) return null;
+
+  const qGoal  = goal.questionsPerWeek ?? 50;
+  const sGoal  = goal.simulationsPerWeek ?? 1;
+  const qDone  = stats.weeklyQuestions ?? 0;
+  const sDone  = stats.weeklySimulations ?? 0;
+  const qPct   = Math.min(100, Math.round((qDone / Math.max(1, qGoal)) * 100));
+  const sPct   = sGoal > 0 ? Math.min(100, Math.round((sDone / sGoal) * 100)) : 100;
+
+  function startEdit() {
+    setQInput(String(qGoal));
+    setSInput(String(sGoal));
+    setEditing(true);
+  }
+
+  function saveGoals() {
+    const q = parseInt(qInput, 10);
+    const s = parseInt(sInput, 10);
+    if (!q || q < 1) return;
+    setGoal.mutate({ questionsPerWeek: q, simulationsPerWeek: isNaN(s) ? 0 : s });
+  }
+
+  const barColor = (pct: number) => pct >= 100 ? "#009688" : pct >= 60 ? "#F59E0B" : "#6B7280";
+
+  return (
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#E0F2F1" }}>
+            <Sparkles className="h-3.5 w-3.5" style={{ color: "#009688" }} />
+          </div>
+          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Metas da semana</p>
+        </div>
+        <button onClick={startEdit} className="text-xs font-semibold" style={{ color: "#009688" }}>
+          Ajustar
+        </button>
+      </div>
+
+      {editing ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="text-xs flex-1" style={{ color: "var(--muted-foreground)" }}>Questões / semana</label>
+            <input
+              type="number" min={1} max={500}
+              value={qInput} onChange={e => setQInput(e.target.value)}
+              className="w-20 text-center text-sm font-bold rounded-lg border px-2 py-1"
+              style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs flex-1" style={{ color: "var(--muted-foreground)" }}>Simulados / semana</label>
+            <input
+              type="number" min={0} max={10}
+              value={sInput} onChange={e => setSInput(e.target.value)}
+              className="w-20 text-center text-sm font-bold rounded-lg border px-2 py-1"
+              style={{ background: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button onClick={() => setEditing(false)}
+              className="flex-1 py-1.5 rounded-lg text-xs font-semibold"
+              style={{ background: "var(--muted)", color: "var(--muted-foreground)", border: "none" }}>
+              Cancelar
+            </button>
+            <button onClick={saveGoals} disabled={setGoal.isPending}
+              className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white"
+              style={{ background: "#009688", border: "none", cursor: "pointer" }}>
+              {setGoal.isPending ? "Salvando…" : "Salvar"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {/* Questões */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Questões respondidas</p>
+              <p className="text-xs font-bold" style={{ color: barColor(qPct) }}>
+                {qDone} / {qGoal} {qPct >= 100 && "✓"}
+              </p>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--muted)" }}>
+              <div className="h-full rounded-full transition-all" style={{ width: `${qPct}%`, background: barColor(qPct) }} />
+            </div>
+          </div>
+          {/* Simulados */}
+          {sGoal > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Simulados completos</p>
+                <p className="text-xs font-bold" style={{ color: barColor(sPct) }}>
+                  {sDone} / {sGoal} {sPct >= 100 && "✓"}
+                </p>
+              </div>
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--muted)" }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${sPct}%`, background: barColor(sPct) }} />
+              </div>
+            </div>
+          )}
+          {qPct >= 100 && sPct >= 100 && (
+            <p className="text-xs font-semibold text-center" style={{ color: "#009688" }}>🎉 Metas da semana atingidas!</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
   const today = new Date();
   const [viewDate, setViewDate]     = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -1549,6 +1726,12 @@ export default function Dashboard() {
 
       {/* ── Radares (Por Área ⇄ Performance) ── */}
       <RadarTabs />
+
+      {/* ── Pontos a reforçar ── */}
+      <PontosFragos navigate={navigate} />
+
+      {/* ── Metas da semana ── */}
+      <MetasCard />
 
       {/* ── Mini-Calendário ── */}
       <MiniCalendarCard navigate={navigate} />

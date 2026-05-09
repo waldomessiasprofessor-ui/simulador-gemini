@@ -39,6 +39,7 @@ __export(schema_exports, {
   simulationAnswersRelations: () => simulationAnswersRelations,
   simulations: () => simulations,
   simulationsRelations: () => simulationsRelations,
+  studyGoals: () => studyGoals,
   studySchedule: () => studySchedule,
   trilhaDefinitions: () => trilhaDefinitions,
   trilhaProgress: () => trilhaProgress,
@@ -132,7 +133,8 @@ var simulations = mysqlTable(
   },
   (t2) => ({
     idxUser: index("idx_user_id").on(t2.userId),
-    idxUserStage: index("idx_user_stage").on(t2.userId, t2.stage)
+    idxUserStage: index("idx_user_stage").on(t2.userId, t2.stage),
+    idxUserStatus: index("idx_user_status").on(t2.userId, t2.status)
   })
 );
 var simulationAnswers = mysqlTable(
@@ -388,6 +390,20 @@ var trilhaDefinitions = mysqlTable(
   },
   (t2) => ({
     uniqSlug: uniqueIndex("uniq_trilha_def_slug").on(t2.slug)
+  })
+);
+var studyGoals = mysqlTable(
+  "study_goals",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    userId: int("user_id").notNull().references(() => users.id),
+    questionsPerWeek: int("questions_per_week").notNull().default(50),
+    simulationsPerWeek: int("simulations_per_week").notNull().default(1),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull()
+  },
+  (t2) => ({
+    uniqUser: uniqueIndex("uniq_study_goal_user").on(t2.userId)
   })
 );
 
@@ -1146,6 +1162,12 @@ async function drawQuestions(db2, count, excludeIds = [], fonte) {
   const byId = new Map(rows.map((r) => [r.id, r]));
   return selected.map((id) => byId.get(id)).filter(Boolean);
 }
+function guessingParam(alternativas) {
+  if (!alternativas) return 0.2;
+  const validCount = Object.values(alternativas).filter((v) => v !== null && v !== "").length;
+  if (validCount < 2) return 0.2;
+  return parseFloat((1 / validCount).toFixed(4));
+}
 function notFound(entity) {
   throw new TRPCError3({ code: "NOT_FOUND", message: `${entity} n\xE3o encontrado(a).` });
 }
@@ -1279,6 +1301,7 @@ var simulationsRouter = createTRPCRouter({
       param_a: questions.param_a,
       param_b: questions.param_b,
       param_c: questions.param_c,
+      alternativas: questions.alternativas,
       gabarito: questions.gabarito,
       conteudo_principal: questions.conteudo_principal,
       nivel_dificuldade: questions.nivel_dificuldade
@@ -1290,7 +1313,11 @@ var simulationsRouter = createTRPCRouter({
     if (stage === 3) {
       const triResults = answers.map((a) => ({
         questionId: a.questionId,
-        params: { a: a.param_a, b: a.param_b, c: a.param_c },
+        params: {
+          a: a.param_a,
+          b: a.param_b,
+          c: guessingParam(a.alternativas)
+        },
         correct: a.isCorrect
       }));
       const { theta, standardError } = estimateTheta(triResults);
@@ -1566,7 +1593,7 @@ var simulationsRouter = createTRPCRouter({
     function dayKey(d) {
       if (!d) return "";
       const dt = typeof d === "string" ? /* @__PURE__ */ new Date(d + "T12:00:00") : new Date(d);
-      return `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
     }
     function sameDay(d, ref) {
       if (!d) return false;
@@ -1621,6 +1648,11 @@ var simulationsRouter = createTRPCRouter({
       acertos: acc.acertos + d.acertos
     }), { questoes: 0, acertos: 0 });
     const weeklyAccuracy = weeklyData.questoes > 0 ? Math.round(weeklyData.acertos / weeklyData.questoes * 100) : 0;
+    const weeklySimulations = completedSims.filter((s) => {
+      if (!s.completedAt) return false;
+      const key = dayKey(s.completedAt);
+      return days.some((d) => dayKey(d) === key);
+    }).length;
     const allEntries = Array.from(dayMap.values());
     const totalQuestions = allEntries.reduce((s, d) => s + d.questoes, 0);
     const totalCorrect = allEntries.reduce((s, d) => s + d.acertos, 0);
@@ -1629,6 +1661,7 @@ var simulationsRouter = createTRPCRouter({
       streak,
       weeklyQuestions: weeklyData.questoes,
       weeklyAccuracy,
+      weeklySimulations,
       totalSimulations: completedSims.length,
       dailyData,
       // Gerais
@@ -1654,6 +1687,7 @@ var simulationsRouter = createTRPCRouter({
         bestByUser.set(row.userId, row);
       }
     }
+    const totalRanked = bestByUser.size;
     const ranking = Array.from(bestByUser.values()).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 20).map((r, idx) => ({
       position: idx + 1,
       userId: r.userId,
@@ -1663,7 +1697,9 @@ var simulationsRouter = createTRPCRouter({
       completedAt: r.completedAt,
       isMe: r.userId === ctx.user.id
     }));
-    return ranking;
+    const myEntry = ranking.find((r) => r.isMe);
+    const myPercentile = myEntry ? Math.round((totalRanked - myEntry.position) / Math.max(1, totalRanked) * 100) : null;
+    return { ranking, totalRanked, myPercentile };
   }),
   // ---------------------------------------------------------------------------
   // DESEMPENHO POR ÁREA MACRO — para o gráfico radar da dashboard
@@ -2472,7 +2508,7 @@ var usersRouter = createTRPCRouter({
         eq4(questions.active, true),
         sql3`JSON_CONTAINS(${questions.tags}, '"diagnostico"')`
       )
-    ).orderBy(sql3`RAND()`);
+    ).orderBy(sql3`RAND()`).limit(300);
     const poolEasy = pool2.filter((q) => q.param_b <= -0.5);
     const poolMid = pool2.filter((q) => q.param_b > -0.5 && q.param_b <= 0.5);
     const poolHard = pool2.filter((q) => q.param_b > 0.5);
@@ -2605,16 +2641,22 @@ var reviewRouter = createTRPCRouter({
     await ctx.db.delete(reviewContents).where(eq5(reviewContents.id, input.id));
     return { success: true };
   }),
-  // ── Aluno: lista todos os conteúdos ativos (para página de browse) ───────
-  listAll: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db.select({
-      id: reviewContents.id,
-      titulo: reviewContents.titulo,
-      topico: reviewContents.topico,
-      url_pdf: reviewContents.url_pdf,
-      createdAt: reviewContents.createdAt
-    }).from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(desc3(reviewContents.createdAt));
-    return rows;
+  // ── Aluno: lista conteúdos ativos com paginação ───────────────────────────
+  listAll: protectedProcedure.input(z5.object({ page: z5.number().int().min(1).default(1), pageSize: z5.number().int().min(1).max(50).default(20) }).optional()).query(async ({ ctx, input }) => {
+    const page = input?.page ?? 1;
+    const pageSize = input?.pageSize ?? 20;
+    const offset = (page - 1) * pageSize;
+    const [rows, [{ count }]] = await Promise.all([
+      ctx.db.select({
+        id: reviewContents.id,
+        titulo: reviewContents.titulo,
+        topico: reviewContents.topico,
+        url_pdf: reviewContents.url_pdf,
+        createdAt: reviewContents.createdAt
+      }).from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(desc3(reviewContents.createdAt)).limit(pageSize).offset(offset),
+      ctx.db.select({ count: sql4`COUNT(*)` }).from(reviewContents).where(eq5(reviewContents.active, true))
+    ]);
+    return { items: rows, total: Number(count), page, pageSize };
   }),
   // ── Aluno: busca conteúdo específico por id ───────────────────────────────
   getById: protectedProcedure.input(z5.object({ id: z5.number().int().positive() })).query(async ({ ctx, input }) => {
@@ -3504,6 +3546,32 @@ var segundaFaseRouter = createTRPCRouter({
   })
 });
 
+// server/goals.router.ts
+import { z as z12 } from "zod";
+import { eq as eq12, sql as sql10 } from "drizzle-orm";
+var goalsRouter = createTRPCRouter({
+  /** Retorna a meta semanal do aluno (ou defaults se não tiver configurado). */
+  getGoal: protectedProcedure.query(async ({ ctx }) => {
+    const [row] = await ctx.db.select().from(studyGoals).where(eq12(studyGoals.userId, ctx.user.id)).limit(1);
+    return row ?? { questionsPerWeek: 50, simulationsPerWeek: 1 };
+  }),
+  /** Salva (cria ou atualiza) a meta semanal do aluno. */
+  setGoal: protectedProcedure.input(z12.object({
+    questionsPerWeek: z12.number().int().min(1).max(500),
+    simulationsPerWeek: z12.number().int().min(0).max(10)
+  })).mutation(async ({ ctx, input }) => {
+    await ctx.db.execute(sql10`
+        INSERT INTO study_goals (user_id, questions_per_week, simulations_per_week)
+        VALUES (${ctx.user.id}, ${input.questionsPerWeek}, ${input.simulationsPerWeek})
+        ON DUPLICATE KEY UPDATE
+          questions_per_week   = VALUES(questions_per_week),
+          simulations_per_week = VALUES(simulations_per_week),
+          updated_at           = NOW()
+      `);
+    return { ok: true };
+  })
+});
+
 // server/router.ts
 var appRouter = createTRPCRouter({
   auth: authRouter,
@@ -3516,11 +3584,12 @@ var appRouter = createTRPCRouter({
   flashcards: flashcardsRouter,
   trilhas: trilhasRouter,
   tutor: tutorRouter,
-  segundaFase: segundaFaseRouter
+  segundaFase: segundaFaseRouter,
+  goals: goalsRouter
 });
 
 // server/index.ts
-import { eq as eq12 } from "drizzle-orm";
+import { eq as eq13 } from "drizzle-orm";
 
 // server/seed-matematica-content.ts
 var FRACOES_ARTICLE = {
@@ -4470,7 +4539,7 @@ app.get("/admin/make-admin", async (req, res) => {
   if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
   if (!email) return res.status(400).send("Forne\xE7a ?email=teu@email.com");
   try {
-    await db.update(users).set({ role: "admin" }).where(eq12(users.email, email.toLowerCase().trim()));
+    await db.update(users).set({ role: "admin" }).where(eq13(users.email, email.toLowerCase().trim()));
     res.send(`\u2705 ${email} \xE9 agora admin. Fa\xE7a logout e login novamente no site.`);
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);

@@ -1,10 +1,21 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Loader2, BookOpen, FileText, ChevronRight } from "@/icons";
 
 export default function Revisao() {
   const [, navigate] = useLocation();
-  const { data, isLoading } = trpc.review.listAll.useQuery(undefined, { staleTime: 0 });
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
+  const { data, isLoading } = trpc.review.listAll.useQuery(
+    { page, pageSize },
+    { staleTime: 0 }
+  );
+
+  const items = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / pageSize);
 
   return (
     <div className="space-y-6 py-2">
@@ -19,7 +30,7 @@ export default function Revisao() {
           <h1 className="text-xl font-bold">Revisão</h1>
         </div>
         <p className="text-sm" style={{ color: "rgba(255,255,255,0.85)" }}>
-          Escolha um conteúdo para estudar
+          {total > 0 ? `${total} conteúdo${total !== 1 ? "s" : ""} disponíveis` : "Escolha um conteúdo para estudar"}
         </p>
       </div>
 
@@ -28,7 +39,7 @@ export default function Revisao() {
         <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#009688" }} />
         </div>
-      ) : !data || data.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="text-center py-16 space-y-2">
           <BookOpen className="h-12 w-12 mx-auto opacity-30" style={{ color: "#009688" }} />
           <p className="font-semibold" style={{ color: "var(--foreground)" }}>
@@ -39,42 +50,75 @@ export default function Revisao() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {data.map((item) => {
-            const hasPdf = !!(item as any).url_pdf;
-            return (
-              <button
-                key={item.id}
-                onClick={() => navigate(`/revise/${item.id}`)}
-                className="w-full text-left rounded-xl transition-all hover:opacity-90"
-                style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
-                <div className="flex items-center gap-3 px-4 py-4">
-                  <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: "#E0F2F1" }}>
-                    {hasPdf
-                      ? <FileText className="h-5 w-5" style={{ color: "#009688" }} />
-                      : <BookOpen className="h-5 w-5" style={{ color: "#009688" }} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>
-                      {item.titulo}
-                    </p>
-                    {item.topico && (
-                      <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                        {item.topico}
+        <>
+          <div className="space-y-2">
+            {items.map((item) => {
+              const hasPdf = !!(item as any).url_pdf;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(`/revise/${item.id}`)}
+                  className="w-full text-left rounded-xl transition-all hover:opacity-90"
+                  style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+                  <div className="flex items-center gap-3 px-4 py-4">
+                    <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: "#E0F2F1" }}>
+                      {hasPdf
+                        ? <FileText className="h-5 w-5" style={{ color: "#009688" }} />
+                        : <BookOpen className="h-5 w-5" style={{ color: "#009688" }} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>
+                        {item.titulo}
                       </p>
-                    )}
-                    <span className="inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: "#E0F2F1", color: "#009688" }}>
-                      {hasPdf ? "PDF" : "Texto"}
-                    </span>
+                      {item.topico && (
+                        <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                          {item.topico}
+                        </p>
+                      )}
+                      <span className="inline-flex items-center gap-1 text-xs mt-1 px-2 py-0.5 rounded-full font-medium"
+                        style={{ background: "#E0F2F1", color: "#009688" }}>
+                        {hasPdf ? "PDF" : "Texto"}
+                      </span>
+                    </div>
+                    <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
                   </div>
-                  <ChevronRight className="h-4 w-4 flex-shrink-0" style={{ color: "var(--muted-foreground)" }} />
-                </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{
+                  background: page === 1 ? "var(--muted)" : "#009688",
+                  color: page === 1 ? "var(--muted-foreground)" : "#fff",
+                  border: "none", cursor: page === 1 ? "default" : "pointer",
+                }}>
+                Anterior
               </button>
-            );
-          })}
-        </div>
+              <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                {page} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{
+                  background: page === totalPages ? "var(--muted)" : "#009688",
+                  color: page === totalPages ? "var(--muted-foreground)" : "#fff",
+                  border: "none", cursor: page === totalPages ? "default" : "pointer",
+                }}>
+                Próximo
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
