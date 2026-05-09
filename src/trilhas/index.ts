@@ -1,7 +1,14 @@
 import type { Trilha } from "./types";
 import { matematicaBasica } from "./matematica-basica";
 import { funcoes } from "./funcoes";
-import { algebra } from "./algebra";
+import {
+  algebra,
+  algebraProdutosNotaveis,
+  algebraFatoracao,
+  algebraEquacoes,
+  algebraSistemas,
+  algebraLogaritmos,
+} from "./algebra";
 
 // =============================================================================
 // Registry de trilhas disponíveis
@@ -12,13 +19,25 @@ import { algebra } from "./algebra";
 //  3. O campo `area` deve casar EXATAMENTE com o conteudo_principal das
 //     questions no banco (para o Dashboard achar a trilha ao clicar em
 //     "Pontos a melhorar")
+//
+// Subtrilhas (parentSlug preenchido) ficam em TRILHAS para serem navegáveis
+// via /trilha/:slug, mas são filtradas da listagem geral (use TOP_TRILHAS).
 // =============================================================================
 
 export const TRILHAS: Trilha[] = [
   matematicaBasica,
   funcoes,
   algebra,
+  // subtrilhas de álgebra — acessíveis via /trilha/algebra-*
+  algebraProdutosNotaveis,
+  algebraFatoracao,
+  algebraEquacoes,
+  algebraSistemas,
+  algebraLogaritmos,
 ];
+
+/** Apenas trilhas de topo (sem pai) — usadas na listagem /trilhas. */
+export const TOP_TRILHAS = TRILHAS.filter((t) => !t.parentSlug);
 
 /** Procura uma trilha pelo slug (usado em /trilha/:slug). */
 export function getTrilhaBySlug(slug: string): Trilha | undefined {

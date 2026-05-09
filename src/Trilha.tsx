@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { LatexRenderer } from "@/LatexRenderer";
-import { getTrilhaBySlug, TRILHAS } from "@/trilhas";
+import { getTrilhaBySlug, TOP_TRILHAS } from "@/trilhas";
 import type { Licao, Trilha as TrilhaType } from "@/trilhas/types";
 import { trpc } from "@/lib/trpc";
 import {
@@ -98,7 +98,7 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
     }
   }, [areaSlug, dbDef]);
 
-  // Sem slug → index de todas as trilhas disponíveis
+  // Sem slug → index de todas as trilhas de topo (sem parentSlug)
   if (!areaSlug) {
     return (
       <div className="space-y-6 py-2">
@@ -111,8 +111,12 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
           <p className="text-sm opacity-80">Siga um caminho guiado, do básico ao avançado.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {TRILHAS.map((t) => {
-            const totalLicoes = t.capitulos.reduce((acc, c) => acc + c.licoes.length, 0);
+          {TOP_TRILHAS.map((t) => {
+            const isHub = (t.subtrilhas?.length ?? 0) > 0;
+            const totalLicoes = isHub
+              ? t.subtrilhas!.reduce((acc, st) => acc + st.capitulos.reduce((a, c) => a + c.licoes.length, 0), 0)
+              : t.capitulos.reduce((acc, c) => acc + c.licoes.length, 0);
+            const totalCapitulos = isHub ? t.subtrilhas!.length : t.capitulos.length;
             return (
               <button
                 key={t.slug}
@@ -120,11 +124,11 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
                 className="text-left p-5 rounded-2xl transition-all hover:opacity-90"
                 style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}
               >
-                <p className="font-bold text-base mb-1" style={{ color: "var(--foreground)" }}>{t.title}</p>
+                <p className="font-bold text-base mb-1" style={{ color: "var(--foreground)" }}>{t.titulo}</p>
                 <p className="text-xs mb-3" style={{ color: "var(--muted-foreground)" }}>{t.area}</p>
                 <div className="flex items-center gap-2">
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#E0F2F1", color: "#00695C" }}>
-                    {t.capitulos.length} capítulos
+                    {isHub ? `${totalCapitulos} subtrilhas` : `${totalCapitulos} capítulos`}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#E0F2F1", color: "#00695C" }}>
                     {totalLicoes} lições
@@ -171,8 +175,131 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
     return <LicaoView trilha={trilha} licao={licao} />;
   }
 
+  // Hub (trilha com subtrilhas) → mostra cards das subtrilhas
+  if ((trilha.subtrilhas?.length ?? 0) > 0) {
+    return <TrilhaHub trilha={trilha} />;
+  }
+
   // Caso contrário, lista os capítulos e lições da trilha
   return <TrilhaIndex trilha={trilha} />;
+}
+
+// =============================================================================
+// Tela Hub: trilha-pai com subtrilhas (ex: Álgebra → 5 subtrilhas)
+// =============================================================================
+
+// Ícones por posição de subtrilha (emojis simples para não adicionar deps)
+const HUB_COLORS = [
+  { bg: "#EFF6FF", border: "#BFDBFE", text: "#1D4ED8" },
+  { bg: "#F0FDF4", border: "#A7F3D0", text: "#15803D" },
+  { bg: "#FEF9C3", border: "#FDE68A", text: "#B45309" },
+  { bg: "#FDF4FF", border: "#E9D5FF", text: "#7C3AED" },
+  { bg: "#FFF1F2", border: "#FECDD3", text: "#BE123C" },
+];
+
+function TrilhaHub({ trilha }: { trilha: TrilhaType }) {
+  const [, navigate] = useLocation();
+
+  return (
+    <div className="space-y-5 py-2">
+      {/* Voltar */}
+      <button
+        onClick={() => navigate("/trilhas")}
+        className="flex items-center gap-2 text-sm font-semibold"
+        style={{ color: "var(--muted-foreground)" }}>
+        <ArrowLeft className="h-4 w-4" /> Ver todas as trilhas
+      </button>
+
+      {/* Cabeçalho do hub */}
+      <div className="rounded-2xl px-6 py-6"
+        style={{ background: "linear-gradient(135deg, #263238 0%, #009688 100%)", color: "#ffffff" }}>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.22)" }}>
+            <Sparkles className="h-5 w-5" style={{ color: "#ffffff" }} />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.85)" }}>Trilha</p>
+            <h1 className="text-xl font-black" style={{ color: "#ffffff" }}>{trilha.titulo}</h1>
+          </div>
+        </div>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.92)" }}>{trilha.descricao}</p>
+        <div className="flex gap-3 mt-4 flex-wrap">
+          <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
+            style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}>
+            {trilha.subtrilhas!.length} subtrilhas
+          </span>
+          <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
+            style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}>
+            {trilha.subtrilhas!.reduce((a, st) => a + st.capitulos.reduce((b, c) => b + c.licoes.length, 0), 0)} lições no total
+          </span>
+        </div>
+      </div>
+
+      {/* Cards das subtrilhas */}
+      <div className="space-y-3">
+        <h2 className="pr-eyebrow">Escolha um tópico</h2>
+        {trilha.subtrilhas!.map((st, idx) => {
+          const cor = HUB_COLORS[idx % HUB_COLORS.length];
+          const totalLicoes = st.capitulos.reduce((a, c) => a + c.licoes.length, 0);
+          // Conta lições concluídas via localStorage
+          const concluidas = st.capitulos
+            .flatMap((c) => c.licoes)
+            .filter((l) => loadProgress(st.slug, l.slug).finishedAt !== undefined).length;
+          const progPct = totalLicoes > 0 ? Math.round((concluidas / totalLicoes) * 100) : 0;
+
+          return (
+            <button
+              key={st.slug}
+              onClick={() => navigate(`/trilha/${st.slug}`)}
+              className="w-full text-left rounded-2xl transition-all hover:shadow-sm"
+              style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
+              <div className="flex items-start gap-4 px-5 py-5">
+                {/* Número */}
+                <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 text-base font-black"
+                  style={{ background: cor.bg, border: `1.5px solid ${cor.border}`, color: cor.text }}>
+                  {idx + 1}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{st.titulo}</p>
+                  <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--muted-foreground)" }}>
+                    {st.descricao}
+                  </p>
+
+                  {/* Progresso */}
+                  <div className="mt-3 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                          <Target className="h-3 w-3" /> {totalLicoes} lições
+                        </span>
+                        {concluidas > 0 && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: "#16A34A" }}>
+                            <CheckCircle2 className="h-3 w-3" /> {concluidas}/{totalLicoes}
+                          </span>
+                        )}
+                      </div>
+                      {progPct > 0 && (
+                        <span className="text-xs font-bold" style={{ color: cor.text }}>{progPct}%</span>
+                      )}
+                    </div>
+                    {progPct > 0 && (
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: cor.bg }}>
+                        <div className="h-full rounded-full transition-all" style={{ width: `${progPct}%`, background: cor.text }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <ChevronRight className="h-4 w-4 flex-shrink-0 mt-1" style={{ color: "var(--muted-foreground)" }} />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 // =============================================================================
@@ -181,15 +308,17 @@ export default function Trilha({ areaSlug, licaoSlug }: { areaSlug?: string; lic
 
 function TrilhaIndex({ trilha }: { trilha: TrilhaType }) {
   const [, navigate] = useLocation();
+  const backPath = trilha.parentSlug ? `/trilha/${trilha.parentSlug}` : "/";
+  const backLabel = trilha.parentSlug ? "Voltar à trilha" : "Voltar ao início";
 
   return (
     <div className="space-y-5 py-2">
       {/* Voltar */}
       <button
-        onClick={() => navigate("/")}
+        onClick={() => navigate(backPath)}
         className="flex items-center gap-2 text-sm font-semibold"
         style={{ color: "var(--muted-foreground)" }}>
-        <ArrowLeft className="h-4 w-4" /> Voltar ao início
+        <ArrowLeft className="h-4 w-4" /> {backLabel}
       </button>
 
       {/* Cabeçalho da trilha */}

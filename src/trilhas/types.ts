@@ -68,4 +68,14 @@ export interface Trilha {
   /** Descrição curta mostrada no topo da tela da trilha. */
   descricao: string;
   capitulos: Capitulo[];
+  /**
+   * Subtrilhas (filhos). Quando presente, a tela da trilha mostra um hub
+   * com cards para cada subtrilha em vez da lista de capítulos/lições.
+   */
+  subtrilhas?: Trilha[];
+  /**
+   * Slug da trilha-pai (hub). Preenchido nas subtrilhas para filtrar o
+   * índice geral e para o botão "Voltar" navegar ao hub.
+   */
+  parentSlug?: string;
 }
