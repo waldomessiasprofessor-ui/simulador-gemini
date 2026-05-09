@@ -11,6 +11,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import path from "node:path";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
+import rateLimit from "express-rate-limit";
 
 // server/trpc.ts
 import { initTRPC, TRPCError } from "@trpc/server";
@@ -486,6 +487,8 @@ var questionsRouter = createTRPCRouter({
     page: z.number().int().min(1).default(1),
     pageSize: z.number().int().min(1).max(300).default(20),
     conteudo: z.string().optional(),
+    search: z.string().optional(),
+    // busca FULLTEXT no enunciado (≥3 chars)
     fonte: z.string().optional(),
     tag: z.string().optional(),
     // topic = busca combinada em conteudo_principal (LIKE) OU tags (exato).
@@ -510,6 +513,10 @@ var questionsRouter = createTRPCRouter({
           ${questions.conteudo_principal} LIKE ${"%" + input.topic + "%"}
           OR JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.topic}))
         )`);
+    }
+    if (input.search && input.search.trim().length >= 3) {
+      const term = input.search.trim();
+      filters.push(sql`MATCH(${questions.enunciado}) AGAINST (${term} IN BOOLEAN MODE)`);
     }
     const where = filters.length > 0 ? and(...filters) : void 0;
     const orderColumn = orderBy === "conteudo_principal" ? questions.conteudo_principal : orderBy === "nivel_dificuldade" ? questions.nivel_dificuldade : orderBy === "createdAt" ? questions.createdAt : orderBy === "ano" ? questions.ano : questions.id;
@@ -4532,6 +4539,19 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(authMiddleware);
+var authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1e3,
+  // 15 minutos
+  max: 10,
+  // máx. 10 tentativas por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas tentativas. Tente novamente em 15 minutos." },
+  skip: () => !isProd
+  // desliga em desenvolvimento para não atrapalhar testes
+});
+app.use("/api/trpc/auth.login", authLimiter);
+app.use("/api/trpc/auth.register", authLimiter);
 app.get("/admin/make-admin", async (req, res) => {
   const secret = req.query.secret;
   const email = req.query.email;

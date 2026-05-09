@@ -654,3 +654,11 @@ img[src="/logo-vetor.png"] {
   font-feature-settings: "tnum", "ss01";
   font-weight: var(--pr-weight-black);
 }
+
+/* ── Impressão / PDF (botão "Baixar PDF" no Resultado) ───────────── */
+@media print {
+  nav, header, footer, button, .no-print { display: none !important; }
+  body { background: #fff !important; color: #000 !important; font-size: 12pt; }
+  .space-y-7 > * { break-inside: avoid; margin-bottom: 1rem; }
+  * { box-shadow: none !important; border-color: #ccc !important; }
+}

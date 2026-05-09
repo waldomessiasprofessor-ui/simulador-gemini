@@ -161,7 +161,8 @@ export const usersRouter = createTRPCRouter({
           sql`JSON_CONTAINS(${questions.tags}, '"diagnostico"')`,
         )
       )
-      .orderBy(sql`RAND()`);
+      .orderBy(sql`RAND()`)
+      .limit(300);
 
     // Divide o pool por faixa de dificuldade
     const poolEasy = pool.filter(q => q.param_b <= -0.5);

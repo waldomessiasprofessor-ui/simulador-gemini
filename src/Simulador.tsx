@@ -22,7 +22,9 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const { data: active, isLoading } = trpc.simulations.getActive.useQuery({ fonte }, { staleTime: 0 });
-  const saveAnswer = trpc.simulations.saveAnswer.useMutation();
+  const saveAnswer = trpc.simulations.saveAnswer.useMutation({
+    onError: (e) => toast.error(`Erro ao salvar resposta: ${e.message}`),
+  });
   const finish = trpc.simulations.finish.useMutation({
     onSuccess: (d) => {
       utils.simulations.getStats.invalidate();
@@ -50,6 +52,7 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
 
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [savingId, setSavingId] = useState<number | null>(null);
   const [qTime, setQTime] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [showGrid, setShowGrid] = useState(false);
@@ -76,6 +79,17 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
   }, []);
 
   useEffect(() => { qTimeRef.current = 0; setQTime(0); window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
+
+  // Aviso ao tentar sair com simulado em andamento
+  useEffect(() => {
+    if (!active) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // exibe o diálogo nativo do browser
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [active]);
 
   if (isLoading) return (
     <div className="flex justify-center py-20">
@@ -119,15 +133,24 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
   const q = questions[idx];
   const overTime = qTime > active.timeLimitPerQuestion;
   const answered = Object.keys(answers).length;
+  const totalLimit = active.timeLimitPerQuestion * questions.length;
+  const remainingTime = Math.max(0, totalLimit - totalTime);
+  const timeWarning = remainingTime < 15 * 60 && remainingTime > 0;
 
   async function handleAnswer(questionId: number, alt: string) {
+    if (!active) return;
     setAnswers((p) => ({ ...p, [questionId]: alt }));
-    await saveAnswer.mutateAsync({
-      simulationId: active!.simulationId,
-      questionId,
-      selectedAnswer: alt,
-      timeSpentSeconds: qTimeRef.current,
-    });
+    setSavingId(questionId);
+    try {
+      await saveAnswer.mutateAsync({
+        simulationId: active.simulationId,
+        questionId,
+        selectedAnswer: alt,
+        timeSpentSeconds: qTimeRef.current,
+      });
+    } finally {
+      setSavingId(null);
+    }
   }
 
   async function handleFinish() {
@@ -198,11 +221,24 @@ export default function Simulador({ fonte = "ENEM" }: { fonte?: string }) {
           <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>{answered}/{active.totalQuestions}</span>
         </div>
         <div className="flex items-center gap-3">
+          {savingId !== null && (
+            <span className="text-xs flex items-center gap-1" style={{ color: "#009688" }}>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Salvando…
+            </span>
+          )}
           <div className={`timer ${overTime ? "warn" : "ok"}`}>
             <Clock className="h-3.5 w-3.5" />
             {fmt(qTime)}
           </div>
           <span className="text-xs font-mono" style={{ color: "var(--muted-foreground)" }}>Total {fmt(totalTime)}</span>
+          <span
+            className="text-xs font-mono tabular-nums"
+            style={{ color: timeWarning ? "#DC2626" : "var(--muted-foreground)", fontWeight: timeWarning ? 700 : 400 }}
+            title="Tempo restante estimado"
+          >
+            -{fmt(remainingTime)}
+          </span>
         </div>
       </div>
 

@@ -1179,6 +1179,46 @@ function MetasCard() {
   );
 }
 
+// ─── ProximaPrioridade — recomendação inteligente com base em getTopicStats ──
+function ProximaPrioridade({ navigate }: { navigate: (to: string) => void }) {
+  const { data } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 60_000 });
+
+  if (!data) return null;
+
+  const pior = data
+    .filter(d => d.total >= 3)
+    .sort((a, b) => a.pct - b.pct)[0];
+
+  if (!pior || pior.pct >= 70) return null;
+
+  const erroPct = 100 - pior.pct;
+  const urgente = pior.pct < 40;
+
+  return (
+    <div className="rounded-2xl p-4" style={{
+      background: urgente ? "linear-gradient(135deg, #FEF2F2, #FFF)" : "linear-gradient(135deg, #FFFBEB, #FFF)",
+      border: `1.5px solid ${urgente ? "#FECACA" : "#FDE68A"}`,
+    }}>
+      <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: urgente ? "#DC2626" : "#D97706" }}>
+        {urgente ? "🚨 Prioridade urgente" : "💡 Próxima prioridade"}
+      </p>
+      <p className="font-bold text-sm mb-0.5" style={{ color: "var(--foreground)" }}>
+        Você errou {erroPct}% das questões de{" "}
+        <span style={{ color: urgente ? "#DC2626" : "#D97706" }}>{pior.conteudo}</span>
+      </p>
+      <p className="text-xs mb-3" style={{ color: "var(--muted-foreground)" }}>
+        {pior.correct} acerto{pior.correct !== 1 ? "s" : ""} em {pior.total} questões respondidas. Clique para treinar agora.
+      </p>
+      <button
+        onClick={() => navigate("/treino")}
+        className="w-full py-2 rounded-xl text-sm font-bold text-white"
+        style={{ background: urgente ? "#DC2626" : "#D97706", border: "none", cursor: "pointer" }}>
+        Treinar {pior.conteudo}
+      </button>
+    </div>
+  );
+}
+
 function MiniCalendarCard({ navigate }: { navigate: (to: string) => void }) {
   const today = new Date();
   const [viewDate, setViewDate]     = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -1732,6 +1772,9 @@ export default function Dashboard() {
 
       {/* ── Metas da semana ── */}
       <MetasCard />
+
+      {/* ── Próxima prioridade (recomendação inteligente) ── */}
+      <ProximaPrioridade navigate={navigate} />
 
       {/* ── Mini-Calendário ── */}
       <MiniCalendarCard navigate={navigate} />

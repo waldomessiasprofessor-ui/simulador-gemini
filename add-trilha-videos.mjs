@@ -102,7 +102,21 @@ try {
     console.log("✅ Tabela study_goals criada.");
   }
 
-  // ── 4. Índice idx_user_status em simulations (se não existir) ────────────
+  // ── 4. Índice FULLTEXT no enunciado de questions ──────────────────────────
+  const [ftRows] = await conn.query(`
+    SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'questions'
+      AND INDEX_NAME   = 'ft_enunciado'
+  `);
+  if (ftRows.length > 0) {
+    console.log("✅ Índice FULLTEXT ft_enunciado já existe.");
+  } else {
+    await conn.query(`ALTER TABLE questions ADD FULLTEXT INDEX ft_enunciado (enunciado)`);
+    console.log("✅ Índice FULLTEXT ft_enunciado criado em questions.");
+  }
+
+  // ── 5. Índice idx_user_status em simulations (se não existir) ────────────
   const [idxRows] = await conn.query(`
     SELECT INDEX_NAME
     FROM INFORMATION_SCHEMA.STATISTICS

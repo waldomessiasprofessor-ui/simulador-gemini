@@ -4,6 +4,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import path from "node:path";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
+import rateLimit from "express-rate-limit";
 import { createContext } from "./trpc";
 import { appRouter } from "./router";
 import { authMiddleware } from "./auth";
@@ -40,6 +41,18 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(authMiddleware);
+
+// ── Rate limiting — proteção contra brute-force em login/registro ─────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10,                   // máx. 10 tentativas por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Muitas tentativas. Tente novamente em 15 minutos." },
+  skip: () => !isProd,       // desliga em desenvolvimento para não atrapalhar testes
+});
+app.use("/api/trpc/auth.login",    authLimiter);
+app.use("/api/trpc/auth.register", authLimiter);
 
 // =============================================================================
 // Rota: promover utilizador a admin

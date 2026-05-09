@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "./LatexRenderer";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen } from "@/icons";
+import { CheckCircle2, XCircle, ChevronDown, ChevronUp, Loader2, RefreshCw, Trophy, BookOpen, Download } from "@/icons";
 import { VideoButton } from "@/YoutubeEmbed";
 
 const DIFFICULTY_ORDER = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"];
@@ -26,6 +26,12 @@ export default function Resultado({ id }: { id: number }) {
 
   const accuracy = Math.round((data.correctCount / data.totalQuestions) * 100);
   const passed = data.stageResult.passed;
+
+  // Tópico com pior desempenho (mínimo 2 questões para ser relevante)
+  const weakestTopic = Object.entries(data.byTopic)
+    .filter(([, { total }]) => total >= 2)
+    .map(([topic, { correct, total }]) => ({ topic, pct: correct / total }))
+    .sort((a, b) => a.pct - b.pct)[0]?.topic ?? null;
 
   return (
     <div className="space-y-7">
@@ -188,6 +194,22 @@ export default function Resultado({ id }: { id: number }) {
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-80">
           {passed ? <><Trophy className="h-4 w-4" />{data.stage < 3 ? `Etapa ${data.stage + 1}` : "Início"}</>
             : <><RefreshCw className="h-4 w-4" />Tentar novamente</>}
+        </button>
+        {weakestTopic && (
+          <button
+            onClick={() => navigate("/treino")}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:opacity-80"
+            style={{ background: "#E0F2F1", color: "#00695C", border: "1.5px solid #B2DFDB" }}
+            title={`Tópico com mais dificuldade: ${weakestTopic}`}
+          >
+            <BookOpen className="h-4 w-4" />
+            Treinar fraquezas
+          </button>
+        )}
+        <button onClick={() => window.print()}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">
+          <Download className="h-4 w-4" />
+          Baixar PDF
         </button>
         <button onClick={() => navigate("/historico")}
           className="px-4 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">

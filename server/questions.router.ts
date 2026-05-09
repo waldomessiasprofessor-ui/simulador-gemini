@@ -32,6 +32,7 @@ export const questionsRouter = createTRPCRouter({
       page: z.number().int().min(1).default(1),
       pageSize: z.number().int().min(1).max(300).default(20),
       conteudo: z.string().optional(),
+      search: z.string().optional(),  // busca FULLTEXT no enunciado (≥3 chars)
       fonte: z.string().optional(),
       tag: z.string().optional(),
       // topic = busca combinada em conteudo_principal (LIKE) OU tags (exato).
@@ -55,11 +56,15 @@ export const questionsRouter = createTRPCRouter({
       if (input.tag) filters.push(sql`JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.tag}))`);
       if (input.topic) {
         // Busca "flexível": bate em conteudo_principal OU em qualquer tag.
-        // Resolve o descompasso entre ENEM_TOPICS (planner) e TAGS_CONTEUDO (banco).
         filters.push(sql`(
           ${questions.conteudo_principal} LIKE ${'%' + input.topic + '%'}
           OR JSON_CONTAINS(${questions.tags}, JSON_QUOTE(${input.topic}))
         )`);
+      }
+      // Busca por texto no enunciado — usa FULLTEXT se índice existir, fallback LIKE
+      if (input.search && input.search.trim().length >= 3) {
+        const term = input.search.trim();
+        filters.push(sql`MATCH(${questions.enunciado}) AGAINST (${term} IN BOOLEAN MODE)`);
       }
 
       const where = filters.length > 0 ? and(...filters) : undefined;
