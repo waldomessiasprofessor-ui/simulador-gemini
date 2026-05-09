@@ -79,7 +79,22 @@ try {
     }
   }
 
-  // ── 3. max_allowed_packet — aumenta para 64MB se possível ─────────────────
+  // ── 3. Índice idx_user_status em simulations (se não existir) ────────────
+  const [idxRows] = await conn.query(`
+    SELECT INDEX_NAME
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'simulations'
+      AND INDEX_NAME   = 'idx_user_status'
+  `);
+  if (idxRows.length > 0) {
+    console.log("✅ idx_user_status já existe.");
+  } else {
+    await conn.query(`ALTER TABLE simulations ADD INDEX idx_user_status (user_id, status)`);
+    console.log("✅ Índice idx_user_status criado em simulations.");
+  }
+
+  // ── 4. max_allowed_packet — aumenta para 64MB se possível ─────────────────
   try {
     await conn.query(`SET GLOBAL max_allowed_packet = 67108864`);
     console.log("✅ max_allowed_packet = 64MB.");
