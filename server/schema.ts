@@ -46,6 +46,7 @@ export const questions = mysqlTable(
   {
     id: int("id").primaryKey().autoincrement(),
     fonte: varchar("fonte", { length: 50 }).notNull().default("ENEM"),
+    concurso: varchar("concurso", { length: 200 }),
     ano: int("ano"),
     conteudo_principal: varchar("conteudo_principal", { length: 100 }).notNull(),
     tags: json("tags").$type<string[]>().notNull().default([]),

@@ -1,0 +1,192 @@
+[
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Matemática Financeira",
+    "tags": ["Matemática Financeira"],
+    "nivel_dificuldade": "Baixa",
+    "enunciado": "Sabe-se que R$ 1.200,00 foram capitalizados a partir de uma taxa constante de juros simples mensais de 3%, durante $n$ meses. Ao final do enésimo mês, o montante obtido foi de R$ 1.920,00.\n\nQual é o valor de $n$?",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "$58$",
+      "B": "$36$",
+      "C": "$20$",
+      "D": "$13$",
+      "E": "$3$"
+    },
+    "gabarito": "C",
+    "comentario_resolucao": "Na capitalização por juros simples, o montante é dado por $M = P(1 + i \\cdot n)$, onde $P$ é o principal, $i$ é a taxa de juros por período e $n$ é o número de períodos.\n\nSubstituindo os valores: $P = 1200$, $i = 0{,}03$ e $M = 1920$:\n\n$$1920 = 1200(1 + 0{,}03 \\cdot n)$$\n\nDividindo ambos os lados por 1200:\n\n$$\\frac{1920}{1200} = 1 + 0{,}03n \\implies 1{,}6 = 1 + 0{,}03n$$\n\n$$0{,}6 = 0{,}03n \\implies n = \\frac{0{,}6}{0{,}03} = 20$$\n\nPortanto, $n = 20$ meses.",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Sequências e Progressões",
+    "tags": ["Sequências"],
+    "nivel_dificuldade": "Média",
+    "enunciado": "Uma sequência numérica possui termo geral representado por $a_n$, onde $n$ indica um número natural. Sabe-se que $a_1 = 3$, $a_2 = -2$ e $a_n = a_{n-2} - a_{n-1}$, para todo $n \\geq 3$.\n\nO termo $a_7$ dessa sequência é",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "$7$",
+      "B": "$-7$",
+      "C": "$-50$",
+      "D": "$31$",
+      "E": "$-31$"
+    },
+    "gabarito": "D",
+    "comentario_resolucao": "Usando a relação de recorrência $a_n = a_{n-2} - a_{n-1}$ e os valores iniciais $a_1 = 3$ e $a_2 = -2$, calculamos os termos seguintes:\n\n$a_3 = a_1 - a_2 = 3 - (-2) = 5$\n\n$a_4 = a_2 - a_3 = -2 - 5 = -7$\n\n$a_5 = a_3 - a_4 = 5 - (-7) = 12$\n\n$a_6 = a_4 - a_5 = -7 - 12 = -19$\n\n$a_7 = a_5 - a_6 = 12 - (-19) = 31$\n\nPortanto, $a_7 = 31$.",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Matemática Financeira",
+    "tags": ["Matemática Financeira", "Função Exponencial"],
+    "nivel_dificuldade": "Média",
+    "enunciado": "Um cliente investiu uma determinada quantia em um fundo prefixado, a uma taxa de juro de 13% ao ano, no regime de juros compostos. Após exatos 4 anos, resgatou todo o montante da aplicação, pagando de imposto de renda a quantia de R$ 18.900,00. O imposto de renda (IR) cobrado no momento do resgate é calculado aplicando-se um percentual sobre os juros proporcionados pelo investimento, ou seja, sobre a diferença entre o montante e o principal. Esse percentual depende do tempo que o dinheiro ficou investido, conforme mostrado na tabela a seguir:\n\nPrazo do investimento | Alíquota do IR\nAté 180 dias | 22,5%\nEntre 181 e 360 dias | 20,0%\nEntre 361 e 720 dias | 17,5%\nA partir de 720 dias | 15,0%\n\nConsiderando-se apenas as premissas apresentadas, o valor investido, em reais, pelo cliente nessa aplicação foi de, aproximadamente\n\nDados: $1{,}13^4 = 1{,}63$ e $1{,}13^5 = 1{,}84$",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "R$ 180.000,00",
+      "B": "R$ 200.000,00",
+      "C": "R$ 210.000,00",
+      "D": "R$ 189.000,00",
+      "E": "R$ 126.000,00"
+    },
+    "gabarito": "B",
+    "comentario_resolucao": "Como o investimento durou 4 anos (1460 dias > 720 dias), a alíquota de IR aplicável é de 15%.\n\nO IR incide sobre os juros, ou seja, sobre $(M - P)$:\n\n$$0{,}15 \\times (M - P) = 18.900 \\implies M - P = \\frac{18.900}{0{,}15} = 126.000$$\n\nNo regime de juros compostos: $M = P \\cdot (1{,}13)^4 = 1{,}63\\,P$\n\nPortanto: $M - P = 1{,}63P - P = 0{,}63P = 126.000$\n\n$$P = \\frac{126.000}{0{,}63} = 200.000$$\n\nO valor investido foi de R$ 200.000,00.",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Matemática Financeira",
+    "tags": ["Matemática Financeira"],
+    "nivel_dificuldade": "Alta",
+    "enunciado": "Uma empresa comprou um equipamento, em junho de 2023, em 12 prestações mensais e iguais de R$ 46.305,00, no sistema PRICE, a uma taxa de juro de 5% ao mês, com a primeira prestação com vencimento para julho de 2023, vencendo sempre no mesmo dia de cada mês. Na data de vencimento da prestação de março de 2024, a empresa resolveu quitar as parcelas de março, abril, maio e junho, desse mesmo ano.\n\nConsiderando-se o desconto racional composto, o valor, em reais, de quitação da dívida relativa a essas 4 parcelas, em março de 2024, é igual a",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "R$ 185.220,00",
+      "B": "R$ 183.220,00",
+      "C": "R$ 172.405,00",
+      "D": "R$ 170.305,00",
+      "E": "R$ 168.320,00"
+    },
+    "gabarito": "C",
+    "comentario_resolucao": "Julho/2023 é a 1ª parcela; portanto março/2024 é a 9ª, abril/2024 a 10ª, maio/2024 a 11ª e junho/2024 a 12ª parcela.\n\nNa data de vencimento de março/2024, aplicamos desconto racional composto (valor presente a juros compostos) para as parcelas futuras:\n\nMarço (vence agora, $n = 0$): $\\dfrac{46.305}{(1{,}05)^0} = 46.305{,}00$\n\nAbril (vence em 1 mês, $n = 1$): $\\dfrac{46.305}{1{,}05} = 44.100{,}00$\n\nMaio (vence em 2 meses, $n = 2$): $\\dfrac{46.305}{(1{,}05)^2} = \\dfrac{46.305}{1{,}1025} = 42.000{,}00$\n\nJunho (vence em 3 meses, $n = 3$): $\\dfrac{46.305}{(1{,}05)^3} = \\dfrac{46.305}{1{,}157625} = 40.000{,}00$\n\nVerificação: $44.100 \\times 1{,}05 = 46.305$ ✓; $42.000 \\times 1{,}1025 = 46.305$ ✓; $40.000 \\times 1{,}157625 = 46.305$ ✓\n\nTotal: $46.305 + 44.100 + 42.000 + 40.000 = \\mathbf{172.405{,}00}$",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Matemática Financeira",
+    "tags": ["Matemática Financeira", "Equações e Inequações"],
+    "nivel_dificuldade": "Alta",
+    "enunciado": "Uma empresa tem duas promissórias a receber, no valor de R$ 50.000,00 cada uma. A primeira será paga daqui a 30 dias e a outra daqui a 60 dias, contados a partir de hoje. O Banco W ofereceu uma proposta de ficar com as promissórias e pagar hoje, para a empresa, a quantia de R$ 90.000,00. O Banco Y ofereceu pagar hoje R$ 95.000,00 pelas duas promissórias. Nos dois casos, os bancos receberão as promissórias dos devedores, em suas respectivas datas.\n\nConsiderando-se juros compostos e apenas essas premissas, a diferença entre a maior e a menor taxa de juro mensal cobrada nessa situação é igual a\n\nDados: $\\sqrt{205} \\approx 14{,}3$ e $\\sqrt{215} \\approx 14{,}7$",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "3,54%",
+      "B": "3,68%",
+      "C": "3,82%",
+      "D": "4,32%",
+      "E": "4,64%"
+    },
+    "gabarito": "A",
+    "comentario_resolucao": "Para o Banco W (paga R$ 90.000,00 hoje):\n\n$$\\frac{50.000}{(1+i_W)} + \\frac{50.000}{(1+i_W)^2} = 90.000$$\n\nMultiplicando por $(1+i_W)^2$ e reorganizando:\n\n$$50.000(1+i_W) + 50.000 = 90.000(1+i_W)^2$$\n\n$$100.000 + 50.000\\,i_W = 90.000 + 180.000\\,i_W + 90.000\\,i_W^2$$\n\n$$9i_W^2 + 13i_W - 1 = 0$$\n\n$$i_W = \\frac{-13 + \\sqrt{169 + 36}}{18} = \\frac{-13 + \\sqrt{205}}{18} \\approx \\frac{-13 + 14{,}3}{18} = \\frac{1{,}3}{18} \\approx 7{,}22\\%$$\n\nPara o Banco Y (paga R$ 95.000,00 hoje):\n\n$$\\frac{50.000}{(1+i_Y)} + \\frac{50.000}{(1+i_Y)^2} = 95.000$$\n\nMultiplicando por $(1+i_Y)^2$ e reorganizando:\n\n$$100.000 + 50.000\\,i_Y = 95.000 + 190.000\\,i_Y + 95.000\\,i_Y^2$$\n\n$$19i_Y^2 + 28i_Y - 1 = 0$$\n\n$$i_Y = \\frac{-28 + \\sqrt{784 + 76}}{38} = \\frac{-28 + \\sqrt{860}}{38} = \\frac{-28 + 2\\sqrt{215}}{38} \\approx \\frac{-28 + 29{,}4}{38} = \\frac{1{,}4}{38} \\approx 3{,}68\\%$$\n\nDiferença: $7{,}22\\% - 3{,}68\\% = 3{,}54\\%$",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Estatística e Probabilidade",
+    "tags": ["Estatística"],
+    "nivel_dificuldade": "Baixa",
+    "enunciado": "Instituições financeiras realizam empréstimos na expectativa de receberem de volta o valor do empréstimo acrescido de juros. Nem sempre, todavia, o cliente paga ao banco o valor que lhe é devido, e isso se denomina inadimplência. A probabilidade de um cliente inadimplir varia de acordo com as características do cliente, como renda, idade ou se o cliente possui casa própria. Quando um cliente solicita um empréstimo, um modelo matemático utiliza essas características para estimar a probabilidade de o cliente inadimplir. Essa probabilidade estimada será usada para classificar o cliente conforme o seu risco de crédito. Esse risco pode variar de AA (para clientes cuja probabilidade de inadimplir é quase nula), passando por B, C, D, E, F, G e finalmente H, à medida que a probabilidade de inadimplência vai aumentando. Segundo a apresentação de resultados do terceiro trimestre de 2023, a Caixa Econômica Federal tem 92,7% de sua carteira com risco de crédito entre AA e C e encerrou 2023 com uma inadimplência de 2,16%.\n\nA variável risco de crédito descrita acima é uma variável",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "escalar",
+      "B": "discreta",
+      "C": "contínua",
+      "D": "nominal",
+      "E": "ordinal"
+    },
+    "gabarito": "E",
+    "comentario_resolucao": "As variáveis qualitativas se dividem em nominais e ordinais. Uma variável é ordinal quando suas categorias possuem uma ordem natural e significativa entre si.\n\nNo caso do risco de crédito, as categorias AA, B, C, D, E, F, G e H estão dispostas em ordem crescente de risco de inadimplência: AA representa o menor risco e H, o maior. Há uma hierarquia clara entre as categorias.\n\nPortanto, a variável risco de crédito é qualitativa ordinal.\n\nAs demais alternativas estão incorretas: escalar não é uma classificação estatística padrão; discreta e contínua referem-se a variáveis quantitativas numéricas; nominal refere-se a variáveis qualitativas sem ordenação natural (como cor ou estado civil usado apenas como rótulo).",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Estatística e Probabilidade",
+    "tags": ["Probabilidade", "Análise Combinatória"],
+    "nivel_dificuldade": "Média",
+    "enunciado": "Em uma agência de um banco comercial, 20% das contas-correntes são contas conjuntas, isto é, contas que possuem dois ou mais titulares.\n\nConsiderando-se que um gerente dessa agência administra 4 contas, qual é a probabilidade de que a maioria das contas que esse gerente administra sejam contas conjuntas?",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "0,16%",
+      "B": "0,80%",
+      "C": "2,56%",
+      "D": "2,72%",
+      "E": "2,76%"
+    },
+    "gabarito": "D",
+    "comentario_resolucao": "A maioria de 4 contas significa ter pelo menos 3 contas conjuntas, ou seja, $X \\geq 3$. Modelamos com distribuição binomial: $n = 4$ tentativas, $p = 0{,}20$ (probabilidade de conta conjunta).\n\nProbabilidade de exatamente 3 contas conjuntas:\n\n$$P(X = 3) = \\binom{4}{3} \\cdot (0{,}20)^3 \\cdot (0{,}80)^1 = 4 \\times 0{,}008 \\times 0{,}8 = 0{,}0256 = 2{,}56\\%$$\n\nProbabilidade de exatamente 4 contas conjuntas:\n\n$$P(X = 4) = \\binom{4}{4} \\cdot (0{,}20)^4 \\cdot (0{,}80)^0 = 1 \\times 0{,}0016 \\times 1 = 0{,}0016 = 0{,}16\\%$$\n\nProbabilidade total:\n\n$$P(X \\geq 3) = 2{,}56\\% + 0{,}16\\% = 2{,}72\\%$$",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Estatística e Probabilidade",
+    "tags": ["Estatística", "Medidas de Tendência Central"],
+    "nivel_dificuldade": "Média",
+    "enunciado": "Um grupo de 100 funcionários de uma empresa ganhou na Mega-Sena, e o prêmio foi dividido igualmente entre esses funcionários e depositado em suas respectivas contas-correntes.\n\nConsiderando-se as medidas de dispersão dos saldos dessas contas, a única dessas medidas que foi alterada após o depósito do prêmio da Mega-Sena foi a(o)",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "média, que aumentou.",
+      "B": "amplitude, que aumentou.",
+      "C": "distância interquartílica, que aumentou.",
+      "D": "desvio padrão, que aumentou.",
+      "E": "coeficiente de variação, que foi reduzido."
+    },
+    "gabarito": "E",
+    "comentario_resolucao": "Quando um valor constante $k$ é somado a todos os elementos de um conjunto de dados, as seguintes propriedades se verificam:\n\n1. A média aumenta em $k$: $\\bar{x}_{\\text{novo}} = \\bar{x} + k$ (mas média é medida de tendência central, não de dispersão).\n2. A amplitude não muda: $\\text{Amp} = x_{\\max} - x_{\\min}$ — ambos aumentam em $k$, cancelando-se.\n3. A distância interquartílica não muda: $\\text{DIQ} = Q_3 - Q_1$ — ambos aumentam em $k$.\n4. O desvio padrão não muda: as diferenças em relação à média permanecem as mesmas.\n5. O coeficiente de variação $CV = \\dfrac{\\sigma}{\\bar{x}}$: como $\\sigma$ permanece constante e $\\bar{x}$ aumenta, o $CV$ diminui.\n\nPortanto, entre as medidas de dispersão listadas, somente o coeficiente de variação é alterado — e ele é reduzido, pois seu denominador (a média) cresce enquanto o numerador (desvio padrão) permanece igual.",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Estatística e Probabilidade",
+    "tags": ["Probabilidade", "Leitura de Gráficos e Tabelas"],
+    "nivel_dificuldade": "Alta",
+    "enunciado": "Um banco comercial avalia solicitações de empréstimo a partir de um modelo estatístico que utiliza variáveis como renda, idade, estado civil e tempo no emprego atual para estimar a probabilidade de o cliente ficar inadimplente. O banco está atualizando o modelo estatístico atual e, com esse intuito, fez um levantamento do perfil demográfico dos clientes inadimplentes. Na Tabela a seguir, observa-se a fração de clientes inadimplentes para cada estado civil e renda mensal, medida em termos de número de salários mínimos (SM). Não existem observações coincidentes com os extremos das classes.\n\n[Imagem: figura_da_questão]\n\nRenda em SM: De 1 a 5 SM | De 5 a 10 SM | De 10 a 20 SM | Acima de 20 SM\nSolteiro:   0,040 | 0,030 | 0,020 | 0,010\nCasado:     0,200 | 0,150 | 0,100 | 0,050\nDivorciado: 0,140 | 0,105 | 0,070 | 0,035\nViúvo:      0,020 | 0,015 | 0,010 | 0,005\n\nSabendo-se que um cliente inadimpliu, a probabilidade de esse cliente ganhar menos do que 10 salários mínimos e ser solteiro, divorciado ou viúvo é",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "$0{,}30$",
+      "B": "$0{,}35$",
+      "C": "$0{,}40$",
+      "D": "$0{,}45$",
+      "E": "$0{,}50$"
+    },
+    "gabarito": "B",
+    "comentario_resolucao": "Assumindo distribuição uniforme entre as células da tabela, a soma de todos os valores representa o total (normalizado) dos inadimplentes:\n\nSolteiro: $0{,}040 + 0{,}030 + 0{,}020 + 0{,}010 = 0{,}100$\nCasado: $0{,}200 + 0{,}150 + 0{,}100 + 0{,}050 = 0{,}500$\nDivorciado: $0{,}140 + 0{,}105 + 0{,}070 + 0{,}035 = 0{,}350$\nViúvo: $0{,}020 + 0{,}015 + 0{,}010 + 0{,}005 = 0{,}050$\nTotal: $0{,}100 + 0{,}500 + 0{,}350 + 0{,}050 = 1{,}000$\n\nSomamos as células de interesse (renda $< 10$ SM e estado civil solteiro, divorciado ou viúvo):\n\n$\\text{Solteiro} \\times (1\\text{–}5\\ \\text{SM}): 0{,}040$\n$\\text{Solteiro} \\times (5\\text{–}10\\ \\text{SM}): 0{,}030$\n$\\text{Divorciado} \\times (1\\text{–}5\\ \\text{SM}): 0{,}140$\n$\\text{Divorciado} \\times (5\\text{–}10\\ \\text{SM}): 0{,}105$\n$\\text{Viúvo} \\times (1\\text{–}5\\ \\text{SM}): 0{,}020$\n$\\text{Viúvo} \\times (5\\text{–}10\\ \\text{SM}): 0{,}015$\n\nSoma: $0{,}040 + 0{,}030 + 0{,}140 + 0{,}105 + 0{,}020 + 0{,}015 = 0{,}350$\n\nProbabilidade condicional: $P = \\dfrac{0{,}350}{1{,}000} = 0{,}35$",
+    "url_video": null
+  },
+  {
+    "fonte": "CONCURSO",
+    "ano": 2024,
+    "conteudo_principal": "Estatística e Probabilidade",
+    "tags": ["Estatística", "Medidas de Tendência Central", "Leitura de Gráficos e Tabelas"],
+    "nivel_dificuldade": "Média",
+    "enunciado": "O Fundo de Garantia do Tempo de Serviço (FGTS), administrado pela Caixa Econômica Federal (CEF), é um fundo que almeja proteger o trabalhador que for demitido sem justa causa. Na Tabela a seguir, encontram-se os resultados desse fundo entre 2016 e 2022, bem como os valores distribuídos aos trabalhadores nesse período. Todos os valores estão em bilhões de reais.\n\nAno | Resultado total | Resultado distribuído\n2016 | 14,6 | 7,3\n2017 | 12,5 | 6,2\n2018 | 12,2 | 12,2\n2019 | 11,3 | 7,5\n2020 | 8,5  | 8,1\n2021 | 13,3 | 13,2\n2022 | 12,8 | 12,7\n\nUm superintendente da CEF deseja saber qual é a fração do Resultado total que foi distribuído. Para isso, calculou quanto a média do Resultado distribuído representava em relação à mediana do Resultado total, no período apresentado na Tabela.\n\nA razão entre a média do Resultado distribuído e a mediana do Resultado total é, aproximadamente,",
+    "url_imagem": null,
+    "alternativas": {
+      "A": "88%",
+      "B": "77%",
+      "C": "66%",
+      "D": "55%",
+      "E": "44%"
+    },
+    "gabarito": "B",
+    "comentario_resolucao": "Calculando a média do Resultado distribuído (valores: 7,3; 6,2; 12,2; 7,5; 8,1; 13,2; 12,7):\n\n$$\\text{Média} = \\frac{7{,}3 + 6{,}2 + 12{,}2 + 7{,}5 + 8{,}1 + 13{,}2 + 12{,}7}{7} = \\frac{67{,}2}{7} = 9{,}6$$\n\nCalculando a mediana do Resultado total. Ordenando os 7 valores em ordem crescente:\n\n$$8{,}5 \\quad 11{,}3 \\quad 12{,}2 \\quad \\mathbf{12{,}5} \\quad 12{,}8 \\quad 13{,}3 \\quad 14{,}6$$\n\nA mediana é o 4º valor (posição central): $\\text{Mediana} = 12{,}5$\n\nRazão:\n\n$$\\frac{9{,}6}{12{,}5} = 0{,}768 \\approx 77\\%$$",
+    "url_video": null
+  }
+]

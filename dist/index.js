@@ -86,6 +86,7 @@ var questions = mysqlTable(
   {
     id: int("id").primaryKey().autoincrement(),
     fonte: varchar("fonte", { length: 50 }).notNull().default("ENEM"),
+    concurso: varchar("concurso", { length: 200 }),
     ano: int("ano"),
     conteudo_principal: varchar("conteudo_principal", { length: 100 }).notNull(),
     tags: json("tags").$type().notNull().default([]),
@@ -468,6 +469,7 @@ import Anthropic from "@anthropic-ai/sdk";
 var NivelDificuldadeEnum = z.enum(["Muito Baixa", "Baixa", "M\xE9dia", "Alta", "Muito Alta"]);
 var QuestionBaseSchema = z.object({
   fonte: z.string().max(50).default("ENEM"),
+  concurso: z.string().max(200).nullable().optional(),
   ano: z.number().int().min(2e3).max(2100).optional(),
   conteudo_principal: z.string().min(1).max(100),
   tags: z.array(z.string()).default([]),
@@ -540,6 +542,7 @@ var questionsRouter = createTRPCRouter({
     const [result] = await ctx.db.insert(questions).values({
       ...input,
       gabarito: input.gabarito.toUpperCase(),
+      concurso: input.concurso ?? null,
       url_imagem: input.url_imagem ?? null,
       url_video: input.url_video ?? null,
       active: true

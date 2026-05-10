@@ -151,30 +151,35 @@ async function main() {
   for (let i = 0; i < questoes.length; i++) {
     const q = questoes[i];
     const tri = TRI_PARAMS[q.nivel_dificuldade] ?? TRI_PARAMS["Média"];
+    const fonte = q.fonte ?? "IA";
+    // TRI: usa do JSON se presente (ENEM), senão usa padrão por nível
+    const paramA = q.param_a ?? tri.a;
+    const paramB = q.param_b ?? tri.b;
+    const paramC = q.param_c ?? tri.c;
 
-    // Tags: garante mínimo + adiciona as do JSON
-    const tags = Array.isArray(q.tags) ? q.tags : [];
+    // Tags: preserva as do JSON; adiciona "ENEM" só se for ENEM
+    const tags = Array.isArray(q.tags) ? [...q.tags] : [];
     if (!tags.includes("Matemática")) tags.push("Matemática");
-    if (!tags.includes("ENEM")) tags.push("ENEM");
-    if (!tags.includes(q.conteudo_principal)) tags.push(q.conteudo_principal);
+    if (fonte === "ENEM" && !tags.includes("ENEM")) tags.push("ENEM");
 
     try {
       await db.execute(
         `INSERT INTO questions
-           (fonte, ano, conteudo_principal, tags, nivel_dificuldade,
+           (fonte, concurso, ano, conteudo_principal, tags, nivel_dificuldade,
             param_a, param_b, param_c,
             enunciado, url_imagem, alternativas, gabarito,
             comentario_resolucao, active)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
         [
-          "IA",
+          fonte,
+          q.concurso ?? null,
           q.ano ?? new Date().getFullYear(),
           q.conteudo_principal,
           JSON.stringify(tags),
           q.nivel_dificuldade,
-          tri.a,
-          tri.b,
-          tri.c,
+          paramA,
+          paramB,
+          paramC,
           q.enunciado.trim(),
           q.url_imagem ?? null,
           JSON.stringify(q.alternativas),

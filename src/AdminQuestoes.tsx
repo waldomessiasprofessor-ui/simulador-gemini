@@ -833,6 +833,7 @@ const NIVEIS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const
 
 const emptyForm = {
   fonte: "ENEM",
+  concurso: "",
   ano: new Date().getFullYear(),
   conteudo_principal: "",
   nivel_dificuldade: "Média" as typeof NIVEIS[number],
@@ -1047,6 +1048,7 @@ export default function AdminQuestoes() {
   function startEdit(q: any) {
     setForm({
       fonte: q.fonte ?? "ENEM",
+      concurso: q.concurso ?? "",
       ano: q.ano ?? new Date().getFullYear(),
       conteudo_principal: q.conteudo_principal,
       nivel_dificuldade: q.nivel_dificuldade,
@@ -1075,7 +1077,7 @@ export default function AdminQuestoes() {
   function handleSubmit() {
     if (!form.conteudo_principal.trim()) { toast.error("Preencha o conteúdo principal."); return; }
     if (!form.enunciado.trim()) { toast.error("Preencha o enunciado."); return; }
-    const payload = { ...form, url_imagem: form.url_imagem || null, url_video: form.url_video || null };
+    const payload = { ...form, concurso: form.concurso || null, url_imagem: form.url_imagem || null, url_video: form.url_video || null };
     if (editId) {
       updateMutation.mutate({ id: editId, ...payload });
     } else {
@@ -1257,10 +1259,20 @@ export default function AdminQuestoes() {
             <div>
               <label style={labelStyle}>Fonte</label>
               <select className={inputClass} style={inputStyle} value={form.fonte}
-                onChange={(e) => setForm({ ...form, fonte: e.target.value })}>
-                {["ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET"].map((f) => <option key={f}>{f}</option>)}
+                onChange={(e) => setForm({ ...form, fonte: e.target.value, concurso: "" })}>
+                {["ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET", "CONCURSO"].map((f) => <option key={f}>{f}</option>)}
               </select>
             </div>
+            {form.fonte === "CONCURSO" && (
+              <div className="sm:col-span-3">
+                <label style={labelStyle}>Concurso / Cargo</label>
+                <input className={inputClass} style={inputStyle} value={form.concurso}
+                  onChange={(e) => setForm({ ...form, concurso: e.target.value })}
+                  placeholder="Ex: Banco do Brasil - Escriturário - Agente Comercial 2024"
+                  onFocus={(e) => (e.target.style.borderColor = "#00695C")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
+              </div>
+            )}
             <div>
               <label style={labelStyle}>Conteúdo principal</label>
               <input className={inputClass} style={inputStyle} value={form.conteudo_principal}
@@ -1473,7 +1485,7 @@ export default function AdminQuestoes() {
 
         {/* Filtro por fonte */}
         <div className="flex items-center gap-2 flex-wrap">
-          {["Todas", "ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET"].map((f) => (
+          {["Todas", "ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET", "CONCURSO"].map((f) => (
             <button key={f} onClick={() => { setFilterFonte(f); setPage(1); }}
               className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
               style={filterFonte === f
@@ -1531,7 +1543,7 @@ export default function AdminQuestoes() {
                     <span className="text-xs font-bold w-8 flex-shrink-0 mt-0.5" style={{ color: "#94A3B8" }}>#{q.id}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{q.conteudo_principal}</p>
-                      <p className="text-xs" style={{ color: "#94A3B8" }}>{q.fonte} {q.ano} · {q.nivel_dificuldade} · Gabarito: {q.gabarito}</p>
+                      <p className="text-xs" style={{ color: "#94A3B8" }}>{q.fonte}{(q as any).concurso ? ` — ${(q as any).concurso}` : ""} {q.ano} · {q.nivel_dificuldade} · Gabarito: {q.gabarito}</p>
                       {qTags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {qTags.map((tag: string) => (
