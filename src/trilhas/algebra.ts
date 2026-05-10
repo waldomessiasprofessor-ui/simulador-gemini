@@ -43,7 +43,7 @@ Diferença do caso anterior: o termo do meio é **negativo**.
 ### 3. Erro clássico
 
 $$
-(a + b)^2 \neq a^2 + b^2 \quad \text{(falta o } 2ab\text{!)}
+(a + b)^2 \\neq a^2 + b^2 \\quad \\text{(falta o } 2ab\\text{!)}
 $$
 
 ### 4. Aplicação
@@ -245,7 +245,7 @@ $$
 ### Exemplos numéricos
 
 $$
-99 \times 101 = (100-1)(100+1) = 10000 - 1 = 9999
+99 \\times 101 = (100-1)(100+1) = 10000 - 1 = 9999
 $$
 `.trim(),
           exemplos: [
@@ -815,7 +815,7 @@ export const algebraEquacoes: Trilha = {
           explicacao: `
 ### Forma geral
 
-$$ax+b=0,\quad a\neq0$$
+$$ax+b=0,\\quad a\\neq0$$
 
 ### Estratégia
 
@@ -995,7 +995,7 @@ MMC = 6: $2x+x=30$, $3x=30$, $x=10$.
           explicacao: `
 ### Fórmula de Bhaskara
 
-$$x=\\frac{-b\\pm\\sqrt{\\Delta}}{2a},\quad\\Delta=b^2-4ac$$
+$$x=\\frac{-b\\pm\\sqrt{\\Delta}}{2a},\\quad\\Delta=b^2-4ac$$
 
 ### Discriminante $\\Delta$
 
