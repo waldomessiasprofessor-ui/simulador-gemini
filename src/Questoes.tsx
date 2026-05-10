@@ -286,7 +286,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                           {q.conteudo_principal}
                         </p>
                         <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                          {q.fonte} {q.ano ?? ""} · {q.nivel_dificuldade}
+                          {q.fonte === "CONCURSO" && (q as any).concurso ? (q as any).concurso : `${q.fonte} ${q.ano ?? ""}`} · {q.nivel_dificuldade}
                         </p>
                         {qTags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">
@@ -419,7 +419,7 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                       Questão <span style={{ color: "#009688", fontWeight: 800 }}>{currentIndex + 1}</span> de {allQuestions.length}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "#E0F2F1", color: "#00695C" }}>
-                      {currentQ.fonte} {currentQ.ano ?? ""} · {currentQ.nivel_dificuldade}
+                      {currentQ.fonte === "CONCURSO" && (currentQ as any).concurso ? (currentQ as any).concurso : `${currentQ.fonte} ${currentQ.ano ?? ""}`} · {currentQ.nivel_dificuldade}
                     </span>
                   </div>
                   {/* Barra de progresso */}
