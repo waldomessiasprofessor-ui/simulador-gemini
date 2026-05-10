@@ -1032,6 +1032,26 @@ export default function AdminQuestoes() {
   // Sincroniza o input de página quando `page` muda por outro meio
   useEffect(() => { setPageGoTo(String(page)); }, [page]);
 
+  // Deep link: /admin/questoes?edit=ID — busca a questão e abre o form para edição
+  const editParamId = (() => {
+    const sp = new URLSearchParams(window.location.search);
+    const v = Number(sp.get("edit"));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  })();
+  const editTargetQuery = trpc.questions.getByIdAdmin.useQuery(
+    { id: editParamId! },
+    { enabled: editParamId != null, retry: false }
+  );
+  useEffect(() => {
+    if (editParamId && editTargetQuery.data && editId !== editParamId) {
+      startEdit(editTargetQuery.data);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      // Limpa o query param para não reabrir em re-renders
+      window.history.replaceState({}, "", "/admin/questoes");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editParamId, editTargetQuery.data]);
+
   function handleLatexImport(data: Partial<typeof emptyForm>) {
     setForm({ ...emptyForm, ...data });
     setEditId(null);

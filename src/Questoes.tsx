@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
+import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { LatexRenderer } from "@/LatexRenderer";
-import { ChevronDown, ChevronUp, Search, Loader2, BookOpen, Dumbbell, LayoutList, BookOpenCheck, ChevronLeft, ChevronRight, Eye, EyeOff } from "@/icons";
+import { ChevronDown, ChevronUp, Search, Loader2, BookOpen, Dumbbell, LayoutList, BookOpenCheck, ChevronLeft, ChevronRight, Eye, EyeOff, Pencil, Trash2 } from "@/icons";
 import { VideoButton } from "@/YoutubeEmbed";
 
 const TAGS_CONTEUDO = [
@@ -91,6 +93,15 @@ export default function Questoes({ fonte }: { fonte?: string }) {
       c: params.get("c") ?? "",
     };
   })();
+  const [, setLocation] = useLocation();
+  const { data: session } = trpc.auth.me.useQuery(undefined, { retry: false });
+  const isAdmin = session?.role === "admin";
+  const utils = trpc.useUtils();
+  const deleteMutation = trpc.questions.delete.useMutation({
+    onSuccess: () => { toast.success("Questão removida."); utils.questions.list.invalidate(); },
+    onError:   (e) => toast.error(e.message),
+  });
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [search, setSearch] = useState(initialParams.c);
   const [filterTag, setFilterTag] = useState(
     initialParams.tag && TAGS_CONTEUDO.includes(initialParams.tag) ? initialParams.tag : "Todas"
@@ -358,6 +369,41 @@ export default function Questoes({ fonte }: { fonte?: string }) {
                                 onToggle={() => setOpenVideoId(openVideoId === q.id ? null : q.id)}
                                 size="sm"
                               />
+                            )}
+
+                            {isAdmin && (
+                              <>
+                                <button
+                                  onClick={() => setLocation(`/admin/questoes?edit=${q.id}`)}
+                                  className="ml-auto flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+                                  style={{ background: "var(--muted)", color: "var(--foreground)", border: "1.5px solid var(--border)" }}>
+                                  <Pencil className="h-3 w-3" /> Editar
+                                </button>
+                                {confirmDeleteId === q.id ? (
+                                  <span className="flex items-center gap-1 text-xs">
+                                    <button
+                                      onClick={() => deleteMutation.mutate({ id: q.id })}
+                                      disabled={deleteMutation.isPending}
+                                      className="font-bold px-2.5 py-1 rounded-full text-white"
+                                      style={{ background: "#DC2626" }}>
+                                      Confirmar
+                                    </button>
+                                    <button
+                                      onClick={() => setConfirmDeleteId(null)}
+                                      className="font-semibold px-2.5 py-1 rounded-full"
+                                      style={{ background: "var(--muted)", color: "var(--foreground)" }}>
+                                      Cancelar
+                                    </button>
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => setConfirmDeleteId(q.id)}
+                                    className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+                                    style={{ background: "var(--muted)", color: "#DC2626", border: "1.5px solid #FECACA" }}>
+                                    <Trash2 className="h-3 w-3" /> Excluir
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
 

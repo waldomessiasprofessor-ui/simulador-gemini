@@ -186,7 +186,9 @@ function parseLatexChunk(rawText: string): Segment[] {
     const full = match[0];
     if (full.toLowerCase().startsWith("[imagem")) {
       const url = match[1];
-      segments.push(url ? { type: "image", url } : { type: "text", content: "[imagem não disponível]" });
+      // Sem URL → ignora silenciosamente (o marcador [Imagem] sem URL é
+      // resíduo de import/edição e não deve aparecer para o usuário final).
+      if (url) segments.push({ type: "image", url });
     } else if (match[2] !== undefined || match[3] !== undefined) {
       segments.push({ type: "latex-display", content: restoreLatex((match[2] ?? match[3]).trim()) });
     } else {
@@ -594,9 +596,7 @@ export function Alternative({ id, text, imageUrl, selected, correct, onClick, di
         {text && text !== "[Imagem]" && (
           <LatexRenderer inline fontSize="sm">{text}</LatexRenderer>
         )}
-        {text === "[Imagem]" && !imageUrl && (
-          <span className="text-xs italic" style={{ color: "#94A3B8" }}>Imagem não disponível</span>
-        )}
+        {/* "[Imagem]" sem imageUrl é ignorado silenciosamente */}
       </div>
     </button>
   );
