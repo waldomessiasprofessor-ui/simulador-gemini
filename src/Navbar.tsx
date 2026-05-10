@@ -80,6 +80,8 @@ const NAV_TREE: TopItem[] = [
       { kind: "link", href: "/questoes/unicamp", label: "UNICAMP",     icon: d(GraduationCap) },
       { kind: "link", href: "/questoes/unesp",   label: "UNESP",       icon: d(GraduationCap) },
       { kind: "link", href: "/questoes/repvet",  label: "Banco Geral", icon: d(Star) },
+      { kind: "header", label: "Concursos" },
+      { kind: "link", href: "/questoes/concurso", label: "Concursos Públicos", icon: d(ClipboardText) },
     ],
   },
   {

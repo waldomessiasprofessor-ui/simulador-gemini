@@ -184,6 +184,7 @@ export default function App() {
           <Route path="/questoes/fuvest"><Questoes fonte="FUVEST" /></Route>
           <Route path="/questoes/unesp"><Questoes fonte="UNESP" /></Route>
           <Route path="/questoes/repvet"><Questoes fonte="REPVET" /></Route>
+          <Route path="/questoes/concurso"><Questoes fonte="CONCURSO" /></Route>
           <Route path="/resultado/:id">
             {(params) => <Gate><Resultado id={Number(params.id)} /></Gate>}
           </Route>
