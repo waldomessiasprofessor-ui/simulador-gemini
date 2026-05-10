@@ -702,9 +702,12 @@ function RadarTopicos() {
 
         {/* Pontos a melhorar — lista das áreas mais fracas */}
         <div className="rounded-xl px-3 py-2" style={{ background: "rgba(124,58,237,0.07)", border: "1.5px solid #DDD6FE" }}>
-          <p className="text-xs font-semibold mb-1.5" style={{ color: "#7C3AED" }}>
-            {belowThreshold.length > 0 ? "Pontos a melhorar" : "Áreas com menor acerto"}
-          </p>
+          <div className="flex items-center gap-1.5 mb-2">
+            <TrendingUp className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "#7C3AED" }} />
+            <p className="text-sm font-black tracking-tight" style={{ color: "#7C3AED" }}>
+              {belowThreshold.length > 0 ? "Pontos a Melhorar" : "Áreas com Menor Acerto"}
+            </p>
+          </div>
           {weakList.length === 0 ? (
             <p className="text-xs" style={{ color: "#7C3AED" }}>Sem dados suficientes.</p>
           ) : (
@@ -997,58 +1000,6 @@ function ExpandedAgenda({ activity, slots, navigate, onClose }: {
           style={{ width: "100%", padding: "10px 0", borderRadius: 12, background: "#263238", color: "#fff", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}>
           Gerenciar meu planner →
         </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── PontosFragos — card com tópicos de maior taxa de erro ──────────────────
-function PontosFragos({ navigate }: { navigate: (to: string) => void }) {
-  const { data } = trpc.simulations.getTopicStats.useQuery(undefined, { staleTime: 60_000 });
-
-  if (!data) return null;
-
-  const weak = data
-    .filter(d => d.total >= 2 && d.pct < 60)
-    .sort((a, b) => a.pct - b.pct)
-    .slice(0, 3);
-
-  if (weak.length === 0) return null;
-
-  return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid #DDD6FE" }}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#F5F3FF" }}>
-            <TrendingUp className="h-3.5 w-3.5" style={{ color: "#7C3AED" }} />
-          </div>
-          <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Pontos a reforçar esta semana</p>
-        </div>
-        <button onClick={() => navigate("/treino")}
-          className="text-xs font-semibold px-2.5 py-1 rounded-lg"
-          style={{ background: "#F5F3FF", color: "#7C3AED" }}>
-          Treinar tudo
-        </button>
-      </div>
-      <div className="space-y-3">
-        {weak.map(d => {
-          const erroPct = 100 - d.pct;
-          const color   = d.pct < 40 ? "#7C3AED" : "#D97706";
-          const bg      = d.pct < 40 ? "#F5F3FF" : "#FFFBEB";
-          return (
-            <div key={d.conteudo}>
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>{d.conteudo}</p>
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: bg, color }}>
-                  {erroPct}% de erros · {d.correct}/{d.total} acertos
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--muted)" }}>
-                <div className="h-full rounded-full" style={{ width: `${erroPct}%`, background: color, transition: "width 0.6s ease" }} />
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
@@ -1786,9 +1737,6 @@ export default function Dashboard() {
 
       {/* ── Radares (Por Área ⇄ Performance) ── */}
       <RadarTabs />
-
-      {/* ── Pontos a reforçar ── */}
-      <PontosFragos navigate={navigate} />
 
       {/* ── Metas da semana ── */}
       <MetasCard />
