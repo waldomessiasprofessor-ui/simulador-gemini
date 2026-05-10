@@ -91,24 +91,50 @@ function normalizeImageFormats(text: string): string {
   return text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, "[Imagem: $2]");
 }
 
-// Caractere PUA (Private Use Area) usado como placeholder temporário para cifrão monetário.
-// Escolhido por não aparecer em texto normal nem em LaTeX.
-const CURR_PH = "";
+// Caracteres PUA (Private Use Area) usados como placeholders temporários
+// durante o parsing. Não aparecem em texto comum nem em LaTeX.
+const CURR_PH = ""; // cifrão monetário (R$, US$, ...)
+const ESC_PH  = ""; // cifrão escapado (\$ literal)
 
 /**
- * Protege padrões de moeda (R$ e US$) para que o sinal de cifrão NÃO seja
- * confundido com delimitador LaTeX durante o parsing.
- * Ex: "R$ 50,00" → "R 50,00"
- * Lookbehind (?<![A-Za-z$]) evita substituir o $ de fechamento em expressões
- * LaTeX como $D$, $A$, $f: A \to B$, etc.
+ * Protege cifrões que NÃO são delimitadores LaTeX:
+ *
+ *   1. `\$` escapado: substituído PRIMEIRO para que não feche math mode
+ *      prematuramente. Restaurado dentro do conteúdo LaTeX como `\$` (KaTeX
+ *      renderiza isso como o símbolo cifrão).
+ *   2. Moeda: R$, r$, US$, USD$, BRL$, opcionalmente com `\` antes do `$`
+ *      (formato comum gerado por LLMs). Case-insensitive.
+ *
+ * Os placeholders são restaurados em `restoreCurrency` (texto) e
+ * `restoreLatex` (conteúdo de math).
  */
 function protectCurrency(text: string): string {
-  return text.replace(/(?<![A-Za-z$])(R|US)\$/g, `$1${CURR_PH}`);
+  return text
+    // \$ escapado — protege ANTES de detectar moeda
+    .replace(/\\\$/g, ESC_PH)
+    // Prefixos monetários — aceita também o ESC_PH no lugar do $
+    .replace(
+      new RegExp(`(?<![A-Za-z])(R|US|USD|BRL)(?:\\$|${ESC_PH})`, "gi"),
+      `$1${CURR_PH}`
+    );
 }
 
-/** Restaura o cifrão monetário nos segmentos de texto puro. */
+/** Restaura cifrão nos segmentos de texto puro. */
 function restoreCurrency(text: string): string {
-  return text.replace(new RegExp(CURR_PH, "g"), "$");
+  return text
+    .replace(new RegExp(CURR_PH, "g"), "$")
+    .replace(new RegExp(ESC_PH,  "g"), "\\$");
+}
+
+/**
+ * Restaura placeholders dentro de conteúdo LaTeX. Tanto \$ escapado (ESC_PH)
+ * quanto cifrão de moeda (CURR_PH) viram \$ — que é a forma que o KaTeX usa
+ * para renderizar o símbolo de cifrão dentro de math mode.
+ */
+function restoreLatex(latex: string): string {
+  return latex
+    .replace(new RegExp(ESC_PH,  "g"), "\\$")
+    .replace(new RegExp(CURR_PH, "g"), "\\$");
 }
 
 // Divide o texto em "chunks" separando blocos de tabela Markdown do restante.
@@ -162,9 +188,9 @@ function parseLatexChunk(rawText: string): Segment[] {
       const url = match[1];
       segments.push(url ? { type: "image", url } : { type: "text", content: "[imagem não disponível]" });
     } else if (match[2] !== undefined || match[3] !== undefined) {
-      segments.push({ type: "latex-display", content: (match[2] ?? match[3]).trim() });
+      segments.push({ type: "latex-display", content: restoreLatex((match[2] ?? match[3]).trim()) });
     } else {
-      segments.push({ type: "latex-inline", content: (match[4] ?? match[5] ?? "").trim() });
+      segments.push({ type: "latex-inline", content: restoreLatex((match[4] ?? match[5] ?? "").trim()) });
     }
     lastIndex = match.index + full.length;
   }
@@ -278,10 +304,12 @@ function renderTextSegment(text: string): React.ReactNode[] {
 
 // Renderiza $...$ e $$...$$ dentro de HTML bruto (ex: células de tabela)
 function renderLatexInHtml(html: string): string {
+  // Protege moedas e \$ escapado antes de extrair LaTeX
+  const guarded = protectCurrency(html);
   // $$...$$ display mode primeiro
-  let result = html.replace(/\$\$([\s\S]+?)\$\$/g, (_, latex) => {
+  let result = guarded.replace(/\$\$([\s\S]+?)\$\$/g, (_, latex) => {
     try {
-      return katex.renderToString(latex.trim(), { displayMode: true, throwOnError: false, strict: false, trust: true });
+      return katex.renderToString(restoreLatex(latex.trim()), { displayMode: true, throwOnError: false, strict: false, trust: true });
     } catch { return `$$${latex}$$`; }
   });
   // $...$ inline — evita matches dentro de atributos HTML (não contém < ou >)
@@ -289,10 +317,11 @@ function renderLatexInHtml(html: string): string {
     const trimmed = latex.trim();
     if (!trimmed) return `$${latex}$`;
     try {
-      return katex.renderToString(trimmed, { displayMode: false, throwOnError: false, strict: false, trust: true });
+      return katex.renderToString(restoreLatex(trimmed), { displayMode: false, throwOnError: false, strict: false, trust: true });
     } catch { return `$${latex}$`; }
   });
-  return result;
+  // Restaura cifrão de moeda no HTML final
+  return restoreCurrency(result);
 }
 
 function renderHtmlBlock(html: string, key: string): React.ReactNode {
