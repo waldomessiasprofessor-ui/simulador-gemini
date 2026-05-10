@@ -479,8 +479,8 @@ export function LatexRenderer({ children, className, fontSize = "base", inline =
     });
   }, [children, compact]);
 
-  if (inline) return <span className={cn(fontSizeMap[fontSize], "leading-relaxed", className)} style={{ color: "var(--text-question)" }}>{rendered}</span>;
-  return <div className={cn("leading-relaxed", compact ? "space-y-0" : "space-y-1", fontSizeMap[fontSize], className)} style={{ color: "var(--text-question)" }}>{rendered}</div>;
+  if (inline) return <span className={cn(fontSizeMap[fontSize], "leading-relaxed", className)}>{rendered}</span>;
+  return <div className={cn("leading-relaxed", compact ? "space-y-0" : "space-y-1", fontSizeMap[fontSize], className)}>{rendered}</div>;
 }
 
 // =============================================================================
