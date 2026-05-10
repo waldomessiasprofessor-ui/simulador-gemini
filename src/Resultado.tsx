@@ -36,11 +36,11 @@ export default function Resultado({ id }: { id: number }) {
   return (
     <div className="space-y-7">
       {/* Resultado principal */}
-      <div className={cn("rounded-2xl p-5 border", passed ? "bg-emerald-500/10 border-emerald-500/30" : "bg-rose-500/10 border-rose-500/30")}>
+      <div className={cn("rounded-2xl p-5 border", passed ? "bg-emerald-500/10 border-emerald-500/30" : "bg-violet-500/10 border-violet-500/30")}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="font-semibold flex items-center gap-2">
-              {passed ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-rose-500" />}
+              {passed ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <XCircle className="h-5 w-5 text-violet-500" />}
               Etapa {data.stage} — {passed ? "Aprovado" : "Não aprovado"}
             </p>
             <p className="text-sm text-muted-foreground mt-1">{data.stageResult.message}</p>
@@ -83,7 +83,7 @@ export default function Resultado({ id }: { id: number }) {
                 <div key={diff} className="flex items-center gap-3">
                   <span className="text-xs w-20 text-muted-foreground flex-shrink-0">{diff}</span>
                   <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div className={cn("h-full rounded-full", pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-500" : "bg-rose-500")}
+                    <div className={cn("h-full rounded-full", pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-500" : "bg-violet-500")}
                       style={{ width: `${pct}%` }} />
                   </div>
                   <span className="text-xs text-muted-foreground w-20 text-right flex-shrink-0">{correct}/{total} ({pct}%)</span>
@@ -107,7 +107,7 @@ export default function Resultado({ id }: { id: number }) {
                   <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded flex-shrink-0",
                     pct >= 70 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                     : pct >= 40 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                    : "bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                    : "bg-violet-500/10 text-violet-700 dark:text-violet-400"
                   )}>{correct}/{total}</span>
                 </div>
               );
@@ -126,7 +126,7 @@ export default function Resultado({ id }: { id: number }) {
                 onClick={() => setOpen(open === i ? null : i)}>
                 {ans.isCorrect
                   ? <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                  : <XCircle className="h-4 w-4 text-rose-500 flex-shrink-0" />}
+                  : <XCircle className="h-4 w-4 text-violet-500 flex-shrink-0" />}
                 <span className="text-xs text-muted-foreground w-5 flex-shrink-0">{i + 1}</span>
                 <span className="text-sm truncate flex-1">{ans.conteudo_principal}</span>
                 <span className="text-xs text-muted-foreground hidden sm:block flex-shrink-0">
@@ -143,7 +143,7 @@ export default function Resultado({ id }: { id: number }) {
                     {Object.entries(ans.alternativas as Record<string, string>).sort().map(([id, texto]) => (
                       <div key={id} className={cn("flex gap-2 px-3 py-2 rounded-lg text-sm",
                         id === ans.gabarito ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
-                        : id === ans.selectedAnswer ? "bg-rose-500/10 text-rose-800 dark:text-rose-300"
+                        : id === ans.selectedAnswer ? "bg-violet-500/10 text-violet-700 dark:text-violet-300"
                         : "text-muted-foreground"
                       )}>
                         <span className="font-bold w-4 flex-shrink-0">{id}</span>

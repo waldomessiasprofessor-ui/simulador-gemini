@@ -194,7 +194,7 @@ const HUB_COLORS = [
   { bg: "#F0FDF4", border: "#A7F3D0", text: "#15803D" },
   { bg: "#FEF9C3", border: "#FDE68A", text: "#B45309" },
   { bg: "#FDF4FF", border: "#E9D5FF", text: "#7C3AED" },
-  { bg: "#FFF1F2", border: "#FECDD3", text: "#BE123C" },
+  { bg: "#F5F3FF", border: "#DDD6FE", text: "#7C3AED" },
 ];
 
 function TrilhaHub({ trilha }: { trilha: TrilhaType }) {
@@ -663,15 +663,15 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
           {isRevealed && (
             <div className="rounded-xl p-4 space-y-2"
               style={{
-                background: isCorrect ? "#F0FDF4" : "#FEF2F2",
-                border: `1.5px solid ${isCorrect ? "#A7F3D0" : "#FECACA"}`,
+                background: isCorrect ? "#F0FDF4" : "#F5F3FF",
+                border: `1.5px solid ${isCorrect ? "#A7F3D0" : "#DDD6FE"}`,
               }}>
               <div className="flex items-center gap-2">
                 {isCorrect
                   ? <CheckCircle2 className="h-5 w-5" style={{ color: "#16A34A" }} />
-                  : <XCircle className="h-5 w-5" style={{ color: "#DC2626" }} />}
+                  : <XCircle className="h-5 w-5" style={{ color: "#7C3AED" }} />}
                 <p className="font-bold text-sm"
-                  style={{ color: isCorrect ? "#16A34A" : "#DC2626" }}>
+                  style={{ color: isCorrect ? "#16A34A" : "#7C3AED" }}>
                   {isCorrect ? "Correto!" : `Resposta correta: ${currentEx.gabarito}`}
                 </p>
               </div>
@@ -733,9 +733,9 @@ function ResumoLicao({
   const bom = pct >= 70;
   const ok  = pct >= 50 && pct < 70;
 
-  const cor = bom ? "#16A34A"  : ok ? "#B45309"    : "#DC2626";
-  const bg  = bom ? "#F0FDF4" : ok ? "#FFFBEB" : "#FEF2F2";
-  const bd  = bom ? "#A7F3D0" : ok ? "#FCD34D" : "#FECACA";
+  const cor = bom ? "#16A34A"  : ok ? "#B45309"    : "#7C3AED";
+  const bg  = bom ? "#F0FDF4" : ok ? "#FFFBEB" : "#F5F3FF";
+  const bd  = bom ? "#A7F3D0" : ok ? "#FCD34D" : "#DDD6FE";
 
   const mensagem = bom
     ? "Excelente! Você dominou este conteúdo."
@@ -774,23 +774,23 @@ function ResumoLicao({
           return (
             <div key={ex.id} className="flex items-center gap-3 p-3 rounded-xl"
               style={{
-                background: acertou ? "#F0FDF4" : "#FEF2F2",
-                border: `1px solid ${acertou ? "#A7F3D0" : "#FECACA"}`,
+                background: acertou ? "#F0FDF4" : "#F5F3FF",
+                border: `1px solid ${acertou ? "#A7F3D0" : "#DDD6FE"}`,
               }}>
               <span className="text-xs font-bold w-6 text-center flex-shrink-0"
-                style={{ color: acertou ? "#16A34A" : "#DC2626" }}>
+                style={{ color: acertou ? "#16A34A" : "#7C3AED" }}>
                 {i + 1}
               </span>
               <span className="flex-1 text-xs truncate" style={{ color: "var(--muted-foreground)" }}>
                 Exercício {i + 1}
               </span>
               <span className="text-xs font-bold flex-shrink-0"
-                style={{ color: acertou ? "#16A34A" : "#DC2626" }}>
+                style={{ color: acertou ? "#16A34A" : "#7C3AED" }}>
                 {selected ?? "—"} → {ex.gabarito}
               </span>
               {acertou
                 ? <CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: "#16A34A" }} />
-                : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#DC2626" }} />}
+                : <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#7C3AED" }} />}
             </div>
           );
         })}

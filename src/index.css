@@ -67,9 +67,9 @@
   --pr-warn-bg:       #FFFBEB;
   --pr-warn-border:   #FCD34D;
 
-  --pr-danger:        #B91C1C;
-  --pr-danger-bg:     #FEF2F2;
-  --pr-danger-border: #FECACA;
+  --pr-danger:        #7C3AED;
+  --pr-danger-bg:     #F5F3FF;
+  --pr-danger-border: #DDD6FE;
 
   --pr-info:          #1D4ED8;
   --pr-info-bg:       #EFF6FF;
@@ -96,10 +96,10 @@
   --pr-warn-amber:    #B45309;
   --pr-warn-amber-bg: #FFFBEB;
   --pr-warn-amber-bd: #FCD34D;
-  --pr-danger-2:      #DC2626;
-  --pr-danger-fg:     #7F1D1D;
-  --pr-danger-bg-2:   #FFE4E6;
-  --pr-danger-border: #FECACA;
+  --pr-danger-2:      #7C3AED;
+  --pr-danger-fg:     #4C1D95;
+  --pr-danger-bg-2:   #EDE9FE;
+  --pr-danger-border: #DDD6FE;
   --pr-info-fg:       #1E3A8A;
 
   /* ── Radii / shadows ─────────────────────────────────────────── */
@@ -266,12 +266,12 @@
   --pr-success-bg:    #052E1A;
   --pr-success-border:#065F46;
 
-  --pr-danger:        #F87171;
-  --pr-danger-2:      #FC8181;
-  --pr-danger-fg:     #FECACA;
-  --pr-danger-bg:     #2D0A0A;
-  --pr-danger-bg-2:   #3B0A0A;
-  --pr-danger-border: #7F1D1D;
+  --pr-danger:        #A78BFA;
+  --pr-danger-2:      #C4B5FD;
+  --pr-danger-fg:     #DDD6FE;
+  --pr-danger-bg:     #1E1030;
+  --pr-danger-bg-2:   #2D1A45;
+  --pr-danger-border: #5B21B6;
 
   --pr-warn:          #FBBF24;
   --pr-warn-fg:       #FDE68A;

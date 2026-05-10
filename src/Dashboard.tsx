@@ -507,7 +507,7 @@ function RadarPerformance() {
             style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
             <span className="text-xs font-semibold truncate" style={{ color: "var(--foreground)" }}>{d.eixo}</span>
             <span className="text-xs font-black flex-shrink-0"
-              style={{ color: d.pct >= 70 ? "#16A34A" : d.pct >= 40 ? "#B45309" : "#DC2626" }}>{d.pct}%</span>
+              style={{ color: d.pct >= 70 ? "#16A34A" : d.pct >= 40 ? "#B45309" : "#7C3AED" }}>{d.pct}%</span>
           </div>
         ))}
       </div>
@@ -529,9 +529,9 @@ function RadarPerformance() {
           )}
           {weak.pct < 70 && (
             <div className="rounded-xl px-3 py-2"
-              style={{ background: "#FEF2F2", border: "1px solid #FECACA" }}>
-              <p className="text-xs font-semibold mb-0.5" style={{ color: "#DC2626" }}>A melhorar</p>
-              <p className="text-sm font-bold truncate" style={{ color: "#DC2626" }}>
+              style={{ background: "#F5F3FF", border: "1px solid #DDD6FE" }}>
+              <p className="text-xs font-semibold mb-0.5" style={{ color: "#7C3AED" }}>A melhorar</p>
+              <p className="text-sm font-bold truncate" style={{ color: "#7C3AED" }}>
                 {weak.eixo} — {formatRaw(weak)}
               </p>
             </div>
@@ -609,7 +609,7 @@ function RadarTopicos() {
               <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                 {d.correct}/{d.total}
               </span>
-              <span className="text-xs font-black w-10 text-right" style={{ color: d.pct >= 70 ? "#16A34A" : d.pct >= 40 ? "#B45309" : "#DC2626" }}>
+              <span className="text-xs font-black w-10 text-right" style={{ color: d.pct >= 70 ? "#16A34A" : d.pct >= 40 ? "#B45309" : "#7C3AED" }}>
                 {d.pct}%
               </span>
             </div>
@@ -701,12 +701,12 @@ function RadarTopicos() {
         </div>
 
         {/* Pontos a melhorar — lista das áreas mais fracas */}
-        <div className="rounded-xl px-3 py-2" style={{ background: "rgba(185,28,28,0.12)", border: "1.5px solid #FECACA" }}>
-          <p className="text-xs font-semibold mb-1.5" style={{ color: "#DC2626" }}>
+        <div className="rounded-xl px-3 py-2" style={{ background: "rgba(124,58,237,0.07)", border: "1.5px solid #DDD6FE" }}>
+          <p className="text-xs font-semibold mb-1.5" style={{ color: "#7C3AED" }}>
             {belowThreshold.length > 0 ? "Pontos a melhorar" : "Áreas com menor acerto"}
           </p>
           {weakList.length === 0 ? (
-            <p className="text-xs" style={{ color: "#DC2626" }}>Sem dados suficientes.</p>
+            <p className="text-xs" style={{ color: "#7C3AED" }}>Sem dados suficientes.</p>
           ) : (
             <div className="space-y-1.5">
               {weakList.map((w) => {
@@ -716,13 +716,13 @@ function RadarTopicos() {
                   <div
                     key={w.conteudo}
                     className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "#DC2626" }}>
+                    <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "#7C3AED" }}>
                       {label}
                     </span>
-                    <span className="text-xs flex-shrink-0" style={{ color: "#DC2626", opacity: 0.7 }}>
+                    <span className="text-xs flex-shrink-0" style={{ color: "#7C3AED", opacity: 0.7 }}>
                       {w.correct}/{w.total}
                     </span>
-                    <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#DC2626" }}>
+                    <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#7C3AED" }}>
                       {w.pct}%
                     </span>
                     {trilha && (
@@ -749,7 +749,7 @@ function RadarTopicos() {
           {/* Dica quando há trilha */}
           {weakList.some((w) => getTrilhaByArea(w.conteudo)) && (
             <p className="text-xs mt-2 pt-2 border-t leading-relaxed"
-              style={{ color: "#DC2626", opacity: 0.8, borderColor: "#FECACA" }}>
+              style={{ color: "#7C3AED", opacity: 0.8, borderColor: "#DDD6FE" }}>
               <Sparkles className="inline h-3 w-3 mr-1 -mt-0.5" />
               Clique em <strong>Trilha</strong> para treinar essa área guiado passo a passo.
             </p>
@@ -1016,25 +1016,25 @@ function PontosFragos({ navigate }: { navigate: (to: string) => void }) {
   if (weak.length === 0) return null;
 
   return (
-    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid #FECACA" }}>
+    <div className="rounded-2xl p-4 space-y-3" style={{ background: "var(--card)", border: "1.5px solid #DDD6FE" }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#FEF2F2" }}>
-            <TrendingUp className="h-3.5 w-3.5" style={{ color: "#DC2626" }} />
+          <div className="h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#F5F3FF" }}>
+            <TrendingUp className="h-3.5 w-3.5" style={{ color: "#7C3AED" }} />
           </div>
           <p className="font-bold text-sm" style={{ color: "var(--foreground)" }}>Pontos a reforçar esta semana</p>
         </div>
         <button onClick={() => navigate("/treino")}
           className="text-xs font-semibold px-2.5 py-1 rounded-lg"
-          style={{ background: "#FEF2F2", color: "#DC2626" }}>
+          style={{ background: "#F5F3FF", color: "#7C3AED" }}>
           Treinar tudo
         </button>
       </div>
       <div className="space-y-3">
         {weak.map(d => {
           const erroPct = 100 - d.pct;
-          const color   = d.pct < 40 ? "#DC2626" : "#D97706";
-          const bg      = d.pct < 40 ? "#FEF2F2" : "#FFFBEB";
+          const color   = d.pct < 40 ? "#7C3AED" : "#D97706";
+          const bg      = d.pct < 40 ? "#F5F3FF" : "#FFFBEB";
           return (
             <div key={d.conteudo}>
               <div className="flex items-center justify-between mb-1">
@@ -1197,15 +1197,15 @@ function ProximaPrioridade({ navigate }: { navigate: (to: string) => void }) {
 
   return (
     <div className="rounded-2xl p-4" style={{
-      background: urgente ? "linear-gradient(135deg, #FEF2F2, #FFF)" : "linear-gradient(135deg, #FFFBEB, #FFF)",
-      border: `1.5px solid ${urgente ? "#FECACA" : "#FDE68A"}`,
+      background: urgente ? "linear-gradient(135deg, #F5F3FF, #FFF)" : "linear-gradient(135deg, #FFFBEB, #FFF)",
+      border: `1.5px solid ${urgente ? "#DDD6FE" : "#FDE68A"}`,
     }}>
-      <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: urgente ? "#DC2626" : "#D97706" }}>
+      <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: urgente ? "#7C3AED" : "#D97706" }}>
         {urgente ? "🚨 Prioridade urgente" : "💡 Próxima prioridade"}
       </p>
       <p className="font-bold text-sm mb-0.5" style={{ color: "var(--foreground)" }}>
         Você errou {erroPct}% das questões de{" "}
-        <span style={{ color: urgente ? "#DC2626" : "#D97706" }}>{pior.conteudo}</span>
+        <span style={{ color: urgente ? "#7C3AED" : "#D97706" }}>{pior.conteudo}</span>
       </p>
       <p className="text-xs mb-3" style={{ color: "var(--muted-foreground)" }}>
         {urgente && trilha
@@ -1219,7 +1219,7 @@ function ProximaPrioridade({ navigate }: { navigate: (to: string) => void }) {
           <button
             onClick={() => navigate(`/trilha/${trilha.slug}`)}
             className="w-full py-2 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
-            style={{ background: "#DC2626", border: "none", cursor: "pointer" }}>
+            style={{ background: "#7C3AED", border: "none", cursor: "pointer" }}>
             <BookOpen className="h-4 w-4" />
             Estudar a Trilha de {trilha.titulo}
           </button>
@@ -1230,8 +1230,8 @@ function ProximaPrioridade({ navigate }: { navigate: (to: string) => void }) {
           onClick={() => navigate("/treino")}
           className="w-full py-2 rounded-xl text-sm font-bold"
           style={urgente && trilha
-            ? { background: "transparent", border: "1.5px solid #FECACA", color: "#DC2626", cursor: "pointer" }
-            : { background: urgente ? "#DC2626" : "#D97706", border: "none", color: "#fff", cursor: "pointer" }}>
+            ? { background: "transparent", border: "1.5px solid #DDD6FE", color: "#7C3AED", cursor: "pointer" }
+            : { background: urgente ? "#7C3AED" : "#D97706", border: "none", color: "#fff", cursor: "pointer" }}>
           {urgente && trilha ? "Ir para questões" : `Treinar ${pior.conteudo}`}
         </button>
       </div>
