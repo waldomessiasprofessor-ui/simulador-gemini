@@ -1538,9 +1538,9 @@ export default function Dashboard() {
   useEffect(() => {
     const key = "diagnosis_toast_shown";
     const level = (session as any)?.diagnosisLevel;
-    const shown = sessionStorage.getItem(key);
+    const shown = localStorage.getItem(key);
     if (level && !shown) {
-      sessionStorage.setItem(key, "1");
+      localStorage.setItem(key, "1");
       const diagInfo = DIAGNOSIS_LEVELS[level as string];
       const label = diagInfo ? `${diagInfo.emoji} ${diagInfo.label}` : level;
       toast.success(`Diagnóstico concluído: ${label}!`, {
