@@ -13,8 +13,9 @@ import { toast } from "sonner";
 import {
   Youtube, Save, Trash2, Check, AlertCircle, Plus, Loader2, BookOpen,
   Pencil, Eye, EyeOff, ChevronDown, ChevronRight, RefreshCw, X,
-  Image as ImageIcon,
+  Image as ImageIcon, Sparkles,
 } from "@/icons";
+import { GeminiAuditModal } from "@/GeminiAuditModal";
 
 // =============================================================================
 // Tipos internos
@@ -1172,6 +1173,7 @@ function ExercicioEditor({
   const [open, setOpen] = useState(false);
   const [previewEnunc, setPreviewEnunc] = useState(false);
   const [previewExpl, setPreviewExpl] = useState(false);
+  const [showAudit, setShowAudit] = useState(false);
 
   return (
     <div
@@ -1211,6 +1213,14 @@ function ExercicioEditor({
         >
           {ex.gabarito}
         </span>
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowAudit(true); }}
+          className="p-1 rounded opacity-60 hover:opacity-100 transition-opacity"
+          style={{ color: "#7C3AED" }}
+          title="Auditar com Gemini"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+        </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -1316,6 +1326,16 @@ function ExercicioEditor({
             placeholder="Explicação pedagógica da resposta correta"
           />
         </div>
+      )}
+
+      {showAudit && (
+        <GeminiAuditModal
+          type="exercicio"
+          itemLabel={`Exercício ${index + 1}`}
+          content={`ENUNCIADO:\n${ex.enunciado}\n\nALTERNATIVAS:\n${ex.alternativas.map(a => `${a.letra}) ${a.texto}`).join("\n")}\n\nGABARITO: ${ex.gabarito}\n\nEXPLICAÇÃO:\n${ex.explicacao}`}
+          onApplyFix={(improved) => onChange({ explicacao: improved })}
+          onClose={() => setShowAudit(false)}
+        />
       )}
     </div>
   );

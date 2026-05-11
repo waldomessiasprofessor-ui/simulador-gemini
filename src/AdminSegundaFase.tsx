@@ -4,8 +4,9 @@ import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Save, X, Loader2,
-  ImageUp, ChevronDown, ChevronUp, Search, Youtube,
+  ImageUp, ChevronDown, ChevronUp, Search, Youtube, Sparkles,
 } from "@/icons";
+import { GeminiAuditModal } from "@/GeminiAuditModal";
 
 // ─── ImgBB upload (mesma lógica do AdminQuestoes) ────────────────────────────
 
@@ -408,6 +409,7 @@ export default function AdminSegundaFase() {
   const [editQ, setEditQ] = useState<(typeof questions)[0] | null>(null);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [auditItem, setAuditItem] = useState<NonNullable<typeof questions>[number] | null>(null);
 
   function openEdit(q: (typeof questions)[0]) {
     setEditQ(q);
@@ -556,6 +558,12 @@ export default function AdminSegundaFase() {
 
                 {/* Ações */}
                 <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button onClick={() => setAuditItem(q)}
+                    className="p-1.5 rounded-lg hover:opacity-70"
+                    style={{ background: "#EDE9FE", color: "#7C3AED" }}
+                    title="Auditar com Gemini">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </button>
                   <button onClick={() => openEdit(q)}
                     className="p-1.5 rounded-lg hover:opacity-70"
                     style={{ background: "#E0F2F1", color: "#009688" }}
@@ -628,12 +636,20 @@ export default function AdminSegundaFase() {
                     </div>
                   )}
 
-                  <button onClick={() => openEdit(q)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold w-full justify-center"
-                    style={{ background: "#009688", color: "#fff" }}>
-                    <Pencil className="h-4 w-4" />
-                    {missingImages ? "Adicionar imagens pendentes" : "Editar questão"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setAuditItem(q)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold flex-1 justify-center"
+                      style={{ background: "linear-gradient(135deg, #1A1A2E, #521F80)", color: "#fff" }}>
+                      <Sparkles className="h-4 w-4" />
+                      Auditar com Gemini
+                    </button>
+                    <button onClick={() => openEdit(q)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold flex-1 justify-center"
+                      style={{ background: "#009688", color: "#fff" }}>
+                      <Pencil className="h-4 w-4" />
+                      {missingImages ? "Adicionar imagens" : "Editar questão"}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -647,6 +663,15 @@ export default function AdminSegundaFase() {
           </div>
         )}
       </div>
+
+      {auditItem && (
+        <GeminiAuditModal
+          type="discursiva"
+          itemLabel={`${auditItem.fonte} ${auditItem.ano} Q${auditItem.numero_prova}`}
+          content={`ENUNCIADO:\n${auditItem.enunciado}\n\nRESOLUÇÃO:\n${auditItem.resolucao}\n\nCONTEÚDO: ${auditItem.conteudo_principal}\nDIFICULDADE DECLARADA: ${auditItem.nivel_dificuldade}\nTAGS: ${(auditItem.tags as string[]).join(", ")}`}
+          onClose={() => setAuditItem(null)}
+        />
+      )}
     </div>
   );
 }

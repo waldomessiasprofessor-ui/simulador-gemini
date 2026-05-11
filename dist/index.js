@@ -834,6 +834,137 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
     if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
     await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
     return { success: true, applied: Object.keys(updateData) };
+  }),
+  // ─── Auditoria genérica (discursiva / flashcard / fórmula / exercício) ────────
+  auditGenericContent: adminProcedure.input(z.object({
+    type: z.enum(["discursiva", "flashcard", "formula", "exercicio"]),
+    content: z.string().min(1).max(9e3),
+    itemLabel: z.string().max(200).optional()
+  })).mutation(async ({ input }) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new TRPCError2({ code: "INTERNAL_SERVER_ERROR", message: "GEMINI_API_KEY n\xE3o configurada no servidor. Adicione a vari\xE1vel no Railway." });
+    const TAGS_VALIDAS = [
+      "An\xE1lise Combinat\xF3ria",
+      "\xC1reas de Figuras Planas",
+      "Convers\xE3o de Unidades",
+      "Equa\xE7\xF5es e Inequa\xE7\xF5es",
+      "Escala",
+      "Estat\xEDstica",
+      "Fun\xE7\xE3o Composta",
+      "Fun\xE7\xE3o do Primeiro Grau",
+      "Fun\xE7\xE3o Quadr\xE1tica",
+      "Fun\xE7\xE3o Exponencial",
+      "Fun\xE7\xE3o Logar\xEDtmica",
+      "Fun\xE7\xF5es de 1\xBA e 2\xBA Grau",
+      "Geometria Anal\xEDtica",
+      "Geometria Espacial",
+      "Geometria Plana",
+      "Leitura de Gr\xE1ficos e Tabelas",
+      "Logaritmos",
+      "Matem\xE1tica Financeira",
+      "Medidas de Tend\xEAncia Central",
+      "No\xE7\xF5es de L\xF3gica Matem\xE1tica",
+      "Opera\xE7\xF5es B\xE1sicas",
+      "Porcentagem",
+      "Probabilidade",
+      "Progress\xE3o Aritm\xE9tica",
+      "Progress\xE3o Geom\xE9trica",
+      "Raz\xE3o, Propor\xE7\xE3o e Regra de Tr\xEAs",
+      "Sequ\xEAncias",
+      "Trigonometria",
+      "Visualiza\xE7\xE3o Espacial/Proje\xE7\xE3o Ortogonal"
+    ];
+    const systemInstruction = `Voc\xEA \xE9 um especialista em educa\xE7\xE3o matem\xE1tica para o ENEM e vestibulares brasileiros.
+
+REGRAS ABSOLUTAS DE FORMATA\xC7\xC3O:
+1. Responda SEMPRE em portugu\xEAs do Brasil.
+2. Toda express\xE3o matem\xE1tica DEVE estar em LaTeX: inline com $...$ e bloco com $$...$$.
+3. PROIBIDO usar markdown (**, *, _) nos campos de texto corrido.
+4. Moeda brasileira: escreva "R$ 675,00" como texto simples \u2014 NUNCA dentro de $ $.
+5. Responda em JSON puro, sem markdown, sem bloco de c\xF3digo.`;
+    const JSON_SCHEMA = `{
+  "nota_qualidade": (n\xFAmero de 1 a 10),
+  "problemas": ["lista de problemas encontrados em portugu\xEAs, ou array vazio se nenhum"],
+  "sugestoes": ["lista de sugest\xF5es de melhoria em portugu\xEAs"],
+  "parecer": "Texto de 2-3 frases em portugu\xEAs com avalia\xE7\xE3o geral",
+  "conteudo_melhorado": "Conte\xFAdo melhorado com LaTeX correto em portugu\xEAs, ou null se n\xE3o houver mudan\xE7as necess\xE1rias",
+  "gabarito_correto": true | false | null,
+  "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
+  "tags_sugeridas": ["tags aplic\xE1veis da lista fornecida, ou array vazio"],
+  "dificuldade_real": "Muito Baixa" | "Baixa" | "M\xE9dia" | "Alta" | "Muito Alta" | null
+}`;
+    const typePrompts = {
+      discursiva: `Analise esta quest\xE3o discursiva de vestibular${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+Verifique: (1) se a resolu\xE7\xE3o est\xE1 matematicamente correta e completa; (2) se o enunciado est\xE1 claro e bem redigido; (3) se o LaTeX est\xE1 correto; (4) se as tags e dificuldade declaradas s\xE3o adequadas.
+TAGS DISPON\xCDVEIS: ${TAGS_VALIDAS.join(", ")}
+Para "conteudo_melhorado", forne\xE7a a resolu\xE7\xE3o completa melhorada, ou null se j\xE1 estiver correta.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`,
+      flashcard: `Analise este flashcard de matem\xE1tica${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+Verifique: (1) se a frente (pergunta/conceito) est\xE1 clara e objetiva; (2) se o verso (resposta/desenvolvimento) est\xE1 correto e bem explicado; (3) se o LaTeX est\xE1 correto e bem formatado.
+Para "conteudo_melhorado", forne\xE7a o verso do flashcard melhorado, ou null se j\xE1 estiver correto.
+Deixe "gabarito_correto", "gabarito_sugerido", "tags_sugeridas" e "dificuldade_real" como null.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`,
+      formula: `Analise esta f\xF3rmula matem\xE1tica${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+Verifique: (1) se a f\xF3rmula em LaTeX est\xE1 matematicamente correta e bem formatada; (2) se a descri\xE7\xE3o/explica\xE7\xE3o est\xE1 clara e completa; (3) se o t\xEDtulo \xE9 adequado.
+Para "conteudo_melhorado", forne\xE7a a f\xF3rmula LaTeX corrigida (apenas a f\xF3rmula, n\xE3o a descri\xE7\xE3o), ou null se j\xE1 estiver correta.
+Deixe "gabarito_correto", "gabarito_sugerido", "tags_sugeridas" e "dificuldade_real" como null.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`,
+      exercicio: `Analise este exerc\xEDcio de m\xFAltipla escolha de matem\xE1tica${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+TAREFA PRINCIPAL: Resolva matematicamente a quest\xE3o e verifique se o gabarito declarado est\xE1 CORRETO. Em seguida verifique: (1) clareza do enunciado; (2) consist\xEAncia das alternativas; (3) qualidade da explica\xE7\xE3o.
+TAGS DISPON\xCDVEIS: ${TAGS_VALIDAS.join(", ")}
+Para "conteudo_melhorado", forne\xE7a a explica\xE7\xE3o/resolu\xE7\xE3o melhorada com LaTeX, ou null se j\xE1 estiver correta.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`
+    };
+    const prompt = typePrompts[input.type];
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemInstruction }] },
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" }
+      })
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new TRPCError2({ code: "INTERNAL_SERVER_ERROR", message: `Erro na API Gemini: ${err}` });
+    }
+    const data = await res.json();
+    const finishReason = data.candidates?.[0]?.finishReason;
+    if (finishReason && finishReason !== "STOP") {
+      throw new TRPCError2({ code: "INTERNAL_SERVER_ERROR", message: `Gemini encerrou com motivo: ${finishReason}. Tente novamente.` });
+    }
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    if (!rawText) {
+      throw new TRPCError2({ code: "INTERNAL_SERVER_ERROR", message: "Gemini n\xE3o retornou conte\xFAdo. Tente novamente." });
+    }
+    const parseJson = (text2) => {
+      try {
+        return JSON.parse(text2);
+      } catch {
+        return null;
+      }
+    };
+    const fixLatexBackslashes = (raw) => raw.replace(/\\\\/g, "\0DS\0").replace(/\\"/g, "\0QT\0").replace(/\\n/g, "\0NL\0").replace(/\\/g, "\\\\").replace(/\x00DS\x00/g, "\\\\").replace(/\x00QT\x00/g, '\\"').replace(/\x00NL\x00/g, "\\n");
+    const audit = parseJson(rawText) ?? parseJson(fixLatexBackslashes(rawText));
+    if (!audit) throw new TRPCError2({ code: "INTERNAL_SERVER_ERROR", message: "Gemini retornou resposta em formato inv\xE1lido. Tente novamente." });
+    return { success: true, audit };
   })
 });
 

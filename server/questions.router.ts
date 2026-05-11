@@ -446,4 +446,137 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
       return { success: true, applied: Object.keys(updateData) };
     }),
+
+  // ─── Auditoria genérica (discursiva / flashcard / fórmula / exercício) ────────
+
+  auditGenericContent: adminProcedure
+    .input(z.object({
+      type: z.enum(["discursiva", "flashcard", "formula", "exercicio"]),
+      content: z.string().min(1).max(9000),
+      itemLabel: z.string().max(200).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "GEMINI_API_KEY não configurada no servidor. Adicione a variável no Railway." });
+
+      const TAGS_VALIDAS = [
+        "Análise Combinatória","Áreas de Figuras Planas","Conversão de Unidades",
+        "Equações e Inequações","Escala","Estatística","Função Composta",
+        "Função do Primeiro Grau","Função Quadrática","Função Exponencial",
+        "Função Logarítmica","Funções de 1º e 2º Grau","Geometria Analítica",
+        "Geometria Espacial","Geometria Plana","Leitura de Gráficos e Tabelas",
+        "Logaritmos","Matemática Financeira","Medidas de Tendência Central",
+        "Noções de Lógica Matemática","Operações Básicas","Porcentagem",
+        "Probabilidade","Progressão Aritmética","Progressão Geométrica",
+        "Razão, Proporção e Regra de Três","Sequências","Trigonometria",
+        "Visualização Espacial/Projeção Ortogonal",
+      ];
+
+      const systemInstruction = `Você é um especialista em educação matemática para o ENEM e vestibulares brasileiros.
+
+REGRAS ABSOLUTAS DE FORMATAÇÃO:
+1. Responda SEMPRE em português do Brasil.
+2. Toda expressão matemática DEVE estar em LaTeX: inline com $...$ e bloco com $$...$$.
+3. PROIBIDO usar markdown (**, *, _) nos campos de texto corrido.
+4. Moeda brasileira: escreva "R$ 675,00" como texto simples — NUNCA dentro de $ $.
+5. Responda em JSON puro, sem markdown, sem bloco de código.`;
+
+      const JSON_SCHEMA = `{
+  "nota_qualidade": (número de 1 a 10),
+  "problemas": ["lista de problemas encontrados em português, ou array vazio se nenhum"],
+  "sugestoes": ["lista de sugestões de melhoria em português"],
+  "parecer": "Texto de 2-3 frases em português com avaliação geral",
+  "conteudo_melhorado": "Conteúdo melhorado com LaTeX correto em português, ou null se não houver mudanças necessárias",
+  "gabarito_correto": true | false | null,
+  "gabarito_sugerido": "A" | "B" | "C" | "D" | "E" | null,
+  "tags_sugeridas": ["tags aplicáveis da lista fornecida, ou array vazio"],
+  "dificuldade_real": "Muito Baixa" | "Baixa" | "Média" | "Alta" | "Muito Alta" | null
+}`;
+
+      const typePrompts: Record<string, string> = {
+        discursiva: `Analise esta questão discursiva de vestibular${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+Verifique: (1) se a resolução está matematicamente correta e completa; (2) se o enunciado está claro e bem redigido; (3) se o LaTeX está correto; (4) se as tags e dificuldade declaradas são adequadas.
+TAGS DISPONÍVEIS: ${TAGS_VALIDAS.join(", ")}
+Para "conteudo_melhorado", forneça a resolução completa melhorada, ou null se já estiver correta.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`,
+
+        flashcard: `Analise este flashcard de matemática${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+Verifique: (1) se a frente (pergunta/conceito) está clara e objetiva; (2) se o verso (resposta/desenvolvimento) está correto e bem explicado; (3) se o LaTeX está correto e bem formatado.
+Para "conteudo_melhorado", forneça o verso do flashcard melhorado, ou null se já estiver correto.
+Deixe "gabarito_correto", "gabarito_sugerido", "tags_sugeridas" e "dificuldade_real" como null.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`,
+
+        formula: `Analise esta fórmula matemática${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+Verifique: (1) se a fórmula em LaTeX está matematicamente correta e bem formatada; (2) se a descrição/explicação está clara e completa; (3) se o título é adequado.
+Para "conteudo_melhorado", forneça a fórmula LaTeX corrigida (apenas a fórmula, não a descrição), ou null se já estiver correta.
+Deixe "gabarito_correto", "gabarito_sugerido", "tags_sugeridas" e "dificuldade_real" como null.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`,
+
+        exercicio: `Analise este exercício de múltipla escolha de matemática${input.itemLabel ? ` (${input.itemLabel})` : ""}:
+
+${input.content}
+
+TAREFA PRINCIPAL: Resolva matematicamente a questão e verifique se o gabarito declarado está CORRETO. Em seguida verifique: (1) clareza do enunciado; (2) consistência das alternativas; (3) qualidade da explicação.
+TAGS DISPONÍVEIS: ${TAGS_VALIDAS.join(", ")}
+Para "conteudo_melhorado", forneça a explicação/resolução melhorada com LaTeX, ou null se já estiver correta.
+
+Responda em JSON com este esquema exato: ${JSON_SCHEMA}`,
+      };
+
+      const prompt = typePrompts[input.type];
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" },
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Erro na API Gemini: ${err}` });
+      }
+
+      const data = await res.json();
+      const finishReason = data.candidates?.[0]?.finishReason;
+      if (finishReason && finishReason !== "STOP") {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Gemini encerrou com motivo: ${finishReason}. Tente novamente.` });
+      }
+
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      if (!rawText) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini não retornou conteúdo. Tente novamente." });
+      }
+
+      const parseJson = (text: string) => { try { return JSON.parse(text); } catch { return null; } };
+      const fixLatexBackslashes = (raw: string) =>
+        raw
+          .replace(/\\\\/g, "\x00DS\x00")
+          .replace(/\\"/g, "\x00QT\x00")
+          .replace(/\\n/g, "\x00NL\x00")
+          .replace(/\\/g, "\\\\")
+          .replace(/\x00DS\x00/g, "\\\\")
+          .replace(/\x00QT\x00/g, '\\"')
+          .replace(/\x00NL\x00/g, "\\n");
+
+      const audit = parseJson(rawText) ?? parseJson(fixLatexBackslashes(rawText));
+      if (!audit) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini retornou resposta em formato inválido. Tente novamente." });
+
+      return { success: true, audit };
+    }),
 });

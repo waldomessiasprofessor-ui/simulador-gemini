@@ -4,8 +4,9 @@ import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, X, Save, Loader2, Eye, EyeOff,
-  Layers, ChevronRight, ChevronLeft, Brain, FileText,
+  Layers, ChevronRight, ChevronLeft, Brain, FileText, Sparkles,
 } from "@/icons";
+import { GeminiAuditModal } from "@/GeminiAuditModal";
 
 // =============================================================================
 // Paleta de cores para baralhos
@@ -228,6 +229,7 @@ function CardsPanel({ deckId, deckColor, onBack }: { deckId: number; deckColor: 
   const [editId,         setEditId]         = useState<number | null>(null);
   const [expandedId,     setExpandedId]     = useState<number | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [auditCard, setAuditCard] = useState<{ id: number; front: string; back: string } | null>(null);
 
   const editingCard = editId !== null ? cards?.find(c => c.id === editId) : null;
 
@@ -295,6 +297,10 @@ function CardsPanel({ deckId, deckColor, onBack }: { deckId: number; deckColor: 
 
                   {/* Actions */}
                   <div className="flex items-center gap-0.5 flex-shrink-0">
+                    <button onClick={() => setAuditCard({ id: card.id, front: card.front, back: card.back })}
+                      className="p-1.5 rounded-lg hover:bg-purple-50" title="Auditar com Gemini">
+                      <Sparkles className="h-3.5 w-3.5" style={{ color: "#7C3AED" }} />
+                    </button>
                     <button onClick={() => { setEditId(card.id); setShowForm(false); setExpandedId(null); }}
                       className="p-1.5 rounded-lg hover:bg-gray-100" title="Editar">
                       <Pencil className="h-3.5 w-3.5" style={{ color: deckColor }} />
@@ -343,6 +349,15 @@ function CardsPanel({ deckId, deckColor, onBack }: { deckId: number; deckColor: 
             );
           })}
         </div>
+      )}
+
+      {auditCard && (
+        <GeminiAuditModal
+          type="flashcard"
+          itemLabel={`Card #${auditCard.id}`}
+          content={`FRENTE:\n${auditCard.front}\n\nVERSO:\n${auditCard.back}`}
+          onClose={() => setAuditCard(null)}
+        />
       )}
     </div>
   );

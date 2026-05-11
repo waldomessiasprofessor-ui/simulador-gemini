@@ -4,8 +4,9 @@ import { LatexRenderer } from "@/LatexRenderer";
 import { toast } from "sonner";
 import {
   Plus, Pencil, Trash2, ChevronDown, ChevronUp,
-  Loader2, X, Save, FlaskConical, Eye, EyeOff
+  Loader2, X, Save, FlaskConical, Eye, EyeOff, Sparkles,
 } from "@/icons";
+import { GeminiAuditModal } from "@/GeminiAuditModal";
 
 const SECOES_PADRAO = [
   "Álgebra", "Geometria Plana", "Geometria Analítica",
@@ -40,6 +41,7 @@ export default function AdminFormulas() {
   const [form, setForm] = useState<Form>(emptyForm);
   const [openId, setOpenId] = useState<number | null>(null);
   const [preview, setPreview] = useState(false);
+  const [auditFormula, setAuditFormula] = useState<{ id: number; titulo: string; formula: string; descricao: string } | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -322,6 +324,10 @@ export default function AdminFormulas() {
                         </button>
 
                         <div className="flex items-center gap-1 flex-shrink-0">
+                          <button onClick={() => setAuditFormula({ id: f.id, titulo: f.titulo, formula: f.formula, descricao: f.descricao })}
+                            className="p-1.5 rounded-lg hover:opacity-70" title="Auditar com Gemini">
+                            <Sparkles className="h-3.5 w-3.5" style={{ color: "#7C3AED" }} />
+                          </button>
                           <button onClick={() => startEdit(f)} className="p-1.5 rounded-lg hover:opacity-70" title="Editar">
                             <Pencil className="h-3.5 w-3.5" style={{ color: "#009688" }} />
                           </button>
@@ -355,6 +361,15 @@ export default function AdminFormulas() {
             </div>
           ))}
         </div>
+      )}
+
+      {auditFormula && (
+        <GeminiAuditModal
+          type="formula"
+          itemLabel={auditFormula.titulo}
+          content={`TÍTULO: ${auditFormula.titulo}\n\nFÓRMULA (LaTeX): ${auditFormula.formula}\n\nDESCRIÇÃO: ${auditFormula.descricao}`}
+          onClose={() => setAuditFormula(null)}
+        />
       )}
     </div>
   );
