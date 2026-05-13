@@ -137,6 +137,21 @@ function restoreLatex(latex: string): string {
     .replace(new RegExp(CURR_PH, "g"), "\\$");
 }
 
+/**
+ * Corrige \text{WORD_{sub}} e \text{WORD^{sup}} que o KaTeX não aceita.
+ * Subscrito/superscrito dentro de \text{} são inválidos; move-os para fora:
+ *   \text{CF_{novo}}  →  \text{CF}_{\text{novo}}
+ *   \text{CF_novo}    →  \text{CF}_{\text{novo}}
+ *   \text{x^{2}}      →  \text{x}^{\text{2}}
+ */
+function fixTextSubscripts(latex: string): string {
+  return latex
+    .replace(/\\text\{([^}_{]*)_\{([^}]*)\}\}/g, (_, b, s) => `\\text{${b}}_{\\text{${s}}}`)
+    .replace(/\\text\{([^}_{]*)_([^}_{]+)\}/g,   (_, b, s) => `\\text{${b}}_{\\text{${s}}}`)
+    .replace(/\\text\{([^}_{^]*)\^\{([^}]*)\}\}/g, (_, b, s) => `\\text{${b}}^{\\text{${s}}}`)
+    .replace(/\\text\{([^}_{^]*)\^([^}_{^]+)\}/g,  (_, b, s) => `\\text{${b}}^{\\text{${s}}}`);
+}
+
 // Divide o texto em "chunks" separando blocos de tabela Markdown do restante.
 function splitTableChunks(text: string): Array<{ isTable: boolean; content: string }> {
   const lines = text.split("\n");
@@ -371,7 +386,7 @@ function renderMarkdownTable(headers: string[], rows: string[][], key: string): 
 
 function renderKatex(latex: string, displayMode: boolean, key: string, compact = false): React.ReactNode {
   // Pre-processamento: normaliza comandos comuns do LaTeX brasileiro / ENEM
-  const normalized = latex
+  const normalized = fixTextSubscripts(latex)
     .replace(/\\sen\b/g, "\\sin")
     .replace(/\\tg\b/g, "\\tan")
     .replace(/\\cotg\b/g, "\\cot")
