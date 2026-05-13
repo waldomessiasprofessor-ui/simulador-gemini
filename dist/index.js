@@ -79,6 +79,13 @@ var users = mysqlTable("users", {
   diagnosisScore: int("diagnosis_score"),
   xp: int("xp").notNull().default(0),
   diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
+  // Perfil ampliado (diagnóstico v2)
+  studyGoal: varchar("study_goal", { length: 60 }),
+  // "ENEM" | "Vestibulares" | "Concursos" | "Todos"
+  mathSelfLevel: varchar("math_self_level", { length: 30 }),
+  // "iniciante" | "intermediario" | "avancado"
+  mathDifficulty: varchar("math_difficulty", { length: 100 }),
+  // tópico com maior dificuldade
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 var questions = mysqlTable(
@@ -2693,6 +2700,9 @@ var usersRouter = createTRPCRouter({
   completeDiagnosis: protectedProcedure.input(z4.object({
     city: z4.string().min(2).max(100),
     educationLevel: z4.string().min(2).max(80),
+    studyGoal: z4.string().max(60).optional(),
+    mathSelfLevel: z4.string().max(30).optional(),
+    mathDifficulty: z4.string().max(100).optional(),
     answers: z4.record(z4.string(), z4.string())
     // { questionId: letraEscolhida }
   })).mutation(async ({ ctx, input }) => {
@@ -2716,6 +2726,9 @@ var usersRouter = createTRPCRouter({
     await ctx.db.update(users).set({
       city: input.city,
       educationLevel: input.educationLevel,
+      studyGoal: input.studyGoal ?? null,
+      mathSelfLevel: input.mathSelfLevel ?? null,
+      mathDifficulty: input.mathDifficulty ?? null,
       diagnosisLevel: level,
       diagnosisScore: correct,
       diagnosisCompletedAt: /* @__PURE__ */ new Date(),

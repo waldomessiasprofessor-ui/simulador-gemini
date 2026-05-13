@@ -26,6 +26,34 @@ const EDUCATION_OPTIONS = [
   { value: "Ensino Superior", emoji: "🏛️", label: "Ensino Superior" },
 ];
 
+const STUDY_GOAL_OPTIONS = [
+  { value: "ENEM", emoji: "📝", label: "ENEM", desc: "Exame Nacional do Ensino Médio" },
+  { value: "Vestibulares", emoji: "🏛️", label: "Vestibulares", desc: "FUVEST, UNICAMP, UNESP e outros" },
+  { value: "Concursos", emoji: "📋", label: "Concursos Públicos", desc: "Concursos federais, estaduais e municipais" },
+  { value: "Todos", emoji: "🌟", label: "Todos / Qualquer um", desc: "Quero me preparar para múltiplos" },
+];
+
+const MATH_SELF_LEVEL_OPTIONS = [
+  { value: "iniciante", emoji: "🌱", label: "Iniciante", desc: "Tenho bastante dificuldade com matemática" },
+  { value: "intermediario", emoji: "📈", label: "Intermediário", desc: "Sei o básico, mas quero melhorar" },
+  { value: "avancado", emoji: "🚀", label: "Avançado", desc: "Já domino bem, quero aperfeiçoar" },
+];
+
+const MATH_DIFFICULTY_OPTIONS = [
+  { value: "Funções", emoji: "📊" },
+  { value: "Geometria Plana", emoji: "📐" },
+  { value: "Geometria Espacial", emoji: "🔷" },
+  { value: "Álgebra", emoji: "🔢" },
+  { value: "Probabilidade", emoji: "🎲" },
+  { value: "Estatística", emoji: "📉" },
+  { value: "Trigonometria", emoji: "🔁" },
+  { value: "Aritmética e Números", emoji: "🔣" },
+  { value: "Progressões (PA e PG)", emoji: "⏩" },
+  { value: "Matrizes e Determinantes", emoji: "🗃️" },
+  { value: "Logaritmo e Exponencial", emoji: "🔬" },
+  { value: "Não sei dizer", emoji: "🤷" },
+];
+
 // Reutiliza DIAGNOSIS_LEVELS de src/lib/xp.ts
 const LEVEL_INFO = DIAGNOSIS_LEVELS;
 
@@ -105,11 +133,56 @@ function WelcomeScreen({ name, onStart, onSkip }: { name: string; onStart: () =>
 
 // ─── Formulário de perfil ─────────────────────────────────────────────────────
 
-function ProfileForm({ onNext }: { onNext: (city: string, edu: string) => void }) {
+type ProfileData = {
+  city: string;
+  edu: string;
+  studyGoal: string;
+  mathSelfLevel: string;
+  mathDifficulty: string;
+};
+
+function OptionButton({
+  selected, onClick, emoji, label, desc,
+}: { selected: boolean; onClick: () => void; emoji: string; label: string; desc?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "12px 14px", borderRadius: 12, border: "2px solid",
+        borderColor: selected ? "#009688" : "var(--border)",
+        background: selected ? "#E0F2F1" : "var(--card)",
+        color: selected ? "#00695C" : "var(--foreground)",
+        fontSize: 13, fontWeight: selected ? 700 : 500,
+        cursor: "pointer", textAlign: "left",
+        display: "flex", alignItems: "center", gap: 10,
+        transition: "all 0.15s", width: "100%",
+      }}>
+      <span style={{ fontSize: 18, flexShrink: 0 }}>{emoji}</span>
+      <span style={{ flex: 1 }}>
+        <span style={{ display: "block" }}>{label}</span>
+        {desc && <span style={{ fontSize: 11, opacity: 0.7, fontWeight: 400 }}>{desc}</span>}
+      </span>
+      {selected && <span style={{ fontSize: 16, flexShrink: 0 }}>✓</span>}
+    </button>
+  );
+}
+
+function ProfileForm({ onNext }: { onNext: (data: ProfileData) => void }) {
   const [city, setCity] = useState("");
   const [edu, setEdu] = useState("");
+  const [studyGoal, setStudyGoal] = useState("");
+  const [mathSelfLevel, setMathSelfLevel] = useState("");
+  const [mathDifficulty, setMathDifficulty] = useState("");
   const [show, setShow] = useState(false);
   useEffect(() => { setTimeout(() => setShow(true), 100); }, []);
+
+  const canAdvance = city.trim().length >= 2 && edu && studyGoal && mathSelfLevel && mathDifficulty;
+
+  const sectionLabel = (icon: string, text: string) => (
+    <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 10, color: "var(--foreground)" }}>
+      {icon} {text}
+    </label>
+  );
 
   return (
     <div style={{
@@ -123,16 +196,15 @@ function ProfileForm({ onNext }: { onNext: (city: string, edu: string) => void }
           Antes de começar… 😊
         </h2>
         <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: 0 }}>
-          Me conta um pouco sobre você!
+          Me conta um pouco sobre você para personalizar sua experiência!
         </p>
       </div>
 
-      <div style={{ width: "100%", maxWidth: 360 }}>
-        {/* Cidade */}
-        <div style={{ marginBottom: 24 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 8, color: "var(--foreground)" }}>
-            📍 De qual cidade você é?
-          </label>
+      <div style={{ width: "100%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 28 }}>
+
+        {/* ── Cidade ── */}
+        <div>
+          {sectionLabel("📍", "De qual cidade você é?")}
           <input
             value={city}
             onChange={(e) => setCity(e.target.value)}
@@ -148,49 +220,100 @@ function ProfileForm({ onNext }: { onNext: (city: string, edu: string) => void }
           />
         </div>
 
-        {/* Escolaridade */}
+        {/* ── Escolaridade ── */}
         <div>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 10, color: "var(--foreground)" }}>
-            🎓 Qual é sua escolaridade?
-          </label>
+          {sectionLabel("🎓", "Qual é sua escolaridade?")}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {EDUCATION_OPTIONS.map((opt) => (
-              <button
+              <OptionButton
                 key={opt.value}
+                selected={edu === opt.value}
                 onClick={() => setEdu(opt.value)}
-                style={{
-                  padding: "12px 14px", borderRadius: 12, border: "2px solid",
-                  borderColor: edu === opt.value ? "#009688" : "var(--border)",
-                  background: edu === opt.value ? "#E0F2F1" : "var(--card)",
-                  color: edu === opt.value ? "#00695C" : "var(--foreground)",
-                  fontSize: 13, fontWeight: edu === opt.value ? 700 : 500,
-                  cursor: "pointer", textAlign: "left",
-                  display: "flex", alignItems: "center", gap: 10,
-                  transition: "all 0.15s",
-                }}>
-                <span style={{ fontSize: 18 }}>{opt.emoji}</span>
-                <span>{opt.label}</span>
-                {edu === opt.value && <span style={{ marginLeft: "auto", fontSize: 16 }}>✓</span>}
-              </button>
+                emoji={opt.emoji}
+                label={opt.label}
+              />
             ))}
           </div>
         </div>
+
+        {/* ── Objetivo ── */}
+        <div>
+          {sectionLabel("🎯", "Para qual prova você quer se preparar?")}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {STUDY_GOAL_OPTIONS.map((opt) => (
+              <OptionButton
+                key={opt.value}
+                selected={studyGoal === opt.value}
+                onClick={() => setStudyGoal(opt.value)}
+                emoji={opt.emoji}
+                label={opt.label}
+                desc={opt.desc}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Nível em matemática ── */}
+        <div>
+          {sectionLabel("🧮", "Como você se considera em matemática?")}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {MATH_SELF_LEVEL_OPTIONS.map((opt) => (
+              <OptionButton
+                key={opt.value}
+                selected={mathSelfLevel === opt.value}
+                onClick={() => setMathSelfLevel(opt.value)}
+                emoji={opt.emoji}
+                label={opt.label}
+                desc={opt.desc}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Maior dificuldade ── */}
+        <div>
+          {sectionLabel("🤔", "Qual conteúdo você mais tem dificuldade?")}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {MATH_DIFFICULTY_OPTIONS.map((opt) => {
+              const sel = mathDifficulty === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => setMathDifficulty(opt.value)}
+                  style={{
+                    padding: "9px 14px", borderRadius: 20, border: "2px solid",
+                    borderColor: sel ? "#009688" : "var(--border)",
+                    background: sel ? "#E0F2F1" : "var(--card)",
+                    color: sel ? "#00695C" : "var(--foreground)",
+                    fontSize: 13, fontWeight: sel ? 700 : 500,
+                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                    transition: "all 0.15s",
+                    boxShadow: sel ? "0 0 0 3px rgba(0,150,136,0.15)" : "none",
+                  }}>
+                  <span>{opt.emoji}</span>
+                  <span>{opt.value}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
 
       <button
-        onClick={() => onNext(city, edu)}
-        disabled={!city.trim() || !edu}
+        onClick={() => onNext({ city, edu, studyGoal, mathSelfLevel, mathDifficulty })}
+        disabled={!canAdvance}
         style={{
-          width: "100%", maxWidth: 360,
+          width: "100%", maxWidth: 380,
           padding: "15px", borderRadius: 16, border: "none",
-          cursor: city.trim() && edu ? "pointer" : "default",
-          background: city.trim() && edu
+          cursor: canAdvance ? "pointer" : "default",
+          background: canAdvance
             ? "linear-gradient(135deg, #263238 0%, #009688 100%)"
             : "var(--muted)",
-          color: city.trim() && edu ? "#fff" : "var(--muted-foreground)",
+          color: canAdvance ? "#fff" : "var(--muted-foreground)",
           fontSize: 15, fontWeight: 800,
           transition: "all 0.15s",
-          boxShadow: city.trim() && edu ? "0 4px 16px rgba(0,150,136,0.35)" : "none",
+          boxShadow: canAdvance ? "0 4px 16px rgba(0,150,136,0.35)" : "none",
         }}>
         Avançar →
       </button>
@@ -582,8 +705,9 @@ export default function Diagnostico({ session, onComplete, onSkip }: {
   onSkip?: () => void;
 }) {
   const [step, setStep] = useState<Step>("welcome");
-  const [city, setCity] = useState("");
-  const [edu, setEdu] = useState("");
+  const [profileData, setProfileData] = useState<ProfileData>({
+    city: "", edu: "", studyGoal: "", mathSelfLevel: "", mathDifficulty: "",
+  });
   const [result, setResult] = useState<{
     level: string;
     correct: number;
@@ -606,14 +730,20 @@ export default function Diagnostico({ session, onComplete, onSkip }: {
     },
   });
 
-  function handleFormNext(c: string, e: string) {
-    setCity(c);
-    setEdu(e);
+  function handleFormNext(data: ProfileData) {
+    setProfileData(data);
     setStep("quiz");
   }
 
   function handleQuizFinish(answers: Record<string, string>) {
-    completeMutation.mutate({ city, educationLevel: edu, answers });
+    completeMutation.mutate({
+      city: profileData.city,
+      educationLevel: profileData.edu,
+      studyGoal: profileData.studyGoal || undefined,
+      mathSelfLevel: profileData.mathSelfLevel || undefined,
+      mathDifficulty: profileData.mathDifficulty || undefined,
+      answers,
+    });
   }
 
   return (

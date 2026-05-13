@@ -34,6 +34,10 @@ export const users = mysqlTable("users", {
   diagnosisScore: int("diagnosis_score"),
   xp: int("xp").notNull().default(0),
   diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
+  // Perfil ampliado (diagnóstico v2)
+  studyGoal: varchar("study_goal", { length: 60 }),         // "ENEM" | "Vestibulares" | "Concursos" | "Todos"
+  mathSelfLevel: varchar("math_self_level", { length: 30 }), // "iniciante" | "intermediario" | "avancado"
+  mathDifficulty: varchar("math_difficulty", { length: 100 }), // tópico com maior dificuldade
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -223,6 +223,9 @@ export const usersRouter = createTRPCRouter({
     .input(z.object({
       city: z.string().min(2).max(100),
       educationLevel: z.string().min(2).max(80),
+      studyGoal: z.string().max(60).optional(),
+      mathSelfLevel: z.string().max(30).optional(),
+      mathDifficulty: z.string().max(100).optional(),
       answers: z.record(z.string(), z.string()), // { questionId: letraEscolhida }
     }))
     .mutation(async ({ ctx, input }) => {
@@ -262,6 +265,9 @@ export const usersRouter = createTRPCRouter({
       await ctx.db.update(users).set({
         city: input.city,
         educationLevel: input.educationLevel,
+        studyGoal: input.studyGoal ?? null,
+        mathSelfLevel: input.mathSelfLevel ?? null,
+        mathDifficulty: input.mathDifficulty ?? null,
         diagnosisLevel: level as any,
         diagnosisScore: correct,
         diagnosisCompletedAt: new Date(),
