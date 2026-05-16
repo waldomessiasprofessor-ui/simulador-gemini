@@ -80,12 +80,12 @@ var users = mysqlTable("users", {
   xp: int("xp").notNull().default(0),
   diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
   // Perfil ampliado (diagnóstico v2)
-  studyGoal: varchar("study_goal", { length: 60 }),
-  // "ENEM" | "Vestibulares" | "Concursos" | "Todos"
-  mathSelfLevel: varchar("math_self_level", { length: 30 }),
-  // "iniciante" | "intermediario" | "avancado"
-  mathDifficulty: varchar("math_difficulty", { length: 100 }),
-  // tópico com maior dificuldade
+  studyGoal: varchar("study_goal", { length: 200 }),
+  // comma-sep: "ENEM, Vestibulares, ..."
+  mathSelfLevel: varchar("math_self_level", { length: 120 }),
+  // comma-sep: "iniciante, intermediario"
+  mathDifficulty: varchar("math_difficulty", { length: 600 }),
+  // comma-sep: "Funções, Álgebra, ..."
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 var questions = mysqlTable(
@@ -2571,6 +2571,14 @@ var usersRouter = createTRPCRouter({
       active: users.active,
       subscriptionExpiresAt: users.subscriptionExpiresAt,
       diagnosisLevel: users.diagnosisLevel,
+      diagnosisScore: users.diagnosisScore,
+      diagnosisCompletedAt: users.diagnosisCompletedAt,
+      xp: users.xp,
+      city: users.city,
+      educationLevel: users.educationLevel,
+      studyGoal: users.studyGoal,
+      mathSelfLevel: users.mathSelfLevel,
+      mathDifficulty: users.mathDifficulty,
       createdAt: users.createdAt
     }).from(users).orderBy(users.createdAt);
     const now = /* @__PURE__ */ new Date();
@@ -2700,9 +2708,9 @@ var usersRouter = createTRPCRouter({
   completeDiagnosis: protectedProcedure.input(z4.object({
     city: z4.string().min(2).max(100),
     educationLevel: z4.string().min(2).max(80),
-    studyGoal: z4.string().max(60).optional(),
-    mathSelfLevel: z4.string().max(30).optional(),
-    mathDifficulty: z4.string().max(100).optional(),
+    studyGoal: z4.string().max(200).optional(),
+    mathSelfLevel: z4.string().max(120).optional(),
+    mathDifficulty: z4.string().max(600).optional(),
     answers: z4.record(z4.string(), z4.string())
     // { questionId: letraEscolhida }
   })).mutation(async ({ ctx, input }) => {

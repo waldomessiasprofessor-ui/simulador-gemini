@@ -35,9 +35,9 @@ export const users = mysqlTable("users", {
   xp: int("xp").notNull().default(0),
   diagnosisCompletedAt: timestamp("diagnosis_completed_at"),
   // Perfil ampliado (diagnóstico v2)
-  studyGoal: varchar("study_goal", { length: 60 }),         // "ENEM" | "Vestibulares" | "Concursos" | "Todos"
-  mathSelfLevel: varchar("math_self_level", { length: 30 }), // "iniciante" | "intermediario" | "avancado"
-  mathDifficulty: varchar("math_difficulty", { length: 100 }), // tópico com maior dificuldade
+  studyGoal: varchar("study_goal", { length: 200 }),         // comma-sep: "ENEM, Vestibulares, ..."
+  mathSelfLevel: varchar("math_self_level", { length: 120 }), // comma-sep: "iniciante, intermediario"
+  mathDifficulty: varchar("math_difficulty", { length: 600 }), // comma-sep: "Funções, Álgebra, ..."
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

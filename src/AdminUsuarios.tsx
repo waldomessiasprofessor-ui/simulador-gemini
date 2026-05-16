@@ -324,20 +324,132 @@ export default function AdminUsuarios() {
                   </div>
                 )}
 
-                {/* Expansão: detalhes */}
+                {/* Expansão: visão geral do aluno */}
                 {isExpanded && !isConfirmingDelete && !isResetting && !isSettingSub && (
-                  <div className="px-4 py-3 space-y-1" style={{ borderTop: "1px solid var(--border)", background: "var(--muted)" }}>
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}><span className="font-semibold">ID:</span> {u.id}</p>
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}><span className="font-semibold">E-mail:</span> {u.email}</p>
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}><span className="font-semibold">Função:</span> {u.role === "admin" ? "Administrador" : "Aluno"}</p>
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}><span className="font-semibold">Status:</span> {u.active ? "Ativo" : "Inativo"}</p>
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                      <span className="font-semibold">Assinatura:</span>{" "}
-                      {u.subscriptionExpiresAt
-                        ? `${u.subscriptionStatus === "expirada" ? "Expirou" : "Expira"} em ${new Date(u.subscriptionExpiresAt).toLocaleDateString("pt-BR")}`
-                        : "Sem assinatura definida"}
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}><span className="font-semibold">Cadastrado:</span> {new Date(u.createdAt).toLocaleString("pt-BR")}</p>
+                  <div style={{ borderTop: "1px solid var(--border)", background: "var(--muted)" }}>
+
+                    {/* ── Dados básicos ── */}
+                    <div className="px-4 py-3 space-y-1">
+                      <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#009688" }}>
+                        📋 Dados básicos
+                      </p>
+                      {[
+                        ["ID", String(u.id)],
+                        ["E-mail", u.email],
+                        ["Função", u.role === "admin" ? "Administrador" : "Aluno"],
+                        ["Status", u.active ? "Ativo" : "Inativo"],
+                        ["Cadastrado", new Date(u.createdAt).toLocaleString("pt-BR")],
+                        ["Assinatura", u.subscriptionExpiresAt
+                          ? `${u.subscriptionStatus === "expirada" ? "Expirou" : "Expira"} em ${new Date(u.subscriptionExpiresAt).toLocaleDateString("pt-BR")}`
+                          : "Sem assinatura definida"],
+                      ].map(([label, value]) => (
+                        <p key={label} className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                          <span className="font-semibold">{label}:</span> {value}
+                        </p>
+                      ))}
+                    </div>
+
+                    {/* ── Diagnóstico ── */}
+                    <div className="px-4 py-3 space-y-2" style={{ borderTop: "1px solid var(--border)" }}>
+                      <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#009688" }}>
+                        🎯 Diagnóstico
+                      </p>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        {(u as any).diagnosisLevel
+                          ? <LevelBadge level={(u as any).diagnosisLevel as DiagnosisLevel} size="sm" />
+                          : <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "#F1F5F9", color: "var(--muted-foreground)" }}>Sem diagnóstico</span>
+                        }
+                        {(u as any).diagnosisScore != null && (
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#E0F2F1", color: "#00695C" }}>
+                            {(u as any).diagnosisScore} acertos
+                          </span>
+                        )}
+                        {(u as any).xp != null && (
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#FEF9C3", color: "#854D0E" }}>
+                            ⭐ {(u as any).xp} XP
+                          </span>
+                        )}
+                      </div>
+                      {(u as any).diagnosisCompletedAt && (
+                        <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                          Realizado em: {new Date((u as any).diagnosisCompletedAt).toLocaleString("pt-BR")}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* ── Perfil de estudo ── */}
+                    {((u as any).city || (u as any).educationLevel || (u as any).studyGoal || (u as any).mathSelfLevel || (u as any).mathDifficulty) && (
+                      <div className="px-4 py-3 space-y-3" style={{ borderTop: "1px solid var(--border)" }}>
+                        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#009688" }}>
+                          📊 Perfil de estudo
+                        </p>
+
+                        <div className="grid gap-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                          {(u as any).city && (
+                            <div>
+                              <p className="text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>📍 Cidade</p>
+                              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{(u as any).city}</p>
+                            </div>
+                          )}
+                          {(u as any).educationLevel && (
+                            <div>
+                              <p className="text-xs font-semibold mb-1" style={{ color: "var(--foreground)" }}>🎓 Escolaridade</p>
+                              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{(u as any).educationLevel}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {(u as any).studyGoal && (
+                          <div>
+                            <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--foreground)" }}>🎯 Objetivo</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {String((u as any).studyGoal).split(", ").map((g: string) => (
+                                <span key={g} className="text-xs px-2 py-0.5 rounded-full font-medium"
+                                  style={{ background: "#E0F2F1", color: "#00695C", border: "1px solid #B2DFDB" }}>
+                                  {g}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(u as any).mathSelfLevel && (
+                          <div>
+                            <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--foreground)" }}>🧮 Nível (auto-avaliado)</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {String((u as any).mathSelfLevel).split(", ").map((l: string) => {
+                                const colors: Record<string, { bg: string; color: string }> = {
+                                  iniciante: { bg: "#FEF9C3", color: "#854D0E" },
+                                  intermediario: { bg: "#DBEAFE", color: "#1D4ED8" },
+                                  avancado: { bg: "#F3E8FF", color: "#7C3AED" },
+                                };
+                                const c = colors[l] ?? { bg: "#F1F5F9", color: "var(--muted-foreground)" };
+                                return (
+                                  <span key={l} className="text-xs px-2 py-0.5 rounded-full font-semibold capitalize"
+                                    style={{ background: c.bg, color: c.color }}>
+                                    {l.charAt(0).toUpperCase() + l.slice(1)}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {(u as any).mathDifficulty && (
+                          <div>
+                            <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--foreground)" }}>🤔 Maior(es) dificuldade(s)</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {String((u as any).mathDifficulty).split(", ").map((d: string) => (
+                                <span key={d} className="text-xs px-2 py-0.5 rounded-full font-medium"
+                                  style={{ background: "#FFE4E6", color: "#BE123C", border: "1px solid #FECDD3" }}>
+                                  {d}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

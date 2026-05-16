@@ -20,6 +20,14 @@ export const usersRouter = createTRPCRouter({
           active: users.active,
           subscriptionExpiresAt: users.subscriptionExpiresAt,
           diagnosisLevel: users.diagnosisLevel,
+          diagnosisScore: users.diagnosisScore,
+          diagnosisCompletedAt: users.diagnosisCompletedAt,
+          xp: users.xp,
+          city: users.city,
+          educationLevel: users.educationLevel,
+          studyGoal: users.studyGoal,
+          mathSelfLevel: users.mathSelfLevel,
+          mathDifficulty: users.mathDifficulty,
           createdAt: users.createdAt,
         })
         .from(users)
@@ -223,9 +231,9 @@ export const usersRouter = createTRPCRouter({
     .input(z.object({
       city: z.string().min(2).max(100),
       educationLevel: z.string().min(2).max(80),
-      studyGoal: z.string().max(60).optional(),
-      mathSelfLevel: z.string().max(30).optional(),
-      mathDifficulty: z.string().max(100).optional(),
+      studyGoal: z.string().max(200).optional(),
+      mathSelfLevel: z.string().max(120).optional(),
+      mathDifficulty: z.string().max(600).optional(),
       answers: z.record(z.string(), z.string()), // { questionId: letraEscolhida }
     }))
     .mutation(async ({ ctx, input }) => {

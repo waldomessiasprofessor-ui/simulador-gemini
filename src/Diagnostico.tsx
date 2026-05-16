@@ -136,9 +136,9 @@ function WelcomeScreen({ name, onStart, onSkip }: { name: string; onStart: () =>
 type ProfileData = {
   city: string;
   edu: string;
-  studyGoal: string;
-  mathSelfLevel: string;
-  mathDifficulty: string;
+  studyGoal: string[];
+  mathSelfLevel: string[];
+  mathDifficulty: string[];
 };
 
 function OptionButton({
@@ -167,16 +167,20 @@ function OptionButton({
   );
 }
 
+function toggle(arr: string[], val: string): string[] {
+  return arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
+}
+
 function ProfileForm({ onNext }: { onNext: (data: ProfileData) => void }) {
   const [city, setCity] = useState("");
   const [edu, setEdu] = useState("");
-  const [studyGoal, setStudyGoal] = useState("");
-  const [mathSelfLevel, setMathSelfLevel] = useState("");
-  const [mathDifficulty, setMathDifficulty] = useState("");
+  const [studyGoal, setStudyGoal] = useState<string[]>([]);
+  const [mathSelfLevel, setMathSelfLevel] = useState<string[]>([]);
+  const [mathDifficulty, setMathDifficulty] = useState<string[]>([]);
   const [show, setShow] = useState(false);
   useEffect(() => { setTimeout(() => setShow(true), 100); }, []);
 
-  const canAdvance = city.trim().length >= 2 && edu && studyGoal && mathSelfLevel && mathDifficulty;
+  const canAdvance = city.trim().length >= 2 && !!edu && studyGoal.length > 0 && mathSelfLevel.length > 0 && mathDifficulty.length > 0;
 
   const sectionLabel = (icon: string, text: string) => (
     <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 10, color: "var(--foreground)" }}>
@@ -239,12 +243,13 @@ function ProfileForm({ onNext }: { onNext: (data: ProfileData) => void }) {
         {/* ── Objetivo ── */}
         <div>
           {sectionLabel("🎯", "Para qual prova você quer se preparar?")}
+          <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: "0 0 10px", fontStyle: "italic" }}>Pode selecionar mais de uma</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {STUDY_GOAL_OPTIONS.map((opt) => (
               <OptionButton
                 key={opt.value}
-                selected={studyGoal === opt.value}
-                onClick={() => setStudyGoal(opt.value)}
+                selected={studyGoal.includes(opt.value)}
+                onClick={() => setStudyGoal((prev) => toggle(prev, opt.value))}
                 emoji={opt.emoji}
                 label={opt.label}
                 desc={opt.desc}
@@ -256,12 +261,13 @@ function ProfileForm({ onNext }: { onNext: (data: ProfileData) => void }) {
         {/* ── Nível em matemática ── */}
         <div>
           {sectionLabel("🧮", "Como você se considera em matemática?")}
+          <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: "0 0 10px", fontStyle: "italic" }}>Pode selecionar mais de uma</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {MATH_SELF_LEVEL_OPTIONS.map((opt) => (
               <OptionButton
                 key={opt.value}
-                selected={mathSelfLevel === opt.value}
-                onClick={() => setMathSelfLevel(opt.value)}
+                selected={mathSelfLevel.includes(opt.value)}
+                onClick={() => setMathSelfLevel((prev) => toggle(prev, opt.value))}
                 emoji={opt.emoji}
                 label={opt.label}
                 desc={opt.desc}
@@ -273,13 +279,14 @@ function ProfileForm({ onNext }: { onNext: (data: ProfileData) => void }) {
         {/* ── Maior dificuldade ── */}
         <div>
           {sectionLabel("🤔", "Qual conteúdo você mais tem dificuldade?")}
+          <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: "0 0 10px", fontStyle: "italic" }}>Pode selecionar mais de uma</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {MATH_DIFFICULTY_OPTIONS.map((opt) => {
-              const sel = mathDifficulty === opt.value;
+              const sel = mathDifficulty.includes(opt.value);
               return (
                 <button
                   key={opt.value}
-                  onClick={() => setMathDifficulty(opt.value)}
+                  onClick={() => setMathDifficulty((prev) => toggle(prev, opt.value))}
                   style={{
                     padding: "9px 14px", borderRadius: 20, border: "2px solid",
                     borderColor: sel ? "#009688" : "var(--border)",
@@ -706,7 +713,7 @@ export default function Diagnostico({ session, onComplete, onSkip }: {
 }) {
   const [step, setStep] = useState<Step>("welcome");
   const [profileData, setProfileData] = useState<ProfileData>({
-    city: "", edu: "", studyGoal: "", mathSelfLevel: "", mathDifficulty: "",
+    city: "", edu: "", studyGoal: [], mathSelfLevel: [], mathDifficulty: [],
   });
   const [result, setResult] = useState<{
     level: string;
@@ -739,9 +746,9 @@ export default function Diagnostico({ session, onComplete, onSkip }: {
     completeMutation.mutate({
       city: profileData.city,
       educationLevel: profileData.edu,
-      studyGoal: profileData.studyGoal || undefined,
-      mathSelfLevel: profileData.mathSelfLevel || undefined,
-      mathDifficulty: profileData.mathDifficulty || undefined,
+      studyGoal: profileData.studyGoal.length ? profileData.studyGoal.join(", ") : undefined,
+      mathSelfLevel: profileData.mathSelfLevel.length ? profileData.mathSelfLevel.join(", ") : undefined,
+      mathDifficulty: profileData.mathDifficulty.length ? profileData.mathDifficulty.join(", ") : undefined,
       answers,
     });
   }
