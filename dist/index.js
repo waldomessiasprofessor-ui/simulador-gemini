@@ -630,6 +630,16 @@ REGRAS ABSOLUTAS DE FORMATA\xC7\xC3O \u2014 nunca as ignore:
 4. PROIBIDO usar crases, backticks ou marca\xE7\xE3o markdown (**, *, _) nos campos de texto.
 5. Moeda brasileira: escreva sempre "R$ 675,00" como texto simples \u2014 NUNCA use "R\\$" nem coloque valores monet\xE1rios dentro de $ $.
 6. O campo "comentario_resolucao_reescrito" deve ser uma resolu\xE7\xE3o passo a passo completa em portugu\xEAs, com express\xF5es matem\xE1ticas em $...$ ou $$...$$, e texto corrido sem markdown.`;
+    const CONTEUDOS_PRINCIPAIS = [
+      "Matem\xE1tica B\xE1sica",
+      "An\xE1lise Combinat\xF3ria",
+      "Probabilidade e Estat\xEDstica",
+      "Trigonometria",
+      "Geometria Espacial",
+      "Geometria Plana",
+      "Fun\xE7\xF5es",
+      "\xC1lgebra"
+    ];
     const prompt = `QUEST\xC3O #${q.id}
 Fonte: ${q.fonte} \xB7 Ano: ${q.ano ?? "N\xE3o informado"}
 Conte\xFAdo declarado: ${q.conteudo_principal}
@@ -648,6 +658,9 @@ RESOLU\xC7\xC3O EXISTENTE: ${q.comentario_resolucao ?? "N\xE3o informada"}
 TAGS DISPON\xCDVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
 ${TAGS_VALIDAS.join(", ")}
 
+CONTE\xDADOS PRINCIPAIS V\xC1LIDOS NO SISTEMA (use EXATAMENTE um destes):
+${CONTEUDOS_PRINCIPAIS.join(", ")}
+
 Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta estrutura:
 {
   "disciplina": "Matem\xE1tica" | "F\xEDsica" | "Qu\xEDmica" | "Outra",
@@ -658,6 +671,8 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
   "dificuldade_compativel": true | false,
   "tags_sugeridas": ["array com as tags da lista acima que se aplicam"],
   "tags_atuais_corretas": true | false,
+  "conteudo_principal_sugerido": "Um dos valores exatos da lista de CONTE\xDADOS PRINCIPAIS acima",
+  "conteudo_principal_compativel": true | false,
   "nota_qualidade": 1 a 10,
   "problemas": ["lista de problemas em portugu\xEAs, ou array vazio se nenhum"],
   "sugestoes": ["lista de sugest\xF5es em portugu\xEAs"],
@@ -771,6 +786,9 @@ RESOLU\xC7\xC3O: ${q.comentario_resolucao ?? "N\xE3o informada"}
 TAGS DISPON\xCDVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
 ${TAGS_VALIDAS.join(", ")}
 
+CONTE\xDADOS PRINCIPAIS V\xC1LIDOS NO SISTEMA (use EXATAMENTE um destes):
+Matem\xE1tica B\xE1sica, An\xE1lise Combinat\xF3ria, Probabilidade e Estat\xEDstica, Trigonometria, Geometria Espacial, Geometria Plana, Fun\xE7\xF5es, \xC1lgebra
+
 Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta estrutura:
 {
   "disciplina": "Matem\xE1tica" | "F\xEDsica" | "Qu\xEDmica" | "Outra",
@@ -781,6 +799,8 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
   "dificuldade_compativel": true | false,
   "tags_sugeridas": ["array com as tags da lista acima que se aplicam"],
   "tags_atuais_corretas": true | false,
+  "conteudo_principal_sugerido": "Um dos valores exatos da lista de CONTE\xDADOS PRINCIPAIS acima",
+  "conteudo_principal_compativel": true | false,
   "nota_qualidade": 1 a 10,
   "problemas": ["lista de problemas em portugu\xEAs, ou array vazio se nenhum"],
   "sugestoes": ["lista de sugest\xF5es em portugu\xEAs"],
@@ -825,12 +845,14 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
     nivel_dificuldade: NivelDificuldadeEnum.optional(),
     enunciado: z.string().min(5).optional(),
     comentario_resolucao: z.string().optional(),
-    tags: z.array(z.string()).optional()
+    tags: z.array(z.string()).optional(),
+    conteudo_principal: z.string().max(100).optional()
   })).mutation(async ({ ctx, input }) => {
     const { id, ...fields } = input;
     const [q] = await ctx.db.select({ id: questions.id }).from(questions).where(eq(questions.id, id)).limit(1);
     if (!q) throw new TRPCError2({ code: "NOT_FOUND", message: "Quest\xE3o n\xE3o encontrada." });
     const NIVEIS_VALIDOS = ["Muito Baixa", "Baixa", "M\xE9dia", "Alta", "Muito Alta"];
+    const CONTEUDOS_VALIDOS = ["Matem\xE1tica B\xE1sica", "An\xE1lise Combinat\xF3ria", "Probabilidade e Estat\xEDstica", "Trigonometria", "Geometria Espacial", "Geometria Plana", "Fun\xE7\xF5es", "\xC1lgebra"];
     const updateData = {};
     if (fields.gabarito) updateData.gabarito = fields.gabarito.toUpperCase();
     if (fields.nivel_dificuldade && NIVEIS_VALIDOS.includes(fields.nivel_dificuldade))
@@ -838,6 +860,8 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
     if (fields.enunciado) updateData.enunciado = fields.enunciado;
     if (fields.comentario_resolucao !== void 0) updateData.comentario_resolucao = fields.comentario_resolucao;
     if (fields.tags !== void 0) updateData.tags = fields.tags;
+    if (fields.conteudo_principal && CONTEUDOS_VALIDOS.includes(fields.conteudo_principal))
+      updateData.conteudo_principal = fields.conteudo_principal;
     if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
     await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
     return { success: true, applied: Object.keys(updateData) };

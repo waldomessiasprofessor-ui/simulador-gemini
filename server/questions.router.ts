@@ -192,6 +192,17 @@ REGRAS ABSOLUTAS DE FORMATAÇÃO — nunca as ignore:
 5. Moeda brasileira: escreva sempre "R$ 675,00" como texto simples — NUNCA use "R\\$" nem coloque valores monetários dentro de $ $.
 6. O campo "comentario_resolucao_reescrito" deve ser uma resolução passo a passo completa em português, com expressões matemáticas em $...$ ou $$...$$, e texto corrido sem markdown.`;
 
+      const CONTEUDOS_PRINCIPAIS = [
+        "Matemática Básica",
+        "Análise Combinatória",
+        "Probabilidade e Estatística",
+        "Trigonometria",
+        "Geometria Espacial",
+        "Geometria Plana",
+        "Funções",
+        "Álgebra",
+      ];
+
       const prompt = `QUESTÃO #${q.id}
 Fonte: ${q.fonte} · Ano: ${q.ano ?? "Não informado"}
 Conteúdo declarado: ${q.conteudo_principal}
@@ -210,6 +221,9 @@ RESOLUÇÃO EXISTENTE: ${q.comentario_resolucao ?? "Não informada"}
 TAGS DISPONÍVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
 ${TAGS_VALIDAS.join(", ")}
 
+CONTEÚDOS PRINCIPAIS VÁLIDOS NO SISTEMA (use EXATAMENTE um destes):
+${CONTEUDOS_PRINCIPAIS.join(", ")}
+
 Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta estrutura:
 {
   "disciplina": "Matemática" | "Física" | "Química" | "Outra",
@@ -220,6 +234,8 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
   "dificuldade_compativel": true | false,
   "tags_sugeridas": ["array com as tags da lista acima que se aplicam"],
   "tags_atuais_corretas": true | false,
+  "conteudo_principal_sugerido": "Um dos valores exatos da lista de CONTEÚDOS PRINCIPAIS acima",
+  "conteudo_principal_compativel": true | false,
   "nota_qualidade": 1 a 10,
   "problemas": ["lista de problemas em português, ou array vazio se nenhum"],
   "sugestoes": ["lista de sugestões em português"],
@@ -347,6 +363,9 @@ RESOLUÇÃO: ${q.comentario_resolucao ?? "Não informada"}
 TAGS DISPONÍVEIS NO SISTEMA (use APENAS estas, escolha as que realmente se aplicam):
 ${TAGS_VALIDAS.join(", ")}
 
+CONTEÚDOS PRINCIPAIS VÁLIDOS NO SISTEMA (use EXATAMENTE um destes):
+Matemática Básica, Análise Combinatória, Probabilidade e Estatística, Trigonometria, Geometria Espacial, Geometria Plana, Funções, Álgebra
+
 Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta estrutura:
 {
   "disciplina": "Matemática" | "Física" | "Química" | "Outra",
@@ -357,6 +376,8 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
   "dificuldade_compativel": true | false,
   "tags_sugeridas": ["array com as tags da lista acima que se aplicam"],
   "tags_atuais_corretas": true | false,
+  "conteudo_principal_sugerido": "Um dos valores exatos da lista de CONTEÚDOS PRINCIPAIS acima",
+  "conteudo_principal_compativel": true | false,
   "nota_qualidade": 1 a 10,
   "problemas": ["lista de problemas em português, ou array vazio se nenhum"],
   "sugestoes": ["lista de sugestões em português"],
@@ -424,6 +445,7 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       enunciado: z.string().min(5).optional(),
       comentario_resolucao: z.string().optional(),
       tags: z.array(z.string()).optional(),
+      conteudo_principal: z.string().max(100).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...fields } = input;
@@ -432,6 +454,7 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       if (!q) throw new TRPCError({ code: "NOT_FOUND", message: "Questão não encontrada." });
 
       const NIVEIS_VALIDOS = ["Muito Baixa", "Baixa", "Média", "Alta", "Muito Alta"] as const;
+      const CONTEUDOS_VALIDOS = ["Matemática Básica", "Análise Combinatória", "Probabilidade e Estatística", "Trigonometria", "Geometria Espacial", "Geometria Plana", "Funções", "Álgebra"];
 
       const updateData: Record<string, any> = {};
       if (fields.gabarito)           updateData.gabarito = fields.gabarito.toUpperCase();
@@ -440,6 +463,8 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       if (fields.enunciado)          updateData.enunciado = fields.enunciado;
       if (fields.comentario_resolucao !== undefined) updateData.comentario_resolucao = fields.comentario_resolucao;
       if (fields.tags !== undefined) updateData.tags = fields.tags;
+      if (fields.conteudo_principal && CONTEUDOS_VALIDOS.includes(fields.conteudo_principal))
+                                     updateData.conteudo_principal = fields.conteudo_principal;
 
       if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
 

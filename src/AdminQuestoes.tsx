@@ -231,6 +231,8 @@ type AuditResult = {
   dificuldade_compativel: boolean;
   tags_sugeridas: string[];
   tags_atuais_corretas: boolean;
+  conteudo_principal_sugerido: string | null;
+  conteudo_principal_compativel: boolean;
   nota_qualidade: number;
   problemas: string[];
   sugestoes: string[];
@@ -245,6 +247,7 @@ type ApplyState = {
   enunciado: boolean;
   resolucao: boolean;
   tags: boolean;
+  conteudo: boolean;
 };
 
 const DISCIPLINA_COLORS: Record<string, { bg: string; border: string; text: string; badge: string }> = {
@@ -278,7 +281,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
   const audit = auditMutation.data?.audit as AuditResult | undefined;
 
   const [apply, setApply] = useState<ApplyState>({
-    gabarito: false, dificuldade: false, enunciado: false, resolucao: false, tags: false,
+    gabarito: false, dificuldade: false, enunciado: false, resolucao: false, tags: false, conteudo: false,
   });
   const [enunciadoPreview, setEnunciadoPreview] = useState("");
   const [resolucaoPreview, setResolucaoPreview] = useState("");
@@ -293,6 +296,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
       enunciado: !!result.enunciado_reescrito,
       resolucao: !!result.comentario_resolucao_reescrito,
       tags: !result.tags_atuais_corretas && (result.tags_sugeridas?.length ?? 0) > 0,
+      conteudo: !result.conteudo_principal_compativel && !!result.conteudo_principal_sugerido,
     });
     setConfirmDelete(false);
     utils.questions.getAuditStats.invalidate();
@@ -306,6 +310,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
     if (apply.enunciado && enunciadoPreview.trim())          payload.enunciado = enunciadoPreview.trim();
     if (apply.resolucao && resolucaoPreview.trim())          payload.comentario_resolucao = resolucaoPreview.trim();
     if (apply.tags && audit.tags_sugeridas?.length > 0)     payload.tags = audit.tags_sugeridas;
+    if (apply.conteudo && audit.conteudo_principal_sugerido) payload.conteudo_principal = audit.conteudo_principal_sugerido;
     if (Object.keys(payload).length <= 1) { toast.error("Nenhuma correção selecionada."); return; }
     applyMutation.mutate(payload);
   }
@@ -323,6 +328,7 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
     !audit.gabarito_correto ||
     !audit.dificuldade_compativel ||
     !audit.tags_atuais_corretas ||
+    !audit.conteudo_principal_compativel ||
     !!audit.enunciado_reescrito ||
     !!audit.comentario_resolucao_reescrito
   );
@@ -540,6 +546,27 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                 )}
               </div>
 
+              {/* Conteúdo principal */}
+              <div className="rounded-xl p-4 flex items-center gap-3"
+                style={{
+                  background: audit.conteudo_principal_compativel ? "#F0FDF4" : "#FDF4FF",
+                  border: `1.5px solid ${audit.conteudo_principal_compativel ? "#86EFAC" : "#D8B4FE"}`
+                }}>
+                <Info className="h-5 w-5 flex-shrink-0" style={{ color: audit.conteudo_principal_compativel ? "#166534" : "#7C3AED" }} />
+                <div className="flex-1">
+                  <p className="text-sm font-bold" style={{ color: audit.conteudo_principal_compativel ? "#166534" : "#5B21B6" }}>
+                    {audit.conteudo_principal_compativel
+                      ? `Conteúdo principal correto ✓ — ${audit.conteudo_principal_sugerido}`
+                      : "Conteúdo principal incorreto ou impreciso ⚠️"}
+                  </p>
+                  {!audit.conteudo_principal_compativel && audit.conteudo_principal_sugerido && (
+                    <p className="text-xs mt-0.5" style={{ color: "#7C3AED" }}>
+                      Sugerido: <b>{audit.conteudo_principal_sugerido}</b>
+                    </p>
+                  )}
+                </div>
+              </div>
+
               {/* Problemas */}
               {audit.problemas?.length > 0 && (
                 <div className="rounded-xl p-4 space-y-2" style={{ background: "#FEF2F2", border: "1.5px solid #FECACA" }}>
@@ -638,6 +665,25 @@ function AuditModal({ questionId, onClose, provider = "gemini" }: { questionId: 
                                 </span>
                               ))}
                             </div>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+
+                    {!audit.conteudo_principal_compativel && audit.conteudo_principal_sugerido && (
+                      <div className="px-4 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input type="checkbox" checked={apply.conteudo}
+                            onChange={(e) => setApply((a) => ({ ...a, conteudo: e.target.checked }))}
+                            className="h-4 w-4 accent-purple-700" />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <Info className="h-4 w-4" style={{ color: "#7C3AED" }} />
+                              <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Corrigir conteúdo principal</p>
+                            </div>
+                            <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
+                              Sugerido: <b style={{ color: "#7C3AED" }}>{audit.conteudo_principal_sugerido}</b>
+                            </p>
                           </div>
                         </label>
                       </div>
