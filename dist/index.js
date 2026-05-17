@@ -629,7 +629,7 @@ REGRAS ABSOLUTAS DE FORMATA\xC7\xC3O \u2014 nunca as ignore:
 3. PROIBIDO escrever f\xF3rmulas em texto puro: nunca "1/2", "x^2", "(1/2)^3" \u2014 sempre dentro de $.
 4. PROIBIDO usar crases, backticks ou marca\xE7\xE3o markdown (**, *, _) nos campos de texto.
 5. Moeda brasileira: escreva sempre "R$ 675,00" como texto simples \u2014 NUNCA use "R\\$" nem coloque valores monet\xE1rios dentro de $ $.
-6. O campo "comentario_resolucao_reescrito" deve ser uma resolu\xE7\xE3o passo a passo completa em portugu\xEAs, com express\xF5es matem\xE1ticas em $...$ ou $$...$$, e texto corrido sem markdown.`;
+6. O campo "comentario_resolucao_reescrito" deve ser uma resolu\xE7\xE3o CURTA e DIRETA em portugu\xEAs: m\xE1ximo 5 a 8 linhas, apenas os passos essenciais para chegar ao gabarito, sem introdu\xE7\xF5es, sem repetir o enunciado, sem explicar conceitos b\xE1sicos, sem rodap\xE9. Express\xF5es matem\xE1ticas em $...$ inline ou $$...$$ em bloco. Texto corrido, sem listas com bullet, sem markdown.`;
     const CONTEUDOS_PRINCIPAIS = [
       "Matem\xE1tica B\xE1sica",
       "An\xE1lise Combinat\xF3ria",
@@ -678,7 +678,7 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
   "sugestoes": ["lista de sugest\xF5es em portugu\xEAs"],
   "parecer": "Texto de 2-3 frases em portugu\xEAs com avalia\xE7\xE3o geral",
   "enunciado_reescrito": "Enunciado melhorado em portugu\xEAs com LaTeX correto, ou null",
-  "comentario_resolucao_reescrito": "Resolu\xE7\xE3o passo a passo COMPLETA em portugu\xEAs com LaTeX ($...$ e $$...$$) para TODA express\xE3o matem\xE1tica, ou null"
+  "comentario_resolucao_reescrito": "Resolu\xE7\xE3o CURTA (m\xE1x. 8 linhas) em portugu\xEAs: s\xF3 os passos essenciais para chegar ao gabarito, com LaTeX ($...$ inline ou $$...$$ bloco). Sem introdu\xE7\xE3o, sem repetir enunciado, sem bullet points, sem explicar teoria b\xE1sica. Ou null se a resolu\xE7\xE3o existente j\xE1 estiver boa."
 }`;
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
@@ -763,7 +763,8 @@ REGRAS OBRIGAT\xD3RIAS DE FORMATA\xC7\xC3O (siga sem exce\xE7\xE3o):
 - F\xF3rmulas em bloco (equa\xE7\xF5es centralizadas): $$V = T^2 - 4$$
 - NUNCA use crases, backticks (\`) ou markdown para math. Apenas $ e $$.
 - NUNCA escreva f\xF3rmulas em texto puro como "T^2-4" \u2014 sempre com $.
-- Textos normais (parecer, problemas, sugest\xF5es) em portugu\xEAs corrido, sem LaTeX desnecess\xE1rio.`;
+- Textos normais (parecer, problemas, sugest\xF5es) em portugu\xEAs corrido, sem LaTeX desnecess\xE1rio.
+- A resolu\xE7\xE3o deve ser CURTA e DIRETA: m\xE1ximo 8 linhas, apenas os passos essenciais para o gabarito. Sem introdu\xE7\xE3o, sem repetir o enunciado, sem explicar conceitos b\xE1sicos, sem bullet points.`;
     const prompt = `Voc\xEA \xE9 um especialista em elabora\xE7\xE3o de quest\xF5es para o ENEM e vestibulares brasileiros. Analise a quest\xE3o abaixo com rigor t\xE9cnico e pedag\xF3gico.
 
 ${latexInstructions}
@@ -806,7 +807,7 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
   "sugestoes": ["lista de sugest\xF5es em portugu\xEAs"],
   "parecer": "Texto de 2-3 frases em portugu\xEAs com avalia\xE7\xE3o geral",
   "enunciado_reescrito": "Enunciado melhorado em portugu\xEAs com LaTeX correto, ou null",
-  "comentario_resolucao_reescrito": "Resolu\xE7\xE3o passo a passo em portugu\xEAs com LaTeX correto ($...$ e $$...$$), ou null"
+  "comentario_resolucao_reescrito": "Resolu\xE7\xE3o CURTA (m\xE1x. 8 linhas) em portugu\xEAs: s\xF3 os passos essenciais para chegar ao gabarito, com LaTeX ($...$ inline ou $$...$$ bloco). Sem introdu\xE7\xE3o, sem repetir enunciado, sem bullet points, sem explicar teoria b\xE1sica. Ou null se a resolu\xE7\xE3o existente j\xE1 estiver boa."
 }`;
     const client = new Anthropic({ apiKey });
     const message = await client.messages.create({

@@ -190,7 +190,7 @@ REGRAS ABSOLUTAS DE FORMATAÇÃO — nunca as ignore:
 3. PROIBIDO escrever fórmulas em texto puro: nunca "1/2", "x^2", "(1/2)^3" — sempre dentro de $.
 4. PROIBIDO usar crases, backticks ou marcação markdown (**, *, _) nos campos de texto.
 5. Moeda brasileira: escreva sempre "R$ 675,00" como texto simples — NUNCA use "R\\$" nem coloque valores monetários dentro de $ $.
-6. O campo "comentario_resolucao_reescrito" deve ser uma resolução passo a passo completa em português, com expressões matemáticas em $...$ ou $$...$$, e texto corrido sem markdown.`;
+6. O campo "comentario_resolucao_reescrito" deve ser uma resolução CURTA e DIRETA em português: máximo 5 a 8 linhas, apenas os passos essenciais para chegar ao gabarito, sem introduções, sem repetir o enunciado, sem explicar conceitos básicos, sem rodapé. Expressões matemáticas em $...$ inline ou $$...$$ em bloco. Texto corrido, sem listas com bullet, sem markdown.`;
 
       const CONTEUDOS_PRINCIPAIS = [
         "Matemática Básica",
@@ -241,7 +241,7 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
   "sugestoes": ["lista de sugestões em português"],
   "parecer": "Texto de 2-3 frases em português com avaliação geral",
   "enunciado_reescrito": "Enunciado melhorado em português com LaTeX correto, ou null",
-  "comentario_resolucao_reescrito": "Resolução passo a passo COMPLETA em português com LaTeX ($...$ e $$...$$) para TODA expressão matemática, ou null"
+  "comentario_resolucao_reescrito": "Resolução CURTA (máx. 8 linhas) em português: só os passos essenciais para chegar ao gabarito, com LaTeX ($...$ inline ou $$...$$ bloco). Sem introdução, sem repetir enunciado, sem bullet points, sem explicar teoria básica. Ou null se a resolução existente já estiver boa."
 }`;
 
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -339,7 +339,8 @@ REGRAS OBRIGATÓRIAS DE FORMATAÇÃO (siga sem exceção):
 - Fórmulas em bloco (equações centralizadas): $$V = T^2 - 4$$
 - NUNCA use crases, backticks (\`) ou markdown para math. Apenas $ e $$.
 - NUNCA escreva fórmulas em texto puro como "T^2-4" — sempre com $.
-- Textos normais (parecer, problemas, sugestões) em português corrido, sem LaTeX desnecessário.`;
+- Textos normais (parecer, problemas, sugestões) em português corrido, sem LaTeX desnecessário.
+- A resolução deve ser CURTA e DIRETA: máximo 8 linhas, apenas os passos essenciais para o gabarito. Sem introdução, sem repetir o enunciado, sem explicar conceitos básicos, sem bullet points.`;
 
       const prompt = `Você é um especialista em elaboração de questões para o ENEM e vestibulares brasileiros. Analise a questão abaixo com rigor técnico e pedagógico.
 
@@ -383,7 +384,7 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
   "sugestoes": ["lista de sugestões em português"],
   "parecer": "Texto de 2-3 frases em português com avaliação geral",
   "enunciado_reescrito": "Enunciado melhorado em português com LaTeX correto, ou null",
-  "comentario_resolucao_reescrito": "Resolução passo a passo em português com LaTeX correto ($...$ e $$...$$), ou null"
+  "comentario_resolucao_reescrito": "Resolução CURTA (máx. 8 linhas) em português: só os passos essenciais para chegar ao gabarito, com LaTeX ($...$ inline ou $$...$$ bloco). Sem introdução, sem repetir enunciado, sem bullet points, sem explicar teoria básica. Ou null se a resolução existente já estiver boa."
 }`;
 
       const client = new Anthropic({ apiKey });
