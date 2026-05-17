@@ -416,6 +416,7 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
   const [answers, setAnswers] = useState<Record<string, "A" | "B" | "C" | "D" | "E">>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [leituraFeita, setLeituraFeita] = useState(false);
+  const [confetti, setConfetti] = useState<Array<{ x: number; y: number; color: string; delay: number; dur: number; shape: string }>>([]);
   const startRef = useRef<number>(Date.now());
   const addXpMutation = trpc.users.addXp.useMutation();
   const xpGivenRef = useRef(false);
@@ -437,8 +438,21 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
 
   function handleSelect(letra: "A" | "B" | "C" | "D" | "E") {
     if (revealed[currentEx.id]) return;
+    const correta = letra === currentEx.gabarito;
     setAnswers((prev) => ({ ...prev, [currentEx.id]: letra }));
     setRevealed((prev) => ({ ...prev, [currentEx.id]: true }));
+    if (correta) {
+      const pieces = Array.from({ length: 45 }, (_, i) => ({
+        x: Math.random() * 100,
+        y: -10 - Math.random() * 20,
+        color: ["#009688", "#4DB6AC", "#FCD34D", "#F87171", "#818CF8", "#34D399", "#FBBF24"][i % 7],
+        delay: Math.random() * 0.7,
+        dur: 1.6 + Math.random() * 1.2,
+        shape: i % 3 === 0 ? "50%" : "2px",
+      }));
+      setConfetti(pieces);
+      setTimeout(() => setConfetti([]), 3500);
+    }
   }
 
   function handleNext() {
@@ -606,6 +620,18 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
 
     return (
       <div className="space-y-5 py-2">
+        {/* Confete — acerto */}
+        {confetti.length > 0 && (
+          <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 100 }}>
+            {confetti.map((c, i) => (
+              <div key={i} style={{
+                position: "absolute", top: `${c.y}%`, left: `${c.x}%`,
+                width: 9, height: 9, borderRadius: c.shape, background: c.color,
+                animation: `confettiFall ${c.dur}s ${c.delay}s ease-in forwards`,
+              }} />
+            ))}
+          </div>
+        )}
         {/* Header — progresso */}
         <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
           style={{ background: "#E0F2F1", border: "1.5px solid #B2DFDB" }}>

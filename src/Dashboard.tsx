@@ -692,24 +692,32 @@ function RadarTopicos() {
       {/* Destaques */}
       <div className="space-y-2 pt-1">
         {/* Melhor área */}
-        <div className="rounded-xl px-3 py-2 flex items-center gap-3" style={{ background: "rgba(0,105,92,0.15)", border: "1.5px solid #A7F3D0" }}>
+        <div className="rounded-xl px-3 py-2.5 flex items-center gap-3" style={{
+          background: "linear-gradient(145deg, #22C55E 0%, #16A34A 55%, #15803D 100%)",
+          boxShadow: "0 4px 16px rgba(22,163,74,0.35), 0 1px 4px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.22)",
+          border: "none",
+        }}>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold" style={{ color: "#16A34A" }}>Melhor área</p>
-            <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#16A34A" }}>{shortLabel(best.conteudo)}</p>
+            <p className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.8)" }}>Melhor área</p>
+            <p className="text-sm font-bold mt-0.5 truncate" style={{ color: "#ffffff" }}>{shortLabel(best.conteudo)}</p>
           </div>
-          <span className="text-sm font-black flex-shrink-0" style={{ color: "#16A34A" }}>{best.pct}%</span>
+          <span className="text-sm font-black flex-shrink-0" style={{ color: "#ffffff" }}>{best.pct}%</span>
         </div>
 
         {/* Pontos a melhorar — lista das áreas mais fracas */}
-        <div className="rounded-xl px-3 py-2" style={{ background: "rgba(124,58,237,0.07)", border: "1.5px solid #DDD6FE" }}>
+        <div className="rounded-xl px-3 py-2.5" style={{
+          background: "linear-gradient(145deg, #8B5CF6 0%, #7C3AED 55%, #6D28D9 100%)",
+          boxShadow: "0 4px 16px rgba(124,58,237,0.35), 0 1px 4px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.18)",
+          border: "none",
+        }}>
           <div className="flex items-center gap-1.5 mb-2">
-            <TrendingUp className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "#7C3AED" }} />
-            <p className="text-sm font-black tracking-tight" style={{ color: "#7C3AED" }}>
+            <TrendingUp className="h-3.5 w-3.5 flex-shrink-0" style={{ color: "rgba(255,255,255,0.9)" }} />
+            <p className="text-sm font-black tracking-tight" style={{ color: "#ffffff" }}>
               {belowThreshold.length > 0 ? "Pontos a Melhorar" : "Áreas com Menor Acerto"}
             </p>
           </div>
           {weakList.length === 0 ? (
-            <p className="text-xs" style={{ color: "#7C3AED" }}>Sem dados suficientes.</p>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.75)" }}>Sem dados suficientes.</p>
           ) : (
             <div className="space-y-1.5">
               {weakList.map((w) => {
@@ -719,13 +727,13 @@ function RadarTopicos() {
                   <div
                     key={w.conteudo}
                     className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "#7C3AED" }}>
+                    <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "rgba(255,255,255,0.95)" }}>
                       {label}
                     </span>
-                    <span className="text-xs flex-shrink-0" style={{ color: "#7C3AED", opacity: 0.7 }}>
+                    <span className="text-xs flex-shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>
                       {w.correct}/{w.total}
                     </span>
-                    <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#7C3AED" }}>
+                    <span className="text-xs font-black flex-shrink-0 w-10 text-right" style={{ color: "#ffffff" }}>
                       {w.pct}%
                     </span>
                     {trilha && (
@@ -734,11 +742,11 @@ function RadarTopicos() {
                         title={`Abrir trilha: ${trilha.titulo}`}
                         className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full transition-transform hover:scale-105"
                         style={{
-                          backgroundColor: "#009688",
-                          backgroundImage: "linear-gradient(135deg, #009688 0%, #00695C 100%)",
+                          background: "rgba(255,255,255,0.2)",
+                          backdropFilter: "blur(4px)",
                           color: "#ffffff",
-                          border: "none",
-                          boxShadow: "0 2px 6px rgba(0,150,136,0.35)",
+                          border: "1px solid rgba(255,255,255,0.35)",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
                         }}>
                         <Sparkles className="h-3 w-3" /> Trilha
                         <ChevronRight className="h-3 w-3" />
@@ -752,9 +760,9 @@ function RadarTopicos() {
           {/* Dica quando há trilha */}
           {weakList.some((w) => getTrilhaByArea(w.conteudo)) && (
             <p className="text-xs mt-2 pt-2 border-t leading-relaxed"
-              style={{ color: "#7C3AED", opacity: 0.8, borderColor: "#DDD6FE" }}>
+              style={{ color: "rgba(255,255,255,0.7)", borderColor: "rgba(255,255,255,0.2)" }}>
               <Sparkles className="inline h-3 w-3 mr-1 -mt-0.5" />
-              Clique em <strong>Trilha</strong> para treinar essa área guiado passo a passo.
+              Clique em <strong style={{ color: "rgba(255,255,255,0.9)" }}>Trilha</strong> para treinar essa área passo a passo.
             </p>
           )}
         </div>

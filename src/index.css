@@ -662,3 +662,9 @@ img[src="/logo-vetor.png"] {
   .space-y-7 > * { break-inside: avoid; margin-bottom: 1rem; }
   * { box-shadow: none !important; border-color: #ccc !important; }
 }
+
+/* ── Confete global ───────────────────────────────────────────────── */
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
