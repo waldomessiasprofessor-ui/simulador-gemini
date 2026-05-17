@@ -417,6 +417,8 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [leituraFeita, setLeituraFeita] = useState(false);
   const [confetti, setConfetti] = useState<Array<{ x: number; y: number; color: string; delay: number; dur: number; shape: string }>>([]);
+  const [shakeId, setShakeId] = useState<string | null>(null);
+  const [xpFloat, setXpFloat] = useState<{ amount: number; key: number } | null>(null);
   const startRef = useRef<number>(Date.now());
   const addXpMutation = trpc.users.addXp.useMutation();
   const xpGivenRef = useRef(false);
@@ -442,6 +444,7 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
     setAnswers((prev) => ({ ...prev, [currentEx.id]: letra }));
     setRevealed((prev) => ({ ...prev, [currentEx.id]: true }));
     if (correta) {
+      // Confete no acerto
       const pieces = Array.from({ length: 45 }, (_, i) => ({
         x: Math.random() * 100,
         y: -10 - Math.random() * 20,
@@ -452,6 +455,10 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
       }));
       setConfetti(pieces);
       setTimeout(() => setConfetti([]), 3500);
+    } else {
+      // Vibração no erro
+      setShakeId(currentEx.id);
+      setTimeout(() => setShakeId(null), 700);
     }
   }
 
@@ -483,6 +490,10 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
       if (!xpGivenRef.current) {
         xpGivenRef.current = true;
         addXpMutation.mutate({ source: "trilha", amount: 20 });
+        // Animação flutuante de +XP
+        const key = Date.now();
+        setXpFloat({ amount: 20, key });
+        setTimeout(() => setXpFloat(null), 1700);
       }
       setFase("resumo");
     }
@@ -632,6 +643,23 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
             ))}
           </div>
         )}
+
+        {/* XP flutuante — conclusão de lição */}
+        {xpFloat && (
+          <div key={xpFloat.key} style={{
+            position: "fixed", top: 68, left: "50%", transform: "translateX(-50%)",
+            zIndex: 300, pointerEvents: "none",
+            background: "linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%)",
+            color: "#78350F", fontWeight: 900, fontSize: 20,
+            padding: "9px 22px", borderRadius: 999,
+            boxShadow: "0 6px 24px rgba(245,158,11,0.5), inset 0 1px 0 rgba(255,255,255,0.4)",
+            animation: "xpFloat 1.6s ease-out forwards",
+            whiteSpace: "nowrap", letterSpacing: "-0.01em",
+          }}>
+            ⭐ +{xpFloat.amount} XP
+          </div>
+        )}
+
         {/* Header — progresso */}
         <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
           style={{ background: "#E0F2F1", border: "1.5px solid #B2DFDB" }}>
@@ -670,12 +698,14 @@ function LicaoView({ trilha, licao }: { trilha: TrilhaType; licao: Licao }) {
               } else if (isThis) {
                 cls += " selected";
               }
+              const shaking = shakeId === currentEx.id && isThis && !isCorrectAlt;
               return (
                 <button
                   key={alt.letra}
                   onClick={() => handleSelect(alt.letra)}
                   disabled={isRevealed}
-                  className={cls}>
+                  className={cls}
+                  style={shaking ? { animation: "shakeWrong 0.65s ease" } : undefined}>
                   <span className="alt-badge">{alt.letra}</span>
                   <span className="flex-1">
                     <LatexRenderer inline>{alt.texto}</LatexRenderer>

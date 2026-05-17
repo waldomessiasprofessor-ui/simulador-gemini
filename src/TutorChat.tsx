@@ -133,6 +133,7 @@ export default function TutorChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput]       = useState("");
   const [hasNew, setHasNew]     = useState(false);
+  const [xpFloat, setXpFloat]   = useState<{ amount: number; key: number } | null>(null);
   const bottomRef  = useRef<HTMLDivElement>(null);
   const inputRef   = useRef<HTMLTextAreaElement>(null);
   const isFirst    = messages.length === 0;
@@ -210,6 +211,9 @@ export default function TutorChat() {
     if (!xpGivenRef.current) {
       xpGivenRef.current = true;
       addXpMutation.mutate({ source: "tutor", amount: 3 });
+      const key = Date.now();
+      setXpFloat({ amount: 3, key });
+      setTimeout(() => setXpFloat(null), 1700);
     }
     chatMutation.mutate({ messages: next });
   }, [messages, chatMutation, isPending]);
@@ -239,6 +243,22 @@ export default function TutorChat() {
           50% { box-shadow: 0 0 0 8px rgba(0,150,136,0); }
         }
       `}</style>
+
+      {/* ── XP flutuante ── */}
+      {xpFloat && (
+        <div key={xpFloat.key} style={{
+          position: "fixed", bottom: 90, right: 24,
+          zIndex: 300, pointerEvents: "none",
+          background: "linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%)",
+          color: "#78350F", fontWeight: 900, fontSize: 16,
+          padding: "7px 18px", borderRadius: 999,
+          boxShadow: "0 6px 24px rgba(245,158,11,0.5), inset 0 1px 0 rgba(255,255,255,0.4)",
+          animation: "xpFloat 1.6s ease-out forwards",
+          whiteSpace: "nowrap",
+        }}>
+          ⭐ +{xpFloat.amount} XP
+        </div>
+      )}
 
       {/* ── Botão flutuante ── */}
       {!open && (
