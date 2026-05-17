@@ -860,11 +860,17 @@ Responda em JSON puro (sem markdown, sem bloco de c\xF3digo) com exatamente esta
     if (fields.enunciado) updateData.enunciado = fields.enunciado;
     if (fields.comentario_resolucao !== void 0) updateData.comentario_resolucao = fields.comentario_resolucao;
     if (fields.tags !== void 0) updateData.tags = fields.tags;
-    if (fields.conteudo_principal && CONTEUDOS_VALIDOS.includes(fields.conteudo_principal))
-      updateData.conteudo_principal = fields.conteudo_principal;
-    if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
-    await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
-    return { success: true, applied: Object.keys(updateData) };
+    const appliedKeys = [];
+    if (Object.keys(updateData).length > 0) {
+      await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
+      appliedKeys.push(...Object.keys(updateData));
+    }
+    if (fields.conteudo_principal && CONTEUDOS_VALIDOS.includes(fields.conteudo_principal)) {
+      await ctx.db.update(questions).set({ conteudo_principal: fields.conteudo_principal }).where(eq(questions.id, id));
+      appliedKeys.push("conteudo_principal");
+    }
+    if (appliedKeys.length === 0) return { success: true, applied: [] };
+    return { success: true, applied: appliedKeys };
   }),
   // ─── Auditoria genérica (discursiva / flashcard / fórmula / exercício) ────────
   auditGenericContent: adminProcedure.input(z.object({

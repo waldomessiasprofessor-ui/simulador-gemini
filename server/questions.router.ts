@@ -463,13 +463,26 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
       if (fields.enunciado)          updateData.enunciado = fields.enunciado;
       if (fields.comentario_resolucao !== undefined) updateData.comentario_resolucao = fields.comentario_resolucao;
       if (fields.tags !== undefined) updateData.tags = fields.tags;
-      if (fields.conteudo_principal && CONTEUDOS_VALIDOS.includes(fields.conteudo_principal))
-                                     updateData.conteudo_principal = fields.conteudo_principal;
 
-      if (Object.keys(updateData).length === 0) return { success: true, applied: [] };
+      const appliedKeys: string[] = [];
 
-      await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
-      return { success: true, applied: Object.keys(updateData) };
+      if (Object.keys(updateData).length > 0) {
+        await ctx.db.update(questions).set(updateData).where(eq(questions.id, id));
+        appliedKeys.push(...Object.keys(updateData));
+      }
+
+      // conteudo_principal: usa update explícito com referência tipada para garantir
+      // que o Drizzle gera o SET correto (Record<string,any> pode silenciar o campo)
+      if (fields.conteudo_principal && CONTEUDOS_VALIDOS.includes(fields.conteudo_principal)) {
+        await ctx.db
+          .update(questions)
+          .set({ conteudo_principal: fields.conteudo_principal })
+          .where(eq(questions.id, id));
+        appliedKeys.push("conteudo_principal");
+      }
+
+      if (appliedKeys.length === 0) return { success: true, applied: [] };
+      return { success: true, applied: appliedKeys };
     }),
 
   // ─── Auditoria genérica (discursiva / flashcard / fórmula / exercício) ────────
