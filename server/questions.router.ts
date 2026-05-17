@@ -190,7 +190,13 @@ REGRAS ABSOLUTAS DE FORMATAÇÃO — nunca as ignore:
 3. PROIBIDO escrever fórmulas em texto puro: nunca "1/2", "x^2", "(1/2)^3" — sempre dentro de $.
 4. PROIBIDO usar crases, backticks ou marcação markdown (**, *, _) nos campos de texto.
 5. Moeda brasileira: escreva sempre "R$ 675,00" como texto simples — NUNCA use "R\\$" nem coloque valores monetários dentro de $ $.
-6. O campo "comentario_resolucao_reescrito" deve ser uma resolução CURTA e DIRETA em português: máximo 5 a 8 linhas, apenas os passos essenciais para chegar ao gabarito, sem introduções, sem repetir o enunciado, sem explicar conceitos básicos, sem rodapé. Expressões matemáticas em $...$ inline ou $$...$$ em bloco. Texto corrido, sem listas com bullet, sem markdown.`;
+6. O campo "comentario_resolucao_reescrito": escreva uma resolução clara e suficiente em português. Regras:
+   - Todo cálculo ou equação vai em linha PRÓPRIA com $$...$$. Exemplo: $$3{,}8 \times 50 = 190 \text{ cm}$$
+   - Use $...$ apenas para grandezas curtas dentro da prosa, como "a escala é $1:50$".
+   - NUNCA embuta equações no meio de frases longas.
+   - Sem introduções como "Primeiro, vamos..." — comece direto pelo raciocínio.
+   - Sem repetir o enunciado. Sem explicar conceitos básicos. Sem rodapé ou conclusão verbose.
+   - Texto corrido, sem markdown, sem bullet points, sem títulos.`;
 
       const CONTEUDOS_PRINCIPAIS = [
         "Matemática Básica",
@@ -241,7 +247,7 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
   "sugestoes": ["lista de sugestões em português"],
   "parecer": "Texto de 2-3 frases em português com avaliação geral",
   "enunciado_reescrito": "Enunciado melhorado em português com LaTeX correto, ou null",
-  "comentario_resolucao_reescrito": "Resolução CURTA (máx. 8 linhas) em português: só os passos essenciais para chegar ao gabarito, com LaTeX ($...$ inline ou $$...$$ bloco). Sem introdução, sem repetir enunciado, sem bullet points, sem explicar teoria básica. Ou null se a resolução existente já estiver boa."
+  "comentario_resolucao_reescrito": "Resolução clara e suficiente em português. Cada cálculo/equação em linha própria com $$...$$. Use $...$ só para grandezas curtas dentro da prosa. Sem introdução, sem repetir enunciado, sem bullet points. Ou null se a resolução existente já estiver correta e bem formatada."
 }`;
 
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -271,29 +277,28 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini não retornou conteúdo. Verifique a cota da API ou tente novamente." });
       }
 
-      // Tenta parsear direto; se falhar (LaTeX com \frac, \cdot etc. não escapado),
-      // corrige barras invertidas preservando os escapes válidos de JSON (\n \r \t \b \\).
       const parseJson = (text: string) => {
         try { return JSON.parse(text); } catch { return null; }
       };
 
+      // SEMPRE aplica fixLatexBackslashes ANTES do JSON.parse.
+      // Motivo: JSON.parse trata \t, \f, \b, \r como escapes válidos (tab, form-feed…),
+      // então \text{cm} vira <TAB>ext{cm} e \times vira <TAB>imes — sem lançar erro.
+      // Ao rodar o fix primeiro, protegemos \\ e \n legítimos e dobramos todo o resto
+      // (\text, \times, \frac, \theta, …) para \\text, \\times etc., que é o escape
+      // correto em JSON e resulta em \text após parse.
       const fixLatexBackslashes = (raw: string) => {
-        // Protege APENAS os escapes JSON que o Gemini realmente usa em texto corrido:
-        //   \\ (barra literal), \" (aspas), \n (quebra de parágrafo)
-        // Todo o resto (\t \b \f \r) em contexto matemático é LaTeX:
-        //   \t → \times \theta \tau | \b → \beta \bar | \f → \frac | \r → \rho
-        // Deixamos esses serem corrigidos para \\ + letra, que é o escape correto em JSON.
         return raw
           .replace(/\\\\/g, "\x00DS\x00")  // protege \\ (já correto)
           .replace(/\\"/g,   "\x00QT\x00") // protege \" (aspas escapadas)
-          .replace(/\\n/g,   "\x00NL\x00") // protege \n (Gemini usa para parágrafos)
-          .replace(/\\/g,    "\\\\")        // escapa todas as \ restantes (são LaTeX)
+          .replace(/\\n/g,   "\x00NL\x00") // protege \n literal
+          .replace(/\\/g,    "\\\\")        // dobra todas as \ restantes (LaTeX)
           .replace(/\x00DS\x00/g, "\\\\")  // restaura \\
           .replace(/\x00QT\x00/g, '\\"')   // restaura \"
           .replace(/\x00NL\x00/g, "\\n");  // restaura \n
       };
 
-      const audit = parseJson(rawText) ?? parseJson(fixLatexBackslashes(rawText));
+      const audit = parseJson(fixLatexBackslashes(rawText)) ?? parseJson(rawText);
       if (!audit) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Gemini retornou resposta que não pôde ser interpretada. Tente novamente." });
       }
@@ -340,7 +345,7 @@ REGRAS OBRIGATÓRIAS DE FORMATAÇÃO (siga sem exceção):
 - NUNCA use crases, backticks (\`) ou markdown para math. Apenas $ e $$.
 - NUNCA escreva fórmulas em texto puro como "T^2-4" — sempre com $.
 - Textos normais (parecer, problemas, sugestões) em português corrido, sem LaTeX desnecessário.
-- A resolução deve ser CURTA e DIRETA: máximo 8 linhas, apenas os passos essenciais para o gabarito. Sem introdução, sem repetir o enunciado, sem explicar conceitos básicos, sem bullet points.`;
+- Resolução: cada cálculo ou equação em linha PRÓPRIA com $$...$$. Use $...$ só para grandezas curtas dentro da prosa. Sem introduções ("Primeiro, vamos..."), sem repetir o enunciado, sem bullet points.`;
 
       const prompt = `Você é um especialista em elaboração de questões para o ENEM e vestibulares brasileiros. Analise a questão abaixo com rigor técnico e pedagógico.
 
@@ -384,7 +389,7 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
   "sugestoes": ["lista de sugestões em português"],
   "parecer": "Texto de 2-3 frases em português com avaliação geral",
   "enunciado_reescrito": "Enunciado melhorado em português com LaTeX correto, ou null",
-  "comentario_resolucao_reescrito": "Resolução CURTA (máx. 8 linhas) em português: só os passos essenciais para chegar ao gabarito, com LaTeX ($...$ inline ou $$...$$ bloco). Sem introdução, sem repetir enunciado, sem bullet points, sem explicar teoria básica. Ou null se a resolução existente já estiver boa."
+  "comentario_resolucao_reescrito": "Resolução clara e suficiente em português. Cada cálculo/equação em linha própria com $$...$$. Use $...$ só para grandezas curtas dentro da prosa. Sem introdução, sem repetir enunciado, sem bullet points. Ou null se a resolução existente já estiver correta e bem formatada."
 }`;
 
       const client = new Anthropic({ apiKey });
