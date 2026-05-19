@@ -1,3 +1,4 @@
+import MathPatternBg from "@/components/MathPatternBg";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -105,7 +106,8 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bgSoft, fontFamily: FONT_SANS }}>
+    <div style={{ minHeight: "100vh", background: C.bgSoft, fontFamily: FONT_SANS, position: "relative" }}>
+      <MathPatternBg opacity={0.065} />
 
       {/* ───────────── Hero split: editorial à esquerda + form à direita ───────────── */}
       <div

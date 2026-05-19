@@ -1,3 +1,4 @@
+import MathPatternBg from "@/components/MathPatternBg";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -1591,7 +1592,8 @@ export default function Dashboard() {
       };
 
   return (
-    <div className="space-y-4 py-2">
+    <div className="space-y-4 py-2" style={{ position: "relative" }}>
+      <MathPatternBg opacity={0.045} />
 
       {/* ── Hero ── */}
       <div style={{ background: "linear-gradient(135deg, #263238 0%, #009688 100%)", borderRadius: 20, padding: "24px 20px" }}>
