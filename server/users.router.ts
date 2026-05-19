@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, asc, sql, and, or, inArray } from "drizzle-orm";
+import { eq, asc, sql, and, or, inArray, desc, gt, isNotNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, adminProcedure, protectedProcedure } from "./trpc";
 import { users, simulations, simulationAnswers, questions } from "./schema";
@@ -300,4 +300,121 @@ export const usersRouter = createTRPCRouter({
         .where(eq(users.id, ctx.user.id));
       return { success: true };
     }),
+
+  // ---------------------------------------------------------------------------
+  // Leaderboard global — 3 rankings: XP, nota TRI, aproveitamento
+  // ---------------------------------------------------------------------------
+  getLeaderboard: protectedProcedure.query(async ({ ctx }) => {
+    const myId = ctx.user.id;
+
+    // ── 1. Ranking por XP ──────────────────────────────────────────────────
+    const xpTop = await ctx.db
+      .select({ id: users.id, name: users.name, xp: users.xp })
+      .from(users)
+      .where(and(eq(users.active, true), gt(users.xp, 0)))
+      .orderBy(desc(users.xp))
+      .limit(20);
+
+    const xpRanking = xpTop.map((u, i) => ({
+      position: i + 1,
+      userId: u.id,
+      userName: u.name,
+      xp: u.xp ?? 0,
+      isMe: u.id === myId,
+    }));
+
+    // Posição do aluno no ranking XP se não estiver no top-20
+    let myXpRank: { position: number; xp: number } | null = null;
+    if (!xpRanking.find(r => r.isMe)) {
+      const [me] = await ctx.db
+        .select({ xp: users.xp })
+        .from(users)
+        .where(eq(users.id, myId))
+        .limit(1);
+      if (me) {
+        const [above] = await ctx.db
+          .select({ cnt: sql<number>`COUNT(*)` })
+          .from(users)
+          .where(and(eq(users.active, true), gt(users.xp, me.xp ?? 0)));
+        myXpRank = { position: Number(above.cnt) + 1, xp: me.xp ?? 0 };
+      }
+    }
+
+    // ── 2. Ranking por nota TRI (melhor simulação completa de cada aluno) ──
+    const simRows = await ctx.db
+      .select({
+        userId: simulations.userId,
+        userName: users.name,
+        score: simulations.score,
+        correctCount: simulations.correctCount,
+        totalQuestions: simulations.totalQuestions,
+        completedAt: simulations.completedAt,
+        stage: simulations.stage,
+      })
+      .from(simulations)
+      .innerJoin(users, eq(simulations.userId, users.id))
+      .where(and(
+        eq(simulations.status, "completed"),
+        isNotNull(simulations.score),
+        eq(users.active, true),
+      ))
+      .orderBy(desc(simulations.score))
+      .limit(200);
+
+    // Melhor resultado por aluno
+    const bestByUser = new Map<number, typeof simRows[0] & { simCount: number; totalCorrect: number; totalQ: number }>();
+    for (const row of simRows) {
+      const existing = bestByUser.get(row.userId);
+      if (!existing) {
+        bestByUser.set(row.userId, { ...row, simCount: 1, totalCorrect: row.correctCount ?? 0, totalQ: row.totalQuestions ?? 0 });
+      } else {
+        existing.simCount++;
+        existing.totalCorrect += row.correctCount ?? 0;
+        existing.totalQ += row.totalQuestions ?? 0;
+        if ((row.score ?? 0) > (existing.score ?? 0)) {
+          existing.score = row.score;
+          existing.correctCount = row.correctCount;
+          existing.totalQuestions = row.totalQuestions;
+          existing.completedAt = row.completedAt;
+        }
+      }
+    }
+
+    const totalRanked = bestByUser.size;
+
+    const triRanking = Array.from(bestByUser.values())
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      .slice(0, 20)
+      .map((r, i) => ({
+        position: i + 1,
+        userId: r.userId,
+        userName: r.userName,
+        score: r.score,
+        completedAt: r.completedAt,
+        simCount: r.simCount,
+        isMe: r.userId === myId,
+      }));
+
+    const myTriEntry = triRanking.find(r => r.isMe);
+    const myTriPercentile = myTriEntry
+      ? Math.round(((totalRanked - myTriEntry.position) / Math.max(1, totalRanked)) * 100)
+      : null;
+
+    // ── 3. Ranking por aproveitamento (% acerto médio, mín. 1 simulação) ──
+    const perfRanking = Array.from(bestByUser.values())
+      .filter(r => r.totalQ > 0)
+      .map(r => ({
+        userId: r.userId,
+        userName: r.userName,
+        avgPct: Math.round((r.totalCorrect / r.totalQ) * 100),
+        simCount: r.simCount,
+        bestScore: r.score,
+        isMe: r.userId === myId,
+      }))
+      .sort((a, b) => b.avgPct - a.avgPct)
+      .slice(0, 20)
+      .map((r, i) => ({ ...r, position: i + 1 }));
+
+    return { xpRanking, triRanking, perfRanking, totalRanked, myXpRank, myTriPercentile };
+  }),
 });

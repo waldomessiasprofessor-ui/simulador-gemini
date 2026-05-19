@@ -2595,7 +2595,7 @@ var authRouter = createTRPCRouter({
 
 // server/users.router.ts
 import { z as z4 } from "zod";
-import { eq as eq4, sql as sql3, and as and3, inArray as inArray3 } from "drizzle-orm";
+import { eq as eq4, sql as sql3, and as and3, inArray as inArray3, desc as desc3, gt, isNotNull } from "drizzle-orm";
 import { TRPCError as TRPCError5 } from "@trpc/server";
 var usersRouter = createTRPCRouter({
   // Lista todos os utilizadores com status de assinatura
@@ -2790,12 +2790,85 @@ var usersRouter = createTRPCRouter({
   })).mutation(async ({ ctx, input }) => {
     await ctx.db.update(users).set({ xp: sql3`xp + ${input.amount}` }).where(eq4(users.id, ctx.user.id));
     return { success: true };
+  }),
+  // ---------------------------------------------------------------------------
+  // Leaderboard global — 3 rankings: XP, nota TRI, aproveitamento
+  // ---------------------------------------------------------------------------
+  getLeaderboard: protectedProcedure.query(async ({ ctx }) => {
+    const myId = ctx.user.id;
+    const xpTop = await ctx.db.select({ id: users.id, name: users.name, xp: users.xp }).from(users).where(and3(eq4(users.active, true), gt(users.xp, 0))).orderBy(desc3(users.xp)).limit(20);
+    const xpRanking = xpTop.map((u, i) => ({
+      position: i + 1,
+      userId: u.id,
+      userName: u.name,
+      xp: u.xp ?? 0,
+      isMe: u.id === myId
+    }));
+    let myXpRank = null;
+    if (!xpRanking.find((r) => r.isMe)) {
+      const [me] = await ctx.db.select({ xp: users.xp }).from(users).where(eq4(users.id, myId)).limit(1);
+      if (me) {
+        const [above] = await ctx.db.select({ cnt: sql3`COUNT(*)` }).from(users).where(and3(eq4(users.active, true), gt(users.xp, me.xp ?? 0)));
+        myXpRank = { position: Number(above.cnt) + 1, xp: me.xp ?? 0 };
+      }
+    }
+    const simRows = await ctx.db.select({
+      userId: simulations.userId,
+      userName: users.name,
+      score: simulations.score,
+      correctCount: simulations.correctCount,
+      totalQuestions: simulations.totalQuestions,
+      completedAt: simulations.completedAt,
+      stage: simulations.stage
+    }).from(simulations).innerJoin(users, eq4(simulations.userId, users.id)).where(and3(
+      eq4(simulations.status, "completed"),
+      isNotNull(simulations.score),
+      eq4(users.active, true)
+    )).orderBy(desc3(simulations.score)).limit(200);
+    const bestByUser = /* @__PURE__ */ new Map();
+    for (const row of simRows) {
+      const existing = bestByUser.get(row.userId);
+      if (!existing) {
+        bestByUser.set(row.userId, { ...row, simCount: 1, totalCorrect: row.correctCount ?? 0, totalQ: row.totalQuestions ?? 0 });
+      } else {
+        existing.simCount++;
+        existing.totalCorrect += row.correctCount ?? 0;
+        existing.totalQ += row.totalQuestions ?? 0;
+        if ((row.score ?? 0) > (existing.score ?? 0)) {
+          existing.score = row.score;
+          existing.correctCount = row.correctCount;
+          existing.totalQuestions = row.totalQuestions;
+          existing.completedAt = row.completedAt;
+        }
+      }
+    }
+    const totalRanked = bestByUser.size;
+    const triRanking = Array.from(bestByUser.values()).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 20).map((r, i) => ({
+      position: i + 1,
+      userId: r.userId,
+      userName: r.userName,
+      score: r.score,
+      completedAt: r.completedAt,
+      simCount: r.simCount,
+      isMe: r.userId === myId
+    }));
+    const myTriEntry = triRanking.find((r) => r.isMe);
+    const myTriPercentile = myTriEntry ? Math.round((totalRanked - myTriEntry.position) / Math.max(1, totalRanked) * 100) : null;
+    const perfRanking = Array.from(bestByUser.values()).filter((r) => r.totalQ > 0).map((r) => ({
+      userId: r.userId,
+      userName: r.userName,
+      avgPct: Math.round(r.totalCorrect / r.totalQ * 100),
+      simCount: r.simCount,
+      bestScore: r.score,
+      isMe: r.userId === myId
+    })).sort((a, b) => b.avgPct - a.avgPct).slice(0, 20).map((r, i) => ({ ...r, position: i + 1 }));
+    return { xpRanking, triRanking, perfRanking, totalRanked, myXpRank, myTriPercentile };
   })
 });
 
 // server/review.router.ts
 import { z as z5 } from "zod";
-import { eq as eq5, and as and4, desc as desc3, sql as sql4 } from "drizzle-orm";
+import { eq as eq5, and as and4, desc as desc4, sql as sql4 } from "drizzle-orm";
 var QuestaoSchema = z5.object({
   enunciado: z5.string().min(5),
   opcoes: z5.array(z5.string()).length(4),
@@ -2814,7 +2887,7 @@ var reviewRouter = createTRPCRouter({
   adminList: adminProcedure.input(z5.object({ page: z5.number().default(1), pageSize: z5.number().default(20) })).query(async ({ ctx, input }) => {
     const offset = (input.page - 1) * input.pageSize;
     const [rows, [{ count }]] = await Promise.all([
-      ctx.db.select().from(reviewContents).orderBy(desc3(reviewContents.createdAt)).limit(input.pageSize).offset(offset),
+      ctx.db.select().from(reviewContents).orderBy(desc4(reviewContents.createdAt)).limit(input.pageSize).offset(offset),
       ctx.db.select({ count: sql4`COUNT(*)` }).from(reviewContents)
     ]);
     return { items: rows, total: Number(count), page: input.page, pageSize: input.pageSize };
@@ -2852,7 +2925,7 @@ var reviewRouter = createTRPCRouter({
         topico: reviewContents.topico,
         url_pdf: reviewContents.url_pdf,
         createdAt: reviewContents.createdAt
-      }).from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(desc3(reviewContents.createdAt)).limit(pageSize).offset(offset),
+      }).from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(desc4(reviewContents.createdAt)).limit(pageSize).offset(offset),
       ctx.db.select({ count: sql4`COUNT(*)` }).from(reviewContents).where(eq5(reviewContents.active, true))
     ]);
     return { items: rows, total: Number(count), page, pageSize };
@@ -2938,7 +3011,7 @@ var reviewRouter = createTRPCRouter({
       completedAt: dailyReviews.completedAt,
       titulo: reviewContents.titulo,
       topico: reviewContents.topico
-    }).from(dailyReviews).leftJoin(reviewContents, eq5(dailyReviews.contentId, reviewContents.id)).where(eq5(dailyReviews.userId, ctx.user.id)).orderBy(desc3(dailyReviews.reviewDate)).limit(30);
+    }).from(dailyReviews).leftJoin(reviewContents, eq5(dailyReviews.contentId, reviewContents.id)).where(eq5(dailyReviews.userId, ctx.user.id)).orderBy(desc4(dailyReviews.reviewDate)).limit(30);
     return rows;
   })
 });
@@ -3432,7 +3505,7 @@ var trilhasRouter = createTRPCRouter({
 // server/tutor.router.ts
 import { z as z10 } from "zod";
 import { TRPCError as TRPCError6 } from "@trpc/server";
-import { eq as eq10, and as and8, desc as desc4, sql as sql8, inArray as inArray5 } from "drizzle-orm";
+import { eq as eq10, and as and8, desc as desc5, sql as sql8, inArray as inArray5 } from "drizzle-orm";
 var SYSTEM_PROMPT = `Voc\xEA \xE9 o Tutor Vetor, um assistente especializado em matem\xE1tica para o ENEM e vestibulares brasileiros (UNICAMP, FUVEST, UNESP).
 
 Regras inviol\xE1veis:
@@ -3483,7 +3556,7 @@ async function collectStudentData(ctx) {
     totalQuestions: simulations.totalQuestions,
     totalTimeSeconds: simulations.totalTimeSeconds,
     completedAt: simulations.completedAt
-  }).from(simulations).where(and8(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql8`${simulations.stage} > 0`)).orderBy(desc4(simulations.completedAt)).limit(10);
+  }).from(simulations).where(and8(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql8`${simulations.stage} > 0`)).orderBy(desc5(simulations.completedAt)).limit(10);
   const simRows = await ctx.db.select({
     conteudo: questions.conteudo_principal,
     tags: questions.tags,
@@ -3507,7 +3580,7 @@ async function collectStudentData(ctx) {
     correctCount: dailyChallenges.correctCount,
     completed: dailyChallenges.completed,
     challengeDate: dailyChallenges.challengeDate
-  }).from(dailyChallenges).where(and8(eq10(dailyChallenges.userId, userId), eq10(dailyChallenges.completed, true))).orderBy(desc4(dailyChallenges.challengeDate)).limit(30);
+  }).from(dailyChallenges).where(and8(eq10(dailyChallenges.userId, userId), eq10(dailyChallenges.completed, true))).orderBy(desc5(dailyChallenges.challengeDate)).limit(30);
   if (challenges.length > 0) {
     const allQIds = [...new Set(challenges.flatMap((c) => c.questionIds))];
     if (allQIds.length > 0) {
@@ -3650,7 +3723,7 @@ Se o aluno tiver poucos dados (< 20 quest\xF5es), adapte o diagn\xF3stico para i
 
 // server/segunda-fase.router.ts
 import { z as z11 } from "zod";
-import { eq as eq11, and as and9, desc as desc5, sql as sql9, asc as asc5 } from "drizzle-orm";
+import { eq as eq11, and as and9, desc as desc6, sql as sql9, asc as asc5 } from "drizzle-orm";
 var ImagemSchema = z11.object({
   posicao: z11.string(),
   descricao: z11.string(),
@@ -3678,7 +3751,7 @@ var segundaFaseRouter = createTRPCRouter({
       )
     ).orderBy(discursiveQuestions.ano, discursiveQuestions.numero_prova);
     if (rows.length === 0) return [];
-    const progress = await ctx.db.select().from(discursiveProgress).where(eq11(discursiveProgress.userId, ctx.user.id)).orderBy(desc5(discursiveProgress.createdAt));
+    const progress = await ctx.db.select().from(discursiveProgress).where(eq11(discursiveProgress.userId, ctx.user.id)).orderBy(desc6(discursiveProgress.createdAt));
     const lastResult = {};
     for (const p of progress) {
       if (!lastResult[p.questionId]) lastResult[p.questionId] = p.resultado;
