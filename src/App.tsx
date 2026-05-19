@@ -26,6 +26,7 @@ import Diagnostico from "@/Diagnostico";
 import SegundaFase from "@/SegundaFase";
 import AdminSegundaFase from "@/AdminSegundaFase";
 import { Loader2, AlertTriangle } from "@/icons";
+import OfflineBanner from "@/components/OfflineBanner";
 
 // Sobe a página para o topo sempre que a rota muda (navegação SPA).
 // Sem isso, o wouter mantém o scroll da página anterior — usuário vai
@@ -164,6 +165,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
+      <OfflineBanner />
       <ScrollToTop />
       <Navbar />
       <SubscriptionBanner session={session} />

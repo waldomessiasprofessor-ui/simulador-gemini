@@ -5496,6 +5496,9 @@ app.post("/api/upload-pdf", uploadPdf.single("file"), async (req, res) => {
     res.status(500).json({ error: `Erro no upload: ${err.message}` });
   }
 });
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true, ts: Date.now() });
+});
 app.use("/api/trpc", createExpressMiddleware({
   router: appRouter,
   createContext,
