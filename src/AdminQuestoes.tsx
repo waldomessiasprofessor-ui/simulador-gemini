@@ -1023,6 +1023,7 @@ export default function AdminQuestoes() {
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("Todas");
   const [filterFonte, setFilterFonte] = useState("Todas");
+  const [filterAuditada, setFilterAuditada] = useState<"todas" | "nao_auditadas">("todas");
   const [showForm, setShowForm] = useState(false);
   const [showLatexImport, setShowLatexImport] = useState(false);
   const [auditQuestionId, setAuditQuestionId] = useState<number | null>(null);
@@ -1042,9 +1043,15 @@ export default function AdminQuestoes() {
     conteudo: search || undefined,
     tag: filterTag !== "Todas" ? filterTag : undefined,
     fonte: filterFonte !== "Todas" ? filterFonte : undefined,
+    auditada: filterAuditada === "nao_auditadas" ? false : undefined,
     activeOnly: false,
     orderBy: "ano",
     orderDir: "asc",
+  });
+
+  const calibrateMutation = trpc.questions.calibrateTri.useMutation({
+    onSuccess: (d) => { toast.success(`TRI calibrado: ${d.updated} questões atualizadas.`); utils.questions.list.invalidate(); },
+    onError: (e) => toast.error(e.message),
   });
 
   const createMutation = trpc.questions.create.useMutation({
@@ -1549,6 +1556,27 @@ export default function AdminQuestoes() {
             onBlur={(e) => (e.target.style.borderColor = "var(--border)")} />
         </div>
 
+        {/* Filtro auditoria + botão calibrador */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => { setFilterAuditada(filterAuditada === "nao_auditadas" ? "todas" : "nao_auditadas"); setPage(1); }}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={filterAuditada === "nao_auditadas"
+              ? { background: "#DC2626", color: "#fff" }
+              : { background: "var(--muted)", color: "var(--muted-foreground)", border: "1.5px solid var(--border)" }}>
+            <ShieldCheck className="h-3.5 w-3.5" />
+            {filterAuditada === "nao_auditadas" ? "Mostrando: não auditadas" : "Não auditadas"}
+          </button>
+          <button
+            onClick={() => { if (confirm("Calibrar parâmetros TRI de TODAS as questões pela dificuldade?")) calibrateMutation.mutate({}); }}
+            disabled={calibrateMutation.isPending}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5"
+            style={{ background: calibrateMutation.isPending ? "var(--muted)" : "#7C3AED", color: "#fff" }}>
+            {calibrateMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            Calibrar TRI
+          </button>
+        </div>
+
         {/* Filtro por fonte */}
         <div className="flex items-center gap-2 flex-wrap">
           {["Todas", "ENEM", "UNICAMP", "FUVEST", "UNESP", "REPVET", "CONCURSO"].map((f) => (
@@ -1586,6 +1614,7 @@ export default function AdminQuestoes() {
         {data?.pagination.total ?? filtered.length} questão(ões)
         {filterFonte !== "Todas" ? ` · ${filterFonte}` : ""}
         {filterTag !== "Todas" ? ` · tag "${filterTag}"` : ""}
+        {filterAuditada === "nao_auditadas" ? " · não auditadas" : ""}
         {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
       </p>
 

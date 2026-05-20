@@ -46,6 +46,8 @@ export default function DesafioPage() {
   const [openResolution, setOpenResolution] = useState<Record<number, boolean>>({});
   const [openVideo, setOpenVideo] = useState<Record<number, boolean>>({});
   const [idx, setIdx] = useState(0);
+  const [confetti, setConfetti] = useState<Array<{ x: number; y: number; color: string; delay: number; dur: number }>>([]);
+  const [shakeQid, setShakeQid] = useState<number | null>(null);
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [idx]);
   useEffect(() => { if (daily) window.scrollTo({ top: 0, behavior: "instant" }); }, [daily?.id]);
 
@@ -173,13 +175,44 @@ export default function DesafioPage() {
 
   async function handleAnswer(alt: string) {
     if (revealed[q.id]) return;
+    const correct = alt === q.gabarito;
     setLocalAnswers((p) => ({ ...p, [q.id]: alt }));
     setRevealed((p) => ({ ...p, [q.id]: true }));
+
+    if (correct) {
+      const colors = ["#009688","#4ADE80","#FCD34D","#60A5FA","#F472B6","#A78BFA"];
+      setConfetti(Array.from({ length: 28 }, (_, i) => ({
+        x: 20 + Math.random() * 60,
+        y: 10 + Math.random() * 30,
+        color: colors[i % colors.length],
+        delay: Math.random() * 0.5,
+        dur: 1.8 + Math.random() * 1.0,
+      })));
+      setTimeout(() => setConfetti([]), 3500);
+    } else {
+      setShakeQid(q.id);
+      setTimeout(() => setShakeQid(null), 700);
+    }
+
     await saveDailyAnswer.mutateAsync({ challengeId: daily!.challengeId, questionId: q.id, selectedAnswer: alt });
   }
 
   return (
     <div className="space-y-5 py-2">
+      {/* Confetti overlay */}
+      {confetti.length > 0 && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          {confetti.map((c, i) => (
+            <div key={i} style={{
+              position: "absolute", left: `${c.x}%`, top: `${c.y}%`,
+              width: 8, height: 8, borderRadius: 2,
+              background: c.color,
+              animation: `confettiFall ${c.dur}s ${c.delay}s ease-in forwards`,
+            }} />
+          ))}
+        </div>
+      )}
+
       {/* Barra de progresso */}
       <div className="rounded-xl px-4 py-3 flex items-center justify-between"
         style={{ background: "#E0F2F1", border: "1.5px solid #B2DFDB" }}>
@@ -197,7 +230,7 @@ export default function DesafioPage() {
       </div>
 
       {/* Questão */}
-      <div className="card">
+      <div className="card" style={shakeQid === q.id ? { animation: "shakeWrong 0.65s ease" } : undefined}>
         <QuestionCard
           order={idx + 1}
           total={questions.length}

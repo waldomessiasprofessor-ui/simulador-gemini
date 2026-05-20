@@ -42,6 +42,7 @@ export const questionsRouter = createTRPCRouter({
       topic: z.string().optional(),
       nivel_dificuldade: NivelDificuldadeEnum.optional(),
       activeOnly: z.boolean().default(true),
+      auditada: z.boolean().optional(),
       orderBy: z.enum(["id", "ano", "conteudo_principal", "nivel_dificuldade", "createdAt"]).default("ano"),
       orderDir: z.enum(["asc", "desc"]).default("asc"),
     }))
@@ -51,6 +52,7 @@ export const questionsRouter = createTRPCRouter({
 
       const filters: any[] = [];
       if (activeOnly) filters.push(eq(questions.active, true));
+      if (input.auditada !== undefined) filters.push(eq(questions.auditada, input.auditada));
       if (input.conteudo) filters.push(sql`${questions.conteudo_principal} LIKE ${'%' + input.conteudo + '%'}`);
       if (input.fonte) filters.push(eq(questions.fonte, input.fonte));
       if (input.nivel_dificuldade) filters.push(eq(questions.nivel_dificuldade, input.nivel_dificuldade));
@@ -439,6 +441,50 @@ Responda em JSON puro (sem markdown, sem bloco de código) com exatamente esta e
         .set({ auditada: input.auditada })
         .where(eq(questions.id, input.id));
       return { success: true };
+    }),
+
+  // ─── Calibrador TRI — recalcula params a/b/c pela dificuldade ────────────────
+  // Mapeamento canônico (mesmo usado no import do ENEM):
+  //   Muito Baixa → a=0.6  b=-2.0  c=0.2
+  //   Baixa       → a=0.8  b=-1.5  c=0.2
+  //   Média       → a=1.0  b=-0.5  c=0.2
+  //   Alta        → a=1.2  b= 0.5  c=0.2
+  //   Muito Alta  → a=1.5  b= 1.5  c=0.2
+
+  calibrateTri: adminProcedure
+    .input(z.object({
+      // Se passado, calibra só essas questões; senão calibra TODAS as ativas
+      ids: z.array(z.number().int().positive()).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const TRI_MAP: Record<string, { a: number; b: number; c: number }> = {
+        "Muito Baixa": { a: 0.6, b: -2.0, c: 0.2 },
+        "Baixa":       { a: 0.8, b: -1.5, c: 0.2 },
+        "Média":       { a: 1.0, b: -0.5, c: 0.2 },
+        "Alta":        { a: 1.2, b:  0.5, c: 0.2 },
+        "Muito Alta":  { a: 1.5, b:  1.5, c: 0.2 },
+      };
+
+      const where = input.ids?.length
+        ? and(eq(questions.active, true), inArray(questions.id, input.ids))
+        : eq(questions.active, true);
+
+      const rows = await ctx.db
+        .select({ id: questions.id, nivel: questions.nivel_dificuldade })
+        .from(questions)
+        .where(where);
+
+      let updated = 0;
+      for (const row of rows) {
+        const params = TRI_MAP[row.nivel ?? "Média"] ?? TRI_MAP["Média"];
+        await ctx.db
+          .update(questions)
+          .set({ param_a: params.a, param_b: params.b, param_c: params.c })
+          .where(eq(questions.id, row.id));
+        updated++;
+      }
+
+      return { updated };
     }),
 
   // ─── Aplica correções sugeridas pela auditoria ─────────────────────────────
