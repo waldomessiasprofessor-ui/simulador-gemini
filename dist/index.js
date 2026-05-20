@@ -554,7 +554,8 @@ var questionsRouter = createTRPCRouter({
       concurso: input.concurso ?? null,
       url_imagem: input.url_imagem ?? null,
       url_video: input.url_video ?? null,
-      active: true
+      active: false
+      // inativo até auditoria manual
     });
     return { id: Number(result.insertId), success: true };
   }),
@@ -5457,7 +5458,8 @@ Total: ${allQuestions.length} quest\xF5es`);
           alternativas,
           gabarito: (q.correctAlternative ?? "A").toUpperCase(),
           comentario_resolucao: null,
-          active: true
+          active: false
+          // inativo até auditoria manual
         });
         inseridas++;
         if (inseridas % 5 === 0) log(`  ${inseridas} inseridas...`);

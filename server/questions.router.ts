@@ -111,7 +111,7 @@ export const questionsRouter = createTRPCRouter({
         concurso: input.concurso ?? null,
         url_imagem: input.url_imagem ?? null,
         url_video: input.url_video ?? null,
-        active: true,
+        active: false, // inativo até auditoria manual
       } as NewQuestion);
       return { id: Number(result.insertId), success: true };
     }),

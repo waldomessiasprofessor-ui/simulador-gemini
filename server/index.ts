@@ -735,7 +735,7 @@ app.get("/admin/import", async (req, res) => {
           enunciado,
           url_imagem: null,          // imagens agora ficam inline no enunciado
           alternativas, gabarito: (q.correctAlternative ?? "A").toUpperCase(),
-          comentario_resolucao: null, active: true,
+          comentario_resolucao: null, active: false, // inativo até auditoria manual
         });
         inseridas++;
         if (inseridas % 5 === 0) log(`  ${inseridas} inseridas...`);
