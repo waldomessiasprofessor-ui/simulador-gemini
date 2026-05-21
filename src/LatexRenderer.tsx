@@ -114,7 +114,8 @@ function protectCurrency(text: string): string {
     .replace(/\\\$/g, ESC_PH)
     // Prefixos monetários — aceita também o ESC_PH no lugar do $
     .replace(
-      new RegExp(`(?<![A-Za-z])(R|US|USD|BRL)(?:\\$|${ESC_PH})`, "gi"),
+      // Exclui também $ como precedente para não engolir variáveis LaTeX como $r$
+      new RegExp(`(?<![A-Za-z$])(R|US|USD|BRL)(?:\\$|${ESC_PH})`, "gi"),
       `$1${CURR_PH}`
     );
 }
