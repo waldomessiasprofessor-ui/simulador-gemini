@@ -473,6 +473,56 @@ function RadarPerformance() {
   const best = [...data].sort((a, b) => b.pct - a.pct)[0];
   const weak = [...data].sort((a, b) => a.pct - b.pct)[0];
 
+  const [openTip, setOpenTip] = useState<string | null>(null);
+
+  const TIPS: Record<string, { desc: string; dicas: string[] }> = {
+    "Velocidade": {
+      desc: "Mede seu tempo médio por questão. Quanto mais rápido (sem errar), melhor.",
+      dicas: [
+        "Treine com o simulado no modo cronometrado.",
+        "Resolva desafios diários — questões mais curtas treinam agilidade.",
+        "Evite ficar preso numa questão: pule e volte depois.",
+        "Pratique leitura rápida do enunciado para identificar o que é pedido.",
+      ],
+    },
+    "Resoluções": {
+      desc: "Total de questões respondidas em simulados, treinos e desafios.",
+      dicas: [
+        "Complete o desafio diário todo dia — são +5 questões por sessão.",
+        "Use o Treino Livre para praticar áreas específicas.",
+        "Faça ao menos um simulado por semana.",
+        "Quantidade com qualidade: revise as questões erradas.",
+      ],
+    },
+    "Trilhas": {
+      desc: "Lições de trilha concluídas (conteúdo + exercícios).",
+      dicas: [
+        "Acesse Trilhas e complete uma lição por dia.",
+        "Priorize as trilhas das suas áreas mais fracas no radar.",
+        "Conclua a lição inteira — leitura + todos os exercícios contam.",
+        "Cada trilha tem sequência didática: siga a ordem recomendada.",
+      ],
+    },
+    "Fixação": {
+      desc: "Flashcards revisados com boa avaliação (≥ 3 estrelas).",
+      dicas: [
+        "Revise os flashcards todo dia — o sistema usa repetição espaçada.",
+        "Marque como 'Fácil' ou 'Bom' só quando realmente souber a resposta.",
+        "Crie o hábito de revisar antes de dormir — consolida a memória.",
+        "Foque nos decks das áreas que aparecem mais no ENEM.",
+      ],
+    },
+    "Dedicação": {
+      desc: "Combina sua ofensiva (dias consecutivos) com desafios concluídos.",
+      dicas: [
+        "Faça ao menos uma atividade por dia para manter a ofensiva.",
+        "O desafio diário é a forma mais rápida de aumentar os dois indicadores.",
+        "Não quebre a sequência: mesmo nos dias corridos, 5 minutos bastam.",
+        "30 dias de ofensiva e 60 desafios completos = 100% neste eixo.",
+      ],
+    },
+  };
+
   return (
     <div className="rounded-2xl p-4 space-y-3"
       style={{ background: "var(--card)", border: "1.5px solid var(--border)" }}>
@@ -502,16 +552,62 @@ function RadarPerformance() {
         </RadarChart>
       </ResponsiveContainer>
 
-      {/* Legenda com os valores brutos de cada eixo */}
+      {/* Legenda com botão de dica por eixo */}
       <div className="grid grid-cols-2 gap-1.5 pt-1">
-        {data.map((d) => (
-          <div key={d.eixo} className="rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2"
-            style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
-            <span className="text-xs font-semibold truncate" style={{ color: "var(--foreground)" }}>{d.eixo}</span>
-            <span className="text-xs font-black flex-shrink-0"
-              style={{ color: d.pct >= 70 ? "#16A34A" : d.pct >= 40 ? "#B45309" : "#7C3AED" }}>{d.pct}%</span>
-          </div>
-        ))}
+        {data.map((d) => {
+          const tip = TIPS[d.eixo];
+          const isOpen = openTip === d.eixo;
+          return (
+            <div key={d.eixo} className="relative">
+              <div className="rounded-lg px-2.5 py-1.5 flex items-center gap-1.5"
+                style={{ background: "var(--muted)", border: `1px solid ${isOpen ? "#009688" : "var(--border)"}` }}>
+                <span className="text-xs font-semibold flex-1 min-w-0 truncate" style={{ color: "var(--foreground)" }}>{d.eixo}</span>
+                <span className="text-xs font-black flex-shrink-0"
+                  style={{ color: d.pct >= 70 ? "#16A34A" : d.pct >= 40 ? "#B45309" : "#7C3AED" }}>{d.pct}%</span>
+                {tip && (
+                  <button
+                    onClick={() => setOpenTip(isOpen ? null : d.eixo)}
+                    className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-black transition-colors"
+                    style={{
+                      background: isOpen ? "#009688" : "var(--border)",
+                      color: isOpen ? "#fff" : "var(--muted-foreground)",
+                    }}
+                    title={`Dicas para melhorar ${d.eixo}`}
+                  >i</button>
+                )}
+              </div>
+
+              {/* Card flutuante de dicas */}
+              {isOpen && tip && (
+                <div
+                  className="absolute z-50 left-0 rounded-xl p-3 space-y-2 shadow-xl"
+                  style={{
+                    top: "calc(100% + 6px)",
+                    minWidth: 240,
+                    maxWidth: 280,
+                    background: "var(--card)",
+                    border: "1.5px solid #009688",
+                    boxShadow: "0 8px 24px rgba(0,150,136,0.15)",
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-black" style={{ color: "#009688" }}>{d.eixo}</p>
+                    <button onClick={() => setOpenTip(null)} className="text-xs leading-none" style={{ color: "var(--muted-foreground)" }}>✕</button>
+                  </div>
+                  <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{tip.desc}</p>
+                  <ul className="space-y-1">
+                    {tip.dicas.map((dica, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-xs" style={{ color: "var(--foreground)" }}>
+                        <span className="flex-shrink-0 font-black" style={{ color: "#009688" }}>→</span>
+                        {dica}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Destaques */}
