@@ -10,6 +10,7 @@ import {
   algebraLogaritmos,
 } from "./algebra";
 import { probabilidade } from "./probabilidade";
+import { probabilidadeOperacoes } from "./probabilidade-operacoes";
 
 // =============================================================================
 // Registry de trilhas disponíveis
@@ -36,6 +37,7 @@ export const TRILHAS: Trilha[] = [
   algebraSistemas,
   algebraLogaritmos,
   probabilidade,
+  probabilidadeOperacoes,
 ];
 
 /** Apenas trilhas de topo (sem pai) — usadas na listagem /trilhas. */
