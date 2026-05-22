@@ -45,6 +45,7 @@ const MATH_DIFFICULTY_OPTIONS = [
   { value: "Geometria Espacial", emoji: "🔷" },
   { value: "Álgebra", emoji: "🔢" },
   { value: "Probabilidade", emoji: "🎲" },
+  { value: "Análise Combinatória", emoji: "🔀" },
   { value: "Estatística", emoji: "📉" },
   { value: "Trigonometria", emoji: "🔁" },
   { value: "Aritmética e Números", emoji: "🔣" },
