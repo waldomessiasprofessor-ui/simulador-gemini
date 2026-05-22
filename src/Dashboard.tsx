@@ -424,6 +424,7 @@ function RadarPerformance() {
   const data = rawData;
 
   const [animated, setAnimated] = useState<{ eixo: string; pct: number }[]>([]);
+  const [openTip, setOpenTip] = useState<string | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -472,8 +473,6 @@ function RadarPerformance() {
 
   const best = [...data].sort((a, b) => b.pct - a.pct)[0];
   const weak = [...data].sort((a, b) => a.pct - b.pct)[0];
-
-  const [openTip, setOpenTip] = useState<string | null>(null);
 
   const TIPS: Record<string, { desc: string; dicas: string[] }> = {
     "Velocidade": {
