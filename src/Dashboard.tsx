@@ -464,7 +464,8 @@ function RadarPerformance() {
       const sec = (d.raw as number) % 60;
       return `${min}min${sec > 0 ? ` ${sec}s` : ""}/questão`;
     }
-    if (d.eixo === "Dedicação") return `${d.raw}h de ${d.meta}h`;
+    if (d.eixo === "Dedicação") return `🔥 ${d.raw} dias · ${d.unidade.split("·")[1]?.trim() ?? ""}`;
+
     if (d.eixo === "Trilhas") return `${d.raw} de ${d.meta} lições concluídas`;
     return `${d.raw} de ${d.meta} ${d.unidade}`;
   }
