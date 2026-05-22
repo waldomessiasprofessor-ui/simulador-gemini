@@ -9,8 +9,12 @@ import {
   algebraSistemas,
   algebraLogaritmos,
 } from "./algebra";
-import { probabilidade } from "./probabilidade";
+import { probabilidade, probabilidadeFundamentos } from "./probabilidade";
 import { probabilidadeOperacoes } from "./probabilidade-operacoes";
+
+// Preenche as subtrilhas do hub de probabilidade aqui para evitar
+// dependência circular entre os módulos de trilha.
+probabilidade.subtrilhas = [probabilidadeFundamentos, probabilidadeOperacoes];
 
 // =============================================================================
 // Registry de trilhas disponíveis
@@ -37,6 +41,8 @@ export const TRILHAS: Trilha[] = [
   algebraSistemas,
   algebraLogaritmos,
   probabilidade,
+  // subtrilhas de probabilidade — acessíveis via /trilha/probabilidade-*
+  probabilidadeFundamentos,
   probabilidadeOperacoes,
 ];
 
