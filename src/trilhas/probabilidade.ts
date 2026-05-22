@@ -7,12 +7,16 @@ import type { Trilha } from "./types";
 // novo, construindo o conhecimento de forma cumulativa.
 // =============================================================================
 
-export const probabilidade: Trilha = {
-  slug: "probabilidade",
+// =============================================================================
+// Sub-trilha 1 — Fundamentos de Probabilidade
+// =============================================================================
+export const probabilidadeFundamentos: Trilha = {
+  slug: "probabilidade-fundamentos",
   area: "Probabilidade e Estatística",
-  titulo: "Trilha de Probabilidade",
+  titulo: "Fundamentos de Probabilidade",
   descricao:
     "Do conceito de espaço amostral até probabilidade condicional — cada exercício constrói sobre o anterior.",
+  parentSlug: "probabilidade",
 
   capitulos: [
     {
@@ -231,4 +235,19 @@ $$P(V_1 \\text{ e } V_2) = \\frac{3}{5} \\cdot \\frac{1}{2} = \\frac{3}{10}$$`,
       ],
     },
   ],
+};
+
+// =============================================================================
+// Hub — Probabilidade e Estatística
+// =============================================================================
+// As subtrilhas são definidas no arquivo de cada módulo e referenciadas aqui.
+// O array é completado no index.ts após importar probabilidadeOperacoes.
+export const probabilidade: Trilha = {
+  slug: "probabilidade",
+  area: "Probabilidade e Estatística",
+  titulo: "Probabilidade",
+  descricao:
+    "Duas trilhas progressivas: comece pelos fundamentos (espaço amostral, complemento, urna) e avance para operações avançadas (união geral, condicional, Bayes, binomial).",
+  capitulos: [],
+  subtrilhas: [], // preenchido em index.ts para evitar dependência circular
 };

@@ -15,6 +15,7 @@ export const probabilidadeOperacoes: Trilha = {
   titulo: "Operações com Probabilidade",
   descricao:
     "União geral, probabilidade condicional, regra da multiplicação dependente, Teorema de Bayes e distribuição binomial — para quem já domina os fundamentos.",
+  parentSlug: "probabilidade",
 
   capitulos: [
     {
