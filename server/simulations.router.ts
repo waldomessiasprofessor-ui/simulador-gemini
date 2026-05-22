@@ -1011,7 +1011,8 @@ export const simulationsRouter = createTRPCRouter({
     const META_QUESTOES   = 1000;    // 1000 questões → 100%
     const META_TRILHAS    = 30;      // 30 lições de trilha → 100%
     const META_FIXACAO    = 500;     // 500 flashcards c/ boa avaliação → 100%
-    const META_DEDICACAO_HORAS = 50; // 50h cumulativas na plataforma → 100%
+    const META_STREAK     = 30;      // 30 dias de ofensiva → 50% do eixo Dedicação
+    const META_DESAFIOS   = 60;      // 60 desafios concluídos → 50% do eixo Dedicação
 
     function clamp01(x: number): number {
       if (!isFinite(x)) return 0;
@@ -1048,26 +1049,55 @@ export const simulationsRouter = createTRPCRouter({
     // ── Fonte 2: desafios diários completos ──────────────────────────────────
     const dcAgg = await ctx.db
       .select({
-        qSum:    sql<number>`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`,
-        timeSum: sql<number>`COALESCE(SUM(${dailyChallenges.totalTimeSeconds}), 0)`,
+        qSum:       sql<number>`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`,
+        timeSum:    sql<number>`COALESCE(SUM(${dailyChallenges.totalTimeSeconds}), 0)`,
+        completed:  sql<number>`SUM(CASE WHEN ${dailyChallenges.completed} = 1 THEN 1 ELSE 0 END)`,
+        // datas distintas para cálculo de streak
       })
+      .from(dailyChallenges)
+      .where(eq(dailyChallenges.userId, userId));
+
+    const dcQuestions      = Number(dcAgg[0]?.qSum ?? 0);
+    const dcTime           = Number(dcAgg[0]?.timeSum ?? 0);
+    const dcCompletedCount = Number(dcAgg[0]?.completed ?? 0);
+
+    // ── Streak: dias consecutivos com atividade (simulados + desafios) ────────
+    // Reúne todas as datas de atividade do usuário
+    const activityDates = await ctx.db
+      .select({ date: sql<string>`DATE(${simulationAnswers.answeredAt})` })
+      .from(simulationAnswers)
+      .innerJoin(simulations, eq(simulationAnswers.simulationId, simulations.id))
+      .where(eq(simulations.userId, userId))
+      .groupBy(sql`DATE(${simulationAnswers.answeredAt})`);
+
+    const dcDates = await ctx.db
+      .select({ date: dailyChallenges.challengeDate })
       .from(dailyChallenges)
       .where(and(eq(dailyChallenges.userId, userId), eq(dailyChallenges.completed, true)));
 
-    const dcQuestions = Number(dcAgg[0]?.qSum ?? 0);
-    const dcTime      = Number(dcAgg[0]?.timeSum ?? 0);
+    const activeDaySet = new Set<string>([
+      ...activityDates.map(r => r.date),
+      ...dcDates.map(r => r.date as string),
+    ]);
 
-    // ── Fonte 3: Revise — quantidade de textos + tempo de leitura ────────────
+    function perfDayKey(d: Date): string {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+    const now = new Date();
+    let currentStreak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      if (activeDaySet.has(perfDayKey(d))) currentStreak++;
+      else if (i > 0) break;
+    }
+
+    // ── Fonte 3: Revise — mantido para tempo de dedicação (não mais exibido) ──
     const drAgg = await ctx.db
-      .select({
-        count:   sql<number>`COUNT(*)`,
-        timeSum: sql<number>`COALESCE(SUM(${dailyReviews.totalTimeSeconds}), 0)`,
-      })
+      .select({ timeSum: sql<number>`COALESCE(SUM(${dailyReviews.totalTimeSeconds}), 0)` })
       .from(dailyReviews)
       .where(eq(dailyReviews.userId, userId));
-
-    const drCount = Number(drAgg[0]?.count ?? 0);
-    const drTime  = Number(drAgg[0]?.timeSum ?? 0);
+    const drTime = Number(drAgg[0]?.timeSum ?? 0);
 
     // ── Fonte 4: Flashcards — revisões bem-sucedidas + tempo ─────────────────
     // Conta a SOMA de repetições (cada "fácil"/"bom" acumula +1 no campo).
@@ -1115,17 +1145,18 @@ export const simulationsRouter = createTRPCRouter({
     const trilhas  = pct(trilhaLessons / META_TRILHAS);
     const fixacao  = pct(fcGood / META_FIXACAO);
 
-    // Dedicação inclui tempo de todas as fontes, agora incluindo trilhas
-    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime + trilhaTime;
-    const dedicacaoHoras   = totalTimeSeconds / 3600;
-    const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
+    // Dedicação = média ponderada entre streak (dias de ofensiva) e desafios concluídos
+    // Cada componente vale 50% do eixo (0–100%)
+    const streakPct   = clamp01(currentStreak / META_STREAK);
+    const desafiosPct = clamp01(dcCompletedCount / META_DESAFIOS);
+    const dedicacao   = Math.round((streakPct + desafiosPct) / 2 * 100);
 
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/questão" },
-      { eixo: "Resoluções", pct: questoes,   raw: questoesTotal,                         meta: META_QUESTOES,           unidade: "resoluções" },
-      { eixo: "Trilhas",    pct: trilhas,    raw: trilhaLessons,                         meta: META_TRILHAS,            unidade: "lições" },
-      { eixo: "Fixação",    pct: fixacao,    raw: fcGood,                                meta: META_FIXACAO,            unidade: "cards" },
-      { eixo: "Dedicação",  pct: dedicacao,  raw: Math.round(dedicacaoHoras * 10) / 10,  meta: META_DEDICACAO_HORAS,    unidade: "horas" },
+      { eixo: "Resoluções", pct: questoes,   raw: questoesTotal,      meta: META_QUESTOES,  unidade: "resoluções" },
+      { eixo: "Trilhas",    pct: trilhas,    raw: trilhaLessons,      meta: META_TRILHAS,   unidade: "lições" },
+      { eixo: "Fixação",    pct: fixacao,    raw: fcGood,             meta: META_FIXACAO,   unidade: "cards" },
+      { eixo: "Dedicação",  pct: dedicacao,  raw: currentStreak,      meta: META_STREAK,    unidade: `dias · ${dcCompletedCount} desafios` },
     ];
   }),
 

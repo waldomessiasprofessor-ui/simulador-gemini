@@ -2011,7 +2011,8 @@ var simulationsRouter = createTRPCRouter({
     const META_QUESTOES = 1e3;
     const META_TRILHAS = 30;
     const META_FIXACAO = 500;
-    const META_DEDICACAO_HORAS = 50;
+    const META_STREAK = 30;
+    const META_DESAFIOS = 60;
     function clamp01(x) {
       if (!isFinite(x)) return 0;
       return Math.max(0, Math.min(1, x));
@@ -2032,15 +2033,31 @@ var simulationsRouter = createTRPCRouter({
     const simSessionTime = Number(simSessionAgg[0]?.total ?? 0);
     const dcAgg = await ctx.db.select({
       qSum: sql2`COALESCE(SUM(JSON_LENGTH(${dailyChallenges.questionIds})), 0)`,
-      timeSum: sql2`COALESCE(SUM(${dailyChallenges.totalTimeSeconds}), 0)`
-    }).from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
+      timeSum: sql2`COALESCE(SUM(${dailyChallenges.totalTimeSeconds}), 0)`,
+      completed: sql2`SUM(CASE WHEN ${dailyChallenges.completed} = 1 THEN 1 ELSE 0 END)`
+      // datas distintas para cálculo de streak
+    }).from(dailyChallenges).where(eq2(dailyChallenges.userId, userId));
     const dcQuestions = Number(dcAgg[0]?.qSum ?? 0);
     const dcTime = Number(dcAgg[0]?.timeSum ?? 0);
-    const drAgg = await ctx.db.select({
-      count: sql2`COUNT(*)`,
-      timeSum: sql2`COALESCE(SUM(${dailyReviews.totalTimeSeconds}), 0)`
-    }).from(dailyReviews).where(eq2(dailyReviews.userId, userId));
-    const drCount = Number(drAgg[0]?.count ?? 0);
+    const dcCompletedCount = Number(dcAgg[0]?.completed ?? 0);
+    const activityDates = await ctx.db.select({ date: sql2`DATE(${simulationAnswers.answeredAt})` }).from(simulationAnswers).innerJoin(simulations, eq2(simulationAnswers.simulationId, simulations.id)).where(eq2(simulations.userId, userId)).groupBy(sql2`DATE(${simulationAnswers.answeredAt})`);
+    const dcDates = await ctx.db.select({ date: dailyChallenges.challengeDate }).from(dailyChallenges).where(and2(eq2(dailyChallenges.userId, userId), eq2(dailyChallenges.completed, true)));
+    const activeDaySet = /* @__PURE__ */ new Set([
+      ...activityDates.map((r) => r.date),
+      ...dcDates.map((r) => r.date)
+    ]);
+    function perfDayKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    const now = /* @__PURE__ */ new Date();
+    let currentStreak = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      if (activeDaySet.has(perfDayKey(d))) currentStreak++;
+      else if (i > 0) break;
+    }
+    const drAgg = await ctx.db.select({ timeSum: sql2`COALESCE(SUM(${dailyReviews.totalTimeSeconds}), 0)` }).from(dailyReviews).where(eq2(dailyReviews.userId, userId));
     const drTime = Number(drAgg[0]?.timeSum ?? 0);
     const fcAgg = await ctx.db.select({
       goodCount: sql2`COALESCE(SUM(${flashcardProgress.repetitions}), 0)`,
@@ -2069,15 +2086,15 @@ var simulationsRouter = createTRPCRouter({
     const questoes = pct(questoesTotal / META_QUESTOES);
     const trilhas = pct(trilhaLessons / META_TRILHAS);
     const fixacao = pct(fcGood / META_FIXACAO);
-    const totalTimeSeconds = simSessionTime + dcTime + drTime + fcTime + trilhaTime;
-    const dedicacaoHoras = totalTimeSeconds / 3600;
-    const dedicacao = pct(dedicacaoHoras / META_DEDICACAO_HORAS);
+    const streakPct = clamp01(currentStreak / META_STREAK);
+    const desafiosPct = clamp01(dcCompletedCount / META_DESAFIOS);
+    const dedicacao = Math.round((streakPct + desafiosPct) / 2 * 100);
     return [
       { eixo: "Velocidade", pct: velocidade, raw: avgSecPerQuestion !== null ? Math.round(avgSecPerQuestion) : null, meta: META_VELOCIDADE_MIN, unidade: "s/quest\xE3o" },
       { eixo: "Resolu\xE7\xF5es", pct: questoes, raw: questoesTotal, meta: META_QUESTOES, unidade: "resolu\xE7\xF5es" },
       { eixo: "Trilhas", pct: trilhas, raw: trilhaLessons, meta: META_TRILHAS, unidade: "li\xE7\xF5es" },
       { eixo: "Fixa\xE7\xE3o", pct: fixacao, raw: fcGood, meta: META_FIXACAO, unidade: "cards" },
-      { eixo: "Dedica\xE7\xE3o", pct: dedicacao, raw: Math.round(dedicacaoHoras * 10) / 10, meta: META_DEDICACAO_HORAS, unidade: "horas" }
+      { eixo: "Dedica\xE7\xE3o", pct: dedicacao, raw: currentStreak, meta: META_STREAK, unidade: `dias \xB7 ${dcCompletedCount} desafios` }
     ];
   }),
   // ---------------------------------------------------------------------------
