@@ -1024,6 +1024,7 @@ export default function AdminQuestoes() {
   const [filterTag, setFilterTag] = useState("Todas");
   const [filterFonte, setFilterFonte] = useState("Todas");
   const [filterAuditada, setFilterAuditada] = useState<"todas" | "nao_auditadas">("todas");
+  const [filterSerie, setFilterSerie] = useState("todas");
   const [showForm, setShowForm] = useState(false);
   const [showLatexImport, setShowLatexImport] = useState(false);
   const [auditQuestionId, setAuditQuestionId] = useState<number | null>(null);
@@ -1042,7 +1043,7 @@ export default function AdminQuestoes() {
     page, pageSize: 20,
     conteudo: search || undefined,
     tag: filterTag !== "Todas" ? filterTag : undefined,
-    fonte: filterFonte !== "Todas" ? filterFonte : undefined,
+    fonte: filterSerie === "7EF" ? "GI7" : (filterFonte !== "Todas" ? filterFonte : undefined),
     auditada: filterAuditada === "nao_auditadas" ? false : undefined,
     activeOnly: false,
     orderBy: "ano",
@@ -1590,6 +1591,24 @@ export default function AdminQuestoes() {
           ))}
         </div>
 
+        {/* Filtro por série */}
+        <div>
+          <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
+            📚 Filtrar por série:
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {[{ value: "todas", label: "Todas as séries" }, { value: "7EF", label: "7º ano EF" }].map(({ value, label }) => (
+              <button key={value} onClick={() => { setFilterSerie(value); setPage(1); }}
+                className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                style={filterSerie === value
+                  ? { background: "#7C3AED", color: "#fff" }
+                  : { background: "var(--muted)", color: "var(--muted-foreground)", border: "1.5px solid var(--border)" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Filtro por tag */}
         <div>
           <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
@@ -1612,7 +1631,7 @@ export default function AdminQuestoes() {
       {/* Contador */}
       <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
         {data?.pagination.total ?? filtered.length} questão(ões)
-        {filterFonte !== "Todas" ? ` · ${filterFonte}` : ""}
+        {filterSerie === "7EF" ? " · 7º ano EF (GI7)" : (filterFonte !== "Todas" ? ` · ${filterFonte}` : "")}
         {filterTag !== "Todas" ? ` · tag "${filterTag}"` : ""}
         {filterAuditada === "nao_auditadas" ? " · não auditadas" : ""}
         {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
