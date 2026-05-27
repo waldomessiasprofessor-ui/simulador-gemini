@@ -1043,7 +1043,7 @@ export default function AdminQuestoes() {
     page, pageSize: 20,
     conteudo: search || undefined,
     tag: filterTag !== "Todas" ? filterTag : undefined,
-    fonte: filterSerie === "7EF" ? "GI7" : (filterFonte !== "Todas" ? filterFonte : undefined),
+    fonte: (filterSerie === "7EF" || filterSerie === "EF") ? "GI7" : (filterFonte !== "Todas" ? filterFonte : undefined),
     auditada: filterAuditada === "nao_auditadas" ? false : undefined,
     activeOnly: false,
     orderBy: "ano",
@@ -1596,16 +1596,38 @@ export default function AdminQuestoes() {
           <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
             📚 Filtrar por série:
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            {[{ value: "todas", label: "Todas as séries" }, { value: "7EF", label: "7º ano EF" }].map(({ value, label }) => (
-              <button key={value} onClick={() => { setFilterSerie(value); setPage(1); }}
-                className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
-                style={filterSerie === value
+          <div className="flex flex-wrap gap-1.5 items-start">
+            {/* Todas as séries */}
+            <button onClick={() => { setFilterSerie("todas"); setPage(1); }}
+              className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+              style={filterSerie === "todas"
+                ? { background: "#7C3AED", color: "#fff" }
+                : { background: "var(--muted)", color: "var(--muted-foreground)", border: "1.5px solid var(--border)" }}>
+              Todas as séries
+            </button>
+
+            {/* Ensino Fundamental + submenu */}
+            <div className="flex flex-col gap-1">
+              <button onClick={() => { setFilterSerie(filterSerie.startsWith("EF") || filterSerie === "7EF" ? "todas" : "EF"); setPage(1); }}
+                className="px-3 py-1 rounded-full text-xs font-semibold transition-colors flex items-center gap-1"
+                style={(filterSerie === "EF" || filterSerie === "7EF")
                   ? { background: "#7C3AED", color: "#fff" }
                   : { background: "var(--muted)", color: "var(--muted-foreground)", border: "1.5px solid var(--border)" }}>
-                {label}
+                Ensino Fundamental
+                <span style={{ fontSize: "9px", opacity: 0.8 }}>{(filterSerie === "EF" || filterSerie === "7EF") ? "▾" : "▸"}</span>
               </button>
-            ))}
+              {(filterSerie === "EF" || filterSerie === "7EF") && (
+                <div className="flex flex-wrap gap-1 pl-3 border-l-2" style={{ borderColor: "#7C3AED" }}>
+                  <button onClick={() => { setFilterSerie("7EF"); setPage(1); }}
+                    className="px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                    style={filterSerie === "7EF"
+                      ? { background: "#5B21B6", color: "#fff" }
+                      : { background: "var(--muted)", color: "var(--muted-foreground)", border: "1.5px solid var(--border)" }}>
+                    7º ano
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1631,7 +1653,7 @@ export default function AdminQuestoes() {
       {/* Contador */}
       <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
         {data?.pagination.total ?? filtered.length} questão(ões)
-        {filterSerie === "7EF" ? " · 7º ano EF (GI7)" : (filterFonte !== "Todas" ? ` · ${filterFonte}` : "")}
+        {filterSerie === "7EF" ? " · EF — 7º ano" : filterSerie === "EF" ? " · Ensino Fundamental" : (filterFonte !== "Todas" ? ` · ${filterFonte}` : "")}
         {filterTag !== "Todas" ? ` · tag "${filterTag}"` : ""}
         {filterAuditada === "nao_auditadas" ? " · não auditadas" : ""}
         {data && data.pagination.totalPages > 1 ? ` — página ${page} de ${data.pagination.totalPages}` : ""}
