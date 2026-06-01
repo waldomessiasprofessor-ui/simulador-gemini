@@ -2914,163 +2914,13 @@ var usersRouter = createTRPCRouter({
   })
 });
 
-// server/review.router.ts
-import { z as z5 } from "zod";
-import { eq as eq5, and as and4, desc as desc4, sql as sql4 } from "drizzle-orm";
-var QuestaoSchema = z5.object({
-  enunciado: z5.string().min(5),
-  opcoes: z5.array(z5.string()).length(4),
-  correta: z5.number().int().min(0).max(3)
-});
-var ReviewBaseSchema = z5.object({
-  titulo: z5.string().min(3).max(200),
-  conteudo: z5.string().default(""),
-  url_pdf: z5.string().url().nullable().optional(),
-  topico: z5.string().optional(),
-  questoes: z5.array(QuestaoSchema).default([]),
-  active: z5.boolean().default(true)
-});
-var reviewRouter = createTRPCRouter({
-  // ── Admin: lista todos os textos ──────────────────────────────────────────
-  adminList: adminProcedure.input(z5.object({ page: z5.number().default(1), pageSize: z5.number().default(20) })).query(async ({ ctx, input }) => {
-    const offset = (input.page - 1) * input.pageSize;
-    const [rows, [{ count }]] = await Promise.all([
-      ctx.db.select().from(reviewContents).orderBy(desc4(reviewContents.createdAt)).limit(input.pageSize).offset(offset),
-      ctx.db.select({ count: sql4`COUNT(*)` }).from(reviewContents)
-    ]);
-    return { items: rows, total: Number(count), page: input.page, pageSize: input.pageSize };
-  }),
-  // ── Admin: cria texto ─────────────────────────────────────────────────────
-  create: adminProcedure.input(ReviewBaseSchema).mutation(async ({ ctx, input }) => {
-    const [result] = await ctx.db.insert(reviewContents).values(input);
-    return { id: Number(result.insertId), success: true };
-  }),
-  // ── Admin: atualiza texto ─────────────────────────────────────────────────
-  update: adminProcedure.input(ReviewBaseSchema.partial().extend({ id: z5.number().int().positive() })).mutation(async ({ ctx, input }) => {
-    const { id, ...data } = input;
-    await ctx.db.update(reviewContents).set(data).where(eq5(reviewContents.id, id));
-    return { success: true };
-  }),
-  // ── Admin: toggle active ──────────────────────────────────────────────────
-  toggleActive: adminProcedure.input(z5.object({ id: z5.number().int().positive(), active: z5.boolean() })).mutation(async ({ ctx, input }) => {
-    await ctx.db.update(reviewContents).set({ active: input.active }).where(eq5(reviewContents.id, input.id));
-    return { success: true };
-  }),
-  // ── Admin: deleta texto ───────────────────────────────────────────────────
-  delete: adminProcedure.input(z5.object({ id: z5.number().int().positive() })).mutation(async ({ ctx, input }) => {
-    await ctx.db.delete(reviewContents).where(eq5(reviewContents.id, input.id));
-    return { success: true };
-  }),
-  // ── Aluno: lista conteúdos ativos com paginação ───────────────────────────
-  listAll: protectedProcedure.input(z5.object({ page: z5.number().int().min(1).default(1), pageSize: z5.number().int().min(1).max(50).default(20) }).optional()).query(async ({ ctx, input }) => {
-    const page = input?.page ?? 1;
-    const pageSize = input?.pageSize ?? 20;
-    const offset = (page - 1) * pageSize;
-    const [rows, [{ count }]] = await Promise.all([
-      ctx.db.select({
-        id: reviewContents.id,
-        titulo: reviewContents.titulo,
-        topico: reviewContents.topico,
-        url_pdf: reviewContents.url_pdf,
-        createdAt: reviewContents.createdAt
-      }).from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(desc4(reviewContents.createdAt)).limit(pageSize).offset(offset),
-      ctx.db.select({ count: sql4`COUNT(*)` }).from(reviewContents).where(eq5(reviewContents.active, true))
-    ]);
-    return { items: rows, total: Number(count), page, pageSize };
-  }),
-  // ── Aluno: busca conteúdo específico por id ───────────────────────────────
-  getById: protectedProcedure.input(z5.object({ id: z5.number().int().positive() })).query(async ({ ctx, input }) => {
-    const [content] = await ctx.db.select().from(reviewContents).where(and4(eq5(reviewContents.id, input.id), eq5(reviewContents.active, true))).limit(1);
-    return content ?? null;
-  }),
-  // ── Aluno: pega (ou cria) o Revise do dia ────────────────────────────────
-  getDaily: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user.id;
-    const br = new Date(Date.now() - 3 * 60 * 60 * 1e3);
-    const today = br.toISOString().slice(0, 10);
-    const [existing] = await ctx.db.select().from(dailyReviews).where(and4(eq5(dailyReviews.userId, userId), eq5(dailyReviews.reviewDate, today))).limit(1);
-    if (existing) {
-      const [content] = await ctx.db.select().from(reviewContents).where(eq5(reviewContents.id, existing.contentId)).limit(1);
-      return { review: existing, content: content ?? null };
-    }
-    const seen = await ctx.db.select({ contentId: dailyReviews.contentId }).from(dailyReviews).where(eq5(dailyReviews.userId, userId));
-    const seenIds = seen.map((s) => s.contentId);
-    const allActive = await ctx.db.select().from(reviewContents).where(eq5(reviewContents.active, true)).orderBy(sql4`RAND()`).limit(50);
-    const unseen = allActive.filter((c) => !seenIds.includes(c.id));
-    const chosen = unseen.length > 0 ? unseen[0] : allActive[0];
-    if (!chosen) return { review: null, content: null };
-    const newReview = {
-      userId,
-      reviewDate: today,
-      contentId: chosen.id,
-      answers: {},
-      completed: false
-    };
-    const [result] = await ctx.db.insert(dailyReviews).values(newReview);
-    const review = { ...newReview, id: Number(result.insertId), correctCount: null, completedAt: null, createdAt: /* @__PURE__ */ new Date() };
-    return { review, content: chosen };
-  }),
-  // ── Aluno: salva resposta e finaliza se todas respondidas ─────────────────
-  saveAnswer: protectedProcedure.input(z5.object({
-    reviewId: z5.number().int().positive(),
-    questionIndex: z5.number().int().min(0).max(2),
-    answer: z5.number().int().min(0).max(3)
-  })).mutation(async ({ ctx, input }) => {
-    const userId = ctx.user.id;
-    const [review] = await ctx.db.select().from(dailyReviews).where(and4(eq5(dailyReviews.id, input.reviewId), eq5(dailyReviews.userId, userId))).limit(1);
-    if (!review || review.completed) return { ok: false };
-    const newAnswers = { ...review.answers, [input.questionIndex]: input.answer };
-    const allDone = [0, 1, 2].every((i) => newAnswers[i] !== void 0);
-    let correctCount = null;
-    if (allDone) {
-      const [content] = await ctx.db.select().from(reviewContents).where(eq5(reviewContents.id, review.contentId)).limit(1);
-      if (content) {
-        const qs = content.questoes;
-        correctCount = qs.filter((q, i) => newAnswers[i] === q.correta).length;
-      }
-    }
-    await ctx.db.update(dailyReviews).set({
-      answers: newAnswers,
-      ...allDone ? { completed: true, correctCount, completedAt: /* @__PURE__ */ new Date() } : {}
-    }).where(eq5(dailyReviews.id, input.reviewId));
-    return { ok: true, allDone, correctCount };
-  }),
-  // ── Aluno: registra tempo de leitura de um Revise diário ────────────────
-  // Acumula: se já havia tempo salvo, soma (aluno voltou a ler mais tarde).
-  saveReadTime: protectedProcedure.input(z5.object({
-    reviewId: z5.number().int().positive(),
-    seconds: z5.number().int().min(0).max(7200)
-    // teto de 2h por leitura
-  })).mutation(async ({ ctx, input }) => {
-    const userId = ctx.user.id;
-    const [review] = await ctx.db.select({ id: dailyReviews.id, current: dailyReviews.totalTimeSeconds }).from(dailyReviews).where(and4(eq5(dailyReviews.id, input.reviewId), eq5(dailyReviews.userId, userId))).limit(1);
-    if (!review) return { ok: false };
-    const nextTotal = (review.current ?? 0) + input.seconds;
-    await ctx.db.update(dailyReviews).set({ totalTimeSeconds: nextTotal }).where(eq5(dailyReviews.id, input.reviewId));
-    return { ok: true, total: nextTotal };
-  }),
-  // ── Aluno: histórico de revisões ──────────────────────────────────────────
-  getHistory: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db.select({
-      id: dailyReviews.id,
-      reviewDate: dailyReviews.reviewDate,
-      completed: dailyReviews.completed,
-      correctCount: dailyReviews.correctCount,
-      completedAt: dailyReviews.completedAt,
-      titulo: reviewContents.titulo,
-      topico: reviewContents.topico
-    }).from(dailyReviews).leftJoin(reviewContents, eq5(dailyReviews.contentId, reviewContents.id)).where(eq5(dailyReviews.userId, ctx.user.id)).orderBy(desc4(dailyReviews.reviewDate)).limit(30);
-    return rows;
-  })
-});
-
 // server/formulas.router.ts
-import { z as z6 } from "zod";
-import { eq as eq6, asc as asc3 } from "drizzle-orm";
+import { z as z5 } from "zod";
+import { eq as eq5, asc as asc3 } from "drizzle-orm";
 var formulasRouter = createTRPCRouter({
   // Listagem para todos os alunos — agrupa por secao
   list: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db.select().from(formulas).where(eq6(formulas.active, true)).orderBy(asc3(formulas.secao), asc3(formulas.ordem), asc3(formulas.id));
+    const rows = await ctx.db.select().from(formulas).where(eq5(formulas.active, true)).orderBy(asc3(formulas.secao), asc3(formulas.ordem), asc3(formulas.id));
     const grouped = {};
     for (const f of rows) {
       if (!grouped[f.secao]) grouped[f.secao] = { cor: f.cor, formulas: [] };
@@ -3083,42 +2933,42 @@ var formulasRouter = createTRPCRouter({
     return ctx.db.select().from(formulas).orderBy(asc3(formulas.secao), asc3(formulas.ordem));
   }),
   // Admin: criar fórmula
-  create: adminProcedure.input(z6.object({
-    secao: z6.string().min(1).max(100),
-    cor: z6.string().default("#01738d"),
-    titulo: z6.string().min(1).max(200),
-    formula: z6.string().min(1),
-    descricao: z6.string().min(1),
-    ordem: z6.number().int().default(0)
+  create: adminProcedure.input(z5.object({
+    secao: z5.string().min(1).max(100),
+    cor: z5.string().default("#01738d"),
+    titulo: z5.string().min(1).max(200),
+    formula: z5.string().min(1),
+    descricao: z5.string().min(1),
+    ordem: z5.number().int().default(0)
   })).mutation(async ({ ctx, input }) => {
     const [result] = await ctx.db.insert(formulas).values({ ...input, active: true });
     return { id: Number(result.insertId), success: true };
   }),
   // Admin: editar fórmula
-  update: adminProcedure.input(z6.object({
-    id: z6.number().int().positive(),
-    secao: z6.string().min(1).max(100).optional(),
-    cor: z6.string().optional(),
-    titulo: z6.string().min(1).max(200).optional(),
-    formula: z6.string().min(1).optional(),
-    descricao: z6.string().min(1).optional(),
-    ordem: z6.number().int().optional(),
-    active: z6.boolean().optional()
+  update: adminProcedure.input(z5.object({
+    id: z5.number().int().positive(),
+    secao: z5.string().min(1).max(100).optional(),
+    cor: z5.string().optional(),
+    titulo: z5.string().min(1).max(200).optional(),
+    formula: z5.string().min(1).optional(),
+    descricao: z5.string().min(1).optional(),
+    ordem: z5.number().int().optional(),
+    active: z5.boolean().optional()
   })).mutation(async ({ ctx, input }) => {
     const { id, ...data } = input;
-    await ctx.db.update(formulas).set(data).where(eq6(formulas.id, id));
+    await ctx.db.update(formulas).set(data).where(eq5(formulas.id, id));
     return { success: true };
   }),
   // Admin: excluir fórmula
-  delete: adminProcedure.input(z6.object({ id: z6.number().int().positive() })).mutation(async ({ ctx, input }) => {
-    await ctx.db.delete(formulas).where(eq6(formulas.id, input.id));
+  delete: adminProcedure.input(z5.object({ id: z5.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(formulas).where(eq5(formulas.id, input.id));
     return { success: true };
   })
 });
 
 // server/agenda.router.ts
-import { eq as eq7, sql as sql5, and as and5 } from "drizzle-orm";
-import { z as z7 } from "zod";
+import { eq as eq6, sql as sql4, and as and4 } from "drizzle-orm";
+import { z as z6 } from "zod";
 var ENEM_TOPICS = [
   { topic: "Grandezas Proporcionais", weight: 0.25 },
   { topic: "Geometria Espacial", weight: 0.11 },
@@ -3158,17 +3008,17 @@ var agendaRouter = createTRPCRouter({
   // ── Cronograma salvo pelo aluno ───────────────────────────────────────────
   // Helpers para parse/stringify de topics (suporta legado string simples)
   getMySchedule: protectedProcedure.query(async ({ ctx }) => {
-    const rows = await ctx.db.select().from(studySchedule).where(eq7(studySchedule.userId, ctx.user.id)).orderBy(studySchedule.dayOfWeek, studySchedule.startTime);
+    const rows = await ctx.db.select().from(studySchedule).where(eq6(studySchedule.userId, ctx.user.id)).orderBy(studySchedule.dayOfWeek, studySchedule.startTime);
     return rows.map((r) => ({
       ...r,
       topics: parseTopics(r.topic)
     }));
   }),
-  addSlot: protectedProcedure.input(z7.object({
-    dayOfWeek: z7.number().int().min(1).max(6),
-    startTime: z7.string().regex(/^\d{2}:\d{2}$/),
-    endTime: z7.string().regex(/^\d{2}:\d{2}$/),
-    topics: z7.array(z7.string().min(1).max(100)).min(1)
+  addSlot: protectedProcedure.input(z6.object({
+    dayOfWeek: z6.number().int().min(1).max(6),
+    startTime: z6.string().regex(/^\d{2}:\d{2}$/),
+    endTime: z6.string().regex(/^\d{2}:\d{2}$/),
+    topics: z6.array(z6.string().min(1).max(100)).min(1)
   })).mutation(async ({ ctx, input }) => {
     await ctx.db.insert(studySchedule).values({
       userId: ctx.user.id,
@@ -3179,9 +3029,9 @@ var agendaRouter = createTRPCRouter({
     });
     return { success: true };
   }),
-  removeSlot: protectedProcedure.input(z7.object({ id: z7.number().int().positive() })).mutation(async ({ ctx, input }) => {
+  removeSlot: protectedProcedure.input(z6.object({ id: z6.number().int().positive() })).mutation(async ({ ctx, input }) => {
     await ctx.db.delete(studySchedule).where(
-      and5(eq7(studySchedule.id, input.id), eq7(studySchedule.userId, ctx.user.id))
+      and4(eq6(studySchedule.id, input.id), eq6(studySchedule.userId, ctx.user.id))
     );
     return { success: true };
   }),
@@ -3189,9 +3039,9 @@ var agendaRouter = createTRPCRouter({
   getTopicStats: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db.select({
       topic: questions.conteudo_principal,
-      total: sql5`COUNT(*)`,
-      correct: sql5`SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END)`
-    }).from(simulationAnswers).innerJoin(simulations, eq7(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq7(simulationAnswers.questionId, questions.id)).where(eq7(simulations.userId, ctx.user.id)).groupBy(questions.conteudo_principal);
+      total: sql4`COUNT(*)`,
+      correct: sql4`SUM(CASE WHEN ${simulationAnswers.isCorrect} = 1 THEN 1 ELSE 0 END)`
+    }).from(simulationAnswers).innerJoin(simulations, eq6(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq6(simulationAnswers.questionId, questions.id)).where(eq6(simulations.userId, ctx.user.id)).groupBy(questions.conteudo_principal);
     const accuracy = {};
     for (const r of rows) {
       const total = Number(r.total);
@@ -3212,8 +3062,8 @@ var agendaRouter = createTRPCRouter({
 });
 
 // server/flashcards.router.ts
-import { z as z8 } from "zod";
-import { eq as eq8, and as and6, asc as asc4, inArray as inArray4, sql as sql6 } from "drizzle-orm";
+import { z as z7 } from "zod";
+import { eq as eq7, and as and5, asc as asc4, inArray as inArray4, sql as sql5 } from "drizzle-orm";
 function applySM2(quality, prev) {
   let { easinessFactor, interval, repetitions } = prev;
   easinessFactor = Math.max(
@@ -3237,14 +3087,14 @@ var flashcardsRouter = createTRPCRouter({
   // ── Decks (admin) ─────────────────────────────────────────────────────────
   listAllDecks: adminProcedure.query(async () => {
     const decks = await db.select().from(flashcardDecks).orderBy(asc4(flashcardDecks.createdAt));
-    const counts = await db.select({ deckId: flashcards.deckId, count: sql6`COUNT(*)` }).from(flashcards).groupBy(flashcards.deckId);
+    const counts = await db.select({ deckId: flashcards.deckId, count: sql5`COUNT(*)` }).from(flashcards).groupBy(flashcards.deckId);
     const countMap = new Map(counts.map((r) => [r.deckId, Number(r.count)]));
     return decks.map((d) => ({ ...d, cardCount: countMap.get(d.id) ?? 0 }));
   }),
-  createDeck: adminProcedure.input(z8.object({
-    title: z8.string().min(1).max(255),
-    description: z8.string().optional(),
-    color: z8.string().default("#009688")
+  createDeck: adminProcedure.input(z7.object({
+    title: z7.string().min(1).max(255),
+    description: z7.string().optional(),
+    color: z7.string().default("#009688")
   })).mutation(async ({ input }) => {
     const [res] = await db.insert(flashcardDecks).values({
       title: input.title,
@@ -3253,31 +3103,31 @@ var flashcardsRouter = createTRPCRouter({
     });
     return { id: res.insertId };
   }),
-  updateDeck: adminProcedure.input(z8.object({
-    id: z8.number(),
-    title: z8.string().min(1).max(255).optional(),
-    description: z8.string().nullable().optional(),
-    color: z8.string().optional(),
-    active: z8.boolean().optional()
+  updateDeck: adminProcedure.input(z7.object({
+    id: z7.number(),
+    title: z7.string().min(1).max(255).optional(),
+    description: z7.string().nullable().optional(),
+    color: z7.string().optional(),
+    active: z7.boolean().optional()
   })).mutation(async ({ input }) => {
     const { id, ...rest } = input;
-    await db.update(flashcardDecks).set(rest).where(eq8(flashcardDecks.id, id));
+    await db.update(flashcardDecks).set(rest).where(eq7(flashcardDecks.id, id));
   }),
-  deleteDeck: adminProcedure.input(z8.object({ id: z8.number() })).mutation(async ({ input }) => {
-    await db.delete(flashcardDecks).where(eq8(flashcardDecks.id, input.id));
+  deleteDeck: adminProcedure.input(z7.object({ id: z7.number() })).mutation(async ({ input }) => {
+    await db.delete(flashcardDecks).where(eq7(flashcardDecks.id, input.id));
   }),
   // ── Cards (admin) ─────────────────────────────────────────────────────────
-  listCards: adminProcedure.input(z8.object({ deckId: z8.number() })).query(async ({ input }) => {
-    return db.select().from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(asc4(flashcards.orderIndex), asc4(flashcards.createdAt));
+  listCards: adminProcedure.input(z7.object({ deckId: z7.number() })).query(async ({ input }) => {
+    return db.select().from(flashcards).where(eq7(flashcards.deckId, input.deckId)).orderBy(asc4(flashcards.orderIndex), asc4(flashcards.createdAt));
   }),
-  createCard: adminProcedure.input(z8.object({
-    deckId: z8.number(),
-    front: z8.string().min(1),
-    back: z8.string().min(1),
-    frontImage: z8.string().url().nullable().optional(),
-    backImage: z8.string().url().nullable().optional()
+  createCard: adminProcedure.input(z7.object({
+    deckId: z7.number(),
+    front: z7.string().min(1),
+    back: z7.string().min(1),
+    frontImage: z7.string().url().nullable().optional(),
+    backImage: z7.string().url().nullable().optional()
   })).mutation(async ({ input }) => {
-    const last = await db.select({ idx: flashcards.orderIndex }).from(flashcards).where(eq8(flashcards.deckId, input.deckId)).orderBy(sql6`order_index DESC`).limit(1);
+    const last = await db.select({ idx: flashcards.orderIndex }).from(flashcards).where(eq7(flashcards.deckId, input.deckId)).orderBy(sql5`order_index DESC`).limit(1);
     const orderIndex = last.length > 0 ? last[0].idx + 1 : 0;
     const [res] = await db.insert(flashcards).values({
       deckId: input.deckId,
@@ -3289,31 +3139,31 @@ var flashcardsRouter = createTRPCRouter({
     });
     return { id: res.insertId };
   }),
-  updateCard: adminProcedure.input(z8.object({
-    id: z8.number(),
-    front: z8.string().min(1).optional(),
-    back: z8.string().min(1).optional(),
-    frontImage: z8.string().nullable().optional(),
-    backImage: z8.string().nullable().optional(),
-    active: z8.boolean().optional()
+  updateCard: adminProcedure.input(z7.object({
+    id: z7.number(),
+    front: z7.string().min(1).optional(),
+    back: z7.string().min(1).optional(),
+    frontImage: z7.string().nullable().optional(),
+    backImage: z7.string().nullable().optional(),
+    active: z7.boolean().optional()
   })).mutation(async ({ input }) => {
     const { id, ...rest } = input;
-    await db.update(flashcards).set(rest).where(eq8(flashcards.id, id));
+    await db.update(flashcards).set(rest).where(eq7(flashcards.id, id));
   }),
-  deleteCard: adminProcedure.input(z8.object({ id: z8.number() })).mutation(async ({ input }) => {
-    await db.delete(flashcards).where(eq8(flashcards.id, input.id));
+  deleteCard: adminProcedure.input(z7.object({ id: z7.number() })).mutation(async ({ input }) => {
+    await db.delete(flashcards).where(eq7(flashcards.id, input.id));
   }),
   // ── Decks com progresso do aluno (tela de seleção) ────────────────────────
   listDecks: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.user.id;
     const now = /* @__PURE__ */ new Date();
-    const decks = await db.select().from(flashcardDecks).where(eq8(flashcardDecks.active, true)).orderBy(asc4(flashcardDecks.createdAt));
+    const decks = await db.select().from(flashcardDecks).where(eq7(flashcardDecks.active, true)).orderBy(asc4(flashcardDecks.createdAt));
     const result = await Promise.all(decks.map(async (deck) => {
-      const cards = await db.select({ id: flashcards.id }).from(flashcards).where(and6(eq8(flashcards.deckId, deck.id), eq8(flashcards.active, true)));
+      const cards = await db.select({ id: flashcards.id }).from(flashcards).where(and5(eq7(flashcards.deckId, deck.id), eq7(flashcards.active, true)));
       const totalCards = cards.length;
       if (totalCards === 0) return { ...deck, totalCards: 0, dueCount: 0, newCount: 0, masteredCount: 0, studyableCount: 0 };
       const cardIds = cards.map((c) => c.id);
-      const progRows = await db.select().from(flashcardProgress).where(and6(eq8(flashcardProgress.userId, userId), inArray4(flashcardProgress.cardId, cardIds)));
+      const progRows = await db.select().from(flashcardProgress).where(and5(eq7(flashcardProgress.userId, userId), inArray4(flashcardProgress.cardId, cardIds)));
       const progressMap = new Map(progRows.map((p) => [p.cardId, p]));
       let dueCount = 0, newCount = 0, masteredCount = 0;
       for (const { id } of cards) {
@@ -3327,16 +3177,16 @@ var flashcardsRouter = createTRPCRouter({
     return result;
   }),
   // ── Sessão de estudo ──────────────────────────────────────────────────────
-  getStudySession: protectedProcedure.input(z8.object({ deckId: z8.number(), limit: z8.number().min(1).max(50).default(20) })).query(async ({ ctx, input }) => {
+  getStudySession: protectedProcedure.input(z7.object({ deckId: z7.number(), limit: z7.number().min(1).max(50).default(20) })).query(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const now = /* @__PURE__ */ new Date();
-    const [deck] = await db.select().from(flashcardDecks).where(eq8(flashcardDecks.id, input.deckId)).limit(1);
-    const allCards = await db.select().from(flashcards).where(and6(eq8(flashcards.deckId, input.deckId), eq8(flashcards.active, true))).orderBy(asc4(flashcards.orderIndex), asc4(flashcards.createdAt));
+    const [deck] = await db.select().from(flashcardDecks).where(eq7(flashcardDecks.id, input.deckId)).limit(1);
+    const allCards = await db.select().from(flashcards).where(and5(eq7(flashcards.deckId, input.deckId), eq7(flashcards.active, true))).orderBy(asc4(flashcards.orderIndex), asc4(flashcards.createdAt));
     if (allCards.length === 0) {
       return { deck: deck ?? null, cards: [], totalInDeck: 0, dueCount: 0, newCount: 0 };
     }
     const cardIds = allCards.map((c) => c.id);
-    const progRows = await db.select().from(flashcardProgress).where(and6(eq8(flashcardProgress.userId, userId), inArray4(flashcardProgress.cardId, cardIds)));
+    const progRows = await db.select().from(flashcardProgress).where(and5(eq7(flashcardProgress.userId, userId), inArray4(flashcardProgress.cardId, cardIds)));
     const progressMap = new Map(progRows.map((p) => [p.cardId, p]));
     const due = [];
     const nw = [];
@@ -3368,16 +3218,16 @@ var flashcardsRouter = createTRPCRouter({
     };
   }),
   // ── Registar revisão (SM-2) ───────────────────────────────────────────────
-  recordReview: protectedProcedure.input(z8.object({
-    cardId: z8.number(),
-    quality: z8.union([z8.literal(1), z8.literal(3), z8.literal(5)]),
+  recordReview: protectedProcedure.input(z7.object({
+    cardId: z7.number(),
+    quality: z7.union([z7.literal(1), z7.literal(3), z7.literal(5)]),
     // Tempo gasto nesta revisão (card exibido → usuário avaliou).
     // Opcional p/ compatibilidade, cap em 10min (evita outlier de aba aberta).
-    timeSpentSeconds: z8.number().int().min(0).max(600).optional()
+    timeSpentSeconds: z7.number().int().min(0).max(600).optional()
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const { cardId, quality, timeSpentSeconds } = input;
-    const [existing] = await db.select().from(flashcardProgress).where(and6(eq8(flashcardProgress.userId, userId), eq8(flashcardProgress.cardId, cardId)));
+    const [existing] = await db.select().from(flashcardProgress).where(and5(eq7(flashcardProgress.userId, userId), eq7(flashcardProgress.cardId, cardId)));
     const prev = existing ? { easinessFactor: existing.easinessFactor, interval: existing.interval, repetitions: existing.repetitions } : { easinessFactor: 2.5, interval: 0, repetitions: 0 };
     const { easinessFactor, interval, repetitions, nextReview } = applySM2(quality, prev);
     const now = /* @__PURE__ */ new Date();
@@ -3389,7 +3239,7 @@ var flashcardsRouter = createTRPCRouter({
         nextReview,
         lastReviewed: now,
         ...timeSpentSeconds !== void 0 ? { timeSpentSeconds } : {}
-      }).where(eq8(flashcardProgress.id, existing.id));
+      }).where(eq7(flashcardProgress.id, existing.id));
     } else {
       await db.insert(flashcardProgress).values({
         userId,
@@ -3407,20 +3257,20 @@ var flashcardsRouter = createTRPCRouter({
 });
 
 // server/trilhas.router.ts
-import { z as z9 } from "zod";
-import { and as and7, eq as eq9, sql as sql7 } from "drizzle-orm";
-var slugSchema = z9.string().min(1).max(100);
-var licaoSlugSchema = z9.string().max(100).default("");
-var urlSchema = z9.string().trim().url("URL inv\xE1lida").max(512);
+import { z as z8 } from "zod";
+import { and as and6, eq as eq8, sql as sql6 } from "drizzle-orm";
+var slugSchema = z8.string().min(1).max(100);
+var licaoSlugSchema = z8.string().max(100).default("");
+var urlSchema = z8.string().trim().url("URL inv\xE1lida").max(512);
 var trilhasRouter = createTRPCRouter({
   // ── Vídeos de lições (acesso público restrito ao dono) ────────────────────
   // Buscar URL de uma trilha/lição específica (retorna null se não houver).
   // Usado pela tela Trilha.tsx.
-  get: protectedProcedure.input(z9.object({ trilhaSlug: slugSchema, licaoSlug: licaoSlugSchema })).query(async ({ ctx, input }) => {
+  get: protectedProcedure.input(z8.object({ trilhaSlug: slugSchema, licaoSlug: licaoSlugSchema })).query(async ({ ctx, input }) => {
     const [row] = await ctx.db.select().from(trilhaVideos).where(
-      and7(
-        eq9(trilhaVideos.trilhaSlug, input.trilhaSlug),
-        eq9(trilhaVideos.licaoSlug, input.licaoSlug)
+      and6(
+        eq8(trilhaVideos.trilhaSlug, input.trilhaSlug),
+        eq8(trilhaVideos.licaoSlug, input.licaoSlug)
       )
     ).limit(1);
     return row ?? null;
@@ -3431,44 +3281,44 @@ var trilhasRouter = createTRPCRouter({
   }),
   // Admin: upsert — cria se não existe, atualiza se já existe.
   upsert: adminProcedure.input(
-    z9.object({
+    z8.object({
       trilhaSlug: slugSchema,
       licaoSlug: licaoSlugSchema,
       urlYoutube: urlSchema
     })
   ).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.select().from(trilhaVideos).where(
-      and7(
-        eq9(trilhaVideos.trilhaSlug, input.trilhaSlug),
-        eq9(trilhaVideos.licaoSlug, input.licaoSlug)
+      and6(
+        eq8(trilhaVideos.trilhaSlug, input.trilhaSlug),
+        eq8(trilhaVideos.licaoSlug, input.licaoSlug)
       )
     ).limit(1);
     if (existing.length > 0) {
-      await ctx.db.update(trilhaVideos).set({ urlYoutube: input.urlYoutube }).where(eq9(trilhaVideos.id, existing[0].id));
+      await ctx.db.update(trilhaVideos).set({ urlYoutube: input.urlYoutube }).where(eq8(trilhaVideos.id, existing[0].id));
       return { id: existing[0].id, success: true, updated: true };
     }
     const [result] = await ctx.db.insert(trilhaVideos).values(input);
     return { id: Number(result.insertId), success: true, updated: false };
   }),
   // Admin: remover vídeo
-  delete: adminProcedure.input(z9.object({ id: z9.number().int().positive() })).mutation(async ({ ctx, input }) => {
-    await ctx.db.delete(trilhaVideos).where(eq9(trilhaVideos.id, input.id));
+  delete: adminProcedure.input(z8.object({ id: z8.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(trilhaVideos).where(eq8(trilhaVideos.id, input.id));
     return { success: true };
   }),
   // ── Progresso de trilha (aluno) ───────────────────────────────────────────
   getAllProgress: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(trilhaProgress).where(eq9(trilhaProgress.userId, ctx.user.id));
+    return ctx.db.select().from(trilhaProgress).where(eq8(trilhaProgress.userId, ctx.user.id));
   }),
-  saveProgress: protectedProcedure.input(z9.object({
-    trilhaSlug: z9.string().min(1).max(100),
-    licaoSlug: z9.string().min(1).max(100),
-    lastScorePct: z9.number().int().min(0).max(100),
-    totalTimeSec: z9.number().int().min(0),
-    finishedAt: z9.number()
+  saveProgress: protectedProcedure.input(z8.object({
+    trilhaSlug: z8.string().min(1).max(100),
+    licaoSlug: z8.string().min(1).max(100),
+    lastScorePct: z8.number().int().min(0).max(100),
+    totalTimeSec: z8.number().int().min(0),
+    finishedAt: z8.number()
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
     const finishedDate = new Date(input.finishedAt);
-    await ctx.db.execute(sql7`
+    await ctx.db.execute(sql6`
         INSERT INTO trilha_progress
           (user_id, trilha_slug, licao_slug, finished_at, last_score_pct, total_time_sec)
         VALUES
@@ -3482,12 +3332,12 @@ var trilhasRouter = createTRPCRouter({
       `);
     return { ok: true };
   }),
-  saveLeitura: protectedProcedure.input(z9.object({
-    trilhaSlug: z9.string().min(1).max(100),
-    licaoSlug: z9.string().min(1).max(100)
+  saveLeitura: protectedProcedure.input(z8.object({
+    trilhaSlug: z8.string().min(1).max(100),
+    licaoSlug: z8.string().min(1).max(100)
   })).mutation(async ({ ctx, input }) => {
     const userId = ctx.user.id;
-    await ctx.db.execute(sql7`
+    await ctx.db.execute(sql6`
         INSERT INTO trilha_progress
           (user_id, trilha_slug, licao_slug, leitura_concluida, total_time_sec)
         VALUES
@@ -3512,18 +3362,18 @@ var trilhasRouter = createTRPCRouter({
     }).from(trilhaDefinitions);
   }),
   /** Retorna a definição completa (incluindo contentJson) de uma trilha. */
-  getDefinition: protectedProcedure.input(z9.object({ slug: slugSchema })).query(async ({ ctx, input }) => {
-    const [row] = await ctx.db.select().from(trilhaDefinitions).where(eq9(trilhaDefinitions.slug, input.slug)).limit(1);
+  getDefinition: protectedProcedure.input(z8.object({ slug: slugSchema })).query(async ({ ctx, input }) => {
+    const [row] = await ctx.db.select().from(trilhaDefinitions).where(eq8(trilhaDefinitions.slug, input.slug)).limit(1);
     return row ?? null;
   }),
   /** Upsert da definição completa — admin only. */
   saveDefinition: adminProcedure.input(
-    z9.object({
+    z8.object({
       slug: slugSchema,
-      titulo: z9.string().min(1).max(255),
-      area: z9.string().min(1).max(255),
-      descricao: z9.string().max(4e3).default(""),
-      contentJson: z9.string().min(2)
+      titulo: z8.string().min(1).max(255),
+      area: z8.string().min(1).max(255),
+      descricao: z8.string().max(4e3).default(""),
+      contentJson: z8.string().min(2)
     })
   ).mutation(async ({ ctx, input }) => {
     try {
@@ -3531,7 +3381,7 @@ var trilhasRouter = createTRPCRouter({
     } catch {
       throw new Error("contentJson inv\xE1lido");
     }
-    await ctx.db.execute(sql7`
+    await ctx.db.execute(sql6`
         INSERT INTO trilha_definitions (slug, titulo, area, descricao, content_json)
         VALUES (${input.slug}, ${input.titulo}, ${input.area}, ${input.descricao}, ${input.contentJson})
         ON DUPLICATE KEY UPDATE
@@ -3544,16 +3394,16 @@ var trilhasRouter = createTRPCRouter({
     return { ok: true };
   }),
   /** Remove a definição do banco (trilha volta a usar o arquivo TS estático). */
-  deleteDefinition: adminProcedure.input(z9.object({ slug: slugSchema })).mutation(async ({ ctx, input }) => {
-    await ctx.db.delete(trilhaDefinitions).where(eq9(trilhaDefinitions.slug, input.slug));
+  deleteDefinition: adminProcedure.input(z8.object({ slug: slugSchema })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(trilhaDefinitions).where(eq8(trilhaDefinitions.slug, input.slug));
     return { ok: true };
   })
 });
 
 // server/tutor.router.ts
-import { z as z10 } from "zod";
+import { z as z9 } from "zod";
 import { TRPCError as TRPCError6 } from "@trpc/server";
-import { eq as eq10, and as and8, desc as desc5, sql as sql8, inArray as inArray5 } from "drizzle-orm";
+import { eq as eq9, and as and7, desc as desc4, sql as sql7, inArray as inArray5 } from "drizzle-orm";
 var SYSTEM_PROMPT = `Voc\xEA \xE9 o Tutor Vetor, um assistente especializado em matem\xE1tica para o ENEM e vestibulares brasileiros (UNICAMP, FUVEST, UNESP).
 
 Regras inviol\xE1veis:
@@ -3604,14 +3454,14 @@ async function collectStudentData(ctx) {
     totalQuestions: simulations.totalQuestions,
     totalTimeSeconds: simulations.totalTimeSeconds,
     completedAt: simulations.completedAt
-  }).from(simulations).where(and8(eq10(simulations.userId, userId), eq10(simulations.status, "completed"), sql8`${simulations.stage} > 0`)).orderBy(desc5(simulations.completedAt)).limit(10);
+  }).from(simulations).where(and7(eq9(simulations.userId, userId), eq9(simulations.status, "completed"), sql7`${simulations.stage} > 0`)).orderBy(desc4(simulations.completedAt)).limit(10);
   const simRows = await ctx.db.select({
     conteudo: questions.conteudo_principal,
     tags: questions.tags,
     isCorrect: simulationAnswers.isCorrect
-  }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq10(simulationAnswers.questionId, questions.id)).where(and8(
-    eq10(simulations.userId, userId),
-    sql8`${simulationAnswers.isCorrect} IS NOT NULL`
+  }).from(simulationAnswers).innerJoin(simulations, eq9(simulationAnswers.simulationId, simulations.id)).innerJoin(questions, eq9(simulationAnswers.questionId, questions.id)).where(and7(
+    eq9(simulations.userId, userId),
+    sql7`${simulationAnswers.isCorrect} IS NOT NULL`
   ));
   const areaMap = /* @__PURE__ */ new Map();
   for (const r of simRows) {
@@ -3628,7 +3478,7 @@ async function collectStudentData(ctx) {
     correctCount: dailyChallenges.correctCount,
     completed: dailyChallenges.completed,
     challengeDate: dailyChallenges.challengeDate
-  }).from(dailyChallenges).where(and8(eq10(dailyChallenges.userId, userId), eq10(dailyChallenges.completed, true))).orderBy(desc5(dailyChallenges.challengeDate)).limit(30);
+  }).from(dailyChallenges).where(and7(eq9(dailyChallenges.userId, userId), eq9(dailyChallenges.completed, true))).orderBy(desc4(dailyChallenges.challengeDate)).limit(30);
   if (challenges.length > 0) {
     const allQIds = [...new Set(challenges.flatMap((c) => c.questionIds))];
     if (allQIds.length > 0) {
@@ -3650,10 +3500,10 @@ async function collectStudentData(ctx) {
       }
     }
   }
-  const allAnswered = await ctx.db.select({ isCorrect: simulationAnswers.isCorrect }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and8(eq10(simulations.userId, userId), sql8`${simulationAnswers.isCorrect} IS NOT NULL`));
+  const allAnswered = await ctx.db.select({ isCorrect: simulationAnswers.isCorrect }).from(simulationAnswers).innerJoin(simulations, eq9(simulationAnswers.simulationId, simulations.id)).where(and7(eq9(simulations.userId, userId), sql7`${simulationAnswers.isCorrect} IS NOT NULL`));
   const totalAnswered = allAnswered.length;
   const totalCorrect = allAnswered.filter((a) => a.isCorrect).length;
-  const answered = await ctx.db.select({ answeredAt: simulationAnswers.answeredAt }).from(simulationAnswers).innerJoin(simulations, eq10(simulationAnswers.simulationId, simulations.id)).where(and8(eq10(simulations.userId, userId), sql8`${simulationAnswers.answeredAt} IS NOT NULL`));
+  const answered = await ctx.db.select({ answeredAt: simulationAnswers.answeredAt }).from(simulationAnswers).innerJoin(simulations, eq9(simulationAnswers.simulationId, simulations.id)).where(and7(eq9(simulations.userId, userId), sql7`${simulationAnswers.answeredAt} IS NOT NULL`));
   function dayKey(d) {
     if (!d) return "";
     const dt = typeof d === "string" ? /* @__PURE__ */ new Date(d + "T12:00:00") : new Date(d);
@@ -3720,14 +3570,14 @@ ${areaLines}
 var tutorRouter = createTRPCRouter({
   // ── Chat livre ──────────────────────────────────────────────────────────────
   chat: protectedProcedure.input(
-    z10.object({
-      messages: z10.array(
-        z10.object({
-          role: z10.enum(["user", "assistant"]),
-          content: z10.string().max(4e3)
+    z9.object({
+      messages: z9.array(
+        z9.object({
+          role: z9.enum(["user", "assistant"]),
+          content: z9.string().max(4e3)
         })
       ).max(30),
-      context: z10.string().max(3e3).optional()
+      context: z9.string().max(3e3).optional()
     })
   ).mutation(async ({ ctx, input }) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -3770,36 +3620,36 @@ Se o aluno tiver poucos dados (< 20 quest\xF5es), adapte o diagn\xF3stico para i
 });
 
 // server/segunda-fase.router.ts
-import { z as z11 } from "zod";
-import { eq as eq11, and as and9, desc as desc6, sql as sql9, asc as asc5 } from "drizzle-orm";
-var ImagemSchema = z11.object({
-  posicao: z11.string(),
-  descricao: z11.string(),
-  url: z11.string().optional()
+import { z as z10 } from "zod";
+import { eq as eq10, and as and8, desc as desc5, sql as sql8, asc as asc5 } from "drizzle-orm";
+var ImagemSchema = z10.object({
+  posicao: z10.string(),
+  descricao: z10.string(),
+  url: z10.string().optional()
 });
-var DiscursiveBaseSchema = z11.object({
-  fonte: z11.string().default("UNICAMP"),
-  ano: z11.number().int().optional(),
-  numero_prova: z11.number().int().optional(),
-  conteudo_principal: z11.string().min(1),
-  tags: z11.array(z11.string()).default([]),
-  nivel_dificuldade: z11.enum(["Muito Baixa", "Baixa", "M\xE9dia", "Alta", "Muito Alta"]).default("M\xE9dia"),
-  enunciado: z11.string().min(1),
-  imagens: z11.array(ImagemSchema).default([]),
-  resolucao: z11.string().min(1),
-  url_youtube: z11.string().optional()
+var DiscursiveBaseSchema = z10.object({
+  fonte: z10.string().default("UNICAMP"),
+  ano: z10.number().int().optional(),
+  numero_prova: z10.number().int().optional(),
+  conteudo_principal: z10.string().min(1),
+  tags: z10.array(z10.string()).default([]),
+  nivel_dificuldade: z10.enum(["Muito Baixa", "Baixa", "M\xE9dia", "Alta", "Muito Alta"]).default("M\xE9dia"),
+  enunciado: z10.string().min(1),
+  imagens: z10.array(ImagemSchema).default([]),
+  resolucao: z10.string().min(1),
+  url_youtube: z10.string().optional()
 });
 var segundaFaseRouter = createTRPCRouter({
   // ── Aluno: lista questões ativas com último resultado ──────────────────────
-  getQuestions: protectedProcedure.input(z11.object({ fonte: z11.string().optional() })).query(async ({ ctx, input }) => {
+  getQuestions: protectedProcedure.input(z10.object({ fonte: z10.string().optional() })).query(async ({ ctx, input }) => {
     const rows = await ctx.db.select().from(discursiveQuestions).where(
-      and9(
-        eq11(discursiveQuestions.active, true),
-        input.fonte ? eq11(discursiveQuestions.fonte, input.fonte) : void 0
+      and8(
+        eq10(discursiveQuestions.active, true),
+        input.fonte ? eq10(discursiveQuestions.fonte, input.fonte) : void 0
       )
     ).orderBy(discursiveQuestions.ano, discursiveQuestions.numero_prova);
     if (rows.length === 0) return [];
-    const progress = await ctx.db.select().from(discursiveProgress).where(eq11(discursiveProgress.userId, ctx.user.id)).orderBy(desc6(discursiveProgress.createdAt));
+    const progress = await ctx.db.select().from(discursiveProgress).where(eq10(discursiveProgress.userId, ctx.user.id)).orderBy(desc5(discursiveProgress.createdAt));
     const lastResult = {};
     for (const p of progress) {
       if (!lastResult[p.questionId]) lastResult[p.questionId] = p.resultado;
@@ -3810,9 +3660,9 @@ var segundaFaseRouter = createTRPCRouter({
     }));
   }),
   // ── Aluno: salva autocorreção + XP ────────────────────────────────────────
-  saveProgress: protectedProcedure.input(z11.object({
-    questionId: z11.number(),
-    resultado: z11.enum(["acertei", "quase", "errei"])
+  saveProgress: protectedProcedure.input(z10.object({
+    questionId: z10.number(),
+    resultado: z10.enum(["acertei", "quase", "errei"])
   })).mutation(async ({ ctx, input }) => {
     const xpEarned = input.resultado === "acertei" ? 3 : input.resultado === "quase" ? 1 : 0;
     await ctx.db.insert(discursiveProgress).values({
@@ -3822,7 +3672,7 @@ var segundaFaseRouter = createTRPCRouter({
       xpEarned
     });
     if (xpEarned > 0) {
-      await ctx.db.update(users).set({ xp: sql9`xp + ${xpEarned}` }).where(eq11(users.id, ctx.user.id));
+      await ctx.db.update(users).set({ xp: sql8`xp + ${xpEarned}` }).where(eq10(users.id, ctx.user.id));
     }
     return { xpEarned };
   }),
@@ -3830,8 +3680,8 @@ var segundaFaseRouter = createTRPCRouter({
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const rows = await ctx.db.select({
       resultado: discursiveProgress.resultado,
-      count: sql9`count(*)`.mapWith(Number)
-    }).from(discursiveProgress).where(eq11(discursiveProgress.userId, ctx.user.id)).groupBy(discursiveProgress.resultado);
+      count: sql8`count(*)`.mapWith(Number)
+    }).from(discursiveProgress).where(eq10(discursiveProgress.userId, ctx.user.id)).groupBy(discursiveProgress.resultado);
     const stats = { acertei: 0, quase: 0, errei: 0, total: 0 };
     for (const r of rows) {
       stats[r.resultado] = r.count;
@@ -3849,38 +3699,38 @@ var segundaFaseRouter = createTRPCRouter({
     return { id: result.insertId };
   }),
   // ── Admin: atualiza questão ───────────────────────────────────────────────
-  adminUpdate: adminProcedure.input(DiscursiveBaseSchema.extend({ id: z11.number().int().positive() })).mutation(async ({ ctx, input }) => {
+  adminUpdate: adminProcedure.input(DiscursiveBaseSchema.extend({ id: z10.number().int().positive() })).mutation(async ({ ctx, input }) => {
     const { id, ...data } = input;
-    await ctx.db.update(discursiveQuestions).set(data).where(eq11(discursiveQuestions.id, id));
+    await ctx.db.update(discursiveQuestions).set(data).where(eq10(discursiveQuestions.id, id));
     return { ok: true };
   }),
   // ── Admin: ativa / desativa ────────────────────────────────────────────────
-  adminToggleActive: adminProcedure.input(z11.object({ id: z11.number().int().positive(), active: z11.boolean() })).mutation(async ({ ctx, input }) => {
-    await ctx.db.update(discursiveQuestions).set({ active: input.active }).where(eq11(discursiveQuestions.id, input.id));
+  adminToggleActive: adminProcedure.input(z10.object({ id: z10.number().int().positive(), active: z10.boolean() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.update(discursiveQuestions).set({ active: input.active }).where(eq10(discursiveQuestions.id, input.id));
     return { ok: true };
   }),
   // ── Admin: exclui questão (progresso excluído em cascata pelo FK) ───────────
-  adminDelete: adminProcedure.input(z11.object({ id: z11.number().int().positive() })).mutation(async ({ ctx, input }) => {
-    await ctx.db.delete(discursiveQuestions).where(eq11(discursiveQuestions.id, input.id));
+  adminDelete: adminProcedure.input(z10.object({ id: z10.number().int().positive() })).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(discursiveQuestions).where(eq10(discursiveQuestions.id, input.id));
     return { ok: true };
   })
 });
 
 // server/goals.router.ts
-import { z as z12 } from "zod";
-import { eq as eq12, sql as sql10 } from "drizzle-orm";
+import { z as z11 } from "zod";
+import { eq as eq11, sql as sql9 } from "drizzle-orm";
 var goalsRouter = createTRPCRouter({
   /** Retorna a meta semanal do aluno (ou defaults se não tiver configurado). */
   getGoal: protectedProcedure.query(async ({ ctx }) => {
-    const [row] = await ctx.db.select().from(studyGoals).where(eq12(studyGoals.userId, ctx.user.id)).limit(1);
+    const [row] = await ctx.db.select().from(studyGoals).where(eq11(studyGoals.userId, ctx.user.id)).limit(1);
     return row ?? { questionsPerWeek: 50, simulationsPerWeek: 1 };
   }),
   /** Salva (cria ou atualiza) a meta semanal do aluno. */
-  setGoal: protectedProcedure.input(z12.object({
-    questionsPerWeek: z12.number().int().min(1).max(500),
-    simulationsPerWeek: z12.number().int().min(0).max(10)
+  setGoal: protectedProcedure.input(z11.object({
+    questionsPerWeek: z11.number().int().min(1).max(500),
+    simulationsPerWeek: z11.number().int().min(0).max(10)
   })).mutation(async ({ ctx, input }) => {
-    await ctx.db.execute(sql10`
+    await ctx.db.execute(sql9`
         INSERT INTO study_goals (user_id, questions_per_week, simulations_per_week)
         VALUES (${ctx.user.id}, ${input.questionsPerWeek}, ${input.simulationsPerWeek})
         ON DUPLICATE KEY UPDATE
@@ -3898,7 +3748,6 @@ var appRouter = createTRPCRouter({
   questions: questionsRouter,
   simulations: simulationsRouter,
   users: usersRouter,
-  review: reviewRouter,
   formulas: formulasRouter,
   agenda: agendaRouter,
   flashcards: flashcardsRouter,
@@ -3909,7 +3758,7 @@ var appRouter = createTRPCRouter({
 });
 
 // server/index.ts
-import { eq as eq13 } from "drizzle-orm";
+import { eq as eq12 } from "drizzle-orm";
 
 // server/seed-matematica-content.ts
 var FRACOES_ARTICLE = {
@@ -4872,7 +4721,7 @@ app.get("/admin/make-admin", async (req, res) => {
   if (secret !== IMPORT_SECRET) return res.status(401).send("Senha incorrecta.");
   if (!email) return res.status(400).send("Forne\xE7a ?email=teu@email.com");
   try {
-    await db.update(users).set({ role: "admin" }).where(eq13(users.email, email.toLowerCase().trim()));
+    await db.update(users).set({ role: "admin" }).where(eq12(users.email, email.toLowerCase().trim()));
     res.send(`\u2705 ${email} \xE9 agora admin. Fa\xE7a logout e login novamente no site.`);
   } catch (err) {
     res.status(500).send(`Erro: ${err.message}`);
